@@ -1,0 +1,23 @@
+THIRD-PARTY NOTICES — -SEED v0.1.1 (seed-game)
+================================================
+
+This web game bundles the following third-party software.
+Full license texts are included in licenses/.
+
+1) Phaser 4.2.1 — MIT License
+   Copyright (c) 2026 Richard Davey, Phaser Studio Inc.
+   Full text: licenses/PHASER-MIT.txt
+   (Copied verbatim from the authoritative distribution:
+   node_modules/phaser/LICENSE.md of phaser@4.2.1.)
+
+2) Noto Sans + Noto Sans Thai (bundled woff/woff2 subsets)
+   Copyright 2022 The Noto Project Authors (https://github.com/notofonts/thai)
+   SIL Open Font License, Version 1.1 (OFL-1.1)
+   Full text: licenses/OFL-1.1.txt
+   (Copied verbatim from the authoritative distribution:
+   node_modules/@fontsource/noto-sans-thai/LICENSE.)
+   Per OFL-1.1 §2, the fonts are bundled with this software and this
+   notice + license are included in every copy.
+
+Build-time-only (not shipped in the game bundle beyond normal bundling):
+- Vite, TypeScript, Vitest — MIT License (see their npm pages).

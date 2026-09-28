@@ -1,5 +1,4 @@
-@import "@fontsource/noto-sans";
-@import "@fontsource/noto-sans-thai";
+/* Fonts (Noto Sans + Noto Sans Thai, OFL-1.1) are bundled via main.ts imports. */
 
 :root {
   --bg: #0b0e14;

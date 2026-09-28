@@ -1,5 +1,7 @@
+// Creates release/seed-web-v0.1.0.zip with index.html at root (itch.io ready).
+// R6.1: the old ZIP is DELETED first — never updated in place (no stale files).
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -12,6 +14,7 @@ if (!existsSync(distDir)) {
   process.exit(1);
 }
 mkdirSync(path.join(root, "release"), { recursive: true });
+if (existsSync(zipPath)) rmSync(zipPath);
 
 try {
   if (process.platform === "win32") {

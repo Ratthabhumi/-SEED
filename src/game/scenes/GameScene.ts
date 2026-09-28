@@ -8,7 +8,7 @@ import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { RunSimulation, AGE_OBJECTIVE_KILLS } from "../../core/sim/RunSimulation";
 import type { InputFrame } from "../../core/sim/InputFrame";
 import type { SimEvent } from "../../core/sim/SimEvent";
-import { worldToChunk, CHUNK_SIZE } from "../../core/world/chunks";
+import { worldToChunk, CHUNK_SIZE, ACTIVE_RADIUS_CHUNKS } from "../../core/world/chunks";
 import { BIOME_STYLE, CIV_LAYER, ENEMY_LINEAGE } from "../../content/content";
 import type { AgeId } from "../../core/tech/graph";
 import { AGES } from "../../core/tech/graph";
@@ -124,7 +124,7 @@ export class GameScene extends Phaser.Scene {
 
     this.buildHUD();
     this.refreshGround(true);
-    toast("age.stone", t("age.stone"), t("objective.stone"));
+    toast("ui.ageReached", t("age.stone"), t("objective.stone"));
   }
 
   private unlockAudio = (): void => {
@@ -574,7 +574,8 @@ export class GameScene extends Phaser.Scene {
     if (!g) return;
     g.clear();
     const { cx, cy } = worldToChunk(s.px, s.py);
-    const R = 3;
+    // Visual radius extends one chunk beyond the simulated active radius.
+    const R = ACTIVE_RADIUS_CHUNKS + 1;
     const ageId = AGES[s.ageIndex] as AgeId;
     const civ = CIV_LAYER[ageId];
     for (let ox = -R; ox <= R; ox++) {

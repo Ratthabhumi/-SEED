@@ -35,7 +35,7 @@ export class TitleScene extends Phaser.Scene {
 
     const logo = el("div", "logo", undefined, "-SEED");
     panel.appendChild(logo);
-    const sub = el("div", "title-th", undefined, getLang() === "th" ? "-SEED: เมล็ดพันธุ์แห่งอารยธรรม" : "-SEED");
+    const sub = el("div", "title-th", undefined, getLang() === "th" ? "เมล็ดพันธุ์แห่งอารยธรรม" : "-SEED");
     panel.appendChild(sub);
     const tag = el("div", "logo-sub", "app.tagline");
     panel.appendChild(tag);
