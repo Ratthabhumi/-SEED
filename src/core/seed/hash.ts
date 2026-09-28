@@ -11,9 +11,13 @@ export function fnv1a32(str: string): number {
   return h >>> 0;
 }
 
-/** Normalize a user-entered seed: trim + collapse inner whitespace. Case is preserved. */
+/** Normalize a user-entered seed: NFC + trim + collapse inner whitespace. Case is preserved. */
 export function normalizeSeedString(raw: string): string {
-  return raw.trim().replace(/\s+/g, " ").slice(0, 64);
+  return raw
+    .normalize("NFC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, 64);
 }
 
 /** Derive a deterministic uint32 for (masterSeed, label). Independent per label. */

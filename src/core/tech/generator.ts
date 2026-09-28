@@ -90,7 +90,9 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     prevSpine = s.id;
   }
 
-  // 2. Seeded side branches: pick 3-4 templates per age, wire prereqs to spine/siblings.
+  // 2. Seeded side branches: pick 3-4 templates per age.
+  // Wide frontier: EVERY side node hangs directly off its age's spine node,
+  // so owning the spine opens the whole age at once (no narrow chains).
   const ages: AgeId[] = ["stone", "bronze", "iron", "industrial", "atomic", "space"];
   for (const age of ages) {
     const pool = [...SIDE_TEMPLATES[age]];
@@ -98,12 +100,8 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     const count = age === "space" ? 3 : 3 + (rng.nextFloat() < 0.5 ? 1 : 0);
     const chosen = pool.slice(0, Math.min(count, pool.length));
     const spineForAge = CRITICAL_SPINE.find((c) => c.age === age)?.id ?? "spine-tools";
-    chosen.forEach((t, i) => {
+    for (const t of chosen) {
       const id = `${age}-${t.suffix}`;
-      const prereqs: string[] = [];
-      // First side node hangs off the age's spine node (or previous spine for stone).
-      if (i === 0) prereqs.push(spineForAge);
-      else prereqs.push(chosen[i - 1] ? `${age}-${(chosen[i - 1] as SideTemplate).suffix}` : spineForAge);
       nodes.push({
         id,
         titleKey: t.titleKey,
@@ -111,14 +109,14 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
         age,
         domain: t.domain,
         tags: [...t.tags],
-        prerequisites: prereqs,
+        prerequisites: [spineForAge],
         exclusions: [],
         rarity: t.rarity,
         weight: 40 + rng.nextInt(0, 60),
         effects: [{ kind: t.effectKind, value: t.effectValue, family: t.family }],
         synergyTags: [...t.synergyTags],
       });
-    });
+    }
   }
 
   // 3. Seeded anomaly branch: 1 extra mythic node in atomic/space for highland seeds.

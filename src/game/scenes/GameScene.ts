@@ -322,8 +322,9 @@ export class GameScene extends Phaser.Scene {
     const fresh = checkBreakthroughs(this.ownedTags, this.breakthroughs);
     for (const b of fresh) {
       this.breakthroughs.add(b.id);
-      this.damageMul *= 1.1;
-      toast("ui.breakthrough", t(b.titleKey as never), b.description);
+      // Interim (v0.1.1 refactor will route through RunSimulation): apply typed effects.
+      this.applyNode({ effects: b.effects } as TechNode);
+      toast("ui.breakthrough", t(b.titleKey as never), t(b.descriptionKey as never));
     }
     this.pendingLevels--;
     if (this.pendingLevels > 0) this.openDraft();

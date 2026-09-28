@@ -31,8 +31,10 @@ export function poiTypeFor(type: POIType): { knowledge: number; note: string } {
 /**
  * 0–1 POIs per chunk (rarely 2 in high-anomaly chunks).
  * Origin chunk (0,0) never has a hostile POI — safe spawn guarantee.
+ * IDs are world-scoped: the same coordinates on different ascension worlds
+ * MUST NOT collide (worldNonce changes per ascension).
  */
-export function getPOIsForChunk(masterSeed: string, cx: number, cy: number, anomaly: number): POI[] {
+export function getPOIsForChunk(masterSeed: string, cx: number, cy: number, anomaly: number, worldNonce = "w1"): POI[] {
   const terrainU32 = deriveUint32(masterSeed, "terrain");
   if (cx === 0 && cy === 0) return [];
   const density = 0.10 + anomaly * 0.25;
@@ -47,7 +49,7 @@ export function getPOIsForChunk(masterSeed: string, cx: number, cy: number, anom
   const CH = 512;
   return [
     {
-      id: `poi-${cx}-${cy}-0`,
+      id: `poi-${worldNonce}-${cx}-${cy}-0`,
       type,
       lx, ly,
       wx: cx * CH + lx,
