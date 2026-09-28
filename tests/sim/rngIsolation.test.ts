@@ -9,28 +9,40 @@ import type { InputFrame } from "../../src/core/sim/InputFrame";
 
 const IDLE: InputFrame = { moveX: 0, moveY: 0, dashPressed: false };
 
-function ascendFresh(master: string, preSpam: number): RunSimulation {
+/**
+ * TEST-DEFECT FIX: branch A consumes a REAL 10,000 draws on EVERY old-world
+ * gameplay stream before Ascension; branch B consumes none. This test FAILS
+ * if Ascension accidentally reuses old RNG objects.
+ */
+function ascendWithSpam(master: string, spam: boolean): RunSimulation {
   const sim = new RunSimulation({ masterSeed: master });
-  // Spam the OLD world's streams (loot + event heavy) before ascending.
-  for (let i = 0; i < 20; i++) sim.step(1 / 60, { moveX: 1, moveY: 0, dashPressed: false });
-  void preSpam;
+  if (spam) {
+    for (const k of ["event", "enemy", "draft", "loot", "boss"] as const) {
+      for (let i = 0; i < 10_000; i++) sim.streams[k].nextUint32();
+    }
+  }
   sim.state.ascendReady = true; // test hook: state is plain data
   const ev = sim.ascend();
   expect(ev.some((e) => e.type === "ascended")).toBe(true);
   return sim;
 }
 
-describe("ascension stream isolation", () => {
+describe("ascension stream isolation (real 10k spam)", () => {
   it("child world seed derives from master + index only", () => {
-    const sim = ascendFresh("EPOCH-GOLDEN-001", 0);
+    const sim = ascendWithSpam("EPOCH-GOLDEN-001", true);
     expect(sim.state.worldSeed).toBe(deriveAscensionSeed("EPOCH-GOLDEN-001", 1));
     expect(sim.state.ascension).toBe(1);
   });
 
-  it("heavy pre-ascension consumption does not change the child world", () => {
-    const a = ascendFresh("EPOCH-GOLDEN-001", 0);
-    const b = ascendFresh("EPOCH-GOLDEN-001", 0);
-    // Run identical post-ascension trajectories (scripted inputs + draft picks).
+  it("10k-spam vs no-spam: identical child stream prefixes", () => {
+    const a = ascendWithSpam("EPOCH-GOLDEN-001", true);
+    const b = ascendWithSpam("EPOCH-GOLDEN-001", false);
+    expect(a.streamSnapshots()).toEqual(b.streamSnapshots());
+  });
+
+  it("10k-spam vs no-spam: identical post-ascension trajectories", () => {
+    const a = ascendWithSpam("EPOCH-GOLDEN-001", true);
+    const b = ascendWithSpam("EPOCH-GOLDEN-001", false);
     for (const sim of [a, b]) {
       for (let i = 0; i < 300; i++) {
         const ev = sim.step(1 / 60, { moveX: Math.cos(i / 30), moveY: Math.sin(i / 30), dashPressed: i % 120 === 0 });
@@ -38,7 +50,7 @@ describe("ascension stream isolation", () => {
         if (sim.state.over) break;
       }
     }
-    expect(a.hash()).toBe(b.hash());
+    expect(a.snapshot()).toBe(b.snapshot());
   });
 
   it("loot/event spam never moves draft/enemy/boss streams", () => {
@@ -69,18 +81,27 @@ describe("ascension stream isolation", () => {
     sim.state.poisWorld.push("y");
     sim.state.stats.chunksTotal = 5;
     sim.state.stats.poisTotal = 2;
+    sim.state.runElapsed = 800;
+    sim.state.runHighestAge = "space";
+    sim.state.runKills = 500;
     sim.state.ascendReady = true;
     sim.ascend();
     expect(sim.state.chunksWorld).toEqual([]);
     expect(sim.state.poisWorld).toEqual([]);
     expect(sim.state.stats.chunksTotal).toBe(5);
     expect(sim.state.stats.poisTotal).toBe(2);
+    // P2-02: run-level chronicle data survives the new world.
+    expect(sim.state.runElapsed).toBe(800);
+    expect(sim.state.runHighestAge).toBe("space");
+    expect(sim.state.runKills).toBe(500);
+    expect(sim.state.elapsed).toBe(0);
+    expect(sim.state.ageIndex).toBe(0);
   });
 
   it("idle steps are deterministic", () => {
     const a = new RunSimulation({ masterSeed: "EPOCH-GOLDEN-001" });
     const c = new RunSimulation({ masterSeed: "EPOCH-GOLDEN-001" });
     for (let i = 0; i < 60; i++) { a.step(1 / 60, IDLE); c.step(1 / 60, IDLE); }
-    expect(a.hash()).toBe(c.hash());
+    expect(a.snapshot()).toBe(c.snapshot());
   });
 });

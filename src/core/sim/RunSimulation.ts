@@ -15,12 +15,13 @@ import { xpForLevel } from "./fixedStep";
 import { applyTechEffect, defaultEffectTarget, scaleKnowledge } from "./progression";
 import { worldToChunk } from "../world/chunks";
 import { ChunkCache } from "./chunkCache";
-import { stateHash } from "./stateHash";
+import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from "./stateHash";
 import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
 import { checkBreakthroughs } from "../tech/synergy";
 import { canAdvanceAge } from "../progression/ages";
-import { threatBudget, composeFromBudget, eliteChance, pickFamily,
+import {
+  threatBudget, composeFromBudget, pickFamily, eligibleFamilies,
   ELITE_AFFIXES, ELITE_AFFIX_DEFS, type EnemyFamily, type EliteAffix,
 } from "../director/director";
 import { getWeaponStage, type WeaponFamily } from "../combat/weapons";
@@ -52,7 +53,8 @@ const ENEMY_BASE: Record<EnemyFamily, { hp: number; speed: number; dmg: number; 
 export class RunSimulation {
   readonly state: RunState;
   readonly chunks = new ChunkCache();
-  private streams: RunRngStreams;
+  /** Gameplay RNG streams. Public-readonly so tests can prove isolation. */
+  readonly streams: RunRngStreams;
   private graph: TechNode[];
   private masterSeed: string;
   private difficultyMul: number;
@@ -80,6 +82,7 @@ export class RunSimulation {
       worldNonce: worldNonceFor(masterSeed, ascension),
       ascension, difficultyMul: this.difficultyMul,
       ageIndex: 0, elapsed: 0, ageElapsed: 0, ageKills: 0,
+      runElapsed: 0, runHighestAge: "stone", runKills: 0,
       px: 0, py: 0, vx: 0, vy: 0, dashT: 0, dashCd: 0, iframe: 0,
       build: defaultEffectTarget(),
       level: 1, xp: 0, xpNext: xpForLevel(1), knowledgeTotal: 0,
@@ -118,6 +121,8 @@ export class RunSimulation {
       stages: { ...s.weaponStage },
       stats: { ...s.stats, chunksTotal: s.stats.chunksTotal, poisTotal: s.stats.poisTotal },
       dmg: { ...s.damageBySource }, top: s.topDamageSource, high: s.highestAge,
+      // RUN-level chronicle data — a new world resets WORLD state, never these.
+      runElapsed: s.runElapsed, runHighestAge: s.runHighestAge, runKills: s.runKills,
     };
     const asc = s.ascension + 1;
     const fresh = this.freshWorldState(this.masterSeed, asc);
@@ -130,15 +135,56 @@ export class RunSimulation {
     fresh.stats = keep.stats;
     fresh.damageBySource = keep.dmg; fresh.topDamageSource = keep.top;
     fresh.highestAge = keep.high;
+    fresh.runElapsed = keep.runElapsed;
+    fresh.runHighestAge = keep.runHighestAge;
+    fresh.runKills = keep.runKills;
     fresh.build.hp = fresh.build.maxHp; // full repair on arrival
     Object.assign(s, fresh);
-    this.streams = initRunRng(s.worldSeed); // COMPLETELY fresh child-world streams
+    // COMPLETELY fresh child-world streams (restored in place — the reference
+    // never changes, so no old RNG object can leak into the new world).
+    const child = initRunRng(s.worldSeed);
+    (Object.keys(child) as (keyof RunRngStreams)[]).forEach((k) => {
+      this.streams[k].restore(child[k].snapshot());
+    });
     this.graph = generateTechGraph(s.worldSeed, asc).nodes;
     return [{ type: "ascended", worldSeed: s.worldSeed, ascension: asc }];
   }
 
   hash(): string {
-    return stateHash(this.state);
+    return stateHash(this.state, this.streamSnapshots());
+  }
+
+  /** RNG snapshots for the canonical contract (non-consuming). */
+  streamSnapshots(): RngSnapshots {
+    return snapshotStreams(this.streams);
+  }
+
+  /** Full canonical snapshot string — tests compare these directly. */
+  snapshot(): string {
+    return canonicalSnapshot(this.state, this.streamSnapshots());
+  }
+
+  /**
+   * E2E/dev hook — instantly kills the player (death-flow testing).
+   * Never called by gameplay UI or any production path.
+   */
+  e2eKillPlayer(): SimEvent[] {
+    const ev: SimEvent[] = [];
+    this.state.build.hp = 1;
+    this.state.iframe = 0;
+    this.hurtPlayer(99999, ev);
+    return ev;
+  }
+
+  /**
+   * Test/dev hook — damages a pooled enemy directly (affix/reward testing).
+   * Never called by gameplay UI or any production path.
+   */
+  debugDamageEnemy(index: number, dmg: number): SimEvent[] {
+    const ev: SimEvent[] = [];
+    const e = this.state.enemies[index];
+    if (e) this.hurtEnemy(e, dmg, "debug", ev);
+    return ev;
   }
 
   /** Current spatial bucket count (F3 diagnostics, non-canonical). */
@@ -180,11 +226,8 @@ export class RunSimulation {
       if (picks.length >= 3) break;
     }
     // Emergency fallback only (should be rare with the wide-frontier graph).
-    const fb: TechNode[] = [
-      { id: `fb-dmg-${s.level}`, titleKey: "tech.precision.name", descriptionKey: "tech.precision.description", age: "stone", domain: "warfare", tags: ["offense"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "damageMul", value: 0.1 }], synergyTags: [] },
-      { id: `fb-hp-${s.level}`, titleKey: "tech.armor.name", descriptionKey: "tech.armor.description", age: "stone", domain: "warfare", tags: ["defense"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "maxHpAdd", value: 25 }], synergyTags: [] },
-      { id: `fb-spd-${s.level}`, titleKey: "tech.rail.name", descriptionKey: "tech.rail.description", age: "stone", domain: "industry", tags: ["mobility"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "moveMul", value: 0.07 }], synergyTags: [] },
-    ];
+    // Dedicated keys whose numbers match the effects EXACTLY (P2 localization).
+    const fb = fallbackCards(s.level);
     while (picks.length < 3) picks.push(fb[picks.length] as TechNode);
     s.draftChoices = picks;
     s.draftOpen = true;
@@ -282,14 +325,41 @@ export class RunSimulation {
     return null;
   }
 
-  spawnEnemy(family: EnemyFamily, elite: boolean, boss: boolean, ang: number, dist: number, ev: SimEvent[]): void {
+  /**
+   * Deterministic lowest-priority reclaim for progression-critical spawns.
+   * Scans pool order, picks the weakest non-boss (non-elite first, then lowest
+   * maxHp). Never random, never a boss.
+   */
+  private reclaimSlot(): SimEnemy | null {
+    let victim: SimEnemy | null = null;
+    for (const e of this.state.enemies) {
+      if (!e.active || e.boss) continue;
+      if (!victim) { victim = e; continue; }
+      const aRank = (victim.elite ? 1 : 0) * 1e9 + victim.maxHp;
+      const bRank = (e.elite ? 1 : 0) * 1e9 + e.maxHp;
+      if (bRank < aRank) victim = e;
+    }
+    if (victim) victim.active = false; // silently composted — no reward, no event
+    return victim;
+  }
+
+  /**
+   * Transactional spawn. Returns the enemy, or null when the pool is
+   * exhausted. Bosses deterministically reclaim a slot and therefore never
+   * silently fail (P1-03). `affixOverride` is a test/dev hook (default: stream).
+   */
+  spawnEnemy(
+    family: EnemyFamily, elite: boolean, boss: boolean,
+    ang: number, dist: number, ev: SimEvent[], affixOverride?: EliteAffix,
+  ): SimEnemy | null {
     const s = this.state;
-    const e = this.allocEnemy();
-    if (!e) return;
+    let e = this.allocEnemy();
+    if (!e && boss) e = this.reclaimSlot();
+    if (!e) return null;
     const base = ENEMY_BASE[family];
     const diff = (1 + s.ageIndex * 0.28) * (1 + s.ascension * 0.35) * (1 + s.elapsed / 900);
     const affix: EliteAffix | "" = elite
-      ? ELITE_AFFIXES[this.streams.enemy.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix
+      ? (affixOverride ?? ELITE_AFFIXES[this.streams.enemy.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix)
       : "";
     const def = affix ? ELITE_AFFIX_DEFS[affix] : null;
     e.active = true;
@@ -309,6 +379,7 @@ export class RunSimulation {
       s.bossIndex = s.enemies.indexOf(e);
       ev.push({ type: "boss_warning" });
     }
+    return e;
   }
 
   private hurtEnemy(e: SimEnemy, dmg: number, src: string, ev: SimEvent[], kx = 0, ky = 0): void {
@@ -326,20 +397,29 @@ export class RunSimulation {
     e.x += kx; e.y += ky;
     this.addDamage(src, Math.min(dmg, Math.max(0, e.hp + rest)));
     if (e.hp > 0) return;
+    // Capture immutable death data BEFORE deactivation/reuse (P2-04): pooled
+    // children may reuse this very object, so nothing may be read from `e`
+    // after this point except through these locals.
+    const deathReward = e.xp;
+    const deathX = e.x;
+    const deathY = e.y;
+    const wasElite = e.elite;
+    const wasBoss = e.boss;
     e.active = false;
     s.stats.kills++;
+    s.runKills++;
     s.ageKills++;
-    ev.push({ type: "enemy_killed", elite: e.elite, boss: e.boss });
-    if (e.elite && !e.boss) s.stats.elites++;
-    if (e.boss) {
+    ev.push({ type: "enemy_killed", elite: wasElite, boss: wasBoss });
+    if (wasElite && !wasBoss) s.stats.elites++;
+    if (wasBoss) {
       s.stats.bosses++;
       s.stats.elites++;
       s.bossIndex = -1;
       // Boss drop burst — scatter uses the loot stream (never draft/world).
       for (let i = 0; i < 12; i++) {
         this.dropPickup(
-          e.x + (this.streams.loot.nextFloat() - 0.5) * 120,
-          e.y + (this.streams.loot.nextFloat() - 0.5) * 120,
+          deathX + (this.streams.loot.nextFloat() - 0.5) * 120,
+          deathY + (this.streams.loot.nextFloat() - 0.5) * 120,
           3,
         );
       }
@@ -347,13 +427,13 @@ export class RunSimulation {
       ev.push({ type: "boss_killed" });
       ev.push({ type: "ascension_ready" });
     }
-    if (def && def.splitterCount > 0 && !e.boss) {
+    if (def && def.splitterCount > 0 && !wasBoss) {
       for (let i = 0; i < def.splitterCount; i++) {
         const m = this.allocEnemy();
         if (!m) break;
         const line = ENEMY_BASE.swarm;
         m.active = true;
-        m.x = e.x + (i === 0 ? -14 : 14); m.y = e.y;
+        m.x = deathX + (i === 0 ? -14 : 14); m.y = deathY;
         m.family = "swarm"; m.maxHp = line.hp; m.hp = line.hp; m.shield = 0;
         m.speed = line.speed; m.dmg = line.dmg; m.radius = line.radius;
         m.xp = 1; m.elite = false; m.boss = false; m.affix = "";
@@ -361,10 +441,10 @@ export class RunSimulation {
       }
     }
     if (def && def.volatileRadius > 0) {
-      const d = Math.hypot(e.x - s.px, e.y - s.py);
+      const d = Math.hypot(deathX - s.px, deathY - s.py);
       if (d <= def.volatileRadius) this.hurtPlayer(def.volatileDamage, ev);
     }
-    this.dropPickup(e.x, e.y, e.xp);
+    this.dropPickup(deathX, deathY, deathReward);
   }
 
   /** Value-preserving pickup spawn. Pool pressure changes presentation, never value. */
@@ -412,26 +492,29 @@ export class RunSimulation {
       }
       const total = comp.chaser + comp.ranged + comp.tank + comp.swarm;
       const spawnN = Math.min(24, 2 + Math.floor(total / 2));
-      const chance = eliteChance(s.ageIndex, s.ascension);
+      // Ordinary wave: non-elite only. All elites are either budget-paid
+      // (comp.elite above) or the documented scheduled milestone below (model B).
       for (let i = 0; i < spawnN; i++) {
         const fam = pickFamily(this.streams.enemy, s.ageIndex);
-        this.spawnEnemy(fam, this.streams.enemy.nextFloat() < chance, false, this.streams.enemy.nextFloat() * Math.PI * 2, 700 + this.streams.enemy.nextFloat() * 250, ev);
+        this.spawnEnemy(fam, false, false, this.streams.enemy.nextFloat() * Math.PI * 2, 700 + this.streams.enemy.nextFloat() * 250, ev);
       }
       s.spawnT = 2.2;
     }
     s.eliteT -= dt;
     if (s.eliteT <= 0) {
+      // Scheduled milestone encounter (model B: outside the ordinary budget,
+      // explicitly bounded — 3 elites / 75s — and era-eligible like everything).
       s.eliteT = 75;
-      const fams: EnemyFamily[] = ["chaser", "ranged", "tank"];
+      const fams = eligibleFamilies(s.ageIndex, "milestone");
       for (let i = 0; i < 3; i++) {
-        this.spawnEnemy(fams[this.streams.enemy.nextInt(0, 3)] as EnemyFamily, true, false, this.streams.enemy.nextFloat() * Math.PI * 2, 750, ev);
+        this.spawnEnemy(fams[this.streams.enemy.nextInt(0, fams.length)] as EnemyFamily, true, false, this.streams.enemy.nextFloat() * Math.PI * 2, 750, ev);
       }
     }
     if ((AGES[s.ageIndex] as AgeId) === "space" && !s.bossSpawned && s.ageElapsed > 15) {
-      s.bossSpawned = true;
+      // Transactional: bossSpawned reflects actual boss existence (P1-03).
       const affix = ELITE_AFFIXES[this.streams.boss.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix;
-      void affix;
-      this.spawnEnemy("tank", true, true, Math.PI / 4, 800, ev);
+      const boss = this.spawnEnemy("tank", true, true, Math.PI / 4, 800, ev, affix);
+      if (boss) s.bossSpawned = true;
     }
   }
 
@@ -504,6 +587,85 @@ export class RunSimulation {
     }
   }
 
+  // ------------------------------------------------------- weapon execution
+  // Execution dispatches on WeaponStage.archetype (P1-04) — data determines
+  // behavior, never the family name. Every family × tier must have a valid
+  // executable path (covered by tests/sim/archetypes.test.ts).
+  private fireProjectileSpread(
+    fam: WeaponFamily, st: { speed: number; damage: number; radius: number; color: number },
+    n: number, range: number,
+  ): void {
+    const s = this.state;
+    const b = s.build;
+    for (let i = 0; i < n; i++) {
+      const tgt = this.nearestEnemy(s.px, s.py, range);
+      if (!tgt) return;
+      const spread = (i - (n - 1) / 2) * 0.12;
+      const base = Math.atan2(tgt.y - s.py, tgt.x - s.px) + spread;
+      for (const p of s.projs) {
+        if (p.active) continue;
+        p.active = true; p.x = s.px; p.y = s.py;
+        p.vx = Math.cos(base) * st.speed; p.vy = Math.sin(base) * st.speed;
+        p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = 1.6;
+        p.friendly = true; p.color = st.color; p.src = fam;
+        break;
+      }
+    }
+  }
+
+  private beamStrike(fam: WeaponFamily, st: { damage: number; radius: number }, range: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const tgt = this.nearestEnemy(s.px, s.py, range);
+    if (!tgt) return;
+    const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
+    const lim = Math.min(hit.length, 10);
+    for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * s.build.damageMul, fam, ev);
+    s.beamFlash = { x2: tgt.x, y2: tgt.y, t: 0.12 };
+  }
+
+  private auraTick(fam: WeaponFamily, radius: number, dmg: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const hit = this.queryRadius(s.px, s.py, radius, this.scratch);
+    const lim = Math.min(hit.length, 30);
+    for (let i = 0; i < lim; i++) {
+      this.hurtEnemy(hit[i] as SimEnemy, dmg, fam, ev);
+      if (s.over) return;
+    }
+  }
+
+  private orbitBlades(fam: WeaponFamily, dt: number, radius: number, blades: number, dmg: number, ev: SimEvent[]): void {
+    const s = this.state;
+    s.orbitAng += dt * 2.0;
+    for (let i = 0; i < blades; i++) {
+      const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
+      const bx = s.px + Math.cos(a) * radius;
+      const by = s.py + Math.sin(a) * radius;
+      const hit = this.queryRadius(bx, by, 30, this.scratch);
+      const lim = Math.min(hit.length, 4);
+      for (let j = 0; j < lim; j++) {
+        const e = hit[j] as SimEnemy;
+        e.hitCd -= dt;
+        if (e.hitCd <= 0) {
+          e.hitCd = 0.35;
+          this.hurtEnemy(e, dmg, fam, ev);
+          if (s.over) return;
+        }
+      }
+    }
+  }
+
+  private guardianFire(st: { damage: number; color: number }, guardians: number): void {
+    const s = this.state;
+    const lim = Math.min(guardians, 6);
+    for (let i = 0; i < lim; i++) {
+      const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
+      const gx = s.px + Math.cos(a) * 80;
+      const gy = s.py + Math.sin(a) * 80;
+      const tgt = this.nearestEnemy(gx, gy, 520);
+      if (tgt) this.fireProjectile(gx, gy, tgt.x, tgt.y, 420, st.damage * s.build.damageMul, st.color, "defense", true, 6);
+    }
+  }
+
   private updateWeapons(dt: number, ev: SimEvent[]): void {
     const s = this.state;
     const b = s.build;
@@ -513,94 +675,59 @@ export class RunSimulation {
       if (left <= 0) { s.weaponCd[fam] = cd; fire(); }
       else s.weaponCd[fam] = left;
     };
-    // Kinetic.
+    // Kinetic: projectile stages fan shots; the Space beam stage fires a ray.
     {
       const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
       tick("kinetic", st.cooldown * cdM, () => {
-        const n = st.count + b.bonusProjectiles;
-        for (let i = 0; i < n; i++) {
-          const tgt = this.nearestEnemy(s.px, s.py, 700);
-          if (!tgt) return;
-          const spread = (i - (n - 1) / 2) * 0.12;
-          const base = Math.atan2(tgt.y - s.py, tgt.x - s.px) + spread;
-          for (const p of s.projs) {
-            if (p.active) continue;
-            p.active = true; p.x = s.px; p.y = s.py;
-            p.vx = Math.cos(base) * st.speed; p.vy = Math.sin(base) * st.speed;
-            p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = 1.6;
-            p.friendly = true; p.color = st.color; p.src = "kinetic";
-            break;
-          }
-        }
+        if (st.archetype === "beam") this.beamStrike("kinetic", st, 800, ev);
+        else this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700);
       });
     }
-    // Energy.
+    // Energy: projectile / aura / beam per stage, plus bonus-granted systems.
     {
       const st = getWeaponStage("energy", s.weaponStage.energy);
       if (st.archetype === "aura" || b.bonusAura > 0) {
         s.auraT -= dt;
         if (s.auraT <= 0) {
           s.auraT = 0.5;
-          const r = st.radius + b.bonusAura * 30;
-          const hit = this.queryRadius(s.px, s.py, r, this.scratch);
-          const lim = Math.min(hit.length, 30);
-          for (let i = 0; i < lim; i++) {
-            this.hurtEnemy(hit[i] as SimEnemy, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, "energy", ev);
-            if (s.over) return;
-          }
+          this.auraTick("energy", st.radius + b.bonusAura * 30, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, ev);
         }
-      } else if (st.archetype === "beam" || b.beamUnlocked) {
-        tick("energy", st.cooldown * cdM, () => {
-          const tgt = this.nearestEnemy(s.px, s.py, 800);
-          if (!tgt) return;
-          const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
-          const lim = Math.min(hit.length, 10);
-          for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * b.damageMul, "energy", ev);
-          s.beamFlash = { x2: tgt.x, y2: tgt.y, t: 0.12 };
-        });
-      } else {
+      }
+      if (st.archetype === "beam" || b.beamUnlocked) {
+        tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, 800, ev));
+      } else if (st.archetype === "projectile") {
         tick("energy", st.cooldown * cdM, () => {
           const tgt = this.nearestEnemy(s.px, s.py, 640);
           if (tgt) this.fireProjectile(s.px, s.py, tgt.x, tgt.y, st.speed || 380, st.damage * b.damageMul, st.color, "energy", true, st.radius * 0.8);
         });
       }
     }
-    // Defense guardians.
+    // Defense: orbit stages spin blades; summon stages keep guardian gunners.
     {
       const st = getWeaponStage("defense", s.weaponStage.defense);
-      const guardians = st.count + b.bonusGuardians;
       s.guardianAng += dt * 2.6;
-      tick("defense", st.cooldown * cdM * 1.6, () => {
-        const lim = Math.min(guardians, 6);
-        for (let i = 0; i < lim; i++) {
-          const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-          const gx = s.px + Math.cos(a) * 80;
-          const gy = s.py + Math.sin(a) * 80;
-          const tgt = this.nearestEnemy(gx, gy, 520);
-          if (tgt) this.fireProjectile(gx, gy, tgt.x, tgt.y, 420, st.damage * b.damageMul, st.color, "defense", true, 6);
-        }
-      });
+      if (st.archetype === "orbit") {
+        const blades = Math.max(1, st.count + b.bonusOrbit);
+        this.orbitBlades("defense", dt, st.radius, blades, st.damage * b.damageMul, ev);
+      }
+      const guardians = (st.archetype === "summon" ? st.count : 0) + b.bonusGuardians;
+      if (guardians > 0) {
+        tick("defense", st.cooldown * cdM * 1.6, () => this.guardianFire(st, guardians));
+      }
     }
-    // Field orbit blades.
-    if (s.weaponStage.field >= 4 || b.bonusOrbit > 0) {
+    // Field: mines are the family signature (see mine section); the stage
+    // archetype adds aura or orbit control on top.
+    {
       const st = getWeaponStage("field", s.weaponStage.field);
-      s.orbitAng += dt * 2.0;
-      const blades = 2 + b.bonusOrbit;
-      for (let i = 0; i < blades; i++) {
-        const a = s.orbitAng + (i * Math.PI * 2) / blades;
-        const bx = s.px + Math.cos(a) * (st.radius || 110);
-        const by = s.py + Math.sin(a) * (st.radius || 110);
-        const hit = this.queryRadius(bx, by, 30, this.scratch);
-        const lim = Math.min(hit.length, 4);
-        for (let j = 0; j < lim; j++) {
-          const e = hit[j] as SimEnemy;
-          e.hitCd -= dt;
-          if (e.hitCd <= 0) {
-            e.hitCd = 0.35;
-            this.hurtEnemy(e, st.damage * b.damageMul * 0.4, "field", ev);
-            if (s.over) return;
-          }
+      if (st.archetype === "aura" || b.bonusAura > 0) {
+        s.auraT -= dt;
+        if (s.auraT <= 0) {
+          s.auraT = 0.5;
+          this.auraTick("field", st.radius + b.bonusAura * 30, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, ev);
         }
+      }
+      if (st.archetype === "orbit" || b.bonusOrbit > 0) {
+        this.orbitBlades("field", dt, st.radius || 110, 2 + b.bonusOrbit, st.damage * b.damageMul * 0.4, ev);
       }
     }
     if (s.beamFlash) {
@@ -617,6 +744,7 @@ export class RunSimulation {
     this.queryCount = 0;
 
     s.elapsed += dt;
+    s.runElapsed += dt;
     s.ageElapsed += dt;
     const b = s.build;
 
@@ -652,6 +780,7 @@ export class RunSimulation {
         s.ageKills = 0;
         const ageId = AGES[next] as AgeId;
         s.highestAge = ageId;
+        if (next > AGES.indexOf(s.runHighestAge)) s.runHighestAge = ageId;
         const spine = CRITICAL_SPINE.find((c) => c.age === ageId);
         if (spine && !s.owned.includes(spine.id)) this.grantNode(spine.id);
         s.weaponStage = {
@@ -799,4 +928,16 @@ export class RunSimulation {
     }
     return ev;
   }
+}
+
+/**
+ * Emergency fallback draft cards (exported for contract tests).
+ * Dedicated i18n keys whose numbers match the effects EXACTLY.
+ */
+export function fallbackCards(level: number): TechNode[] {
+  return [
+    { id: `fb-dmg-${level}`, titleKey: "tech.fallback.dmg.name", descriptionKey: "tech.fallback.dmg.description", age: "stone", domain: "warfare", tags: ["offense"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "damageMul", value: 0.1 }], synergyTags: [] },
+    { id: `fb-hp-${level}`, titleKey: "tech.fallback.hp.name", descriptionKey: "tech.fallback.hp.description", age: "stone", domain: "warfare", tags: ["defense"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "maxHpAdd", value: 25 }], synergyTags: [] },
+    { id: `fb-spd-${level}`, titleKey: "tech.fallback.spd.name", descriptionKey: "tech.fallback.spd.description", age: "stone", domain: "industry", tags: ["mobility"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "moveMul", value: 0.07 }], synergyTags: [] },
+  ];
 }

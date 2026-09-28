@@ -34,11 +34,14 @@ export interface RunState {
   worldNonce: string;
   ascension: number;
   difficultyMul: number;
-  // Time / age
+  // Time / age (world-local) + run totals (never reset by Ascension)
   ageIndex: number;
   elapsed: number;
   ageElapsed: number;
   ageKills: number;
+  runElapsed: number;
+  runHighestAge: AgeId;
+  runKills: number;
   // Player kinematics
   px: number; py: number; vx: number; vy: number;
   dashT: number; dashCd: number; iframe: number;

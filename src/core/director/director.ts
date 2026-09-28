@@ -75,17 +75,22 @@ const ERA_COSTS: [EnemyFamily, number][] = [
   ["swarm", 1], ["chaser", 1], ["ranged", 2], ["tank", 4],
 ];
 
-/** Weighted single-family pick for an era (tanks impossible at age 0). */
+/** Weighted single-family pick for an era (single-sourced through eligibleFamilies). */
 export function pickFamily(rng: Xoshiro128StarStar, ageIndex: number): EnemyFamily {
+  const allowed = eligibleFamilies(ageIndex, "ordinary");
   const w = ERA_WEIGHTS[Math.max(0, Math.min(ERA_WEIGHTS.length - 1, ageIndex))];
-  const total = (w[0] as number) + (w[1] as number) + (w[2] as number) + (w[3] as number);
+  const table: [EnemyFamily, number][] = [
+    ["swarm", w[0] as number], ["chaser", w[1] as number],
+    ["ranged", w[2] as number], ["tank", w[3] as number],
+  ];
+  const open = table.filter(([f]) => allowed.includes(f));
+  const total = open.reduce((a, [, x]) => a + x, 0);
   let r = rng.nextFloat() * total;
-  const fams: EnemyFamily[] = ["swarm", "chaser", "ranged", "tank"];
-  for (let i = 0; i < 4; i++) {
-    r -= w[i] as number;
-    if (r <= 0) return fams[i] as EnemyFamily;
+  for (const [f, x] of open) {
+    r -= x;
+    if (r <= 0) return f;
   }
-  return "chaser";
+  return open[0]?.[0] ?? "chaser";
 }
 
 /**
@@ -122,4 +127,20 @@ export function composeFromBudget(budget: number, rng: Xoshiro128StarStar, ageIn
 /** Elite chance grows with age + ascension, bounded. */
 export function eliteChance(ageIndex: number, ascension: number): number {
   return Math.min(0.22, 0.03 + ageIndex * 0.02 + ascension * 0.02);
+}
+
+// ---------------------------------------------------------------------------
+// Era eligibility — the ONE canonical gate every spawn pathway must use.
+// ---------------------------------------------------------------------------
+
+export type EncounterType = "ordinary" | "milestone";
+
+/**
+ * Families allowed for (age, encounter). Tanks are locked until Bronze in ALL
+ * pathways — milestone packs included (no special-encounter exception in v0.1.1).
+ */
+export function eligibleFamilies(ageIndex: number, _encounter: EncounterType): EnemyFamily[] {
+  void _encounter;
+  if (ageIndex < 1) return ["swarm", "chaser", "ranged"];
+  return ["swarm", "chaser", "ranged", "tank"];
 }
