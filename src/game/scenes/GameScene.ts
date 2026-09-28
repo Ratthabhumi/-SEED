@@ -5,8 +5,8 @@ import Phaser from "phaser";
 import { normalizeSeedString, deriveUint32, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION } from "../../core/seed/versions";
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
+import { InputLatch } from "../../core/sim/InputLatch";
 import { RunSimulation, AGE_OBJECTIVE_KILLS } from "../../core/sim/RunSimulation";
-import type { InputFrame } from "../../core/sim/InputFrame";
 import type { SimEvent } from "../../core/sim/SimEvent";
 import { worldToChunk, CHUNK_SIZE, ACTIVE_RADIUS_CHUNKS } from "../../core/world/chunks";
 import { BIOME_STYLE, CIV_LAYER, ENEMY_LINEAGE } from "../../content/content";
@@ -32,7 +32,9 @@ export class GameScene extends Phaser.Scene {
   private sim!: RunSimulation;
   private masterSeed = "EPOCH-GOLDEN-001";
   private acc = new FixedAccumulator();
+  private latch = new InputLatch();
   private paused = false;
+  private deathPersisted = false;
 
   private gfx!: Phaser.GameObjects.Graphics;
   private ground!: Phaser.GameObjects.Graphics;
@@ -71,7 +73,9 @@ export class GameScene extends Phaser.Scene {
   private startRun(seed: string): void {
     this.sim = new RunSimulation({ masterSeed: seed });
     this.acc = new FixedAccumulator();
+    this.latch = new InputLatch();
     this.paused = false;
+    this.deathPersisted = false;
     this.lastGroundKey = "";
     this.simSamples = [];
     this.frameSamples = [];
@@ -94,12 +98,16 @@ export class GameScene extends Phaser.Scene {
         DOWN: kb.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
         LEFT: kb.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
         RIGHT: kb.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-        SPACE: kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
       };
       const on = (event: string, fn: () => void): void => {
         kb.on(event, fn);
         this.keyHandlers.push({ event, fn });
       };
+      // P1-02: Space edge latches in the adapter (survives zero-step frames);
+      // movement is level-polled per frame. Never JustDown() inside step timing.
+      on("keydown-SPACE", () => {
+        this.latch.pressDash();
+      });
       on("keydown-F3", () => {
         this.showDebug = !this.showDebug;
         this.debugText.setVisible(this.showDebug);
@@ -125,6 +133,34 @@ export class GameScene extends Phaser.Scene {
     this.buildHUD();
     this.refreshGround(true);
     toast("ui.ageReached", t("age.stone"), t("objective.stone"));
+
+    // Deterministic E2E/dev hook (query param only — never in production play).
+    // Exposes scripted progression/death/introspection WITHOUT touching balance.
+    if (new URLSearchParams(window.location.search).has("e2e")) {
+      (window as unknown as { __seedE2E?: unknown }).__seedE2E = {
+        grant: (n: number) => {
+          const ev: SimEvent[] = [];
+          this.sim.gainKnowledge(n, "e2e", ev);
+          this.handleEvents(ev);
+        },
+        kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
+        hash: () => this.sim.hash(),
+        snapshot: () => this.sim.snapshot(),
+        seed: () => this.masterSeed,
+        setLang: (code: "en" | "th") => this.applyLanguage(code),
+      };
+    }
+  }
+
+  /** Language switch: DOM text only — sim/RNG/state untouched (tested). */
+  private applyLanguage(code: "en" | "th"): void {
+    const sv = loadSave(localStorage);
+    sv.settings.lang = code;
+    storeSave(localStorage, sv);
+    setLang(code);
+    document.getElementById("pause-screen")?.remove();
+    this.buildHUD();
+    if (this.paused) this.showPause();
   }
 
   private unlockAudio = (): void => {
@@ -175,8 +211,8 @@ export class GameScene extends Phaser.Scene {
     hpFill.style.width = `${Math.max(0, (s.build.hp / s.build.maxHp) * 100)}%`;
     xpFill.style.width = `${Math.min(100, (s.xp / s.xpNext) * 100)}%`;
     const ageId = AGES[s.ageIndex] as AgeId;
-    const mm = Math.floor(s.elapsed / 60);
-    const ss = Math.floor(s.elapsed % 60).toString().padStart(2, "0");
+    const mm = Math.floor(s.runElapsed / 60);
+    const ss = Math.floor(s.runElapsed % 60).toString().padStart(2, "0");
     stats.innerHTML = "";
     const add = (txt: string, cls = ""): void => {
       const span = document.createElement("span");
@@ -219,9 +255,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   // ------------------------------------------------------------- draft
+  /** State-driven single draft surface (P1-01). Called every frame. */
+  private syncDraftUI(): void {
+    const open = this.sim.state.draftOpen && !this.sim.state.over && !this.paused;
+    const el = document.getElementById("draft-screen");
+    if (open && !el) this.openDraft();
+    else if (!open && el) el.remove();
+  }
+
   private openDraft(): void {
     const s = this.sim.state;
-    sfx.levelup();
+    if (document.getElementById("draft-screen")) return; // exactly-one guard
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "draft-screen";
@@ -249,11 +293,10 @@ export class GameScene extends Phaser.Scene {
   private pickCard(i: number): void {
     const s = this.sim.state;
     if (!s.draftOpen || s.over) return;
-    document.getElementById("draft-screen")?.remove();
     const ev = this.sim.chooseDraft(i);
     sfx.select();
     this.handleEvents(ev);
-    if (this.sim.state.draftOpen && !this.sim.state.over) this.openDraft();
+    // Next queued draft (if any) appears via syncDraftUI — exactly one surface.
   }
 
   // ------------------------------------------------------------- pause/death
@@ -278,15 +321,7 @@ export class GameScene extends Phaser.Scene {
       const b = document.createElement("button");
       b.className = "btn" + (save.settings.lang === code ? " active" : "");
       b.textContent = label;
-      b.addEventListener("click", () => {
-        const sv = loadSave(localStorage);
-        sv.settings.lang = code;
-        storeSave(localStorage, sv);
-        setLang(code);
-        document.getElementById("pause-screen")?.remove();
-        this.buildHUD();
-        this.showPause();
-      });
+      b.addEventListener("click", () => this.applyLanguage(code));
       langs.appendChild(b);
     }
     langRow.appendChild(langs);
@@ -308,9 +343,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private restartRun(): void {
+    // P2-01: Restart = SAME master seed, clean simulation. (Play Again uses a
+    // fresh random seed; Quit returns to title.)
     document.getElementById("pause-screen")?.remove();
     document.getElementById("draft-screen")?.remove();
     document.getElementById("ascend-screen")?.remove();
+    sessionStorage.setItem(TITLE_SEED_KEY, this.masterSeed);
     this.scene.restart();
   }
 
@@ -319,14 +357,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   private persistRunEnd(): void {
+    // P2-03: exactly-once terminal persistence (idempotent transition).
+    if (this.deathPersisted) return;
+    this.deathPersisted = true;
     const s = this.sim.state;
     const save = loadSave(localStorage);
     save.best.runs++;
-    const isRecord = s.elapsed >= save.best.bestTimeSec && s.elapsed > 0;
-    save.best.bestTimeSec = Math.max(save.best.bestTimeSec, Math.floor(s.elapsed));
-    save.best.bestKills = Math.max(save.best.bestKills, s.stats.kills);
+    const isRecord = s.runElapsed >= save.best.bestTimeSec && s.runElapsed > 0;
+    save.best.bestTimeSec = Math.max(save.best.bestTimeSec, Math.floor(s.runElapsed));
+    save.best.bestKills = Math.max(save.best.bestKills, s.runKills);
     save.best.bestAscension = Math.max(save.best.bestAscension, s.ascension);
-    if (isRecord) save.best.bestAge = s.highestAge;
+    if (isRecord) save.best.bestAge = s.runHighestAge;
     if (!save.history.includes(this.masterSeed)) save.history.unshift(this.masterSeed);
     save.history = save.history.slice(0, 50);
     storeSave(localStorage, save);
@@ -334,7 +375,7 @@ export class GameScene extends Phaser.Scene {
 
   private showChronicle(): void {
     const s = this.sim.state;
-    this.persistRunEnd();
+    this.persistRunEnd(); // idempotent — safe even if the event path already ran
     document.getElementById("draft-screen")?.remove();
     const root = uiRoot();
     const screen = el("div", "screen");
@@ -343,17 +384,20 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(el("div", "", "ui.runChronicle"));
     const dl = document.createElement("dl");
     dl.className = "chron";
+    const famKey = (["kinetic", "energy", "defense", "field"] as string[]).includes(s.topDamageSource)
+      ? t(`family.${s.topDamageSource}` as EnKeys)
+      : s.topDamageSource || "-";
     const rows: [string, string][] = [
       [t("chronicle.seed"), `${this.masterSeed} · w${WORLDGEN_VERSION} · A${s.ascension}`],
-      [t("chronicle.time"), this.fmtTime(s.elapsed)],
-      [t("chronicle.age"), t(`age.${s.highestAge}` as EnKeys)],
-      [t("chronicle.kills"), String(s.stats.kills)],
+      [t("chronicle.time"), this.fmtTime(s.runElapsed)],
+      [t("chronicle.age"), t(`age.${s.runHighestAge}` as EnKeys)],
+      [t("chronicle.kills"), String(s.runKills)],
       [t("chronicle.elites"), String(s.stats.elites)],
       [t("chronicle.bosses"), String(s.stats.bosses)],
       [t("chronicle.techs"), String(s.stats.techsTaken)],
       [t("chronicle.chunks"), String(s.stats.chunksTotal)],
       [t("chronicle.poi"), String(s.stats.poisTotal)],
-      [t("ui.topDamage"), `${s.topDamageSource || "-"} · v${CONTENT_VERSION}`],
+      [t("ui.topDamage"), `${famKey} · v${CONTENT_VERSION}`],
     ];
     for (const [k, v] of rows) {
       const dt = document.createElement("dt");
@@ -443,7 +487,8 @@ export class GameScene extends Phaser.Scene {
     for (const e of ev) {
       switch (e.type) {
         case "draft_opened":
-          this.openDraft();
+          // UI appears via syncDraftUI (state-driven, exactly-one). Sound here.
+          sfx.levelup();
           break;
         case "tech_selected":
           sfx.select();
@@ -495,14 +540,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   // ------------------------------------------------------------- frame
-  private sampleInput(): InputFrame {
+  private sampleMove(): void {
     let ix = 0;
     let iy = 0;
     if (this.keys.A?.isDown || this.keys.LEFT?.isDown) ix -= 1;
     if (this.keys.D?.isDown || this.keys.RIGHT?.isDown) ix += 1;
     if (this.keys.W?.isDown || this.keys.UP?.isDown) iy -= 1;
     if (this.keys.S?.isDown || this.keys.DOWN?.isDown) iy += 1;
-    return { moveX: ix, moveY: iy, dashPressed: Phaser.Input.Keyboard.JustDown(this.keys.SPACE) };
+    this.latch.setMove(ix, iy);
   }
 
   private pushSample(arr: number[], v: number, cap = 240): void {
@@ -518,18 +563,21 @@ export class GameScene extends Phaser.Scene {
 
     const s = this.sim.state;
     if (!this.paused && !s.over && !s.draftOpen) {
-      const t0 = performance.now();
+      this.sampleMove();
       const steps = this.acc.steps(dt);
-      const input = this.sampleInput();
       for (let i = 0; i < steps; i++) {
-        // Edge-triggered dash only on the first consumed step.
-        const frame = i === 0 ? input : { ...input, dashPressed: false };
-        const ev = this.sim.step(SIM_DT, frame);
+        // Edge-triggered dash only on the first consumed step; a zero-step
+        // frame leaves the latch untouched (P1-02).
+        const t0 = performance.now();
+        const ev = this.sim.step(SIM_DT, this.latch.frameForStep(i));
+        this.pushSample(this.simSamples, performance.now() - t0); // step-only
         if (ev.length > 0) this.handleEvents(ev);
         if (this.sim.state.over || this.sim.state.draftOpen) break;
       }
-      this.pushSample(this.simSamples, performance.now() - t0);
     }
+    // P1-01: draft UI is a pure function of canonical sim state — exactly one
+    // surface while draftOpen, zero otherwise. Never recursive ownership.
+    this.syncDraftUI();
 
     this.drawFrame();
     this.hudT -= dt;
@@ -537,9 +585,9 @@ export class GameScene extends Phaser.Scene {
       this.hudT = 0.15;
       this.refreshHUD();
     }
-    // Ground follows chunk/age; CAMERA moves every frame (R4: no 250ms jumps).
+    // Ground follows chunk/age/POI discovery; CAMERA moves every frame (R4).
     const { cx, cy } = worldToChunk(s.px, s.py);
-    const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}`;
+    const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}`;
     if (gk !== this.lastGroundKey) {
       this.lastGroundKey = gk;
       this.refreshGround(false);
@@ -560,7 +608,7 @@ export class GameScene extends Phaser.Scene {
     const budget = threatBudget(s.elapsed, s.ageIndex, s.ascension, s.difficultyMul);
     const { cx, cy } = worldToChunk(s.px, s.py);
     this.debugText.setText(
-      `FPS ${this.fpsEMA.toFixed(0)}  sim p50 ${percentile(simSorted, 50).toFixed(2)}ms p95 ${percentile(simSorted, 95).toFixed(2)}ms\n` +
+      `FPS ${this.fpsEMA.toFixed(0)}  sim-step p50 ${percentile(simSorted, 50).toFixed(2)}ms p95 ${percentile(simSorted, 95).toFixed(2)}ms\n` +
       `frame p95 ${percentile(frameSorted, 95).toFixed(2)}ms  enemies ${activeE}  proj ${activeP}  pickups ${activeK}/${s.pickups.length}\n` +
       `queries ${this.sim.queryCount}  buckets ${this.sim.spatialBucketCount}  chunk ${cx},${cy}  cache ${(this.sim.chunks.hitRate * 100).toFixed(0)}%\n` +
       `seed ${this.masterSeed}  wv${WORLDGEN_VERSION}  age ${AGES[s.ageIndex]}  budget ${budget.toFixed(1)}  asc ${s.ascension}`,
@@ -666,16 +714,24 @@ export class GameScene extends Phaser.Scene {
       g.strokeCircle(s.px, s.py, est.radius + b.bonusAura * 30);
     }
     const fst = getWeaponStage("field", s.weaponStage.field);
-    if (s.weaponStage.field >= 4 || b.bonusOrbit > 0) {
+    if (fst.archetype === "orbit" || b.bonusOrbit > 0) {
       g.fillStyle(0xb48cff, 1);
       const blades = 2 + b.bonusOrbit;
       for (let i = 0; i < blades; i++) {
-        const a = s.orbitAng + (i * Math.PI * 2) / blades;
+        const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
         g.fillCircle(s.px + Math.cos(a) * (fst.radius || 110), s.py + Math.sin(a) * (fst.radius || 110), 8);
       }
     }
     const dst = getWeaponStage("defense", s.weaponStage.defense);
-    const guardians = Math.min(dst.count + b.bonusGuardians, 8);
+    if (dst.archetype === "orbit") {
+      g.fillStyle(dst.color, 1);
+      const blades = Math.max(1, dst.count + b.bonusOrbit);
+      for (let i = 0; i < blades; i++) {
+        const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
+        g.fillCircle(s.px + Math.cos(a) * dst.radius, s.py + Math.sin(a) * dst.radius, 7);
+      }
+    }
+    const guardians = Math.min((dst.archetype === "summon" ? dst.count : 0) + b.bonusGuardians, 8);
     if (guardians > 0) {
       g.fillStyle(dst.color, 1);
       for (let i = 0; i < guardians; i++) {
