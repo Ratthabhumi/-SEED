@@ -35,11 +35,11 @@ export const BIOME_STYLE: Record<BiomeId, { ground: number; groundAlt: number; a
 };
 
 /** Civilization decorative layer per age (procedural shapes, not a sim). */
-export const CIV_LAYER: Record<AgeId, { color: number; density: number; shapes: string }> = {
-  stone: { color: 0xff9a3c, density: 3, shapes: "campfires,tents" },
-  bronze: { color: 0xc9a227, density: 4, shapes: "walls,roads,shrines" },
-  iron: { color: 0xb8c4d0, density: 5, shapes: "forts,banners,workshops" },
-  industrial: { color: 0x8a8f98, density: 6, shapes: "factories,rails,smoke" },
-  atomic: { color: 0x53e0c8, density: 7, shapes: "reactors,radar,neon" },
-  space: { color: 0xbfe9ff, density: 8, shapes: "launch-towers,orbital-traces,grids" },
+export const CIV_LAYER: Record<AgeId, { color: number; density: number }> = {
+  stone: { color: 0xff9a3c, density: 3 },
+  bronze: { color: 0xc9a227, density: 4 },
+  iron: { color: 0xb8c4d0, density: 5 },
+  industrial: { color: 0x8a8f98, density: 6 },
+  atomic: { color: 0x53e0c8, density: 7 },
+  space: { color: 0xbfe9ff, density: 8 },
 };

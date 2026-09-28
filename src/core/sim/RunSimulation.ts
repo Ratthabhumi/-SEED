@@ -35,6 +35,9 @@ import {
 
 const OBJECTIVE_KILLS = [0, 25, 60, 120, 200, 0];
 
+/** Kills required within each age to satisfy its objective (index = next age). */
+export const AGE_OBJECTIVE_KILLS: readonly number[] = OBJECTIVE_KILLS;
+
 export function worldNonceFor(masterSeed: string, ascension: number): string {
   return fnv1a32(`${masterSeed}::w${WORLDGEN_VERSION}::asc${ascension}`).toString(16).padStart(8, "0");
 }
@@ -136,6 +139,11 @@ export class RunSimulation {
 
   hash(): string {
     return stateHash(this.state);
+  }
+
+  /** Current spatial bucket count (F3 diagnostics, non-canonical). */
+  get spatialBucketCount(): number {
+    return this.buckets.size;
   }
 
   // ------------------------------------------------------------------- draft
