@@ -1,4 +1,4 @@
-# -SEED — เมล็ดพันธุ์แห่งอารยธรรม
+# -SEED เมล็ดพันธุ์แห่งอารยธรรม
 
 **One Seed. One Civilization. Infinite Futures.**
 
