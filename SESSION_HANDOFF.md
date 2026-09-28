@@ -14,8 +14,10 @@ to `5e6d5c6` and branched from there — deviation recorded, no history rewritte
 
 ## HEAD
 
-`62480a2fc7d56059c7a76d54735ea07b76e19b36` on
-`fix/v011-stabilization-20260929` (pushed, unmerged — 4 commits above `5e6d5c6`).
+Code state: `62480a2fc7d56059c7a76d54735ea07b76e19b36` (4 commits above `5e6d5c6`).
+This handoff file's own record-commit moves branch HEAD forward without changing
+code — read branch HEAD for the latest handoff, `62480a2` for the latest code.
+Branch: `fix/v011-stabilization-20260929` (pushed, unmerged).
 Base deviation: branched from `5e6d5c6`, not `7bc953d` (upstream README touch).
 
 ## Product Goal
