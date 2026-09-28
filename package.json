@@ -1,0 +1,29 @@
+{
+  "name": "seed-game",
+  "private": true,
+  "version": "0.1.0",
+  "description": "-SEED: one seed, one civilization, infinite futures. Survivor roguelite vertical slice.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "vite build",
+    "check": "npm run typecheck && npm run test -- --reporter=basic && npm run build",
+    "preview": "vite preview",
+    "zip": "node scripts/make-zip.mjs"
+  },
+  "dependencies": {
+    "@fontsource/noto-sans": "^5.1.0",
+    "@fontsource/noto-sans-thai": "^5.1.0",
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
