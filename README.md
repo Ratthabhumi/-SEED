@@ -39,26 +39,30 @@ Advancement needs minimum time + knowledge threshold + an age objective (never j
 
 ```powershell
 npm install
-npm run dev      # local dev server
-npm run check    # typecheck + tests + production build
+npm run dev        # local dev server
+npm run check      # typecheck + tests + production build
+npm run test:e2e   # Playwright Chromium smoke (needs production build)
 ```
 
 ## Testing
 
 ```powershell
-npm run test       # vitest, 75+ tests: seed/world/tech/director/i18n/save/balance
+npm run test       # vitest: 110+ tests — seed/world/tech/director/sim/i18n/save/balance
 npm run typecheck
 npm run build
+npm run release:verify  # 17 artifact checks (root index.html, limits, licenses…)
 ```
 
 ## Architecture overview
 
-- `src/core/` — framework-free authoritative logic (seed, sim, world, tech, combat,
-  director, progression, save). **No Phaser imports.**
+- `src/core/` — framework-free authoritative logic, including the pure
+  `sim/RunSimulation` (one instance per run; input in as `InputFrame`, effects
+  out as `SimEvent`). **No Phaser/DOM/storage imports.**
 - `src/content/` — authored data (enemy lineages, biomes, civ layers). Tuning lives here.
-- `src/game/` — Phaser scenes, DOM UI, audio. Renders + captures input only.
+- `src/game/` — Phaser adapter: renders state, samples input, plays audio.
 - `src/i18n/` — English + Thai, key parity enforced by test.
-- `tests/` — deterministic golden-seed tests for every procedural system.
+- `tests/` + `e2e/` — deterministic golden-seed + 300-seed fuzz + replay-hash
+  tests, plus a Chromium smoke test.
 
 Deterministic generation: seeded `xoshiro128**` substreams per subsystem + stateless
 coordinate hashing for spatial features, so cosmetic changes can never shift terrain.

@@ -34,9 +34,26 @@ All three gates (time + knowledge + objective) must pass; never timer-only.
 ## Tech DAG
 
 Critical spine guarantees completion (tools → metallurgy → ironwork → steam →
-fission → orbital). Seeded side branches per age (3–4 nodes) hang off spine/siblings.
-Validator enforces: acyclic, spine reachable, per-age ≥2 choices, offense + defense +
-mobility/economy present, space reachable. Drafts pick 3 with category diversity.
+fission → orbital). Seeded side branches hang directly off each age's spine node
+(wide frontier, not chains). Validator enforces: acyclic, spine reachable,
+per-age ≥2 choices, offense + defense + mobility/economy present, space reachable.
+Drafts pick 3 with category diversity; generic fallbacks are emergency-only.
+
+**Design A (v0.1.1 decision):** age transitions auto-grant that age's spine node.
+Rationale: the spine is the civilization's guaranteed breakthrough, and it keeps
+the draft frontier wide and readable. Owning-spine-as-gate (design B) was
+rejected as less legible — the HUD already shows three other gates.
+
+## Knowledge
+
+One resource, one operation (`gainKnowledge`): pickups, kills, and POIs scale
+exactly once by the knowledge multiplier into level XP, the age-gate total, and
+statistics. No double application, no hidden discrepancy.
+
+## Elites
+
+swift / armored / volatile / splitter / shielded — each with implemented
+mechanics and telegraph rings. Affixes that lack behavior must not be selectable.
 
 ## Synergies
 

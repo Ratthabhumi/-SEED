@@ -13,8 +13,11 @@ Read before modifying code (in order):
   tech generation, loot, encounters, or any deterministic system. Use seeded streams
   (`src/core/seed/*`). Exception: purely cosmetic non-gameplay effects (e.g. title
   starfield) — and mark them as such.
-- **Renderer never owns canonical gameplay state.** `src/core/**` must not import Phaser.
+- **Renderer never owns canonical gameplay state.** `src/core/**` must not import Phaser,
+  DOM, `localStorage`, Web Audio, `navigator`, `window`, or `document`
+  (verify: `grep -r "phaser" src/core` must stay empty).
   Phaser scenes render + capture input; rules live in `core/` and `content/`.
+  Simulation input crosses the boundary only as `InputFrame`; effects exit only as `SimEvent`.
 - Any intentional worldgen compatibility break must increment `WORLDGEN_VERSION`
   (`src/core/seed/versions.ts`). Any save-schema change needs a migration or a
   `SAVE_SCHEMA_VERSION` bump with safe fallback.

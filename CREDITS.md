@@ -15,7 +15,8 @@ No trademark/name clearance performed yet — treat the display title as provisi
 
 ## Third-party
 
-- Phaser 4.2.1 (ISC-ish / open license — see `node_modules/phaser/LICENSE.md`)
+- Phaser 4.2.1 — MIT License (Copyright (c) 2026 Richard Davey, Phaser Studio Inc.;
+  full text in `public/licenses/PHASER-MIT.txt`, shipped in the release artifact)
 - Vite, TypeScript, Vitest (MIT)
 - Noto Sans + Noto Sans Thai — SIL Open Font License 1.1, bundled via
   `@fontsource/noto-sans` and `@fontsource/noto-sans-thai` (local files in the

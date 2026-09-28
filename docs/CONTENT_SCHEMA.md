@@ -25,6 +25,17 @@ Per family: per-age name + color, base `hp/speed/dmg/radius` in
 knowledge reward + seed note. Effects are data (knowledge + toast); DAG mutations
 reserved for V0.3.
 
+## Breakthrough
+
+`id requires[] titleKey descriptionKey effects[]` — titles/descriptions are i18n
+keys (never raw English in core), effects reuse `TechEffect` and the canonical
+`applyTechEffect` path. See `src/core/tech/synergy.ts`.
+
+## EliteAffixDef
+
+`id outgoingDamageMul incomingDamageMul speedMul maxHpMul shieldFrac
+volatileRadius volatileDamage splitterCount` — see `src/core/director/director.ts`.
+
 ## Biome
 
 `verdant arid tundra badlands` with ground/alt/accent colors in `BIOME_STYLE`.
