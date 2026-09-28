@@ -11,7 +11,7 @@ merged into main for the initial push — repo was empty, no unrelated history).
 
 ## HEAD
 
-(to fill after commit) — `git log --oneline -3`.
+`b2ede72` — feat: -SEED v0.1 vertical slice (M0–M7). Pushed to `origin/main`.
 
 ## Product Goal
 
