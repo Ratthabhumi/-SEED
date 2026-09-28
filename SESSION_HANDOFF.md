@@ -14,7 +14,9 @@ to `5e6d5c6` and branched from there — deviation recorded, no history rewritte
 
 ## HEAD
 
-(fill at push) — `git log --oneline -6` on the branch.
+`62480a2fc7d56059c7a76d54735ea07b76e19b36` on
+`fix/v011-stabilization-20260929` (pushed, unmerged — 4 commits above `5e6d5c6`).
+Base deviation: branched from `5e6d5c6`, not `7bc953d` (upstream README touch).
 
 ## Product Goal
 
