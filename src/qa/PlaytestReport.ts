@@ -83,6 +83,23 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(`- Atomic: ${fmtT(t("ATOMIC_REACHED"))}`);
   L.push(`- Space: ${fmtT(t("SPACE_REACHED"))}`);
   L.push(``);
+  L.push(`## Knowledge At Age (observed totals)`);
+  L.push(``);
+  if (snap.ageKnowledge.length === 0) L.push(`- none recorded`);
+  for (const k of snap.ageKnowledge) {
+    L.push(`- ${k.age} @${f2(k.simTime)}s (asc ${k.ascension}): knowledge ${k.knowledge}`);
+  }
+  L.push(``);
+  L.push(`## Build Identity / Engagement`);
+  L.push(``);
+  if (snap.engagement.length === 0) L.push(`- none recorded`);
+  for (const g of snap.engagement) {
+    L.push(`- @${f2(g.simTime)}s ${g.age} asc ${g.ascension}: origin ${g.origin} [${g.families}] ` +
+      `lv${g.level} ${g.weapons} techs ${g.techs} knowledge ${g.knowledge} ` +
+      `breakthroughs [${g.breakthroughs.join("+") || "-"}] legacies [${g.legacies.join("+") || "-"}] ` +
+      `poi [${g.poiClaims.join("+") || "-"}]`);
+  }
+  L.push(``);
   L.push(`## Boss`);
   L.push(``);
   L.push(`- spawned: ${fmtT(t("BOSS_SPAWNED"))}`);
@@ -153,7 +170,14 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(``);
   if (snap.feedback.length === 0) L.push(`- none`);
   for (const fb of snap.feedback) {
-    L.push(`- [${fb.label}] ${fb.note || "(no note)"} — ${f2(fb.simTime)}s, age ${fb.age}, asc ${fb.ascension}, chunk ${fb.chunk}, fps ${f0(fb.fps)}, enemies ${fb.enemies}, proj ${fb.projs}, build ${fb.build}`);
+    L.push(`- [${fb.category}] [${fb.label}] ${fb.note || "(no note)"} — ${f2(fb.simTime)}s, age ${fb.age}, asc ${fb.ascension}, chunk ${fb.chunk}, fps ${f0(fb.fps)}, enemies ${fb.enemies}, proj ${fb.projs}, build ${fb.build}`);
+  }
+  L.push(``);
+  L.push(`## Human Ratings (1-5, recorded not inferred)`);
+  L.push(``);
+  if (snap.ratings.length === 0) L.push(`- none recorded`);
+  for (const r of snap.ratings) {
+    L.push(`- ${r.question}: ${r.score}/5 (${f2(r.simTime)}s)`);
   }
   L.push(``);
   L.push(`## Automatic Gate Result`);

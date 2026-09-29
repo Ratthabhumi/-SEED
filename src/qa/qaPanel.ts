@@ -10,6 +10,8 @@ import {
 import { renderMarkdown, renderJSON } from "./PlaytestReport";
 import { collectRects, analyzeRects, OVERFLOW_SELECTORS } from "./VisualChecks";
 import { GOLDEN_QA_SEED } from "./qaMode";
+import { t } from "../i18n/i18n";
+import type { EnKeys } from "../i18n/en";
 
 export interface QaObjective {
   killsHave: number;
@@ -56,6 +58,15 @@ export interface QaFrameData {
   runHighestAge: string;
   level: number;
   owned: string[];
+  // Engagement contract state (Phase 16 auto-record).
+  originId: string;
+  activeFamilies: string[];
+  breakthroughs: string[];
+  legacies: string[];
+  poiClaims: string[];
+  knowledgeTotal: number;
+  weaponStages: string;
+  techsTaken: number;
   fps: number;
   frameMs: number;
   simMsAvg: number;
@@ -79,20 +90,20 @@ export interface QaAdapter {
   ageOrder(): readonly string[];
 }
 
-const FEEDBACK_LABELS = [
-  "ภาพอ่านยาก",
-  "ไม่รู้ว่าต้องไปไหน",
-  "เกมกระตุก",
-  "ศัตรูดูไม่ออก",
-  "อาวุธดูไม่ออก",
-  "UI ภาษาไทยมีปัญหา",
-  "ยากเกิน",
-  "ง่ายเกิน",
-  "สนามอ่านออกไหม?",
-  "รู้ว่าไปไหนไหม?",
-  "แยกศัตรูได้ไหม?",
-  "แยกอาวุธ/กระสุนได้ไหม?",
-  "ภาษาไทยอ่านง่ายไหม?",
+/**
+ * Unambiguous feedback events (ADR-0006 Phase 2). Each press means exactly
+ * what its category + label say — no mixed positive/negative phrasing.
+ * Labels stay authored Thai (QA dev-tool surface); chrome is localized.
+ */
+const FEEDBACK_GROUPS: Array<{ cat: EnKeys; key: string; labels: string[] }> = [
+  { cat: "qa.catRead", key: "read", labels: ["ภาพอ่านยาก", "หลงทาง / ไม่รู้ไปไหน", "ศัตรูแยกยาก", "กระสุนแยกยาก", "ไทยอ่านยาก"] },
+  { cat: "qa.catFeel", key: "feel", labels: ["น่าเบื่อ", "จังหวะขาด", "upgrade ไม่รู้สึกแรง", "reward ไม่รู้สึกคุ้ม"] },
+  { cat: "qa.catBalance", key: "balance", labels: ["ยากเกิน", "ง่ายเกิน"] },
+  { cat: "qa.catPositive", key: "positive", labels: ["อ่านสนามง่าย", "build เริ่มชัด", "upgrade นี้สนุก", "อยากเล่นต่อ"] },
+];
+
+const RATING_QUESTIONS: EnKeys[] = [
+  "qa.rateCombat", "qa.rateBuild", "qa.rateDecision", "qa.rateReward", "qa.rateDesire",
 ];
 
 function download(filename: string, text: string, mime: string): void {
@@ -122,6 +133,8 @@ export class QaSession {
   private listBox: HTMLElement | null = null;
   private ended = false;
   private disposed = false;
+  /** Compact by default during gameplay; recording never depends on it. */
+  private collapsed = true;
   // Transition memory (previous tick).
   private prevAgeIndex = 0;
   private prevAscension = 0;
@@ -161,6 +174,21 @@ export class QaSession {
     return { simTime: f.simTime, wallTime: this.wallNow(), age: f.age, ascension: f.ascension };
   }
 
+  /** Engagement identity snapshot from the current frame (bounded upstream). */
+  private recordEngagement(f: QaFrameData, ctx: QaCtx): void {
+    this.recorder.recordEngagement({
+      origin: f.originId,
+      families: [...f.activeFamilies].sort().join("+"),
+      techs: f.techsTaken,
+      breakthroughs: [...f.breakthroughs].sort(),
+      legacies: [...f.legacies].sort(),
+      poiClaims: [...f.poiClaims].sort(),
+      knowledge: f.knowledgeTotal,
+      level: f.level,
+      weapons: f.weaponStages,
+    }, ctx);
+  }
+
   start(): void {
     const f = this.adapter.frame();
     this.lastFrame = f;
@@ -170,6 +198,7 @@ export class QaSession {
     const ctx = this.ctx(f);
     this.recorder.checkpoint("RUN_START", ctx);
     this.recorder.checkpoint("STONE_START", ctx);
+    this.recordEngagement(f, ctx);
     this.recorder.perfSnapshot("run-start", ctx);
     this.recorder.assert("seed", "Seed invariant", f.masterSeed === GOLDEN_QA_SEED,
       f.masterSeed === GOLDEN_QA_SEED ? `masterSeed=${f.masterSeed}` : `expected ${GOLDEN_QA_SEED}, got ${f.masterSeed}`, ctx);
@@ -236,6 +265,8 @@ export class QaSession {
           };
           const cp = map[ageUpper];
           if (cp && this.recorder.checkpoint(cp, ctx)) this.recorder.perfSnapshot(ageUpper, ctx);
+          this.recorder.recordAgeKnowledge(ageUpper, f.knowledgeTotal, ctx);
+          this.recordEngagement(f, ctx);
           this.recorder.assert("age", "Age progression", true, `${order[this.prevAgeIndex] ?? "?"} → ${ageUpper}`, ctx);
         } else {
           this.recorder.assert("age", "Age progression", false,
@@ -254,7 +285,13 @@ export class QaSession {
         this.recorder.assert("ascension", "Ascension contract", pass,
           `seed:${okSeed} worldChanged:${okWorld} time:${okTime} kills:${okKills} age:${okAge}`, ctx);
         this.recorder.checkpoint("ASCENSION_STARTED", ctx);
-        this.recorder.checkpoint("CHILD_WORLD_STARTED", ctx);
+        this.recordEngagement(f, ctx);
+        this.recorder.checkpoint("CHILD_WORLD_STARTED", ctx, {
+          weapons: f.weaponStages,
+          origin: f.originId,
+          legacies: f.legacies.join("+") || "-",
+          knowledge: f.knowledgeTotal,
+        });
         this.recorder.perfSnapshot("post-ascension", ctx);
         this.postAscWall = this.wallNow();
         this.postAscSim = f.simTime;
@@ -278,6 +315,7 @@ export class QaSession {
     if (f.bossKills > this.prevBossKills) {
       this.prevBossKills = f.bossKills;
       if (this.recorder.checkpoint("BOSS_KILLED", ctx)) this.recorder.perfSnapshot("boss-fight", ctx);
+      this.recordEngagement(f, ctx);
     }
     if (this.seenBossActive && f.bossSpawned && f.bossIndex === -1 && f.bossKills === this.prevBossKills && !f.ascendReady) {
       this.recorder.assert("boss", "Boss entity integrity", false, "boss was active but vanished without a kill", ctx);
@@ -306,6 +344,7 @@ export class QaSession {
       this.prevOver = true;
       this.recorder.checkpoint("PLAYER_DIED", ctx);
       this.recorder.checkpoint("RUN_END", ctx);
+      this.recordEngagement(f, ctx);
       this.recorder.perfSnapshot("run-end", ctx);
       this.end("player-died");
     }
@@ -531,71 +570,107 @@ export class QaSession {
         e.textContent = text;
         return e;
       };
-      this.panel.appendChild(mk("div", "qa-title", "HUMAN GATE A — auto-recording"));
-      this.panel.appendChild(mk("div", "qa-sub", "Seed EPOCH-GOLDEN-001 · Stone → Space → Boss → Ascension · แค่เล่น ที่เหลือระบบจดให้"));
-      const list = document.createElement("div");
-      list.className = "qa-list";
-      this.panel.appendChild(list);
-      this.listBox = list;
-      const fbTitle = mk("div", "qa-title2", "บอกความรู้สึก (กดได้เลย ไม่ต้องพิมพ์)");
-      this.panel.appendChild(fbTitle);
-      const fbWrap = document.createElement("div");
-      fbWrap.className = "qa-fb";
-      for (const label of FEEDBACK_LABELS) {
-        const b = document.createElement("button");
-        b.className = "btn qa-fb-btn";
-        b.textContent = label;
-        b.addEventListener("click", () => this.sendFeedback(label, ""));
-        fbWrap.appendChild(b);
-      }
-      const noteRow = document.createElement("div");
-      noteRow.className = "qa-note-row";
-      const inp = document.createElement("input");
-      inp.id = "qa-note";
-      inp.maxLength = 200;
-      inp.placeholder = "อื่นๆ… (พิมพ์สั้นๆ ได้)";
-      const send = document.createElement("button");
-      send.className = "btn";
-      send.textContent = "ส่ง";
-      send.addEventListener("click", () => {
-        this.sendFeedback("อื่นๆ", inp.value.trim());
-        inp.value = "";
+      const head = document.createElement("div");
+      head.className = "qa-head";
+      head.appendChild(mk("span", "qa-title", "HUMAN GATE A — auto-recording"));
+      const toggle = document.createElement("button");
+      toggle.className = "btn qa-toggle";
+      toggle.textContent = t(this.collapsed ? "qa.expand" : "qa.collapse");
+      toggle.addEventListener("click", () => {
+        this.collapsed = !this.collapsed;
+        delete this.panel?.dataset.built;
+        this.refreshPanel();
       });
-      noteRow.appendChild(inp);
-      noteRow.appendChild(send);
-      this.panel.appendChild(fbWrap);
-      this.panel.appendChild(noteRow);
-      const btnRow = document.createElement("div");
-      btnRow.className = "qa-btn-row";
-      const copy = document.createElement("button");
-      copy.className = "btn";
-      copy.textContent = "COPY QA SNAPSHOT";
-      copy.addEventListener("click", () => void this.copySnapshot(copy));
-      const end = document.createElement("button");
-      end.className = "btn";
-      end.textContent = "END PLAYTEST";
-      end.addEventListener("click", () => this.end("human-ended"));
-      btnRow.appendChild(copy);
-      btnRow.appendChild(end);
-      this.panel.appendChild(btnRow);
-      const dl = document.createElement("div");
-      dl.id = "qa-downloads";
-      dl.className = "qa-dl";
-      this.panel.appendChild(dl);
+      head.appendChild(toggle);
+      this.panel.appendChild(head);
+      this.panel.appendChild(mk("div", "qa-sub", "Seed EPOCH-GOLDEN-001 · Stone → Space → Boss → Ascension · แค่เล่น ที่เหลือระบบจดให้"));
+      if (this.collapsed) {
+        const line = document.createElement("div");
+        line.className = "qa-list";
+        this.listBox = line;
+        this.panel.appendChild(line);
+        const btnRow = document.createElement("div");
+        btnRow.className = "qa-btn-row";
+        const end = document.createElement("button");
+        end.className = "btn";
+        end.textContent = "END PLAYTEST";
+        end.addEventListener("click", () => this.end("human-ended"));
+        btnRow.appendChild(end);
+        this.panel.appendChild(btnRow);
+        const dl = document.createElement("div");
+        dl.id = "qa-downloads";
+        dl.className = "qa-dl";
+        this.panel.appendChild(dl);
+      } else {
+        const list = document.createElement("div");
+        list.className = "qa-list";
+        this.panel.appendChild(list);
+        this.listBox = list;
+        const fbTitle = mk("div", "qa-title2", "บอกความรู้สึก (กดได้เลย ไม่ต้องพิมพ์)");
+        this.panel.appendChild(fbTitle);
+        for (const group of FEEDBACK_GROUPS) {
+          this.panel.appendChild(mk("div", "qa-cat", t(group.cat)));
+          const fbWrap = document.createElement("div");
+          fbWrap.className = "qa-fb";
+          for (const label of group.labels) {
+            const b = document.createElement("button");
+            b.className = "btn qa-fb-btn";
+            b.textContent = label;
+            b.addEventListener("click", () => this.sendFeedback(group.key, label, ""));
+            fbWrap.appendChild(b);
+          }
+          this.panel.appendChild(fbWrap);
+        }
+        const noteRow = document.createElement("div");
+        noteRow.className = "qa-note-row";
+        const inp = document.createElement("input");
+        inp.id = "qa-note";
+        inp.maxLength = 200;
+        inp.placeholder = "อื่นๆ… (พิมพ์สั้นๆ ได้)";
+        const send = document.createElement("button");
+        send.className = "btn";
+        send.textContent = "ส่ง";
+        send.addEventListener("click", () => {
+          this.sendFeedback("note", "อื่นๆ", inp.value.trim());
+          inp.value = "";
+        });
+        noteRow.appendChild(inp);
+        noteRow.appendChild(send);
+        this.panel.appendChild(noteRow);
+        const btnRow = document.createElement("div");
+        btnRow.className = "qa-btn-row";
+        const copy = document.createElement("button");
+        copy.className = "btn";
+        copy.textContent = "COPY QA SNAPSHOT";
+        copy.addEventListener("click", () => void this.copySnapshot(copy));
+        const end = document.createElement("button");
+        end.className = "btn";
+        end.textContent = "END PLAYTEST";
+        end.addEventListener("click", () => this.end("human-ended"));
+        btnRow.appendChild(copy);
+        btnRow.appendChild(end);
+        this.panel.appendChild(btnRow);
+        const dl = document.createElement("div");
+        dl.id = "qa-downloads";
+        dl.className = "qa-dl";
+        this.panel.appendChild(dl);
+      }
     }
     if (this.listBox) {
       this.listBox.innerHTML =
-        `<div class="qa-sec">t=${simT}s · age ${age}</div>` + this.routeRows() +
-        `<div class="qa-sec">Auto checks</div>` + this.autoRows() +
-        `<div class="qa-sec">F4 = QA overlay · F3 = perf</div>`;
+        this.collapsed
+          ? `<div class="qa-sec">t=${simT}s · age ${age} · rec ●</div>`
+          : `<div class="qa-sec">t=${simT}s · age ${age}</div>` + this.routeRows() +
+          `<div class="qa-sec">Auto checks</div>` + this.autoRows() +
+          `<div class="qa-sec">F4 = QA overlay · F3 = perf</div>`;
     }
     if (this.ended) this.showDownloads();
   }
 
-  private sendFeedback(label: string, note: string): void {
+  private sendFeedback(category: string, label: string, note: string): void {
     const f = this.lastFrame;
     if (!f) return;
-    this.recorder.feedbackMark(label, note, {
+    this.recorder.feedbackMark(category, label, note, {
       px: f.px, py: f.py,
       chunk: `${f.chunkCx},${f.chunkCy}`,
       fps: f.fps,
@@ -656,6 +731,33 @@ export class QaSession {
     if (!box || box.childElementCount > 0) return;
     const snap = this.recorder.snapshot();
     // NOTE: perfCheckpoints live inside the recorder; snapshot() carries them.
+    // Explicit 1–5 engagement ratings (human judgment, recorded not inferred).
+    const rateTitle = document.createElement("div");
+    rateTitle.className = "qa-title2";
+    rateTitle.textContent = t("qa.ratingsTitle");
+    box.appendChild(rateTitle);
+    for (const q of RATING_QUESTIONS) {
+      const row = document.createElement("div");
+      row.className = "qa-rate-row";
+      const lab = document.createElement("span");
+      lab.textContent = t(q);
+      row.appendChild(lab);
+      const picked = snap.ratings.find((r) => r.question === q)?.score ?? 0;
+      for (let v = 1; v <= 5; v++) {
+        const b = document.createElement("button");
+        b.className = "btn qa-rate" + (picked === v ? " active" : "");
+        b.textContent = String(v);
+        b.addEventListener("click", () => {
+          const f = this.lastFrame;
+          if (!f) return;
+          this.recorder.rate(q, v, this.ctx(f));
+          box.innerHTML = "";
+          this.showDownloads();
+        });
+        row.appendChild(b);
+      }
+      box.appendChild(row);
+    }
     const mkBtn = (label: string, filename: string, text: string, mime: string): HTMLButtonElement => {
       const b = document.createElement("button");
       b.className = "btn primary";

@@ -20,6 +20,8 @@ export interface QaCtx {
 
 export interface QaCheckpoint extends QaCtx {
   event: QaCheckpointName;
+  /** Optional machine-readable context (knowledge at age, child-world state). */
+  data?: Record<string, string | number>;
 }
 
 export interface QaAssertion extends QaCtx {
@@ -30,6 +32,8 @@ export interface QaAssertion extends QaCtx {
 }
 
 export interface QaFeedback extends QaCtx {
+  /** Unambiguous event category (read/feel/balance/positive/note). */
+  category: string;
   label: string;
   note: string;
   px: number;
@@ -69,6 +73,27 @@ export interface QaPoolSaturation extends QaCtx {
   cap: number;
 }
 
+export interface QaRating extends QaCtx {
+  question: string;
+  score: number;
+}
+
+export interface QaAgeKnowledge extends QaCtx {
+  knowledge: number;
+}
+
+export interface QaEngagement extends QaCtx {
+  origin: string;
+  families: string;
+  techs: number;
+  breakthroughs: string[];
+  legacies: string[];
+  poiClaims: string[];
+  knowledge: number;
+  level: number;
+  weapons: string;
+}
+
 export interface QaEnvironment {
   userAgent: string;
   viewport: string;
@@ -96,6 +121,9 @@ export interface RecorderSnapshot {
   perfSamples: number;
   assertions: QaAssertion[];
   feedback: QaFeedback[];
+  ratings: QaRating[];
+  ageKnowledge: QaAgeKnowledge[];
+  engagement: QaEngagement[];
   consoleEntries: QaConsoleEntry[];
   langSwitches: QaLangSwitch[];
   overflows: QaOverflow[];
@@ -110,6 +138,8 @@ const MAX_FEEDBACK = 200;
 const MAX_CONSOLE = 300;
 const MAX_OVERFLOWS = 200;
 const MAX_LANG = 40;
+const MAX_RATINGS = 25;
+const MAX_ENGAGEMENT = 60;
 
 export class PlaytestRecorder {
   private checkpoints: QaCheckpoint[] = [];
@@ -117,6 +147,11 @@ export class PlaytestRecorder {
   private assertions: QaAssertion[] = [];
   private failedIds = new Set<string>();
   private feedback: QaFeedback[] = [];
+  private ratings: QaRating[] = [];
+  private ratedQuestions = new Set<string>();
+  private ageKnowledge: QaAgeKnowledge[] = [];
+  private ageKnowledgeKeys = new Set<string>();
+  private engagement: QaEngagement[] = [];
   private consoleEntries: QaConsoleEntry[] = [];
   private langSwitches: QaLangSwitch[] = [];
   private overflows: QaOverflow[] = [];
@@ -142,12 +177,12 @@ export class PlaytestRecorder {
   }
 
   /** Exactly-once per checkpoint name (+ascension for repeatable ones). */
-  checkpoint(name: QaCheckpointName, ctx: QaCtx): boolean {
+  checkpoint(name: QaCheckpointName, ctx: QaCtx, data?: Record<string, string | number>): boolean {
     const repeatable = name === "CHILD_WORLD_STARTED";
     const key = repeatable ? `${name}#${ctx.ascension}` : name;
     if (this.seenCheckpoints.has(key)) return false;
     this.seenCheckpoints.add(key);
-    this.checkpoints.push({ event: name, ...ctx });
+    this.checkpoints.push({ event: name, ...ctx, ...(data ? { data } : {}) });
     return true;
   }
 
@@ -181,12 +216,36 @@ export class PlaytestRecorder {
   }
 
   feedbackMark(
+    category: string,
     label: string, note: string,
     extra: { px: number; py: number; chunk: string; fps: number; enemies: number; projs: number; build: string },
     ctx: QaCtx,
   ): void {
     if (this.feedback.length >= MAX_FEEDBACK) return;
-    this.feedback.push({ label, note, ...extra, ...ctx });
+    this.feedback.push({ category, label, note, ...extra, ...ctx });
+  }
+
+  /** Explicit 1–5 human rating (one value per question; latest wins). */
+  rate(question: string, score: number, ctx: QaCtx): void {
+    const s = Math.max(1, Math.min(5, Math.round(score)));
+    this.ratings = this.ratings.filter((r) => r.question !== question);
+    if (this.ratings.length >= MAX_RATINGS) return;
+    this.ratings.push({ question, score: s, ...ctx });
+    this.ratedQuestions.add(question);
+  }
+
+  /** Knowledge total observed at an age transition (bounded, deduped). */
+  recordAgeKnowledge(age: string, knowledge: number, ctx: QaCtx): void {
+    const key = `${age}#${ctx.ascension}`;
+    if (this.ageKnowledgeKeys.has(key)) return;
+    this.ageKnowledgeKeys.add(key);
+    this.ageKnowledge.push({ knowledge: Math.floor(knowledge), ...ctx });
+  }
+
+  /** Engagement identity snapshot (bounded; called at age/boss/ascend/end). */
+  recordEngagement(e: Omit<QaEngagement, "simTime" | "wallTime" | "age" | "ascension">, ctx: QaCtx): void {
+    if (this.engagement.length >= MAX_ENGAGEMENT) return;
+    this.engagement.push({ ...e, ...ctx });
   }
 
   console(level: "error" | "warn", message: string, stack: string, ctx: QaCtx): void {
@@ -248,6 +307,9 @@ export class PlaytestRecorder {
       perfSamples: this.sampler.count,
       assertions: [...this.assertions],
       feedback: [...this.feedback],
+      ratings: [...this.ratings],
+      ageKnowledge: [...this.ageKnowledge],
+      engagement: [...this.engagement],
       consoleEntries: [...this.consoleEntries],
       langSwitches: [...this.langSwitches],
       overflows: [...this.overflows],
