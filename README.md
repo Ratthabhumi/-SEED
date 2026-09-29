@@ -47,10 +47,11 @@ npm run test:e2e   # Playwright Chromium smoke (needs production build)
 ## Testing
 
 ```powershell
-npm run test       # vitest: 110+ tests — seed/world/tech/director/sim/i18n/save/balance
+npm run test       # vitest: 160+ tests — seed/world/tech/director/sim/i18n/save/balance
 npm run typecheck
 npm run build
 npm run release:verify  # 17 artifact checks (root index.html, limits, licenses…)
+npm run test:e2e        # Playwright Chromium: smoke + 5 regression scenarios
 ```
 
 ## Architecture overview

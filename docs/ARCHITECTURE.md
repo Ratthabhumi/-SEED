@@ -30,13 +30,21 @@ e2e/    smoke.spec.ts (Playwright, production build)
 
 - One `RunSimulation` instance == one run attempt. Restart constructs a NEW
   instance; Phaser Scene reuse can never leak transient state.
-- Fixed-step 60 Hz accumulator with capped catch-up; the adapter samples the
-  keyboard into `InputFrame{moveX,moveY,dashPressed}` per step.
+- Fixed-step 60 Hz accumulator with capped catch-up. Edge-triggered input
+  latches in the adapter (`InputLatch`): a zero-step frame keeps the dash edge;
+  the first consumed step takes it exactly once. Draft picks and ascend clicks
+  are direct method calls while stepping is paused (no edge-loss class).
+- Draft UI is a pure function of canonical state (`syncDraftUI`): exactly one
+  surface while `draftOpen`, zero otherwise.
 - Documented phase order per step: input → player → spawn → enemy move →
   spatial rebuild → weapons/collisions → mines → pickups → POI → events.
-- `stateHash()` covers gameplay state only (never spatial indices, scratch
-  buffers, or render-only data) — the deterministic replay contract.
+- Weapon execution dispatches on `WeaponStage.archetype` (never family name).
+- Boss spawns are transactional (deterministic slot reclaim under saturation).
+- `canonicalSnapshot()` covers all gameplay state + RNG snapshots (cosmetics
+  excluded); tests compare snapshots directly, `hash()` is debug shorthand.
 - Balance numbers live in `core/` formulas + `content/` data, never in scenes.
+- `?e2e` query param exposes a test-only hook (grant/kill/readyAscend/hash/
+  snapshot/seed/setLang) with zero balance impact; never active in normal play.
 
 ## Performance
 

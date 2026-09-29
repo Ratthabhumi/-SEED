@@ -1,111 +1,90 @@
-# Session Handoff — v0.1.1 stabilization (branch work, NOT merged)
+# Session Handoff — v0.1.1 Round-3 corrective pass (branch, NOT merged)
 
 ## Timestamp
 
-2026-09-29 ~02:00 Asia/Bangkok. Session: v0.1.1 stabilization & architecture
-hardening on top of v0.1, per external audit. No V0.2 content added.
+2026-09-29 ~02:45 Asia/Bangkok. Corrective stabilization after independent
+audit Round 3. No V0.2 content. No merge, no tag, no force-push.
 
-## Branch
+## Branch / HEAD
 
-`fix/v011-stabilization-20260929` tracking `origin/main`.
-Base note: expected audit base was `7bc953d`, but `origin/main` had moved to
-`5e6d5c6` ("Name", README title dash removal by Ratthabhumi). Pulled `--ff-only`
-to `5e6d5c6` and branched from there — deviation recorded, no history rewritten.
-
-## HEAD
-
-Code state: `62480a2fc7d56059c7a76d54735ea07b76e19b36` (4 commits above `5e6d5c6`).
-This handoff file's own record-commit moves branch HEAD forward without changing
-code — read branch HEAD for the latest handoff, `62480a2` for the latest code.
 Branch: `fix/v011-stabilization-20260929` (pushed, unmerged).
-Base deviation: branched from `5e6d5c6`, not `7bc953d` (upstream README touch).
+HEAD: see `git rev-parse HEAD` — handoff records code HEAD `62480a2`-lineage;
+final SHA reported separately (branch moved forward with corrective commits).
+`origin/main` = `5e6d5c65ea905bc3859f115e73bfd02913988d45` (unchanged).
 
-## Product Goal
+## Starting State (verified)
 
-Unchanged: -SEED — one survivor run = one civilization stone → space,
-deterministic seed-shareable worlds, seeded Tech DAG, endless ascension, TH/EN.
+Branch HEAD was `3b590698999c04637b973bdd700c767a49effe47`, tree clean,
+baseline green (typecheck, 112 tests, build, zip, release:verify, e2e).
 
-## Current Playable State
+## Findings Closed (root cause → fix → regression → result)
 
-Same v0.1 feature surface, with corrected runtime contracts:
-- Ascension creates fully fresh RNG streams + world-scoped POIs (same seed =
-  same history, proven by isolation + replay tests)
-- Restart = new `RunSimulation` (fresh boot ≡ restart, hash-proven)
-- Knowledge single-resource, exactly-once; pickups never lose value when pooled
-- Breakthroughs do what their (localized) descriptions say; all 5 affixes real
-- TH/EN complete for critical UI incl. mid-run switch; saves validated; clipboard
-  truthful with manual fallback
-- HUD shows knowledge/objective/time progress; ground scrolls smoothly under a
-  following camera; F3 shows rolling p50/p95 + cache/pool stats
+- P1-01 queued drafts → duplicate screens: UI owned recursively. Fix:
+  state-driven `syncDraftUI` (exactly-one guard). Tests: sim multi-level
+  drain + E2E queued-draft completion. PASS.
+- P1-02 dash lost on zero-step frames: `JustDown()` sampled inside step timing.
+  Fix: `InputLatch` (adapter latches, first consumed step takes it). Tests:
+  8+9/17/4+4+9/33/16×3/100ms patterns ⇒ exactly one dash. PASS.
+- P1-03 boss lost when pool full: `bossSpawned=true` before alloc. Fix:
+  transactional `spawnEnemy → handle|null` + deterministic reclaim; flag set
+  only on success. Test: saturated pool ⇒ boss spawns, Ascension reachable. PASS.
+- P1-04 Space kinetic beam misconfigured: family-hardcoded projectiles. Fix:
+  archetype dispatch for all families; defense orbit/summon split. Tests: all
+  24 family×tier combos deal damage + no stationary projectiles. PASS.
+- P1-05 weak hash (mines/RNG invisible): `canonicalSnapshot()` covers gameplay
+  + RNG (cosmetics excluded); tests compare snapshots; hash is debug-only. PASS.
+- P2-01 Restart generated a new seed: `restartRun()` preserves masterSeed.
+  E2E asserts identical displayed seed. PASS.
+- P2-02 Ascension erased run timer: new `runElapsed/runHighestAge/runKills`
+  survive Ascension; chronicle/best use run-level data. Tests + E2E. PASS.
+- P2-03 double persist (`runs +2`): idempotent `deathPersisted` guard; persist
+  lives on the terminal transition. E2E: N → N+1 across frames. PASS.
+- P2-04 splitter reward lost via pooled reuse: capture-before-deactivation
+  ordering. Test: parent 5 preserved + 2 children. PASS.
+- P2-05 Stone milestone tanks + undocumented free elites: `eligibleFamilies()`
+  single gate; model B documented (budget waves + bounded milestones); wave
+  loop no longer mints free elites. Tests: Stone zero-tank incl. sim
+  milestones; cost ≤ budget. PASS.
+- TEST-DEFECT: isolation test now spams a REAL 10k draws per stream pre-ascend
+  (public readonly `streams` + `streamSnapshots()`); child prefixes +
+  trajectories identical. PASS.
+- Localization: dedicated fallback keys matching effects (contract-tested);
+  localized family names in chronicle; E2E language-invariance via snapshots.
+- F3: sim metric is step-only (event/DOM timed separately); POI discovery
+  refreshes markers next frame.
+- Version: package.json 0.1.1 → ZIP `seed-web-v0.1.1.zip` → verifier derives
+  the same version. UTF-8 `.gitignore` (+test-results/playwright-report/
+  blob-report); CI uploads verified ZIP artifact (14d retention).
+- Verifier/docs language honest (known-pattern checks, NOT YET MEASURED kept).
 
-## Completed Milestones (this branch)
+## Preserved v0.1.1 Fixes (untouched, suites still green)
 
-1. `fix: stabilize run rng lifecycle and progression invariants` (R0 core + tests)
-2. `refactor: extract deterministic run simulation` (R1 + adapter + HUD/clipboard)
-3. `ci/perf/release` + `docs` commits (pending at time of writing — see below)
+Stream isolation, draft stream, pure sim, core import bans, world POIs, pickup
+conservation, exactly-once knowledge, typed breakthroughs, 5 affixes, parity,
+save sanitization, clipboard fallback, wide frontier, design A, age HUD, chunk
+cache, rebuild-after-move, world-space ground, rolling F3, Node CI, fresh ZIP,
+verifier, notices, smoke E2E.
 
-## Verification
+## Verification (final, this machine)
 
-- `npm run typecheck` — PASS
-- `npm run test` — 14 files / 112 tests PASS (incl. 300-seed fuzz)
-- `npm run build` — PASS (dist ~2.1 MB, Thai woff2 + third-party notices bundled)
-- `npm run zip` — fresh ZIP (old deleted first)
-- `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — Chromium smoke PASS (title/seed/run/move/pause/EN↔TH/
-  F3/quit, zero page errors). Firefox = manual gate, not done.
+- `npm run typecheck` PASS · `npm run test` 164 PASS · `npm run build` PASS ·
+  `npm run check` PASS · `npm run zip` (seed-web-v0.1.1.zip) ·
+  `npm run release:verify` 17/17 PASS · `npm run test:e2e` 6/6 PASS (Chromium).
+- CI status for pushed SHA: check GitHub Actions (artifact `seed-web-v0.1.1`).
 
-## Golden Seeds + Corpus
+## Known Limitations / HUMAN-ONLY Gates (never auto-PASS)
 
-EPOCH-GOLDEN-001/002, EPOCH-STRESS-001 pinned; `tests/sim/fuzz.test.ts` runs
-300 generated seeds through graph/world/threat validation in CI.
-
-## Performance Snapshot
-
-NOT YET MEASURED on human hardware. Instrumentation shipped (F3 rolling p50/p95
-for sim + frame, entity/query/bucket/pool/cache stats). Budgets remain targets.
-
-## Known Issues / Manual Gates (human required)
-
-1. Full playtest Stone → Space → Ascension on EPOCH-GOLDEN-001 with recorded
-   hardware/browser/resolution/FPS/sim-maxima — NOT DONE.
-2. Thai visual inspection (tone marks, clipping, cards, small windows) — NOT DONE.
-3. Firefox verification — NOT DONE. itch draft/restricted embed — NOT DONE.
-4. Nearest-enemy is still a linear scan (documented R3.4 follow-up).
-5. `?seed=` deep-link and daily/challenge seeds remain V0.2 scope.
-
-## Deferred Scope
-
-Everything V0.2 (doctrines, 5th family, bosses, minimap, galaxy) — untouched.
-
-## Architecture Decisions (new)
-
-- ADR 0001/0002/0003 stand; AGENTS.md hardened (core bans DOM/storage/audio too).
-- Design A: age transition auto-grants the age spine (GAME_DESIGN.md).
-- WORLDGEN 1→2 (NFC seed normalization), CONTENT 2 (wide frontier + design A).
-- Phaser stays 4.2.1, license corrected to MIT; engines `>=22`; CI Node 22/24.
-
-## Files Changed (branch vs origin/main)
-
-New: `src/core/sim/*` (7), `runRng.ts`, `progression.ts`, `.github/workflows/ci.yml`,
-`scripts/release-verify.mjs`, `public/THIRD_PARTY_NOTICES.txt`,
-`public/licenses/*`, `e2e/smoke.spec.ts`, `playwright.config.ts`,
-6 new test files. Rewritten: `RunSimulation` (new), `GameScene` (adapter),
-`director.ts`, `synergy.ts`, `save.ts`, docs. See `git diff --stat`.
+Full EPOCH-GOLDEN-001 Stone→Space→Ascension playthrough; hardware perf capture;
+Thai typography review; Firefox; itch draft embed.
 
 ## Next Three Actions
 
-1. **Human playtest gate** (see above) — record results here; only then consider
-   merging to main.
-2. **Reviewer pass**: diff `origin/main...fix/v011-stabilization-20260929`,
-   determinism/CI/artifact audit (round 3), then merge (no squash — history is
-   milestone-structured) and tag `v0.1.1`.
-3. **Start V0.2** only after merge: doctrines + support family on a new branch.
+1. Auditor Round 4: diff `3b59069…HEAD`, code/tests/CI-artifact review.
+2. Human playtest gate → record results here.
+3. Merge (no squash) → tag v0.1.1 → then V0.2 planning.
 
 ## Do-Not-Break Invariants
 
-- Same seed + same inputs = same hash; streams isolated; POIs world-scoped.
-- Knowledge exactly-once; pickups conserve value; breakthroughs match text.
-- Every pooled affix implemented + telegraphed; TH/EN parity release-blocking.
-- `src/core` never imports Phaser/DOM/storage/audio (CI-greppable).
-- Never merge this branch automatically; no V0.2 content on it.
-- Title "-SEED" still provisional (no trademark clearance).
+Same seed+inputs=same snapshot; isolated streams; world POIs; exactly-once
+knowledge/persist; transactional bosses; archetype dispatch; eligibleFamilies
+everywhere; TH/EN parity; core import bans; no merge/tag; no V0.2 on this branch.

@@ -5,8 +5,8 @@
 ```powershell
 npm run check
 npm run build
-npm run zip
-npm run release:verify   # must print release:verify OK (17 checks)
+npm run zip                  # release/seed-web-v0.1.1.zip (version from package.json)
+npm run release:verify       # must print release:verify OK (17 checks)
 ```
 
 `release/seed-web-v0.1.0.zip` contains `index.html` at root with relative asset

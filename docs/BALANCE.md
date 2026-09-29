@@ -5,10 +5,17 @@
   feeds level XP, the civilization age-gate total, and statistics — exactly once.
   A "+15% Knowledge" tech does what its description says.
 - XP: `8 + 7L + 0.6L²` per level. Drops: base family XP, elite ×5, boss ×15 + burst.
-- Threat: `B0=10, ka=0.55, kt=2.2`, smoothstep/720s; tick 2.2s, ≤24/wave + ≤4
-  budget-paid elites. Era weights (swarm/chaser/ranged/tank): stone 35/40/25/0,
+- Threat: `B0=10, ka=0.55, kt=2.2`, smoothstep/720s; tick 2.2s, ≤24/wave.
+  Elite economics (model B, explicit): ordinary-wave elites are composed from
+  and paid out of the Threat Budget; the scheduled milestone encounter
+  (3 elites / 75s, era-eligible) is outside the ordinary budget and separately
+  bounded. Tanks locked until bronze on EVERY pathway.
+- Weapons execute by archetype: kinetic fans projectiles until the Space beam
+  tier; energy rotates projectile/aura/beam; defense spins orbit blades then
+  guardian gunners; field keeps mine layers plus stage aura/orbit systems.
+  Era weights (swarm/chaser/ranged/tank): stone 35/40/25/0,
   bronze 25/35/25/15, iron 20/30/25/25, industrial 20/25/27/28, atomic 18/24/28/30,
-  space 18/22/28/32. Tanks locked until bronze. Elite chance ≤22%.
+  space 18/22/28/32. Elite chance ≤22%.
 - Elites: swift (+35% speed, −20% HP), armored (−35% incoming, −15% speed,
   +60% HP), volatile (110u / 12 dmg death burst, telegraphed), splitter
   (releases 2), shielded (35% max-HP shield ring). Affix pool membership requires

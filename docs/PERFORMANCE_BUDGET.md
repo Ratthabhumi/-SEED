@@ -9,6 +9,8 @@
 - Ground redraw only on chunk/age/world change; camera follows every frame.
 - F3 overlay reports rolling p50/p95 for sim-step and frame times (bounded 240
   samples), entities, queries, buckets, pool saturation, chunk-cache hit rate.
+  The sim metric measures `RunSimulation.step()` durations ONLY — event/DOM/
+  audio handling is timed separately and never labeled as simulation work.
 - Degradation order: particles → decor density → spawn cap (clamped, never
   rubber-banding difficulty). Collision quality NEVER degrades with FPS.
 
