@@ -46,14 +46,28 @@ scales, Thai strings + wrap-review box, token×biome contrast matrix.
 Screenshots self-reviewed (composites readable, POI pillar/glyph boosted,
 boss-HP/title overlap fixed). No balance/worldgen/sim/RNG/threshold change.
 
+v0.2 engagement pass, 2026-09-30 home machine (this session, NEW branch
+`feat/v020-engagement-loop-20260930` from readability HEAD `e4d4f89`):
+human Gate A evidence was NOT preservable (game closed before END PLAYTEST) —
+thresholds are provisional from auditor observations, to be re-confirmed by the
+first instrumented v0.2 run. Implemented: Origins (2-family identity +
+Industrial expansion), synergy plan UI + breakthrough beats, distinct POI
+rewards, evidence-calibrated Knowledge gates, legacy-prestige Ascension
+(Level 1 child worlds), age-transition payoff, per-age civ dressing, QA
+feedback semantics + 1–5 ratings + compact panel + F4-off default. See
+`docs/ADR/0006-engagement-loop.md` and
+`docs/playtests/2026-09-30-golden-001-readability.md`.
+
 ## Repository
 
 `Ratthabhumi/-SEED` — `-SEED: เมล็ดพันธุ์แห่งอารยธรรม`
 
 ## Branch
 
-`fix/v011-readability-20260929` — **UNMERGED, UNTAGGED** (deliberate;
-human visual review still open). Stabilization branch kept as rollback point.
+`feat/v020-engagement-loop-20260930` — **UNMERGED, UNTAGGED, NO ITCH**
+(deliberate; awaiting v0.2 engagement playtest). Readability branch
+`fix/v011-readability-20260929` (@`e4d4f89`) frozen as the technical baseline;
+stabilization `737ddf3` remains the deep rollback point.
 
 ## Origin Main
 
@@ -61,11 +75,9 @@ human visual review still open). Stabilization branch kept as rollback point.
 
 ## Implementation Checkpoint
 
-READABILITY CODE CHECKPOINT:
-`35f6b73e2d14aa413ac1db7b66851b7643aac8c6`
-(verified `git rev-parse HEAD` + GitHub; CI green on this exact SHA).
-Ancestry: readability = stabilization `737ddf3` + 5 presentation-only commits,
-0 behind (clean rollback to `737ddf3` preserved).
+v0.2 WORKING BRANCH (see `git log` for exact HEAD at push time).
+Frozen baseline: readability `e4d4f8940cac2537fafd0a05895e1ea23b8f7ac2`
+(CI green). No force-push, no history rewrite on any line.
 
 SESSION_HANDOFF.md may be one documentation-only commit ahead of this
 implementation checkpoint. On resume, `git rev-parse HEAD` is authoritative
@@ -81,19 +93,23 @@ localization remain release-blocking.
 
 ## Current Release Candidate
 
-**v0.1.1 release candidate / stabilization branch** (NOT released, NOT tagged).
-Package version: `0.1.1`. Expected ZIP: `release/seed-web-v0.1.1.zip`.
-Do NOT claim v0.1.1 has been released.
+**v0.2.0-dev.0 development line** (NOT released, NOT tagged, NO itch).
+Package version: `0.2.0-dev.0`. v0.1.1 remains frozen on the readability
+branch; this branch is where gameplay-contract changes land.
 
 ## Current Playable State
 
-Title (seed input, random seed, EN/ไทย, settings) → run (WASD/arrows, dash
-i-frames, 4 auto-weapon families evolving per age, 4 enemy lineages, elites +
-affixes, threat director) → 3-card drafts → 6 ages (time + knowledge + kill
-objectives, spine auto-grant) → POI discovery → Space boss → Ascension offer →
-child world (build kept, difficulty up) → death → Run Chronicle + copy seed.
-F3 diagnostics, pause menu with mid-run language switch, responsive HUD with
-age-progress block (knowledge / objective / time).
+Title (seed input, random seed, EN/ไทย, settings, **Origin picker: Hunters /
+Engineers / Resonant / Sentinels**) → run (**2 active weapon families**,
+4 enemy lineages, elites + affixes, threat director) → 3-card drafts (**domain
++ synergy progress + COMPLETES preview**) → 6 ages (**real Knowledge gates**,
+spine auto-grant, **~1s payoff moment**) → **Industrial expansion unlock**
+→ POI discovery (**distinct first-discovery rewards**) → Space boss →
+Ascension offer → **Legacy choice (1 of 3) + child Origin choice** → fresh
+Level-1 child world with bounded inheritance → death → Run Chronicle (+ origin
+/ legacies) → copy seed. F3 diagnostics, pause menu with mid-run language
+switch, HUD with age-progress + **build-goals panel**.
+`?qa=1` harness: unambiguous feedback, 1–5 ratings, compact panel, F4 off.
 
 ## Architecture State
 
@@ -113,9 +129,11 @@ age-progress block (knowledge / objective / time).
 
 - `RunRngStreams` (event/enemy/draft/loot/boss), fresh per world; draft
   separated from loot; Ascension recreates child-world streams (proven by real
-  10k-draw-per-stream isolation test).
-- `canonicalSnapshot()` covers gameplay + RNG (cosmetics excluded); same seed
-  + versions + same input trace = same canonical state (replay-tested,
+  10k-draw-per-stream isolation test). Origin/Legacy/POI candidate derivation
+  consumes NO gameplay RNG.
+- `canonicalSnapshot()` covers gameplay + RNG + origin/expansion/legacies/
+  POI-claims/draft-context (cosmetics excluded); same seed + versions +
+  choices + same input trace = same canonical state (replay-tested,
   restart ≡ fresh instance).
 - World-scoped POI ids (`poi-{nonce}-…`); per-world discovery vs run totals.
 - `gainKnowledge` exactly-once; pickup overflow conserves value; death
@@ -134,28 +152,27 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Release / CI State
 
 - GitHub Actions `ci`: Node 22 + Node 24 verify jobs (`npm ci`, `check`,
-  fresh `zip`, `release:verify`) + Chromium E2E job. Latest, on readability
-  code checkpoint `35f6b73`: run 36589398303 — verify(22) PASS, verify(24)
-  PASS, e2e PASS, artifact `seed-web-v0.1.1` present and downloadable.
-- History: run 36505017447 was green on the stabilization SHA (kept as
-  rollback evidence, not the active line).
+  fresh `zip`, `release:verify`) + Chromium E2E job. v0.2 branch CI status:
+  recorded at push time below (exact SHA required green).
+- History: run 36589398303 green on readability `35f6b73` (frozen baseline);
+  run 36505017447 green on stabilization (deep rollback).
 - `release:verify` = 17 checks (root index.html, relative refs, itch limits,
   licenses, basic known-pattern secret scan — honest wording, not proof of
   absence). Fresh-ZIP-only script (old ZIP deleted first).
 
-## Automated Verification
+## Automated Verification (v0.2 working branch)
 
 - `npm run typecheck` — PASS
-- `npm run test` — 27 files / 194 tests PASS
+- `npm run test` — 28 files / 213 tests PASS (incl. engagement contracts +
+  origin viability runs)
 - `npm run build` — PASS
 - `npm run check` — PASS
-- `npm run zip` — PASS (`release/seed-web-v0.1.1.zip`)
+- `npm run zip` — PASS (`release/seed-web-v0.2.0-dev.0.zip`, dev only)
 - `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — 10/10 PASS (9 existing + lab grayscale toggle)
-  (per-test timeout 120s on the slow office machine; assertions unchanged)
-- GitHub Actions run 36589398303 — Node 22 verify PASS, Node 24 verify PASS,
-  Chromium E2E PASS, artifact `seed-web-v0.1.1` downloadable.
-  (Green on readability code checkpoint `35f6b73`, not the stabilization SHA.)
+- `npm run test:e2e` — pending final run before push (ascend flow changed)
+- GitHub Actions on this branch SHA — pending (checked after push).
+- Prior runs (36505017447 stabilization, 36589398303 readability) kept as
+  rollback evidence, not the active line.
 - This is NOT a human-release approval.
 
 ## Audit Round 3 Findings Closed
@@ -199,35 +216,31 @@ rolling F3, fresh ZIP, verifier, notices, smoke E2E).
 
 ## Compatibility / Version Decisions (actual source values)
 
-- `WORLDGEN_VERSION = 2` (was 1): seed normalization gained Unicode NFC, so
-  some non-ASCII seeds map differently. All ASCII seeds (incl. every
-  `EPOCH-*` seed) are byte-identical under NFC → identical worlds to v0.1.
-- `CONTENT_VERSION = 2` (was 1): wide-frontier branches + age-transition spine
-  auto-grant change generated Tech DAGs for identical seeds vs v0.1.
+- `WORLDGEN_VERSION = 2` (unchanged in v0.2): world generation positions
+  untouched — identical seeds generate identical worlds.
+- `CONTENT_VERSION = 3` (was 2): identical seeds now have different Tech
+  availability (origin-gated drafts), POI reward semantics (major first
+  discoveries), and Ascension progression (legacy prestige reset). Worlds look
+  the same; what you can build in them differs.
 - `SAVE_SCHEMA_VERSION = 1` (unchanged): saves remain compatible; runtime
-  validation sanitizes malformed values with safe fallback.
-- Old v0.1 ASCII seeds generate identical WORLDS but different TECH GRAPHS
-  under v0.1.1 — an intentional, documented compatibility decision, never
-  a silent fork.
+  validation sanitizes malformed values with safe fallback. Legacies live in
+  run state, not persisted metas.
+- Package `0.2.0-dev.0` (dev line; no tag, no itch release).
 
 ## Release Artifact
 
-- Local: `release/seed-web-v0.1.1.zip` (git-ignored build output; regenerate
-  via `npm run build && npm run zip && npm run release:verify`).
-- CI: artifact `seed-web-v0.1.1` from the green run above.
-- No GitHub Release, no tag (deliberate).
+- Local: `release/seed-web-v0.2.0-dev.0.zip` (git-ignored dev build output;
+  regenerate via `npm run build && npm run zip && npm run release:verify`).
+- No GitHub Release, no tag, no itch upload from this line (deliberate).
 
 ## Git Safety State
 
-- ACTIVE branch `fix/v011-readability-20260929` tracks
-  `origin/fix/v011-readability-20260929`; working tree clean at handoff.
-- ROLLBACK / PARENT checkpoint: stabilization
-  `737ddf3b57d14ab3bc26d191261d01d92a378340` (branch kept, never merged).
-- Readability vs stabilization: ahead 5 / behind 0. Readability vs
-  `origin/main` (`5e6d5c6`): ahead 22 / behind 0.
-- No force-push, no rewritten history, no merge to main, no tags.
-- Branch HEAD verified = code checkpoint `35f6b73`
-  (local == `git ls-remote` remote HEAD; `origin/main` still `5e6d5c6`).
+- ACTIVE branch `feat/v020-engagement-loop-20260930` tracks
+  `origin/feat/v020-engagement-loop-20260930`; working tree clean at handoff.
+- FROZEN baseline: readability `e4d4f8940cac2537fafd0a05895e1ea23b8f7ac2`
+  (never modified by this line). Deep rollback: stabilization `737ddf3`.
+- No force-push, no rewritten history, no merge to main, no tags, no itch.
+- Branch HEAD verified at push time (local == remote; `origin/main` `5e6d5c6`).
 
 ## Exact Resume Procedure
 
@@ -237,8 +250,8 @@ Fresh machine:
 git clone https://github.com/Ratthabhumi/-SEED.git
 cd -SEED
 git fetch origin
-git checkout fix/v011-readability-20260929
-git pull --ff-only origin fix/v011-readability-20260929
+git checkout feat/v020-engagement-loop-20260930
+git pull --ff-only origin feat/v020-engagement-loop-20260930
 git status
 git branch --show-current
 git rev-parse HEAD
@@ -253,8 +266,8 @@ Existing repository:
 cd <existing-repo>
 git status
 git fetch origin
-git checkout fix/v011-readability-20260929
-git pull --ff-only origin fix/v011-readability-20260929
+git checkout feat/v020-engagement-loop-20260930
+git pull --ff-only origin feat/v020-engagement-loop-20260930
 git status
 git rev-parse HEAD
 npm ci
@@ -265,25 +278,29 @@ Safety rule: if `git status` is not clean before pulling — STOP, inspect local
 changes, do not reset/delete them automatically. NEVER use `git reset --hard`,
 `git clean -fd`, or force checkout as routine resume steps.
 
-Resume rule: the ACTIVE branch is `fix/v011-readability-20260929`
-(code checkpoint `35f6b73`). Do NOT resume on `fix/v011-stabilization-20260929`
-— that branch is the rollback point only (`737ddf3`). If green and SHA matches
-this handoff, begin the human gates (visual review → full run → F3 numbers →
-Thai → Firefox → itch draft) before any editing.
+Resume rule: the ACTIVE branch is `feat/v020-engagement-loop-20260930`.
+Do NOT resume on `fix/v011-readability-20260929` (frozen v0.1.1 baseline) or
+`fix/v011-stabilization-20260929` (deep rollback) unless rolling back. If green
+and SHA matches this handoff, run the v0.2 engagement playtest
+(`?qa=1`, EPOCH-GOLDEN-001, pick an Origin, reach Ascension, 2+ min in World #2,
+answer the five 1–5 ratings) before any further editing.
 
 ## QA Harness (Human Gate Tooling)
 
 - Activation: `http://localhost:5173/?qa=1` → gate panel → START PLAYTEST
   (golden seed `EPOCH-GOLDEN-001`, no typing). Normal `/` launch unchanged.
-- Auto-records: age/boss/ascension/death checkpoints (sim + wall time), 2 Hz
-  perf samples + checkpoint snapshots (FPS, frame/sim p50/p95/p99, entities,
-  pools, queries, buckets, chunk cache), environment, console errors/warnings,
-  draft/seed/age/boss/ascension runtime assertions, EN↔TH snapshot invariance,
-  DOM overflow findings, pool saturation. Human only taps feedback buttons
-  (Thai labels) + optional note.
-- Read-only: no XP/kill/teleport/age/damage/RNG cheats. No world hard-bounds;
-  F4 diagnostic overlay (chunk box, POI direction, objective readout) gathers
-  navigation/readability evidence before any guidance design.
+- Auto-records: age/boss/ascension/death checkpoints (sim + wall time),
+  knowledge-at-age, engagement identity (origin/families/techs/breakthroughs/
+  legacies/POIs/weapons per age), 2 Hz perf samples + checkpoint snapshots
+  (FPS, frame/sim p50/p95/p99, entities, pools, queries, buckets, chunk cache),
+  environment, console errors/warnings, draft/seed/age/boss/ascension runtime
+  assertions, EN↔TH snapshot invariance, DOM overflow findings, pool
+  saturation. Human only plays + taps categorized feedback + answers five
+  1–5 ratings at END PLAYTEST.
+- Feedback is unambiguous events (read/feel/balance/positive/note), never
+  scored. Panel is compact by default (expandable); F4 overlay OFF by
+  default; recording continues regardless.
+- Read-only: no XP/kill/teleport/age/damage/RNG cheats. No world hard-bounds.
 - Report: END PLAYTEST (or death, or Ascension+60s window) →
   DOWNLOAD `playtest-report.md` + `playtest-report.json` (local only).
   Verdict is `AUTOMATED_CHECKS_PASS/FAIL` — never a human-gate PASS.
@@ -333,15 +350,15 @@ Thai strings + 300px wrap box correct at 900px. Auditor verdict pending.
 
 ## Next Three Actions
 
-1. HUMAN: open `http://localhost:5173/?visual=1` (2-minute visual-language
-   check: player/families/shots/Knowledge/POI/Thai). Do NOT run another 10-minute
-   full run until the lab reads clearly. Then re-run Gate A via `?qa=1`.
+1. HUMAN (v0.2 engagement playtest): open `http://localhost:5173/?qa=1`,
+   choose an Origin, play EPOCH-GOLDEN-001 to Ascension, 2+ min in World #2,
+   answer the five 1–5 ratings at END PLAYTEST. Record whether you can
+   describe your build in one sentence (acceptance Q1–Q7 in prompt).
 2. Thai + Firefox manual QA at normal and smaller desktop windows, in Thai
    and English modes. Record problems before editing.
-3. If both acceptable: `npm run check`, `npm run zip`, `npm run release:verify`,
-   then upload `seed-web-v0.1.1.zip` to itch as DRAFT/restricted test only.
-   Verify embed before requesting merge/tag approval. Do NOT begin V0.2 before
-   this gate unless explicitly authorized by the human operator.
+3. Return the playtest-report.md/json + ratings: auditor decides merge/tag
+   (still gated), itch draft, and any evidence-driven tuning. Do NOT begin
+   anything beyond v0.2 scope unless explicitly authorized.
 
 ## Do-Not-Break Invariants
 
