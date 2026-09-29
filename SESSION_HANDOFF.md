@@ -8,9 +8,10 @@ audit Round 3. No V0.2 content. No merge, no tag, no force-push.
 ## Branch / HEAD
 
 Branch: `fix/v011-stabilization-20260929` (pushed, unmerged).
-HEAD: see `git rev-parse HEAD` — handoff records code HEAD `62480a2`-lineage;
-final SHA reported separately (branch moved forward with corrective commits).
+HEAD: `7e876c16c6d9f5546634259258cf291e55e02ae0` (10 commits above `5e6d5c6`).
 `origin/main` = `5e6d5c65ea905bc3859f115e73bfd02913988d45` (unchanged).
+CI (run 36504784487): verify(22) + verify(24) + e2e SUCCESS; artifact
+`seed-web-v0.1.1` (846,545 bytes, CI-built) downloadable.
 
 ## Starting State (verified)
 
