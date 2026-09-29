@@ -24,15 +24,26 @@
 - **i18n/** parity EN↔TH (release-blocking), no empties/undefined, Thai
   combining-mark preservation.
 - **save/** defaults, corrupt/schema-mismatch fallback, round-trip + runtime
-  validation (bad lang/volume/shake/best/history sanitized).
+  validation (bad lang/volume/shake/contrast/best/history sanitized).
 - **balance/** 8 seeds: valid graphs, finite threat, sane fields, monotonic XP,
   full weapon tables, satisfiable age gates.
+- **qa/** recorder exactly-once checkpoints, FAIL dedupe + bounds, report
+  sections, sampler percentiles/worst-case counters/buffer caps, overflow
+  analysis, mode gating.
+- **visual/** token contracts (distinct family shapes incl. all 5 affix markers,
+  boss ≠ tank, friendly ≠ hostile, pickup/POI channels, archetype coverage),
+  navigation math, mode dormancy, EN/TH key presence for readability-critical
+  labels.
 
 `npm run test:e2e` (Playwright + Chromium, production build, `?e2e` hook):
 smoke (title/seed/run/move/pause/EN↔TH/F3/quit) + regressions (restart keeps
 seed, queued multi-draft single-surface completion, death persists exactly once,
 language switch leaves canonical snapshot identical, ascension child-world with
-run stats retained). Firefox remains a manual gate.
+run stats retained) + qa (gate → golden start → live panel → report download) +
+visual (`?visual=1` samples + EN/TH toggle; `/` and `?qa=1` expose no lab UI).
+Per-test timeout 120s: the office i5 + software WebGL needs >60s wall-clock for
+real-time gameplay tests; assertions unchanged, hangs still fail. Firefox
+remains a manual gate.
 
 Manual checklist before release: full run to Space on EPOCH-GOLDEN-001, boss,
 ascend, death chronicle, Thai visual inspection (tone marks, clipping, wrapping,

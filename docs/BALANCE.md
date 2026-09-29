@@ -29,3 +29,14 @@
 - Enemy scaling: HP `×(1+0.28·age)(1+0.35·asc)(1+t/900)`; boss 40× tank + shield.
 
 Sanity net: `tests/balance` + `tests/sim` (replay, fuzz 300, frontier, economy).
+
+## Human evidence — 2026-09-29 — PERCEIVED_DIFFICULTY_INCONSISTENT (NOT a rebalance)
+
+- EPOCH-GOLDEN-001 office run: 10:15 survival, Space reached, 1258 kills,
+  56 elites, 22 techs, 76 chunks, 26 landmarks, 0 bosses, 0 ascensions.
+- Operator affirmed BOTH "ยากเกิน" and "ง่ายเกิน" plus unreadable visuals,
+  indistinct enemies/weapons, unclear direction, Thai UI issues — and explicitly
+  NOT stutter. Verdict: readability/wayfinding failure, not performance failure.
+- Decision: NO numeric changes in this pass (enemy HP/damage/spawn/XP/knowledge/
+  weapon/boss/age-gate values untouched). Re-run the same seed after the
+  readability remediation; only then judge whether numbers are actually wrong.

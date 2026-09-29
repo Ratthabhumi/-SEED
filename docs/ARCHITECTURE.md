@@ -17,7 +17,10 @@ src/
     save/          save.ts (versioned localStorage, runtime-validated)
   content/         content.ts (lineages, biomes, civ layers — tuning here)
   game/            Phaser presentation + DOM UI (adapter only)
-    scenes/        TitleScene.ts GameScene.ts
+    scenes/        TitleScene.ts GameScene.ts VisualLabScene.ts (?visual=1)
+    render/        VisualLanguage.ts paths.ts EnemyRenderer.ts PlayerRenderer.ts
+                   ProjectileRenderer.ts WorldRenderer.ts NavigationRenderer.ts
+                   (canvas drawing; may use Phaser, never owns canonical state)
     audio/         sfx.ts (Web Audio synth)
     ui.ts          DOM helpers (Thai-safe text)
   i18n/            en.ts th.ts i18n.ts
