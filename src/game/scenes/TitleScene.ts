@@ -5,6 +5,7 @@ import { uiRoot, clearUI, el, button } from "../ui";
 import { loadSave, storeSave } from "../../core/save/save";
 import { generateRandomSeed } from "../../core/seed/hash";
 import { sfx } from "../audio/sfx";
+import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 
 export const TITLE_SEED_KEY = "seed-game:pending-seed";
 
@@ -35,7 +36,33 @@ export class TitleScene extends Phaser.Scene {
 
     const logo = el("div", "logo", undefined, "-SEED");
     panel.appendChild(logo);
-    const sub = el("div", "title-th", undefined, getLang() === "th" ? "เมล็ดพันธุ์แห่งอารยธรรม" : "-SEED");
+    // QA gate (?qa=1 only): one-click golden-seed start. Normal flow untouched.
+    if (isQAMode(window.location.search)) {
+      const gate = el("div", "qa-gate");
+      const gh = document.createElement("div");
+      gh.className = "qa-gate-title";
+      gh.textContent = "-SEED HUMAN GATE A";
+      gate.appendChild(gh);
+      const gs = document.createElement("div");
+      gs.className = "qa-gate-sub";
+      gs.textContent = `Seed ${GOLDEN_QA_SEED} · Stone → Space → Boss → Ascension`;
+      gate.appendChild(gs);
+      const gn = document.createElement("div");
+      gn.className = "qa-gate-sub";
+      gn.textContent = "You only need to play. Everything else is recorded automatically. / แค่เล่น ที่เหลือระบบจดให้";
+      gate.appendChild(gn);
+      const startQa = document.createElement("button");
+      startQa.id = "qa-start-playtest";
+      startQa.className = "btn primary";
+      startQa.textContent = "START PLAYTEST";
+      startQa.addEventListener("click", () => {
+        sfx.unlock(); sfx.select();
+        sessionStorage.setItem(TITLE_SEED_KEY, GOLDEN_QA_SEED);
+        this.scene.start("game");
+      });
+      gate.appendChild(startQa);
+      panel.insertBefore(gate, panel.firstChild);
+    }    const sub = el("div", "title-th", undefined, getLang() === "th" ? "เมล็ดพันธุ์แห่งอารยธรรม" : "-SEED");
     panel.appendChild(sub);
     const tag = el("div", "logo-sub", "app.tagline");
     panel.appendChild(tag);

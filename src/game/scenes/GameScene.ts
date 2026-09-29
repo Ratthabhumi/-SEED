@@ -3,11 +3,12 @@
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
 import Phaser from "phaser";
 import { normalizeSeedString, deriveUint32, generateRandomSeed } from "../../core/seed/hash";
-import { WORLDGEN_VERSION, CONTENT_VERSION } from "../../core/seed/versions";
+import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { InputLatch } from "../../core/sim/InputLatch";
 import { RunSimulation, AGE_OBJECTIVE_KILLS } from "../../core/sim/RunSimulation";
 import type { SimEvent } from "../../core/sim/SimEvent";
+import { MAX_ENEMIES, MAX_PROJ, MAX_PICKUP } from "../../core/sim/RunState";
 import { worldToChunk, CHUNK_SIZE, ACTIVE_RADIUS_CHUNKS } from "../../core/world/chunks";
 import { BIOME_STYLE, CIV_LAYER, ENEMY_LINEAGE } from "../../content/content";
 import type { AgeId } from "../../core/tech/graph";
@@ -16,12 +17,15 @@ import { BREAKTHROUGHS } from "../../core/tech/synergy";
 import { AGE_DEFS, dwellFor } from "../../core/progression/ages";
 import { threatBudget } from "../../core/director/director";
 import { getWeaponStage } from "../../core/combat/weapons";
-import { t, setLang } from "../../i18n/i18n";
+import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
 import { uiRoot, clearUI, el, button, toast } from "../ui";
 import { TITLE_SEED_KEY } from "./TitleScene";
+import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
+import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
+import pkg from "../../../package.json";
 
 function percentile(sorted: number[], p: number): number {
   if (sorted.length === 0) return 0;
@@ -47,6 +51,15 @@ export class GameScene extends Phaser.Scene {
   private keyHandlers: { event: string; fn: () => void }[] = [];
   private hud: Record<string, HTMLElement> = {};
   private hudT = 0;
+
+  // QA harness (read-only observer, ?qa=1 only — null in normal play).
+  private qa: QaSession | null = null;
+  private qaOverlay = false;
+  private qaGfx: Phaser.GameObjects.Graphics | null = null;
+  private qaText: Phaser.GameObjects.Text | null = null;
+  private qaBiome = "?";
+  private qaPoi: QaPOIInfo | null = null;
+  private qaScanT = 0;
 
   // Rolling performance samples (bounded) — real p50/p95, never EMA-as-p95.
   private simSamples: number[] = [];
@@ -156,10 +169,180 @@ export class GameScene extends Phaser.Scene {
         setLang: (code: "en" | "th") => this.applyLanguage(code),
       };
     }
+
+    // QA playtest harness: read-only observer, query-gated, zero gameplay effect.
+    if (isQAMode(window.location.search)) this.startQa();
+  }
+
+  /** QA session bootstrap (?qa=1 only). Never runs in normal play. */
+  private startQa(): void {
+    const adapter = {
+      frame: () => this.buildQaFrame(),
+      snapshot: () => {
+        try {
+          return this.sim.snapshot();
+        } catch {
+          return "";
+        }
+      },
+      lang: () => getLang(),
+      versions: () => ({
+        packageVersion: (pkg as { version: string }).version,
+        worldgen: WORLDGEN_VERSION,
+        content: CONTENT_VERSION,
+        saveSchema: SAVE_SCHEMA_VERSION,
+      }),
+      ageOrder: () => AGES as readonly string[],
+    };
+    this.qa = new QaSession(adapter);
+    this.qa.start();
+    this.qaOverlay = true;
+    this.qaGfx = this.add.graphics().setDepth(40);
+    this.qaText = this.add.text(10, 200, "", {
+      fontSize: "12px", color: "#ffe08a", fontFamily: "monospace", backgroundColor: "rgba(0,0,0,0.65)",
+    });
+    this.qaText.setScrollFactor(0).setDepth(50).setVisible(true);
+    const kb = this.input.keyboard;
+    if (kb) {
+      const toggle = (): void => {
+        this.qaOverlay = !this.qaOverlay;
+        this.qaGfx?.setVisible(this.qaOverlay);
+        this.qaText?.setVisible(this.qaOverlay);
+      };
+      kb.on("keydown-F4", toggle);
+      this.keyHandlers.push({ event: "keydown-F4", fn: toggle });
+    }
+  }
+
+  /** Map canonical sim state → plain QA frame data (observe, never mutate). */
+  private buildQaFrame(): QaFrameData {
+    const s = this.sim.state;
+    let enemies = 0;
+    for (const e of s.enemies) if (e.active) enemies++;
+    let projs = 0;
+    for (const p of s.projs) if (p.active) projs++;
+    let pickups = 0;
+    for (const k of s.pickups) if (k.active) pickups++;
+    let mines = 0;
+    for (const m of s.mines) if (m.active) mines++;
+    let simSum = 0;
+    for (const v of this.simSamples) simSum += v;
+    const bossActive = s.bossIndex >= 0 && (s.enemies[s.bossIndex]?.active === true);
+    const next = s.ageIndex + 1;
+    const ageId = AGES[s.ageIndex] as AgeId;
+    return {
+      simTime: s.elapsed,
+      runElapsed: s.runElapsed,
+      age: ageId,
+      ageIndex: s.ageIndex,
+      ascension: s.ascension,
+      masterSeed: s.masterSeed,
+      worldSeed: s.worldSeed,
+      px: s.px,
+      py: s.py,
+      over: s.over,
+      draftOpen: s.draftOpen,
+      enemies,
+      projs,
+      pickups,
+      mines,
+      enemyCap: MAX_ENEMIES,
+      projCap: MAX_PROJ,
+      pickupCap: MAX_PICKUP,
+      bossSpawned: s.bossSpawned,
+      bossIndex: s.bossIndex,
+      bossActive,
+      bossKills: s.stats.bosses,
+      ascendReady: s.ascendReady,
+      runKills: s.runKills,
+      runHighestAge: s.runHighestAge,
+      level: s.level,
+      owned: [...s.owned],
+      fps: this.fpsEMA,
+      frameMs: this.frameSamples.length > 0 ? (this.frameSamples[this.frameSamples.length - 1] as number) : 0,
+      simMsAvg: this.simSamples.length > 0 ? simSum / this.simSamples.length : 0,
+      queries: this.sim.queryCount,
+      buckets: this.sim.spatialBucketCount,
+      chunkHits: this.sim.chunks.hits,
+      chunkMisses: this.sim.chunks.misses,
+      chunkCx: worldToChunk(s.px, s.py).cx,
+      chunkCy: worldToChunk(s.px, s.py).cy,
+      biome: this.qaBiome,
+      objective: next < AGES.length
+        ? {
+          killsHave: s.ageKills,
+          killsNeed: AGE_OBJECTIVE_KILLS[next] ?? 0,
+          knowHave: Math.floor(s.knowledgeTotal),
+          knowNeed: AGE_DEFS[next]?.knowledgeThreshold ?? 0,
+          elapsedHave: Math.floor(s.elapsed),
+          elapsedNeed: AGE_DEFS[next]?.minTimeSec ?? 0,
+        }
+        : null,
+      nearestPOI: this.qaPoi,
+      buildSummary: `lv${s.level}+${s.stats.techsTaken}t[${s.breakthroughs.join("+") || "-"}]`,
+    };
+  }
+
+  /** Throttled world-context scan for the QA overlay (1 Hz — never per frame). */
+  private scanQaWorld(): void {
+    const s = this.sim.state;
+    try {
+      const { cx, cy } = worldToChunk(s.px, s.py);
+      const here = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx, cy);
+      this.qaBiome = here.biome;
+      let best: QaPOIInfo | null = null;
+      for (let ox = -2; ox <= 2; ox++) {
+        for (let oy = -2; oy <= 2; oy++) {
+          const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+          for (const poi of desc.poi) {
+            const found = s.poisWorld.includes(poi.id);
+            const dx = poi.wx - s.px;
+            const dy = poi.wy - s.py;
+            const dist = Math.hypot(dx, dy);
+            const cand: QaPOIInfo = { dx, dy, dist, poiType: poi.type, found };
+            if (!best) best = cand;
+            else if (best.found && !found) best = cand; // undiscovered wins
+            else if (best.found === found && dist < best.dist) best = cand;
+          }
+        }
+      }
+      // Prefer undiscovered POIs; fall back to nearest discovered.
+      this.qaPoi = best;
+    } catch {
+      // QA must never break gameplay.
+    }
+  }
+
+  /** Diagnostic readability overlay (F4, QA mode only): chunk + POI guidance. */
+  private drawQaOverlay(): void {
+    const g = this.qaGfx;
+    const tx = this.qaText;
+    const f = this.qa?.lastFrame;
+    if (!g || !tx || !f) return;
+    g.clear();
+    const gx = f.chunkCx * CHUNK_SIZE;
+    const gy = f.chunkCy * CHUNK_SIZE;
+    g.lineStyle(2, 0xffe08a, 0.8);
+    g.strokeRect(gx, gy, CHUNK_SIZE, CHUNK_SIZE);
+    if (f.nearestPOI && !f.nearestPOI.found) {
+      g.lineStyle(2, 0x53e0c8, 0.9);
+      g.lineBetween(f.px, f.py, f.px + f.nearestPOI.dx, f.py + f.nearestPOI.dy);
+      g.fillStyle(0x53e0c8, 1);
+      g.fillCircle(f.px + f.nearestPOI.dx, f.py + f.nearestPOI.dy, 8);
+    }
+    const o = f.objective;
+    tx.setText(
+      `QA pos ${f.px.toFixed(0)},${f.py.toFixed(0)}  chunk ${f.chunkCx},${f.chunkCy}  biome ${f.biome}\n` +
+      `POI ${f.nearestPOI ? `${f.nearestPOI.poiType} ${f.nearestPOI.dist.toFixed(0)}u${f.nearestPOI.found ? " (found)" : ""}` : "none nearby"}\n` +
+      `obj ${o ? `☠${Math.min(o.killsHave, o.killsNeed)}/${o.killsNeed} kn${o.knowHave}/${o.knowNeed} t${o.elapsedHave}/${o.elapsedNeed}` : "max age"}\n` +
+      `foes ${f.enemies}  boss ${f.bossSpawned ? (f.bossActive ? "FIGHT" : "down?") : "—"}  asc ${f.ascension}`,
+    );
   }
 
   /** Language switch: DOM text only — sim/RNG/state untouched (tested). */
   private applyLanguage(code: "en" | "th"): void {
+    const from = getLang();
+    const qaBefore = this.qa ? this.qa.beforeLangSwitch() : "";
     const sv = loadSave(localStorage);
     sv.settings.lang = code;
     storeSave(localStorage, sv);
@@ -167,6 +350,7 @@ export class GameScene extends Phaser.Scene {
     document.getElementById("pause-screen")?.remove();
     this.buildHUD();
     if (this.paused) this.showPause();
+    if (this.qa && qaBefore) this.qa.afterLangSwitch(qaBefore, from, code);
   }
 
   private unlockAudio = (): void => {
@@ -179,6 +363,10 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onShutdown(): void {
+    this.qa?.dispose();
+    this.qa = null;
+    this.qaGfx = null;
+    this.qaText = null;
     document.removeEventListener("visibilitychange", this.onHidden);
     this.input.off("pointerdown", this.unlockAudio);
     const kb = this.input.keyboard;
@@ -611,6 +799,16 @@ export class GameScene extends Phaser.Scene {
       this.refreshGround(false);
     }
     if (this.showDebug) this.refreshDebug();
+    // QA harness tick (no-op unless ?qa=1 session exists).
+    if (this.qa) {
+      this.qaScanT -= dt;
+      if (this.qaScanT <= 0) {
+        this.qaScanT = 1;
+        this.scanQaWorld();
+      }
+      this.qa.tick();
+      if (this.qaOverlay) this.drawQaOverlay();
+    }
   }
 
   private refreshDebug(): void {

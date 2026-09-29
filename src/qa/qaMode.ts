@@ -1,0 +1,15 @@
+// QA mode detection — pure, framework-free, unit-testable.
+// ?qa=1 activates the human-playtest harness. Everything QA stays dormant
+// without the query parameter; normal play is byte-for-byte unaffected.
+export const GOLDEN_QA_SEED = "EPOCH-GOLDEN-001";
+
+export const QA_QUERY_KEY = "qa";
+
+/** True when the given location.search string carries the QA flag. */
+export function isQAMode(search: string): boolean {
+  try {
+    return new URLSearchParams(search).has(QA_QUERY_KEY);
+  } catch {
+    return false;
+  }
+}

@@ -1,0 +1,680 @@
+// QA session glue — BROWSER-ONLY (DOM/window/performance). Never imported by
+// src/core. Observes the adapter read-only: no XP, no kills, no teleports,
+// no balance changes. Dormant unless the scene creates it in ?qa=1 mode.
+import {
+  PlaytestRecorder,
+  type QaCtx,
+  type QaEnvironment,
+  type QaVersions,
+} from "./PlaytestRecorder";
+import { renderMarkdown, renderJSON } from "./PlaytestReport";
+import { collectRects, analyzeRects, OVERFLOW_SELECTORS } from "./VisualChecks";
+import { GOLDEN_QA_SEED } from "./qaMode";
+
+export interface QaObjective {
+  killsHave: number;
+  killsNeed: number;
+  knowHave: number;
+  knowNeed: number;
+  elapsedHave: number;
+  elapsedNeed: number;
+}
+
+export interface QaPOIInfo {
+  dx: number;
+  dy: number;
+  dist: number;
+  poiType: string;
+  found: boolean;
+}
+
+export interface QaFrameData {
+  simTime: number;
+  runElapsed: number;
+  age: string;
+  ageIndex: number;
+  ascension: number;
+  masterSeed: string;
+  worldSeed: string;
+  px: number;
+  py: number;
+  over: boolean;
+  draftOpen: boolean;
+  enemies: number;
+  projs: number;
+  pickups: number;
+  mines: number;
+  enemyCap: number;
+  projCap: number;
+  pickupCap: number;
+  bossSpawned: boolean;
+  bossIndex: number;
+  bossActive: boolean;
+  bossKills: number;
+  ascendReady: boolean;
+  runKills: number;
+  runHighestAge: string;
+  level: number;
+  owned: string[];
+  fps: number;
+  frameMs: number;
+  simMsAvg: number;
+  queries: number;
+  buckets: number;
+  chunkHits: number;
+  chunkMisses: number;
+  chunkCx: number;
+  chunkCy: number;
+  biome: string;
+  objective: QaObjective | null;
+  nearestPOI: QaPOIInfo | null;
+  buildSummary: string;
+}
+
+export interface QaAdapter {
+  frame(): QaFrameData;
+  snapshot(): string;
+  lang(): string;
+  versions(): QaVersions;
+  ageOrder(): readonly string[];
+}
+
+const FEEDBACK_LABELS = [
+  "ภาพอ่านยาก",
+  "ไม่รู้ว่าต้องไปไหน",
+  "เกมกระตุก",
+  "ศัตรูดูไม่ออก",
+  "อาวุธดูไม่ออก",
+  "UI ภาษาไทยมีปัญหา",
+  "ยากเกิน",
+  "ง่ายเกิน",
+];
+
+function download(filename: string, text: string, mime: string): void {
+  try {
+    const blob = new Blob([text], { type: `${mime};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 2000);
+  } catch {
+    // QA must never break gameplay.
+  }
+}
+
+export class QaSession {
+  readonly recorder: PlaytestRecorder;
+  lastFrame: QaFrameData | null = null;
+  private wallStart = 0;
+  private tickCount = 0;
+  private panel: HTMLElement | null = null;
+  private listBox: HTMLElement | null = null;
+  private ended = false;
+  private disposed = false;
+  // Transition memory (previous tick).
+  private prevAgeIndex = 0;
+  private prevAscension = 0;
+  private prevBossSpawned = false;
+  private prevBossKills = 0;
+  private prevDraftOpen = false;
+  private prevOver = false;
+  private prevAscendReady = false;
+  private seenBossActive = false;
+  private seedFailLogged = false;
+  private draftFailOpen = false;
+  private postAscWall = 0;
+  private postAscSim = 0;
+  private post30Done = false;
+  private post60Done = false;
+  private origError: typeof console.error | null = null;
+  private origWarn: typeof console.warn | null = null;
+  private onWinError: ((e: ErrorEvent) => void) | null = null;
+  private onUnhandled: ((e: PromiseRejectionEvent) => void) | null = null;
+  private refreshSamples: number[] = [];
+
+  constructor(private readonly adapter: QaAdapter) {
+    this.wallStart = performance.now();
+    this.recorder = new PlaytestRecorder(
+      GOLDEN_QA_SEED,
+      adapter.versions(),
+      this.wallStart,
+      adapter.ageOrder(),
+    );
+  }
+
+  private wallNow(): number {
+    return (performance.now() - this.wallStart) / 1000;
+  }
+
+  private ctx(f: QaFrameData): QaCtx {
+    return { simTime: f.simTime, wallTime: this.wallNow(), age: f.age, ascension: f.ascension };
+  }
+
+  start(): void {
+    const f = this.adapter.frame();
+    this.lastFrame = f;
+    this.prevAgeIndex = f.ageIndex;
+    this.prevAscension = f.ascension;
+    this.prevBossKills = f.bossKills;
+    const ctx = this.ctx(f);
+    this.recorder.checkpoint("RUN_START", ctx);
+    this.recorder.checkpoint("STONE_START", ctx);
+    this.recorder.perfSnapshot("run-start", ctx);
+    this.recorder.assert("seed", "Seed invariant", f.masterSeed === GOLDEN_QA_SEED,
+      f.masterSeed === GOLDEN_QA_SEED ? `masterSeed=${f.masterSeed}` : `expected ${GOLDEN_QA_SEED}, got ${f.masterSeed}`, ctx);
+    if (f.masterSeed !== GOLDEN_QA_SEED) this.seedFailLogged = true;
+    this.captureEnvironment();
+    this.attachConsole();
+    this.buildPanel();
+    this.scanOverflow();
+  }
+
+  // ------------------------------------------------------------ per-frame
+  /** Called every RAF update; internally throttled (transitions ~4Hz, perf 2Hz, panel 1Hz). */
+  tick(): void {
+    if (this.disposed || this.ended) return;
+    let f: QaFrameData;
+    try {
+      f = this.adapter.frame();
+    } catch {
+      return;
+    }
+    const prev = this.lastFrame;
+    this.lastFrame = f;
+    this.tickCount++;
+    const n = this.tickCount;
+    if (n % 15 === 0) this.checkTransitions(f, prev);
+    if (n % 30 === 0) this.samplePerf(f);
+    if (n % 300 === 0) this.scanOverflow();
+    if (n % 60 === 0) this.refreshPanel();
+  }
+
+  private checkTransitions(f: QaFrameData, prev: QaFrameData | null): void {
+    const ctx = this.ctx(f);
+    // Seed invariant (FAIL once).
+    if (!this.seedFailLogged && f.masterSeed !== GOLDEN_QA_SEED) {
+      this.seedFailLogged = true;
+      this.recorder.assert("seed", "Seed invariant", false, `masterSeed changed to ${f.masterSeed}`, ctx);
+    }
+    // Draft lifecycle invariant (FAIL once per stuck-open episode).
+    const surfaces = document.querySelectorAll("#draft-screen").length;
+    if (f.draftOpen && surfaces !== 1) {
+      if (!this.draftFailOpen) {
+        this.draftFailOpen = true;
+        this.recorder.assert("draft", "Draft lifecycle", false, `draftOpen=true but surfaces=${surfaces}`, ctx);
+      }
+    } else if (!f.draftOpen && surfaces !== 0) {
+      if (!this.draftFailOpen) {
+        this.draftFailOpen = true;
+        this.recorder.assert("draft", "Draft lifecycle", false, `draftOpen=false but surfaces=${surfaces}`, ctx);
+      }
+    } else if (this.draftFailOpen && ((f.draftOpen && surfaces === 1) || (!f.draftOpen && surfaces === 0))) {
+      this.draftFailOpen = false;
+      this.recorder.assert("draft", "Draft lifecycle", true, "surface count recovered", ctx);
+    }
+    if (f.draftOpen !== this.prevDraftOpen) this.prevDraftOpen = f.draftOpen;
+    // Age transitions (monotonic +1, or reset to stone on ascension).
+    if (f.ageIndex !== this.prevAgeIndex || f.ascension !== this.prevAscension) {
+      const order = this.adapter.ageOrder();
+      if (f.ascension === this.prevAscension) {
+        if (f.ageIndex === this.prevAgeIndex + 1) {
+          const ageUpper = order[f.ageIndex] ?? f.age;
+          const map: Record<string, "BRONZE_REACHED" | "IRON_REACHED" | "INDUSTRIAL_REACHED" | "ATOMIC_REACHED" | "SPACE_REACHED"> = {
+            bronze: "BRONZE_REACHED", iron: "IRON_REACHED", industrial: "INDUSTRIAL_REACHED",
+            atomic: "ATOMIC_REACHED", space: "SPACE_REACHED",
+          };
+          const cp = map[ageUpper];
+          if (cp && this.recorder.checkpoint(cp, ctx)) this.recorder.perfSnapshot(ageUpper, ctx);
+          this.recorder.assert("age", "Age progression", true, `${order[this.prevAgeIndex] ?? "?"} → ${ageUpper}`, ctx);
+        } else {
+          this.recorder.assert("age", "Age progression", false,
+            `unexpected jump ${this.prevAgeIndex} → ${f.ageIndex} (asc ${f.ascension})`, ctx);
+        }
+      } else if (f.ascension === this.prevAscension + 1) {
+        // Ascension: child-world contract.
+        const base = prev;
+        const orderIdx = (a: string): number => Math.max(0, order.indexOf(a));
+        const okSeed = f.masterSeed === GOLDEN_QA_SEED;
+        const okWorld = base !== null && f.worldSeed !== base.worldSeed;
+        const okTime = base !== null && f.runElapsed >= base.runElapsed;
+        const okKills = base !== null && f.runKills >= base.runKills;
+        const okAge = base !== null && orderIdx(f.runHighestAge) >= orderIdx(base.runHighestAge);
+        const pass = okSeed && okWorld && okTime && okKills && okAge;
+        this.recorder.assert("ascension", "Ascension contract", pass,
+          `seed:${okSeed} worldChanged:${okWorld} time:${okTime} kills:${okKills} age:${okAge}`, ctx);
+        this.recorder.checkpoint("ASCENSION_STARTED", ctx);
+        this.recorder.checkpoint("CHILD_WORLD_STARTED", ctx);
+        this.recorder.perfSnapshot("post-ascension", ctx);
+        this.postAscWall = this.wallNow();
+        this.postAscSim = f.simTime;
+        this.post30Done = false;
+        this.post60Done = false;
+        this.prevAscension = f.ascension;
+      } else {
+        this.recorder.assert("ascension", "Ascension contract", false,
+          `unexpected ascension jump ${this.prevAscension} → ${f.ascension}`, ctx);
+        this.prevAscension = f.ascension;
+      }
+      this.prevAgeIndex = f.ageIndex;
+    }
+    // Boss lifecycle.
+    if (f.bossSpawned && !this.prevBossSpawned) {
+      this.prevBossSpawned = true;
+      this.prevBossKills = f.bossKills;
+      if (this.recorder.checkpoint("BOSS_SPAWNED", ctx)) this.recorder.perfSnapshot("boss-spawn", ctx);
+    }
+    if (f.bossActive) this.seenBossActive = true;
+    if (f.bossKills > this.prevBossKills) {
+      this.prevBossKills = f.bossKills;
+      if (this.recorder.checkpoint("BOSS_KILLED", ctx)) this.recorder.perfSnapshot("boss-fight", ctx);
+    }
+    if (this.seenBossActive && f.bossSpawned && f.bossIndex === -1 && f.bossKills === this.prevBossKills && !f.ascendReady) {
+      this.recorder.assert("boss", "Boss entity integrity", false, "boss was active but vanished without a kill", ctx);
+      this.seenBossActive = false; // log once per episode
+    }
+    // Ascension offer.
+    if (f.ascendReady && !this.prevAscendReady) {
+      this.prevAscendReady = true;
+      this.recorder.checkpoint("ASCENSION_OFFERED", ctx);
+    } else if (!f.ascendReady && this.prevAscendReady && f.ascension === this.prevAscension) {
+      this.prevAscendReady = false;
+    }
+    // Post-ascension +30/+60s perf snapshots.
+    if (this.postAscWall > 0) {
+      if (!this.post30Done && (this.wallNow() - this.postAscWall >= 30 || f.simTime - this.postAscSim >= 30)) {
+        this.post30Done = true;
+        this.recorder.perfSnapshot("post-ascension+30s", ctx);
+      }
+      if (!this.post60Done && (this.wallNow() - this.postAscWall >= 60 || f.simTime - this.postAscSim >= 60)) {
+        this.post60Done = true;
+        this.recorder.perfSnapshot("post-ascension+60s", ctx);
+      }
+    }
+    // Death / run end.
+    if (f.over && !this.prevOver) {
+      this.prevOver = true;
+      this.recorder.checkpoint("PLAYER_DIED", ctx);
+      this.recorder.checkpoint("RUN_END", ctx);
+      this.recorder.perfSnapshot("run-end", ctx);
+      this.end("player-died");
+    }
+    // Pool saturation (once per pool per ascension world).
+    if (f.enemies >= f.enemyCap) this.recorder.poolSaturation("enemies", f.enemies, f.enemyCap, ctx);
+    if (f.projs >= f.projCap) this.recorder.poolSaturation("projectiles", f.projs, f.projCap, ctx);
+    if (f.pickups >= f.pickupCap) this.recorder.poolSaturation("pickups", f.pickups, f.pickupCap, ctx);
+  }
+
+  private samplePerf(f: QaFrameData): void {
+    this.recorder.pushPerf({
+      fps: f.fps,
+      frameMs: f.frameMs,
+      simMs: f.simMsAvg,
+      enemies: f.enemies,
+      projs: f.projs,
+      pickups: f.pickups,
+      mines: f.mines,
+      enemyPoolUsed: f.enemies,
+      projPoolUsed: f.projs,
+      pickupPoolUsed: f.pickups,
+      queries: f.queries,
+      buckets: f.buckets,
+      chunkHits: f.chunkHits,
+      chunkMisses: f.chunkMisses,
+    });
+  }
+
+  // ------------------------------------------------------------ language
+  beforeLangSwitch(): string {
+    try {
+      return this.adapter.snapshot();
+    } catch {
+      return "";
+    }
+  }
+
+  afterLangSwitch(before: string, from: string, to: string): void {
+    const f = this.lastFrame;
+    if (!f) return;
+    let after = "";
+    try {
+      after = this.adapter.snapshot();
+    } catch {
+      after = "";
+    }
+    const unchanged = before !== "" && before === after;
+    this.recorder.langSwitch(from, to, unchanged, this.ctx(f));
+    this.scanOverflow();
+    this.refreshPanel();
+  }
+
+  // ------------------------------------------------------------ console
+  private attachConsole(): void {
+    const rec = this.recorder;
+    const ctxOf = (): QaCtx => {
+      const f = this.lastFrame;
+      return f
+        ? this.ctx(f)
+        : { simTime: 0, wallTime: this.wallNow(), age: "?", ascension: 0 };
+    };
+    this.onWinError = (e: ErrorEvent) => {
+      rec.console("error", String(e.message || "window.onerror"), String((e.error as Error | undefined)?.stack || ""), ctxOf());
+    };
+    this.onUnhandled = (e: PromiseRejectionEvent) => {
+      const r = e.reason as unknown;
+      rec.console("error", `unhandledrejection: ${r instanceof Error ? r.message : String(r)}`,
+        r instanceof Error ? String(r.stack || "") : "", ctxOf());
+    };
+    window.addEventListener("error", this.onWinError);
+    window.addEventListener("unhandledrejection", this.onUnhandled);
+    this.origError = console.error.bind(console);
+    this.origWarn = console.warn.bind(console);
+    const origE = this.origError;
+    const origW = this.origWarn;
+    console.error = (...args: unknown[]) => {
+      origE(...args);
+      try {
+        rec.console("error", args.map(String).join(" ").slice(0, 500), "", ctxOf());
+      } catch { /* never break gameplay */ }
+    };
+    console.warn = (...args: unknown[]) => {
+      origW(...args);
+      try {
+        rec.console("warn", args.map(String).join(" ").slice(0, 500), "", ctxOf());
+      } catch { /* never break gameplay */ }
+    };
+  }
+
+  // ------------------------------------------------------------ environment
+  private captureEnvironment(): void {
+    const nav = window.navigator;
+    let webgl = "unavailable automatically";
+    try {
+      const cv = document.createElement("canvas");
+      const gl = cv.getContext("webgl") as WebGLRenderingContext | null;
+      if (gl) {
+        const ext = gl.getExtension("WEBGL_debug_renderer_info") as {
+          UNMASKED_RENDERER_WEBGL: number;
+        } | null;
+        if (ext) {
+          const r = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as unknown;
+          if (typeof r === "string" && r.length > 0) webgl = r.slice(0, 120);
+          else webgl = "webgl-present";
+        } else {
+          webgl = "webgl-present";
+        }
+      }
+    } catch { /* keep fallback */ }
+    const dm = (nav as Navigator & { deviceMemory?: number }).deviceMemory;
+    const env: QaEnvironment = {
+      userAgent: nav.userAgent.slice(0, 300),
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      refreshHz: "measuring…",
+      hardwareConcurrency: nav.hardwareConcurrency || 0,
+      deviceMemory: typeof dm === "number" ? `${dm}GB` : "unavailable automatically",
+      webgl,
+    };
+    this.recorder.setEnvironment(env);
+    // Refresh-rate estimate: median of up to 120 rAF deltas, then patch env.
+    const deltas: number[] = [];
+    let last = 0;
+    const step = (now: number): void => {
+      if (this.disposed) return;
+      if (last > 0) deltas.push(now - last);
+      last = now;
+      if (deltas.length < 120) {
+        requestAnimationFrame(step);
+      } else {
+        const sorted = [...deltas].sort((a, b) => a - b);
+        const med = sorted[Math.floor(sorted.length / 2)] ?? 0;
+        const hz = med > 0 ? Math.round(1000 / med) : 0;
+        const snap = this.recorder.snapshot();
+        if (snap.environment) {
+          this.recorder.setEnvironment({ ...snap.environment, refreshHz: hz > 0 ? `~${hz}Hz` : "unavailable automatically" });
+        }
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  // ------------------------------------------------------------ overflow
+  private scanOverflow(): void {
+    const f = this.lastFrame;
+    if (!f) return;
+    try {
+      const entries = collectRects(document, OVERFLOW_SELECTORS, this.adapter.lang());
+      const vw = document.documentElement.clientWidth;
+      const vh = document.documentElement.clientHeight;
+      for (const hit of analyzeRects(entries, { w: vw, h: vh })) {
+        this.recorder.overflow({
+          selector: hit.selector,
+          lang: hit.lang,
+          viewport: hit.viewport,
+          kind: hit.kind,
+          overBy: hit.overBy,
+          simTime: f.simTime,
+          wallTime: this.wallNow(),
+        });
+      }
+    } catch { /* never break gameplay */ }
+  }
+
+  // ------------------------------------------------------------ panel
+  private buildPanel(): void {
+    const root = document.getElementById("ui") ?? document.body;
+    const panel = document.createElement("div");
+    panel.id = "qa-panel";
+    root.appendChild(panel);
+    this.panel = panel;
+    this.refreshPanel();
+  }
+
+  private routeRows(): string {
+    const r = this.recorder;
+    const has = (n: Parameters<PlaytestRecorder["hasCheckpoint"]>[0]): boolean => r.hasCheckpoint(n);
+    const rows: Array<[string, boolean]> = [
+      ["Seed verified (EPOCH-GOLDEN-001)", has("RUN_START")],
+      ["Stone", has("STONE_START")],
+      ["Bronze", has("BRONZE_REACHED")],
+      ["Iron", has("IRON_REACHED")],
+      ["Industrial", has("INDUSTRIAL_REACHED")],
+      ["Atomic", has("ATOMIC_REACHED")],
+      ["Space", has("SPACE_REACHED")],
+      ["Boss", has("BOSS_KILLED")],
+      ["Ascension", has("CHILD_WORLD_STARTED")],
+      ["Post-Ascension 60s", this.post60Done],
+    ];
+    return rows.map(([label, done]) => `<div class="qa-row">${done ? "✓" : "○"} ${label}</div>`).join("");
+  }
+
+  private autoRows(): string {
+    const r = this.recorder;
+    const noFail = (id: string): string =>
+      r.hasFail(id) ? "✗ FAIL" : r.snapshot().assertions.some((a) => a.id === id) ? "✓" : "○ pending";
+    const errs = r.errorCount();
+    const errTxt = errs > 0 ? `✗ ${errs} errors` : r.snapshot().consoleEntries.length > 0 ? "✓ warnings only" : "○ pending";
+    const langSwitched = r.snapshot().langSwitches.length > 0;
+    const langTxt = langSwitched
+      ? (r.snapshot().langSwitches.every((s) => s.unchanged) ? "✓ invariant" : "✗ CHANGED")
+      : "○ not switched yet";
+    return `<div class="qa-row">Draft lifecycle: ${noFail("draft")}</div>` +
+      `<div class="qa-row">Seed invariant: ${noFail("seed")}</div>` +
+      `<div class="qa-row">JS errors: ${errTxt}</div>` +
+      `<div class="qa-row">Boss integrity: ${noFail("boss")}</div>` +
+      `<div class="qa-row">Ascension contract: ${noFail("ascension")}</div>` +
+      `<div class="qa-row">EN/TH invariant: ${langTxt}</div>`;
+  }
+
+  private refreshPanel(): void {
+    if (!this.panel || this.disposed) return;
+    const f = this.lastFrame;
+    const simT = f ? f.simTime.toFixed(0) : "?";
+    const age = f ? f.age : "?";
+    if (!this.panel.dataset.built) {
+      this.panel.dataset.built = "1";
+      this.panel.innerHTML = "";
+      const mk = (tag: string, cls: string, text: string): HTMLElement => {
+        const e = document.createElement(tag);
+        e.className = cls;
+        e.textContent = text;
+        return e;
+      };
+      this.panel.appendChild(mk("div", "qa-title", "HUMAN GATE A — auto-recording"));
+      this.panel.appendChild(mk("div", "qa-sub", "Seed EPOCH-GOLDEN-001 · Stone → Space → Boss → Ascension · แค่เล่น ที่เหลือระบบจดให้"));
+      const list = document.createElement("div");
+      list.className = "qa-list";
+      this.panel.appendChild(list);
+      this.listBox = list;
+      const fbTitle = mk("div", "qa-title2", "บอกความรู้สึก (กดได้เลย ไม่ต้องพิมพ์)");
+      this.panel.appendChild(fbTitle);
+      const fbWrap = document.createElement("div");
+      fbWrap.className = "qa-fb";
+      for (const label of FEEDBACK_LABELS) {
+        const b = document.createElement("button");
+        b.className = "btn qa-fb-btn";
+        b.textContent = label;
+        b.addEventListener("click", () => this.sendFeedback(label, ""));
+        fbWrap.appendChild(b);
+      }
+      const noteRow = document.createElement("div");
+      noteRow.className = "qa-note-row";
+      const inp = document.createElement("input");
+      inp.id = "qa-note";
+      inp.maxLength = 200;
+      inp.placeholder = "อื่นๆ… (พิมพ์สั้นๆ ได้)";
+      const send = document.createElement("button");
+      send.className = "btn";
+      send.textContent = "ส่ง";
+      send.addEventListener("click", () => {
+        this.sendFeedback("อื่นๆ", inp.value.trim());
+        inp.value = "";
+      });
+      noteRow.appendChild(inp);
+      noteRow.appendChild(send);
+      this.panel.appendChild(fbWrap);
+      this.panel.appendChild(noteRow);
+      const btnRow = document.createElement("div");
+      btnRow.className = "qa-btn-row";
+      const copy = document.createElement("button");
+      copy.className = "btn";
+      copy.textContent = "COPY QA SNAPSHOT";
+      copy.addEventListener("click", () => void this.copySnapshot(copy));
+      const end = document.createElement("button");
+      end.className = "btn";
+      end.textContent = "END PLAYTEST";
+      end.addEventListener("click", () => this.end("human-ended"));
+      btnRow.appendChild(copy);
+      btnRow.appendChild(end);
+      this.panel.appendChild(btnRow);
+      const dl = document.createElement("div");
+      dl.id = "qa-downloads";
+      dl.className = "qa-dl";
+      this.panel.appendChild(dl);
+    }
+    if (this.listBox) {
+      this.listBox.innerHTML =
+        `<div class="qa-sec">t=${simT}s · age ${age}</div>` + this.routeRows() +
+        `<div class="qa-sec">Auto checks</div>` + this.autoRows() +
+        `<div class="qa-sec">F4 = QA overlay · F3 = perf</div>`;
+    }
+    if (this.ended) this.showDownloads();
+  }
+
+  private sendFeedback(label: string, note: string): void {
+    const f = this.lastFrame;
+    if (!f) return;
+    this.recorder.feedbackMark(label, note, {
+      px: f.px, py: f.py,
+      chunk: `${f.chunkCx},${f.chunkCy}`,
+      fps: f.fps,
+      enemies: f.enemies,
+      projs: f.projs,
+      build: f.buildSummary,
+    }, this.ctx(f));
+  }
+
+  private compactSnapshot(): string {
+    const f = this.lastFrame;
+    if (!f) return "QA: no frame yet";
+    return [
+      `Seed: ${f.masterSeed}`,
+      `Age: ${f.age} (asc ${f.ascension})`,
+      `Time: sim ${f.simTime.toFixed(1)}s / run ${f.runElapsed.toFixed(1)}s`,
+      `FPS: ${f.fps.toFixed(0)} simAvg ${f.simMsAvg.toFixed(2)}ms frame ${f.frameMs.toFixed(1)}ms`,
+      `Enemies: ${f.enemies} Projectiles: ${f.projs} Pickups: ${f.pickups}`,
+      `Chunk: ${f.chunkCx},${f.chunkCy} (${f.biome})`,
+      `Nearest POI: ${f.nearestPOI ? `${f.nearestPOI.poiType} ${f.nearestPOI.dist.toFixed(0)}u ${f.nearestPOI.found ? "(found)" : ""}` : "none"}`,
+    ].join("\n");
+  }
+
+  private async copySnapshot(btn: HTMLButtonElement): Promise<void> {
+    const text = this.compactSnapshot();
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = "COPIED ✓";
+      setTimeout(() => { btn.textContent = "COPY QA SNAPSHOT"; }, 2000);
+    } catch {
+      btn.textContent = "COPY BLOCKED — screenshot instead";
+      setTimeout(() => { btn.textContent = "COPY QA SNAPSHOT"; }, 3000);
+    }
+  }
+
+  /** Finalize + reveal report downloads. Safe to call twice. */
+  end(reason: string): void {
+    if (this.ended) {
+      this.showDownloads();
+      return;
+    }
+    this.ended = true;
+    const f = this.lastFrame;
+    if (f) {
+      const ctx = this.ctx(f);
+      if (!this.recorder.hasCheckpoint("RUN_END")) {
+        this.recorder.checkpoint("RUN_END", ctx);
+        this.recorder.perfSnapshot("end", ctx);
+      }
+    }
+    this.recorder.finish(reason, this.wallNow());
+    this.refreshPanel();
+  }
+
+  private showDownloads(): void {
+    if (!this.panel || this.disposed) return;
+    const box = this.panel.querySelector("#qa-downloads");
+    if (!box || box.childElementCount > 0) return;
+    const snap = this.recorder.snapshot();
+    // NOTE: perfCheckpoints live inside the recorder; snapshot() carries them.
+    const mkBtn = (label: string, filename: string, text: string, mime: string): HTMLButtonElement => {
+      const b = document.createElement("button");
+      b.className = "btn primary";
+      b.textContent = label;
+      b.addEventListener("click", () => download(filename, text, mime));
+      return b;
+    };
+    // Re-snapshot perf checkpoints: they accumulate in the sampler window, so
+    // flush a final window slice labeled by end reason.
+    const f = this.lastFrame;
+    if (f) this.recorder.perfSnapshot(`final-${this.recorder.snapshot().endReason || "end"}`, this.ctx(f));
+    const full = this.recorder.snapshot();
+    box.appendChild(mkBtn("DOWNLOAD QA REPORT (.md)", "playtest-report.md", renderMarkdown(full), "text/markdown"));
+    box.appendChild(mkBtn("DOWNLOAD QA DATA (.json)", "playtest-report.json", renderJSON(full), "application/json"));
+    void snap;
+  }
+
+  dispose(): void {
+    this.disposed = true;
+    if (this.onWinError) window.removeEventListener("error", this.onWinError);
+    if (this.onUnhandled) window.removeEventListener("unhandledrejection", this.onUnhandled);
+    if (this.origError) console.error = this.origError;
+    if (this.origWarn) console.warn = this.origWarn;
+    this.panel?.remove();
+    this.panel = null;
+  }
+}

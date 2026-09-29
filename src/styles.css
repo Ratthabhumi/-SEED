@@ -105,3 +105,35 @@ button, input { font-family: inherit; }
 .settings-row input[type="range"] { width: 160px; }
 .lang-row { display: flex; gap: 8px; }
 .lang-row .btn.active { border-color: var(--accent); color: var(--accent); }
+
+/* QA harness (?qa=1 only — never rendered in normal play) */
+.qa-gate {
+  background: #101c14; border: 1px solid #53e0c8; border-radius: 12px;
+  padding: 14px 18px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.qa-gate-title { font-size: 20px; font-weight: 800; color: #53e0c8; letter-spacing: 1px; }
+.qa-gate-sub { color: var(--text); font-size: 14px; line-height: 1.7; }
+#qa-panel {
+  position: absolute; top: 10px; right: 12px; width: 264px; max-height: calc(100vh - 20px);
+  overflow-y: auto; background: rgba(10, 16, 12, 0.92); border: 1px solid #53e0c8;
+  border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.7;
+  pointer-events: auto; z-index: 20; color: var(--text);
+}
+.qa-title { font-weight: 800; color: #53e0c8; font-size: 14px; }
+.qa-title2 { font-weight: 700; color: var(--accent); font-size: 13px; margin-top: 8px; }
+.qa-sub { color: var(--muted); font-size: 12px; line-height: 1.7; }
+.qa-list { margin: 6px 0; }
+.qa-sec { color: var(--muted); font-size: 12px; margin-top: 6px; }
+.qa-row { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-fb { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.btn.qa-fb-btn { padding: 6px 10px; font-size: 13px; min-height: 36px; }
+.qa-note-row { display: flex; gap: 6px; margin-top: 6px; }
+.qa-note-row input {
+  flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #39465a; background: #101724; color: var(--text); font-size: 13px;
+}
+.qa-note-row .btn { padding: 8px 12px; min-height: 36px; font-size: 13px; }
+.qa-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.qa-btn-row .btn { padding: 8px 12px; min-height: 36px; font-size: 12px; }
+.qa-dl { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.qa-dl .btn { font-size: 12px; padding: 8px 10px; min-height: 36px; }
