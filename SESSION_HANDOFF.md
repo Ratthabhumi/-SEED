@@ -18,6 +18,16 @@ read-only `src/qa/` playtest harness (`?qa=1`), 14 new unit tests
 `typecheck/test/build/check/zip/release:verify/test:e2e` green on office
 machine. No gameplay/balance/worldgen change. See `docs/ADR/0004-qa-harness.md`.
 
+Readability branch 2026-09-29 (human-authorized, presentation-only):
+new branch `fix/v011-readability-20260929` from `737ddf3`; stabilization branch
+kept as rollback point. FAIL_BLOCKING_READABILITY remediation implemented;
+`npm run typecheck/test(27 files / 187 tests)/build/check/zip/release:verify`
+PASS + E2E 9/9 PASS on office machine. Parent-branch note: committed
+`TitleScene` gate lacked `id="qa-gate"` while `e2e/qa.spec.ts` asserts it —
+recorded as suspect parent E2E evidence; fixed on this branch (`gate.id`) and
+re-verified green. E2E per-test timeout raised 60s → 120s (slow office
+machine accommodation; assertions unchanged).
+
 ## Repository
 
 `Ratthabhumi/-SEED` — `-SEED: เมล็ดพันธุ์แห่งอารยธรรม`
@@ -113,14 +123,16 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Automated Verification
 
 - `npm run typecheck` — PASS
-- `npm run test` — 26 files / 178 tests PASS (22/164 baseline + 14 QA-harness tests)
+- `npm run test` — 27 files / 187 tests PASS (22/164 baseline + 14 QA + 9 visual)
 - `npm run build` — PASS
 - `npm run check` — PASS
 - `npm run zip` — PASS (`release/seed-web-v0.1.1.zip`)
 - `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — 7/7 PASS (6 existing + 1 QA-harness flow)
+- `npm run test:e2e` — 9/9 PASS (6 existing + QA flow + 2 visual-lab)
+  (per-test timeout 120s on the slow office machine; assertions unchanged)
 - GitHub Actions run 36505017447 — Node 22 verify PASS, Node 24 verify PASS,
   Chromium E2E PASS, artifact `seed-web-v0.1.1` downloadable.
+  (Ran on the stabilization SHA; readability-branch CI pending after push.)
 - This is NOT a human-release approval.
 
 ## Audit Round 3 Findings Closed
@@ -252,11 +264,22 @@ Thai → Firefox → itch draft) before any editing.
 - Code: `src/qa/{qaMode,PerformanceSampler,PlaytestRecorder,PlaytestReport,VisualChecks,qaPanel}.ts`
   (`src/core` untouched/pure); `docs/ADR/0004-qa-harness.md`.
 
+## Human Gate A Result — FAIL_BLOCKING_READABILITY (recorded, not erased)
+
+- Seed `EPOCH-GOLDEN-001`: 10:15 survival, Space reached, 1258 kills, 56 elites,
+  22 techs, 76 chunks, 26 landmarks, 0 bosses, ascension NOT reached.
+- Feedback YES: ภาพอ่านยาก / ไม่รู้ว่าต้องไปไหน / ศัตรูดูไม่ออก / อาวุธดูไม่ออก /
+  UI ภาษาไทยมีปัญหา / ยากเกิน / ง่ายเกิน. Feedback NO: เกมกระตุก.
+- Interpretation: NOT a performance failure; "ยากเกิน+ง่ายเกิน" together =
+  PERCEIVED_DIFFICULTY_INCONSISTENT (readability, not numbers). No rebalancing
+  until a readable re-run. Remediation lives on `fix/v011-readability-20260929`
+  (presentation-only; see `docs/VISUAL_LANGUAGE.md`, `docs/ADR/0005-readability-remediation.md`).
+
 ## Next Three Actions
 
-1. Human full-run playtest via QA harness: open `http://localhost:5173/?qa=1`
-   → START PLAYTEST → play Stone → Space → Boss → Ascension → 60s post-Ascension
-   → END PLAYTEST → send `playtest-report.md` + subjective notes to auditor.
+1. HUMAN: open `http://localhost:5173/?visual=1` (2-minute visual-language
+   check: player/families/shots/Knowledge/POI/Thai). Do NOT run another 10-minute
+   full run until the lab reads clearly. Then re-run Gate A via `?qa=1`.
 2. Thai + Firefox manual QA at normal and smaller desktop windows, in Thai
    and English modes. Record problems before editing.
 3. If both acceptable: `npm run check`, `npm run zip`, `npm run release:verify`,
