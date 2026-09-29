@@ -169,10 +169,9 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 - `npm run check` — PASS
 - `npm run zip` — PASS (`release/seed-web-v0.2.0-dev.0.zip`, dev only)
 - `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — pending final run before push (ascend flow changed)
-- GitHub Actions on this branch SHA — pending (checked after push).
-- Prior runs (36505017447 stabilization, 36589398303 readability) kept as
-  rollback evidence, not the active line.
+- `npm run test:e2e` — 10/10 PASS (incl. legacy→origin ascend chain + compact QA)
+- GitHub Actions run 36621627791 — Node 22 verify PASS, Node 24 verify PASS,
+  Chromium E2E PASS on exact code SHA below.
 - This is NOT a human-release approval.
 
 ## Audit Round 3 Findings Closed
