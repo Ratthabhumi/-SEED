@@ -16,6 +16,8 @@ test("qa mode: gate start, live panel, report export", async ({ page }) => {
   await expect(page.locator(".hud-seed")).toContainText("EPOCH-GOLDEN-001");
   await expect(page.locator("#qa-panel")).toBeVisible();
 
+  // Panel starts compact (recording continues); expand for feedback buttons.
+  await page.getByRole("button", { name: "Expand QA" }).click();
   // Subjective marker must not crash the run.
   await page.locator(".qa-fb-btn").first().click();
   await expect(page.locator(".hud")).toBeVisible();
