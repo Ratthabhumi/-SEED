@@ -62,6 +62,8 @@ button, input { font-family: inherit; }
 .hud-stats { display: flex; gap: 12px; flex-wrap: wrap; color: var(--text); text-shadow: 0 1px 3px #000; }
 .hud-seed { color: var(--muted); font-size: 12px; }
 .hud-objective { color: var(--accent); font-size: 13px; }
+.hud-ascend { position: absolute; top: 132px; right: 12px; pointer-events: none; }
+.hud-ascend .btn { pointer-events: auto; }
 
 /* Draft cards */
 .cards { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }

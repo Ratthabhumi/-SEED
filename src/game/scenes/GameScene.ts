@@ -144,6 +144,12 @@ export class GameScene extends Phaser.Scene {
           this.handleEvents(ev);
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
+        readyAscend: () => {
+          // Test-only shortcut for the boss-kill trigger; ascend() itself
+          // (child world, fresh streams, stat separation) runs the real path.
+          this.sim.state.ascendReady = true;
+          this.refreshHUD();
+        },
         hash: () => this.sim.hash(),
         snapshot: () => this.sim.snapshot(),
         seed: () => this.masterSeed,
@@ -199,8 +205,12 @@ export class GameScene extends Phaser.Scene {
     top.appendChild(stats);
     top.appendChild(age);
     hud.appendChild(top);
+    // Persistent action container OUTSIDE the wiped stats block: recreating
+    // buttons every HUD refresh breaks focus/click stability (P1-01 class).
+    const ascendWrap = el("div", "hud-ascend");
+    hud.appendChild(ascendWrap);
     root.appendChild(hud);
-    this.hud = { hpFill, xpFill, stats, age };
+    this.hud = { hpFill, xpFill, stats, age, ascendWrap };
     this.refreshHUD();
   }
 
@@ -225,13 +235,21 @@ export class GameScene extends Phaser.Scene {
     add(`${mm}:${ss}`);
     add(`☠ ${s.stats.kills}`);
     add(this.masterSeed, "hud-seed");
-    if (s.ascendReady) {
-      const b = document.createElement("button");
-      b.className = "btn primary";
-      b.style.pointerEvents = "auto";
-      b.textContent = t("ui.ascend");
-      b.addEventListener("click", () => this.doAscend());
-      stats.appendChild(b);
+    // Ascend button: created once, removed once — never rebuilt per refresh.
+    // (Recreating it inside the wiped stats block broke click stability.)
+    const wrap = this.hud.ascendWrap;
+    if (wrap) {
+      const want = s.ascendReady && !s.over;
+      let ab = wrap.querySelector("button");
+      if (want && !ab) {
+        ab = document.createElement("button");
+        ab.className = "btn primary";
+        ab.textContent = t("ui.ascend");
+        ab.addEventListener("click", () => this.doAscend());
+        wrap.appendChild(ab);
+      } else if (!want && ab) {
+        ab.remove();
+      }
     }
     if (s.bossIndex >= 0) {
       const boss = s.enemies[s.bossIndex];
