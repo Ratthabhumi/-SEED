@@ -12,7 +12,8 @@ export default defineConfig({
   webServer: {
     command: "npx vite preview --port 4173 --strictPort --host 127.0.0.1",
     url: "http://127.0.0.1:4173",
-    reuseExistingServer: true,
+    // Never reuse: a stale server would silently test an old bundle.
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });
