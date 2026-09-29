@@ -63,13 +63,22 @@ function familyBody(
     g.lineStyle(1, VL.outlineLight, 0.55);
     g.strokeRect(x - r + 4, y - r + 4, r * 2 - 8, r * 2 - 8);
   } else {
-    // Swarm: tiny paired dots — visibly smaller, clustered, never a lone disc.
+    // Swarm tri-cluster: leader body + two trailer wings + wake tick.
+    // Reads as "small hostile pack converging", never decor or a lone disc.
+    const lead: [number, number] = [x + Math.cos(facing) * r * 0.3, y + Math.sin(facing) * r * 0.3];
+    const wl: [number, number] = [x - Math.cos(facing) * r * 0.55 - Math.sin(facing) * r * 0.5, y - Math.sin(facing) * r * 0.55 + Math.cos(facing) * r * 0.5];
+    const wr: [number, number] = [x - Math.cos(facing) * r * 0.55 + Math.sin(facing) * r * 0.5, y - Math.sin(facing) * r * 0.55 - Math.cos(facing) * r * 0.5];
     g.fillStyle(fill, 1);
-    g.fillCircle(x - r * 0.35, y - r * 0.2, r * 0.55);
-    g.fillCircle(x + r * 0.35, y + r * 0.2, r * 0.55);
+    g.fillCircle(lead[0], lead[1], r * 0.62);
+    g.fillCircle(wl[0], wl[1], r * 0.42);
+    g.fillCircle(wr[0], wr[1], r * 0.42);
     g.lineStyle(1, VL.outlineDark, 1);
-    g.strokeCircle(x - r * 0.35, y - r * 0.2, r * 0.55);
-    g.strokeCircle(x + r * 0.35, y + r * 0.2, r * 0.55);
+    g.strokeCircle(lead[0], lead[1], r * 0.62);
+    g.strokeCircle(wl[0], wl[1], r * 0.42);
+    g.strokeCircle(wr[0], wr[1], r * 0.42);
+    // Wake tick behind the pack — motion/hostility cue decor never has.
+    g.lineStyle(2, VL.outlineDark, 0.9);
+    g.lineBetween(x - Math.cos(facing) * r * 0.9, y - Math.sin(facing) * r * 0.9, x - Math.cos(facing) * r * 1.5, y - Math.sin(facing) * r * 1.5);
   }
 }
 

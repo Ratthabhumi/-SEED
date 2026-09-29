@@ -6,8 +6,9 @@ import { deriveUint32 } from "../../core/seed/hash";
 import { CHUNK_SIZE } from "../../core/world/chunks";
 import type { ChunkDescriptor } from "../../core/world/chunks";
 import type { BiomeId } from "../../core/world/biome";
-import { VL } from "./VisualLanguage";
-import { fillPoly } from "./paths";
+import type { POIType } from "../../core/world/poi";
+import { VL, poiGlyph } from "./VisualLanguage";
+import { fillPoly, strokePoly } from "./paths";
 
 export interface GroundDrawArgs {
   getChunk: (cx: number, cy: number) => ChunkDescriptor;
@@ -59,12 +60,94 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
 export interface PoiDrawArgs {
   wx: number;
   wy: number;
+  /** POI family — selects the unique primary destination glyph. */
+  type: POIType;
   found: boolean;
   time: number;
   highContrast: boolean;
 }
 
-/** POI marker: beacon pillar + floating diamond (undiscovered) or dim ring. */
+/** One glyph per family — the destination identity. Beacon stays secondary. */
+function drawPoiGlyph(
+  g: Phaser.GameObjects.Graphics, type: POIType, cx: number, cy: number, s: number, alpha: number,
+): void {
+  const glyph = poiGlyph(type);
+  const fill = VL.beacon;
+  const line = VL.outlineDark;
+  if (glyph === "broken-arch") {
+    // Ruin: two pillars + broken lintel with a gap.
+    g.fillStyle(fill, alpha);
+    g.fillRect(cx - s, cy - s * 0.4, s * 0.45, s * 1.4);
+    g.fillRect(cx + s * 0.55, cy - s * 0.4, s * 0.45, s * 1.4);
+    g.lineStyle(3, fill, alpha);
+    g.lineBetween(cx - s, cy - s * 0.4, cx - s * 0.25, cy - s * 0.85);
+    g.lineBetween(cx + s * 0.25, cy - s * 0.85, cx + s, cy - s * 0.4);
+    g.lineStyle(2, line, alpha);
+    g.strokeRect(cx - s, cy - s * 0.4, s * 0.45, s * 1.4);
+    g.strokeRect(cx + s * 0.55, cy - s * 0.4, s * 0.45, s * 1.4);
+  } else if (glyph === "impact-star") {
+    // Meteor: four-point impact star.
+    fillPoly(g, [
+      [cx, cy - s * 1.2], [cx + s * 0.28, cy - s * 0.28],
+      [cx + s * 1.2, cy], [cx + s * 0.28, cy + s * 0.28],
+      [cx, cy + s * 1.2], [cx - s * 0.28, cy + s * 0.28],
+      [cx - s * 1.2, cy], [cx - s * 0.28, cy - s * 0.28],
+    ], fill, alpha);
+    g.lineStyle(2, line, alpha);
+    g.strokeCircle(cx, cy, s * 0.45);
+  } else if (glyph === "vault-lock") {
+    // Vault: square vault + inner lock.
+    g.fillStyle(fill, alpha);
+    g.fillRect(cx - s * 0.9, cy - s * 0.9, s * 1.8, s * 1.8);
+    g.lineStyle(2, line, alpha);
+    g.strokeRect(cx - s * 0.9, cy - s * 0.9, s * 1.8, s * 1.8);
+    g.fillStyle(line, alpha);
+    g.fillRect(cx - s * 0.3, cy - s * 0.3, s * 0.6, s * 0.6);
+    g.fillStyle(fill, alpha);
+    g.fillCircle(cx, cy, s * 0.14);
+  } else if (glyph === "signal-wave") {
+    // Signal: antenna mast + radiating arcs + tip dot.
+    g.lineStyle(3, fill, alpha);
+    g.lineBetween(cx, cy + s, cx, cy - s * 0.6);
+    g.fillStyle(fill, alpha);
+    g.fillCircle(cx, cy - s * 0.6, s * 0.22);
+    g.lineStyle(2, fill, alpha * 0.9);
+    for (let ring = 1; ring <= 2; ring++) {
+      const rr = s * (0.5 + ring * 0.35);
+      for (let i = 0; i <= 6; i++) {
+        const a0 = -Math.PI / 3 + (i * Math.PI) / 9;
+        const a1 = -Math.PI / 3 + ((i + 1) * Math.PI) / 9;
+        g.lineBetween(cx + Math.cos(a0) * rr, cy - s * 0.6 + Math.sin(a0) * rr, cx + Math.cos(a1) * rr, cy - s * 0.6 + Math.sin(a1) * rr);
+      }
+    }
+  } else if (glyph === "hex-complex") {
+    // Megasite: large hex + structured inner nodes.
+    const hex: Array<[number, number]> = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (i * Math.PI) / 3;
+      hex.push([cx + Math.cos(a) * s, cy + Math.sin(a) * s]);
+    }
+    fillPoly(g, hex, fill, alpha);
+    strokePoly(g, hex, line, 2, alpha);
+    g.fillStyle(line, alpha);
+    g.fillCircle(cx - s * 0.35, cy, s * 0.16);
+    g.fillCircle(cx + s * 0.35, cy, s * 0.16);
+    g.fillCircle(cx, cy - s * 0.35, s * 0.16);
+  } else {
+    // World Tree: trunk + three branches + canopy nodes.
+    g.lineStyle(3, fill, alpha);
+    g.lineBetween(cx, cy + s, cx, cy - s * 0.5);
+    g.lineBetween(cx, cy, cx - s * 0.7, cy - s * 0.7);
+    g.lineBetween(cx, cy - s * 0.2, cx + s * 0.7, cy - s * 0.9);
+    g.lineBetween(cx, cy - s * 0.5, cx + s * 0.1, cy - s * 1.1);
+    g.fillStyle(fill, alpha);
+    g.fillCircle(cx - s * 0.7, cy - s * 0.7, s * 0.22);
+    g.fillCircle(cx + s * 0.7, cy - s * 0.9, s * 0.22);
+    g.fillCircle(cx + s * 0.1, cy - s * 1.1, s * 0.22);
+  }
+}
+
+/** POI marker: unique family glyph (primary) + beacon pillar (secondary). */
 export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
   if (a.found) {
     g.lineStyle(1, 0x555555, 0.8);
@@ -72,18 +155,13 @@ export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
     return;
   }
   const pulse = 0.6 + 0.4 * Math.sin(a.time * 3 + a.wx * 0.001);
-  const alpha = a.highContrast ? 0.85 : 0.6;
+  const alpha = a.highContrast ? 0.9 : 0.7;
   // Light pillar — visible from far, reads as "destination".
-  g.fillStyle(VL.beacon, 0.16 * pulse + 0.08);
-  g.fillRect(a.wx - 5, a.wy - 130, 10, 130);
-  // Floating diamond icon.
-  const dy = a.wy - 140 + Math.sin(a.time * 2 + a.wx * 0.01) * 4;
-  fillPoly(g, [
-    [a.wx, dy - 10],
-    [a.wx + 7, dy],
-    [a.wx, dy + 10],
-    [a.wx - 7, dy],
-  ], VL.beacon, alpha);
+  g.fillStyle(VL.beacon, 0.3 * pulse + 0.16);
+  g.fillRect(a.wx - 6, a.wy - 130, 12, 130);
+  // Family glyph floats above the pillar — the identity, not a debug diamond.
+  const gy = a.wy - 148 + Math.sin(a.time * 2 + a.wx * 0.01) * 4;
+  drawPoiGlyph(g, a.type, a.wx, gy, 13, Math.min(1, alpha + 0.25));
   // Pulsing base ring.
   g.lineStyle(2, VL.beacon, 0.5 * pulse + 0.2);
   g.strokeCircle(a.wx, a.wy, 14 + 4 * pulse);

@@ -998,6 +998,7 @@ export class GameScene extends Phaser.Scene {
           drawPoi(g, {
             wx: poi.wx,
             wy: poi.wy,
+            type: poi.type,
             found: s.poisWorld.includes(poi.id),
             time: now,
             highContrast: this.highContrast(),

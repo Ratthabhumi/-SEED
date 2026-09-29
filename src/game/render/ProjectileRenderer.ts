@@ -28,7 +28,8 @@ export function drawFriendlyProj(g: Phaser.GameObjects.Graphics, p: SimProj): vo
   g.fillCircle(p.x, p.y, Math.max(2, p.radius * 0.55));
 }
 
-/** Hostile projectile: sharp diamond with dark outline — never a pickup. */
+/** Hostile projectile: aggressive arrowhead/spike along velocity.
+ *  Never a diamond, never a pickup — reads as threat even in grayscale. */
 export function drawHostileProj(g: Phaser.GameObjects.Graphics, p: SimProj, opts: WeaponDrawOpts): void {
   const speed = Math.hypot(p.vx, p.vy) || 1;
   const dx = p.vx / speed;
@@ -36,14 +37,20 @@ export function drawHostileProj(g: Phaser.GameObjects.Graphics, p: SimProj, opts
   const px = -dy;
   const py = dx;
   const r = p.radius * 1.25;
+  // Elongated nose + barbed shoulders + notched tail: 6-point arrowhead.
   const pts: Array<[number, number]> = [
-    [p.x + dx * r, p.y + dy * r],
-    [p.x + px * r * 0.7, p.y + py * r * 0.7],
-    [p.x - dx * r, p.y - dy * r],
-    [p.x - px * r * 0.7, p.y - py * r * 0.7],
+    [p.x + dx * r * 1.6, p.y + dy * r * 1.6],
+    [p.x + px * r * 0.85, p.y + py * r * 0.85],
+    [p.x + px * r * 0.5 - dx * r * 0.7, p.y + py * r * 0.5 - dy * r * 0.7],
+    [p.x - dx * r * 0.35, p.y - dy * r * 0.35],
+    [p.x - px * r * 0.5 - dx * r * 0.7, p.y - py * r * 0.5 - dy * r * 0.7],
+    [p.x - px * r * 0.85, p.y - py * r * 0.85],
   ];
   fillPoly(g, pts, p.color, 1);
   strokePoly(g, pts, VL.hostileOutline, opts.highContrast ? 3 : 2, 1);
+  // Hot tip spark — directional emphasis no pickup ever has.
+  g.fillStyle(0xffffff, 0.9);
+  g.fillCircle(p.x + dx * r * 1.1, p.y + dy * r * 1.1, Math.max(1.5, r * 0.28));
 }
 
 /** Beam: origin → target bar with a bright core. */
@@ -107,17 +114,25 @@ export function drawMine(g: Phaser.GameObjects.Graphics, m: SimMine, opts: Weapo
   g.strokeCircle(m.x, m.y, m.radius);
 }
 
-/** Knowledge: the teal shard — the one and only progression-currency shape. */
+/** Knowledge: vertical elongated crystal + asymmetric facet + halo.
+ *  Collectible language only — never directional, never an arrowhead. */
 export function drawKnowledge(g: Phaser.GameObjects.Graphics, k: SimPickup): void {
   const r = 5 + Math.min(4, k.value * 0.25);
+  const w = r * 0.55;
   fillPoly(g, [
-    [k.x, k.y - r],
-    [k.x + r * 0.7, k.y],
-    [k.x, k.y + r],
-    [k.x - r * 0.7, k.y],
+    [k.x, k.y - r * 1.35],
+    [k.x + w, k.y - r * 0.25],
+    [k.x + w * 0.7, k.y + r * 0.9],
+    [k.x, k.y + r * 1.25],
+    [k.x - w * 0.7, k.y + r * 0.9],
+    [k.x - w, k.y - r * 0.25],
   ], VL.knowledge, 1);
-  g.lineStyle(1, VL.outlineDark, 1);
-  g.strokeCircle(k.x, k.y, r * 0.8);
+  // Asymmetric sparkle facet (upper-left) — the collectible glint.
+  g.lineStyle(2, VL.knowledgeCore, 1);
+  g.lineBetween(k.x - w * 0.5, k.y - r * 0.55, k.x - w * 0.1, k.y - r * 0.15);
+  // Halo ring — pickups glow, threats never do.
+  g.lineStyle(1, VL.knowledgeCore, 0.55);
+  g.strokeCircle(k.x, k.y, r * 1.15);
   g.fillStyle(VL.knowledgeCore, 1);
-  g.fillCircle(k.x, k.y, Math.max(1.5, r * 0.35));
+  g.fillCircle(k.x, k.y, Math.max(1.5, r * 0.3));
 }

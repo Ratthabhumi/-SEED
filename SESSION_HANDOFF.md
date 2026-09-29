@@ -28,14 +28,25 @@ recorded as suspect parent E2E evidence; fixed on this branch (`gate.id`) and
 re-verified green. E2E per-test timeout raised 60s → 120s (slow office
 machine accommodation; assertions unchanged).
 
+Visual Review Round 2, 2026-09-29 home machine (this session,
+presentation-only, same branch): human Round-1 verdict NOT PASSED
+(hostile/Knowledge silhouette collision, debug-marker POIs, swarm identity,
+isolated specimens, Thai unverified). Remediation: hostile→arrowhead-spike,
+Knowledge→vertical crystal + halo, swarm→tri-cluster, unique POI glyph per
+all 6 families (+ missing megasite/worldtree i18n names), deterministic
+Verdant/Arid composite clash panels, lab grayscale toggle, 1x/2x inspection
+scales, Thai strings + wrap-review box, token×biome contrast matrix.
+Screenshots self-reviewed (composites readable, POI pillar/glyph boosted,
+boss-HP/title overlap fixed). No balance/worldgen/sim/RNG/threshold change.
+
 ## Repository
 
 `Ratthabhumi/-SEED` — `-SEED: เมล็ดพันธุ์แห่งอารยธรรม`
 
 ## Branch
 
-`fix/v011-stabilization-20260929` — **UNMERGED, UNTAGGED** (deliberate;
-human gates still open).
+`fix/v011-readability-20260929` — **UNMERGED, UNTAGGED** (deliberate;
+human visual review still open). Stabilization branch kept as rollback point.
 
 ## Origin Main
 
@@ -43,7 +54,8 @@ human gates still open).
 
 ## Implementation Checkpoint
 
-`b5750f1212927163e1903782108f61de8e036474`
+`3af2668dd0baead10dd632c503ad970d9ae117e5` (readability branch base) plus
+Round-2 working commit(s) on top — see `git log` for exact HEAD at push time.
 
 SESSION_HANDOFF.md may be one documentation-only commit ahead of this
 implementation checkpoint. On resume, `git rev-parse HEAD` is authoritative
@@ -274,6 +286,17 @@ Thai → Firefox → itch draft) before any editing.
   PERCEIVED_DIFFICULTY_INCONSISTENT (readability, not numbers). No rebalancing
   until a readable re-run. Remediation lives on `fix/v011-readability-20260929`
   (presentation-only; see `docs/VISUAL_LANGUAGE.md`, `docs/ADR/0005-readability-remediation.md`).
+
+## Visual Review Round 1 Result — NOT PASSED (recorded, not erased)
+
+Human/auditor assessment of Round-1 lab screenshots:
+1. Player vs families PASS_WITH_NOTES (swarm read as decoration; samples small).
+2. Friendly/hostile/Knowledge/Mine FAIL (hostile ◆ vs Knowledge ◆ collision).
+3. POI FAIL (debug markers); Boss PASS.
+4. Thai NOT YET VERIFIED. 5. Background PASS_WITH_NOTES. 6. Overall NOT PROVEN.
+Round-2 remediation (this branch, presentation-only) addresses each item;
+awaiting human Round-2 review of `?visual=1` (NORMAL + GRAYSCALE + ไทย).
+Do NOT run a full gameplay run until the lab passes.
 
 ## Next Three Actions
 

@@ -54,6 +54,8 @@ export const th: Record<EnKeys, string> = {
   "poi.meteor.name": "อุกกาบาตร่วง",
   "poi.vault.name": "ห้องนิรภัยจักรกล",
   "poi.signal.name": "สัญญาณต่างดาว",
+  "poi.megasite.name": "แหล่งทรัพยากรมหาศาล",
+  "poi.worldtree.name": "ต้นไม้โลก",
   "breakthrough.metallurgy.description": "ดาเมจ +15% องค์ความรู้ +10%",
   "breakthrough.warmachine.description": "กระสุน +1 โจมตีเร็วขึ้น 10%",
   "breakthrough.bioforge.description": "ฟื้นฟู +1.5 ต่อวินาที พลังชีวิตสูงสุด +30",

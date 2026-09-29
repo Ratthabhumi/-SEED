@@ -6,9 +6,18 @@ import {
   friendlyProjectileToken,
   hostileProjectileToken,
   pickupToken,
+  decorationToken,
   poiToken,
+  poiGlyph,
   weaponVisual,
+  contrastFilter,
 } from "../../src/game/render/VisualLanguage";
+import {
+  LAB_SECTIONS,
+  COMPOSITES,
+  CONTRAST_MATRIX_TOKENS,
+  countPlacements,
+} from "../../src/game/render/LabSpec";
 import { nearestInterest, isOffscreen } from "../../src/game/render/NavigationRenderer";
 import { isVisualMode, isQAMode } from "../../src/qa/qaMode";
 import { en } from "../../src/i18n/en";
@@ -23,7 +32,7 @@ describe("visual language tokens", () => {
     expect(familyShape("chaser")).toBe("triangle");
     expect(familyShape("ranged")).toBe("diamond");
     expect(familyShape("tank")).toBe("square");
-    expect(familyShape("swarm")).toBe("paired-dot");
+    expect(familyShape("swarm")).toBe("tri-cluster");
   });
 
   it("gives every elite affix a distinct non-text marker", () => {
@@ -39,10 +48,32 @@ describe("visual language tokens", () => {
 
   it("separates friendly/hostile/pickup/POI channels", () => {
     expect(friendlyProjectileToken()).not.toBe(hostileProjectileToken());
-    expect(pickupToken()).toBe("shard");
+    // Round 2: hostile is an arrowhead spike, knowledge a crystal shard —
+    // distinguishable without color.
+    expect(hostileProjectileToken()).toBe("arrowhead-spike");
+    expect(pickupToken()).toBe("crystal-shard");
+    expect(hostileProjectileToken()).not.toBe(pickupToken());
     expect(poiToken(false)).toBe("beacon");
     expect(poiToken(true)).toBe("ring-dim");
     expect(poiToken(false)).not.toBe(poiToken(true));
+  });
+
+  it("keeps gameplay tokens distinct from background decoration", () => {
+    expect(decorationToken()).toBe("plus-mark");
+    expect(pickupToken()).not.toBe(decorationToken());
+    expect(familyShape("swarm")).not.toBe(decorationToken());
+    expect(hostileProjectileToken()).not.toBe(decorationToken());
+  });
+
+  it("gives every POI family a unique destination glyph", () => {
+    const glyphs = (["ruin", "meteor", "vault", "signal", "megasite", "worldtree"] as const).map(poiGlyph);
+    expect(new Set(glyphs).size).toBe(6);
+  });
+
+  it("exposes a grayscale diagnostic filter for the lab", () => {
+    expect(contrastFilter("normal")).toBe("");
+    expect(contrastFilter("grayscale")).toBe("grayscale(1)");
+    expect(contrastFilter("high")).toBe("");
   });
 
   it("covers every weapon archetype visually", () => {
@@ -52,6 +83,47 @@ describe("visual language tokens", () => {
     expect(weaponVisual("orbit")).toBe("orbit");
     expect(weaponVisual("summon")).toBe("summon");
     expect(weaponVisual("mine")).toBe("mine");
+  });
+});
+
+describe("visual lab coverage", () => {
+  it("registers specimen, matrix, and composite sections", () => {
+    expect(LAB_SECTIONS).toContain("contrast-matrix");
+    expect(LAB_SECTIONS).toContain("composite-verdant");
+    expect(LAB_SECTIONS).toContain("composite-arid");
+  });
+
+  it("builds dense deterministic composites (verdant)", () => {
+    const spec = COMPOSITES.find((c) => c.id === "composite-verdant");
+    expect(spec?.biome).toBe("verdant");
+    expect(countPlacements(spec!, "enemy", "chaser")).toBe(8);
+    expect(countPlacements(spec!, "enemy", "ranged")).toBe(4);
+    expect(countPlacements(spec!, "enemy", "tank")).toBe(2);
+    expect(countPlacements(spec!, "enemy", "swarm")).toBe(10);
+    expect(countPlacements(spec!, "elite")).toBe(1);
+    expect(countPlacements(spec!, "friendly")).toBeGreaterThanOrEqual(3);
+    expect(countPlacements(spec!, "hostile")).toBeGreaterThanOrEqual(3);
+    expect(countPlacements(spec!, "knowledge")).toBeGreaterThanOrEqual(3);
+    expect(countPlacements(spec!, "mine")).toBe(1);
+    expect(countPlacements(spec!, "poi")).toBe(1);
+  });
+
+  it("builds dense deterministic composites (arid)", () => {
+    const spec = COMPOSITES.find((c) => c.id === "composite-arid");
+    expect(spec?.biome).toBe("arid");
+    expect(countPlacements(spec!, "enemy", "chaser")).toBe(8);
+    expect(countPlacements(spec!, "enemy", "ranged")).toBe(4);
+    expect(countPlacements(spec!, "enemy", "tank")).toBe(2);
+    expect(countPlacements(spec!, "enemy", "swarm")).toBe(8);
+    expect(countPlacements(spec!, "elite")).toBe(1);
+    expect(countPlacements(spec!, "mine")).toBe(1);
+    expect(countPlacements(spec!, "poi")).toBe(1);
+  });
+
+  it("reviews critical tokens for the contrast matrix", () => {
+    for (const t of ["player", "chaser", "swarm", "friendly", "hostile", "knowledge", "mine"] as const) {
+      expect(CONTRAST_MATRIX_TOKENS).toContain(t);
+    }
   });
 });
 

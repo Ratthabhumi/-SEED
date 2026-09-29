@@ -52,6 +52,8 @@ export const en = {
   "poi.meteor.name": "Fallen Meteor",
   "poi.vault.name": "Machine Vault",
   "poi.signal.name": "Alien Signal",
+  "poi.megasite.name": "Resource Megasite",
+  "poi.worldtree.name": "World Tree",
   "breakthrough.metallurgy.description": "+15% damage, +10% knowledge",
   "breakthrough.warmachine.description": "+1 projectile, 10% faster attacks",
   "breakthrough.bioforge.description": "+1.5 vitality/sec, +30 max vitality",

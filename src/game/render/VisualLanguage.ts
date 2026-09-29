@@ -5,17 +5,28 @@ import type { EnemyFamily, EliteAffix } from "../../core/director/director";
 import type { Archetype } from "../../core/combat/weapons";
 import type { POIType } from "../../core/world/poi";
 
-export type EnemyShape = "triangle" | "diamond" | "square" | "paired-dot";
+export type EnemyShape = "triangle" | "diamond" | "square" | "tri-cluster";
 export type AffixMarker = "chevrons" | "brackets" | "spokes" | "lobes" | "shield-ring" | "none";
-export type ProjectileToken = "capsule-light" | "diamond-dark";
-export type PickupToken = "shard";
+// Round 2: hostile and pickup silhouettes must differ even in grayscale.
+export type ProjectileToken = "capsule-light" | "arrowhead-spike";
+export type PickupToken = "crystal-shard";
 export type PoiToken = "beacon" | "ring-dim";
+// Round 2: every POI family owns a unique primary glyph (beacon stays secondary).
+export type PoiGlyph =
+  | "broken-arch"
+  | "impact-star"
+  | "vault-lock"
+  | "signal-wave"
+  | "hex-complex"
+  | "branch-tree";
+// Civ/background decoration identity — gameplay tokens must never equal this.
+export type DecorationToken = "plus-mark";
 
 const FAMILY_SHAPE: Record<EnemyFamily, EnemyShape> = {
   chaser: "triangle",
   ranged: "diamond",
   tank: "square",
-  swarm: "paired-dot",
+  swarm: "tri-cluster",
 };
 
 /** Stable base silhouette per family — ages must never change this mapping. */
@@ -42,11 +53,16 @@ export function friendlyProjectileToken(): ProjectileToken {
 }
 
 export function hostileProjectileToken(): ProjectileToken {
-  return "diamond-dark";
+  return "arrowhead-spike";
 }
 
 export function pickupToken(): PickupToken {
-  return "shard";
+  return "crystal-shard";
+}
+
+/** Background/civ decoration token — no gameplay token may equal this. */
+export function decorationToken(): DecorationToken {
+  return "plus-mark";
 }
 
 /** Undiscovered POIs are destinations (beacon); discovered ones dim rings. */
@@ -61,14 +77,26 @@ export function weaponVisual(archetype: Archetype): WeaponVisual {
   return archetype;
 }
 
-const POI_GLYPH: Record<POIType, string> = {
-  ruin: "R",
-  meteor: "M",
-  vault: "V",
-  signal: "S",
-  megasite: "G",
-  worldtree: "T",
+const POI_GLYPH: Record<POIType, PoiGlyph> = {
+  ruin: "broken-arch",
+  meteor: "impact-star",
+  vault: "vault-lock",
+  signal: "signal-wave",
+  megasite: "hex-complex",
+  worldtree: "branch-tree",
 };
+
+/** Unique primary glyph per POI family — the destination identity. */
+export function poiGlyph(type: POIType): PoiGlyph {
+  return POI_GLYPH[type];
+}
+
+export type LabContrastMode = "normal" | "grayscale" | "high";
+
+/** Canvas CSS filter for the lab grayscale diagnostic (presentation only). */
+export function contrastFilter(mode: LabContrastMode): string {
+  return mode === "grayscale" ? "grayscale(1)" : "";
+}
 
 /** Boss silhouette id — must never equal the tank family shape ("square"). */
 export function bossShapeId(): string {
