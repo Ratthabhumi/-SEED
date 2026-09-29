@@ -301,6 +301,20 @@ Thai → Firefox → itch draft) before any editing.
   until a readable re-run. Remediation lives on `fix/v011-readability-20260929`
   (presentation-only; see `docs/VISUAL_LANGUAGE.md`, `docs/ADR/0005-readability-remediation.md`).
 
+## Visual Review Round 2 Result — PASS WITH NOTES (2026-09-29, human verdict)
+
+Human confirmed all gates A–E on `?visual=1` at code checkpoint `35f6b73`:
+silhouettes distinguishable; friendly/hostile/Knowledge/mines distinct without
+color; 6 POI destination glyphs unique; Verdant/Arid composites show clear
+gameplay hierarchy; Thai correct (no glyph/tone/wrap/clip issues); contrast
+acceptable on all four biomes.
+Watch-items for the real run (non-blocking): swarm contrast on Arid/Badlands,
+affix recognition at 1x, POI recognition at gameplay distance,
+chaser-vs-hostile clarity under density, late-game readability. Thai copy
+polish noted (consistent "องค์ความรู้", common/uncommon wording) — deferred,
+no text/balance change without playtest evidence.
+Do NOT claim Human Gate A PASS. Proceeding to Phase 3 full run.
+
 ## Visual Review Round 1 Result — NOT PASSED (recorded, not erased)
 
 Human/auditor assessment of Round-1 lab screenshots:
@@ -308,9 +322,9 @@ Human/auditor assessment of Round-1 lab screenshots:
 2. Friendly/hostile/Knowledge/Mine FAIL (hostile ◆ vs Knowledge ◆ collision).
 3. POI FAIL (debug markers); Boss PASS.
 4. Thai NOT YET VERIFIED. 5. Background PASS_WITH_NOTES. 6. Overall NOT PROVEN.
-Round-2 remediation (this branch, presentation-only) addresses each item;
-awaiting human Round-2 review of `?visual=1` (NORMAL + GRAYSCALE + ไทย).
-Do NOT run a full gameplay run until the lab passes.
+Round-2 remediation (this branch, presentation-only) addressed each item;
+human Round-2 review has now PASSED WITH NOTES (see section above) —
+Phase 3 full run authorized, no further presentation edits without new evidence.
 Round-2 evidence captures (local only, gitignored under `test-results/`):
 `lab-r2-normal-final.png`, `lab-r2-gray-final.png`, `lab-r2-poi-final.png`,
 `lab-r2-thai-900-final.png`, `lab-r2-thai-game-final.png` — Verdant composite
