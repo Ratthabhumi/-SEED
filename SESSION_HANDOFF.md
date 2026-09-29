@@ -5,6 +5,13 @@
 2026-09-29 ~03:05 Asia/Bangkok. Documentation-only checkpoint; no code, test,
 dependency, or build change in this pass.
 
+Office sync 2026-09-29 Asia/Bangkok: fresh `git clone` + checkout of
+`fix/v011-stabilization-20260929` at
+`544fb81d1375e85f13382a962d8c5f93185d4bfe` (= remote HEAD, one docs-only
+commit ahead of implementation checkpoint `b5750f1`); working tree clean;
+`npm ci` + `npm run check` green on this machine (typecheck PASS, 22 files /
+164 tests PASS, production build PASS, EXIT 0).
+
 ## Repository
 
 `Ratthabhumi/-SEED` — `-SEED: เมล็ดพันธุ์แห่งอารยธรรม`
@@ -174,7 +181,10 @@ rolling F3, fresh ZIP, verifier, notices, smoke E2E).
 - Branch `fix/v011-stabilization-20260929` tracks
   `origin/fix/v011-stabilization-20260929`; working tree clean at handoff.
 - No force-push, no rewritten history, no merge to main, no tags.
-- 11 commits above `origin/main` (`5e6d5c6`), milestone-structured.
+- 14 commits above `origin/main` (`5e6d5c6`), milestone-structured.
+- Branch HEAD verified at office sync:
+  `544fb81d1375e85f13382a962d8c5f93185d4bfe` (local == `git ls-remote` remote
+  HEAD; `origin/main` still `5e6d5c65ea905bc3859f115e73bfd02913988d45`).
 
 ## Exact Resume Procedure
 
