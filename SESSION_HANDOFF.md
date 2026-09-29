@@ -12,6 +12,12 @@ commit ahead of implementation checkpoint `b5750f1`); working tree clean;
 `npm ci` + `npm run check` green on this machine (typecheck PASS, 22 files /
 164 tests PASS, production build PASS, EXIT 0).
 
+Office QA-harness session 2026-09-29 Asia/Bangkok (human-authorized): added
+read-only `src/qa/` playtest harness (`?qa=1`), 14 new unit tests
+(26 files / 178 tests PASS), new `e2e/qa.spec.ts` (E2E 7/7 PASS), full
+`typecheck/test/build/check/zip/release:verify/test:e2e` green on office
+machine. No gameplay/balance/worldgen change. See `docs/ADR/0004-qa-harness.md`.
+
 ## Repository
 
 `Ratthabhumi/-SEED` — `-SEED: เมล็ดพันธุ์แห่งอารยธรรม`
@@ -107,12 +113,12 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Automated Verification
 
 - `npm run typecheck` — PASS
-- `npm run test` — 22 files / 164 tests PASS
+- `npm run test` — 26 files / 178 tests PASS (22/164 baseline + 14 QA-harness tests)
 - `npm run build` — PASS
 - `npm run check` — PASS
 - `npm run zip` — PASS (`release/seed-web-v0.1.1.zip`)
 - `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — 6/6 PASS, verified across two consecutive local runs
+- `npm run test:e2e` — 7/7 PASS (6 existing + 1 QA-harness flow)
 - GitHub Actions run 36505017447 — Node 22 verify PASS, Node 24 verify PASS,
   Chromium E2E PASS, artifact `seed-web-v0.1.1` downloadable.
 - This is NOT a human-release approval.
@@ -227,10 +233,30 @@ At the office: sync/check ONLY first (`status`, `fetch`, `checkout`,
 and SHA matches this handoff, begin the human gates (full run → F3 numbers →
 Thai → Firefox → itch draft) before any editing.
 
+## QA Harness (Human Gate Tooling)
+
+- Activation: `http://localhost:5173/?qa=1` → gate panel → START PLAYTEST
+  (golden seed `EPOCH-GOLDEN-001`, no typing). Normal `/` launch unchanged.
+- Auto-records: age/boss/ascension/death checkpoints (sim + wall time), 2 Hz
+  perf samples + checkpoint snapshots (FPS, frame/sim p50/p95/p99, entities,
+  pools, queries, buckets, chunk cache), environment, console errors/warnings,
+  draft/seed/age/boss/ascension runtime assertions, EN↔TH snapshot invariance,
+  DOM overflow findings, pool saturation. Human only taps feedback buttons
+  (Thai labels) + optional note.
+- Read-only: no XP/kill/teleport/age/damage/RNG cheats. No world hard-bounds;
+  F4 diagnostic overlay (chunk box, POI direction, objective readout) gathers
+  navigation/readability evidence before any guidance design.
+- Report: END PLAYTEST (or death, or Ascension+60s window) →
+  DOWNLOAD `playtest-report.md` + `playtest-report.json` (local only).
+  Verdict is `AUTOMATED_CHECKS_PASS/FAIL` — never a human-gate PASS.
+- Code: `src/qa/{qaMode,PerformanceSampler,PlaytestRecorder,PlaytestReport,VisualChecks,qaPanel}.ts`
+  (`src/core` untouched/pure); `docs/ADR/0004-qa-harness.md`.
+
 ## Next Three Actions
 
-1. Human full-run playtest: `EPOCH-GOLDEN-001`, Stone → Space → Ascension.
-   Record feel + F3 performance values.
+1. Human full-run playtest via QA harness: open `http://localhost:5173/?qa=1`
+   → START PLAYTEST → play Stone → Space → Boss → Ascension → 60s post-Ascension
+   → END PLAYTEST → send `playtest-report.md` + subjective notes to auditor.
 2. Thai + Firefox manual QA at normal and smaller desktop windows, in Thai
    and English modes. Record problems before editing.
 3. If both acceptable: `npm run check`, `npm run zip`, `npm run release:verify`,

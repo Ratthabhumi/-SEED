@@ -21,9 +21,13 @@ src/
     audio/         sfx.ts (Web Audio synth)
     ui.ts          DOM helpers (Thai-safe text)
   i18n/            en.ts th.ts i18n.ts
+  qa/              qaMode.ts PerformanceSampler.ts PlaytestRecorder.ts
+                   PlaytestReport.ts VisualChecks.ts qaPanel.ts (read-only
+                   ?qa=1 human-gate harness; observes sim/DOM, never canonical)
   main.ts styles.css
-tests/  seed/ world/ tech/ director/ sim/ i18n/ save/ balance/
+tests/  seed/ world/ tech/ director/ sim/ i18n/ save/ balance/ qa/
 e2e/    smoke.spec.ts (Playwright, production build)
+       regression.spec.ts + qa.spec.ts (?qa=1 gate flow, read-only)
 ```
 
 ## Simulation boundary
