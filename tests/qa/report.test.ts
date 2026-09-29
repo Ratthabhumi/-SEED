@@ -20,16 +20,19 @@ describe("playtest report", () => {
     r.checkpoint("RUN_START", ctx(0));
     r.checkpoint("SPACE_REACHED", ctx(600, "space"));
     r.assert("seed", "Seed invariant", true, "ok", ctx(1));
-    r.feedbackMark("ภาพอ่านยาก", "note", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 1, projs: 2, build: "lv1" }, ctx(100));
+    r.feedbackMark("read", "ภาพอ่านยาก", "note", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 1, projs: 2, build: "lv1" }, ctx(100));
+    r.rate("qa.rateCombat", 4, ctx(101));
+    r.recordAgeKnowledge("bronze", 512, ctx(102));
     r.finish("human-ended", 700);
     const snap = r.snapshot();
     const md = renderMarkdown(snap);
     for (const section of [
       "## Environment", "## Seed / Versions", "## Route", "## Age Transition Times",
+      "## Knowledge At Age", "## Build Identity / Engagement",
       "## Boss", "## Ascension", "## Performance Summary", "## Peak Entity Counts",
       "## Pool Saturation", "## Functional Runtime Assertions", "## Console Errors / Warnings",
       "## EN/TH Switching", "## UI Overflow Findings", "## Human Feedback Markers",
-      "## Automatic Gate Result", "## Items Requiring Human Judgment",
+      "## Human Ratings", "## Automatic Gate Result", "## Items Requiring Human Judgment",
     ]) {
       expect(md).toContain(section);
     }

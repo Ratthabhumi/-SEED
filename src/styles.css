@@ -177,3 +177,16 @@ button, input { font-family: inherit; }
 .qa-btn-row .btn { padding: 8px 12px; min-height: 36px; font-size: 12px; }
 .qa-dl { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .qa-dl .btn { font-size: 12px; padding: 8px 10px; min-height: 36px; }
+/* v0.2 engagement: origin cards, synergy lines, goals, beats, QA ratings. */
+.origin-title { color: var(--accent); font-size: 15px; font-weight: 700; margin-top: 10px; line-height: 1.7; }
+.card-domain { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.card-synergy { color: #7fd4ff; font-size: 13px; line-height: 1.7; }
+.card-synergy.completes { color: var(--accent); font-weight: 700; }
+.hud-goals { color: #7fd4ff; font-size: 12px; background: rgba(8,12,18,0.55); border-radius: 8px; padding: 4px 10px; width: fit-content; max-width: 100%; line-height: 1.7; }
+.qa-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.btn.qa-toggle { padding: 4px 10px; font-size: 11px; min-height: 28px; }
+.qa-cat { color: var(--accent); font-size: 12px; font-weight: 700; margin-top: 8px; }
+.qa-rate-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; }
+.qa-rate-row span { flex: 1; }
+.btn.qa-rate { padding: 4px 10px; font-size: 12px; min-height: 30px; }
+.btn.qa-rate.active { border-color: var(--accent); color: var(--accent); }

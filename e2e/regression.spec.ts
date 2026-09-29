@@ -120,6 +120,13 @@ test("ascension smoke: child world, run stats retained, world reset", async ({ p
   // Boss-kill trigger bypassed by hook; ascend() executes the real path.
   await page.evaluate(() => window.__seedE2E?.readyAscend());
   await page.getByRole("button", { name: "ASCEND to the Next World" }).click();
+  // Legacy prestige choice, then child-world origin choice.
+  await expect(page.locator("#legacy-screen")).toBeVisible();
+  expect(await page.locator("#legacy-screen .card").count()).toBe(3);
+  await page.locator("#legacy-screen .card").first().click();
+  await expect(page.locator("#origin-screen")).toBeVisible();
+  expect(await page.locator("#origin-screen .card").count()).toBe(4);
+  await page.locator("#origin-screen .card").first().click();
   await page.waitForTimeout(800);
   const after: { runElapsed: number; world: string; asc: number; age: number } = await page.evaluate(() => {
     const snap = JSON.parse(window.__seedE2E?.snapshot() ?? "{}");

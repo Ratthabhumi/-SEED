@@ -6,8 +6,11 @@ import { loadSave, storeSave } from "../../core/save/save";
 import { generateRandomSeed } from "../../core/seed/hash";
 import { sfx } from "../audio/sfx";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
+import { ORIGINS, DEFAULT_ORIGIN, type OriginId } from "../../core/progression/origins";
+import type { WeaponFamily } from "../../core/combat/weapons";
 
 export const TITLE_SEED_KEY = "seed-game:pending-seed";
+export const TITLE_ORIGIN_KEY = "seed-game:pending-origin";
 
 export class TitleScene extends Phaser.Scene {
   private stars: { x: number; y: number; s: number; v: number }[] = [];
@@ -59,6 +62,7 @@ export class TitleScene extends Phaser.Scene {
       startQa.addEventListener("click", () => {
         sfx.unlock(); sfx.select();
         sessionStorage.setItem(TITLE_SEED_KEY, GOLDEN_QA_SEED);
+        sessionStorage.setItem(TITLE_ORIGIN_KEY, DEFAULT_ORIGIN);
         this.scene.start("game");
       });
       gate.appendChild(startQa);
@@ -82,10 +86,34 @@ export class TitleScene extends Phaser.Scene {
     seedRow.appendChild(dice);
     panel.appendChild(seedRow);
 
+    // Civilization Origin: two starting weapon families (ADR-0006 Decision 1).
+    let pickedOrigin: OriginId = DEFAULT_ORIGIN;
+    panel.appendChild(el("div", "origin-title", "ui.chooseOrigin"));
+    const descLine = el("div", "logo-sub", ORIGINS[0]!.descKey as never);
+    const oRow = el("div", "btn-row");
+    const oBtns: HTMLButtonElement[] = [];
+    for (const o of ORIGINS) {
+      const b = document.createElement("button");
+      b.className = "btn" + (o.id === pickedOrigin ? " active" : "");
+      b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
+      b.addEventListener("click", () => {
+        sfx.unlock(); sfx.select();
+        pickedOrigin = o.id;
+        for (const x of oBtns) x.classList.remove("active");
+        b.classList.add("active");
+        descLine.textContent = t(o.descKey);
+      });
+      oRow.appendChild(b);
+      oBtns.push(b);
+    }
+    panel.appendChild(oRow);
+    panel.appendChild(descLine);
+
     const start = button("ui.startGame", () => {
       sfx.unlock(); sfx.select();
       const raw = input.value.trim() || generateRandomSeed();
       sessionStorage.setItem(TITLE_SEED_KEY, raw);
+      sessionStorage.setItem(TITLE_ORIGIN_KEY, pickedOrigin);
       this.scene.start("game");
     }, "btn primary");
     start.style.width = "100%";

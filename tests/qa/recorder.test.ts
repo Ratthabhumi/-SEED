@@ -27,6 +27,29 @@ describe("playtest recorder checkpoints", () => {
   });
 });
 
+describe("playtest recorder ratings and engagement", () => {
+  it("keeps one value per rating question and records engagement", () => {
+    const r = recorder();
+    r.rate("qa.rateCombat", 4, ctx(100));
+    r.rate("qa.rateCombat", 2, ctx(200));
+    r.rate("qa.rateDesire", 9, ctx(200)); // clamped to 5
+    r.recordAgeKnowledge("bronze", 512.7, ctx(150, "bronze"));
+    r.recordAgeKnowledge("bronze", 999, ctx(151, "bronze")); // deduped per age+asc
+    const s = r.snapshot();
+    expect(s.ratings).toHaveLength(2);
+    expect(s.ratings.find((x) => x.question === "qa.rateCombat")?.score).toBe(2);
+    expect(s.ratings.find((x) => x.question === "qa.rateDesire")?.score).toBe(5);
+    expect(s.ageKnowledge).toHaveLength(1);
+    expect(s.ageKnowledge[0]?.knowledge).toBe(512);
+  });
+
+  it("feedback carries an unambiguous category", () => {
+    const r = recorder();
+    r.feedbackMark("read", "ภาพอ่านยาก", "", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 0, projs: 0, build: "" }, ctx());
+    expect(r.snapshot().feedback[0]?.category).toBe("read");
+  });
+});
+
 describe("playtest recorder assertions", () => {
   it("dedupes identical FAILs but keeps PASS history", () => {
     const r = recorder();
@@ -54,7 +77,7 @@ describe("playtest recorder assertions", () => {
 describe("playtest recorder evidence", () => {
   it("captures feedback, lang switches, overflows, and pool saturation", () => {
     const r = recorder();
-    r.feedbackMark("ภาพอ่านยาก", "", { px: 1, py: 2, chunk: "0,0", fps: 59, enemies: 5, projs: 6, build: "lv3" }, ctx());
+    r.feedbackMark("read", "ภาพอ่านยาก", "", { px: 1, py: 2, chunk: "0,0", fps: 59, enemies: 5, projs: 6, build: "lv3" }, ctx());
     r.langSwitch("en", "th", true, ctx(200));
     r.overflow({ selector: ".hud", lang: "th", viewport: "800x600", kind: "horizontal", overBy: 12, simTime: 200, wallTime: 202 });
     r.overflow({ selector: ".hud", lang: "th", viewport: "800x600", kind: "horizontal", overBy: 14, simTime: 201, wallTime: 203 });
@@ -74,7 +97,7 @@ describe("playtest recorder evidence", () => {
     for (let i = 0; i < 2000; i++) {
       r.assert(`id-${i % 700}`, "n", true, `d${i}`, ctx(i));
       r.console("warn", `w${i}`, "", ctx(i));
-      r.feedbackMark("x", "", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 0, projs: 0, build: "" }, ctx(i));
+      r.feedbackMark("note", "x", "", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 0, projs: 0, build: "" }, ctx(i));
     }
     const s = r.snapshot();
     expect(s.assertions.length).toBeLessThanOrEqual(500);

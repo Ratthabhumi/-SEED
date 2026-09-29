@@ -46,6 +46,10 @@ export class Sfx {
   boss(): void { this.tone(110, 0.6, "sawtooth", 0.2, -40); }
   ascend(): void { this.tone(523, 0.8, "sine", 0.2, 523); }
   hurt(): void { this.tone(140, 0.15, "square", 0.14, -60); }
+  /** Breakthrough reward beat: bright two-tone chime (original). */
+  breakthrough(): void { this.tone(523, 0.12, "triangle", 0.2, 0); this.tone(784, 0.22, "triangle", 0.2, 0); }
+  /** Age-transition sting: rising two-tone fanfare (original). */
+  ageSting(): void { this.tone(392, 0.15, "triangle", 0.22, 196); this.tone(587, 0.28, "triangle", 0.2, 196); }
 }
 
 export const sfx = new Sfx();

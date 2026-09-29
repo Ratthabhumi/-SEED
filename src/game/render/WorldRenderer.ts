@@ -6,6 +6,7 @@ import { deriveUint32 } from "../../core/seed/hash";
 import { CHUNK_SIZE } from "../../core/world/chunks";
 import type { ChunkDescriptor } from "../../core/world/chunks";
 import type { BiomeId } from "../../core/world/biome";
+import type { AgeId } from "../../core/tech/graph";
 import type { POIType } from "../../core/world/poi";
 import { VL, poiGlyph } from "./VisualLanguage";
 import { fillPoly, strokePoly } from "./paths";
@@ -15,6 +16,8 @@ export interface GroundDrawArgs {
   styleFor: (biome: BiomeId) => { ground: number; groundAlt: number };
   civColor: number;
   civDensity: number;
+  /** Current age selects the civilization geometry vocabulary. */
+  age: AgeId;
   cx: number;
   cy: number;
   radius: number;
@@ -43,17 +46,65 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
       const py = gy + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-y", 300);
       g.fillStyle(style.groundAlt, 0.55);
       g.fillEllipse(px + 100, py + 100, 300, 220);
-      // Civ layer: sparse plus-marks (never dots/discs — those read as entities).
+      // Civ layer per age (ADR-0006 Phase 9): sparse procedural marks BELOW
+      // gameplay contrast. Seeded positions; bounded counts; never dots/discs.
       const du = deriveUint32(a.worldSeed, `civ:${ccx},${ccy}`);
-      g.lineStyle(2, a.civColor, 0.38);
       for (let i = 0; i < a.civDensity; i++) {
         const hx = gx + ((du + i * 173) % (CHUNK_SIZE - 40)) + 20;
         const hy = gy + ((du * 3 + i * 271) % (CHUNK_SIZE - 40)) + 20;
         const s = 7 + (i % 3) * 3;
-        g.lineBetween(hx - s, hy, hx + s, hy);
-        g.lineBetween(hx, hy - s, hx, hy + s);
+        drawCivMark(g, a.age, hx, hy, s, a.civColor, 0.38);
       }
     }
+  }
+}
+
+/** One age-vocabulary mark at (hx,hy), size class s. Presentation only. */
+function drawCivMark(
+  g: Phaser.GameObjects.Graphics, age: AgeId,
+  hx: number, hy: number, s: number, color: number, alpha: number,
+): void {
+  g.lineStyle(2, color, alpha);
+  if (age === "stone") {
+    // Campfire tripod + tent triangle (alternate by parity for variety).
+    if ((hx + hy) % 2 === 0) {
+      g.lineBetween(hx - s, hy + s, hx, hy - s);
+      g.lineBetween(hx + s, hy + s, hx, hy - s);
+      g.lineBetween(hx - s, hy + s, hx + s, hy + s);
+    } else {
+      g.lineBetween(hx - s, hy + s * 0.6, hx, hy - s * 0.8);
+      g.lineBetween(hx + s, hy + s * 0.6, hx, hy - s * 0.8);
+      g.lineBetween(hx - s, hy + s * 0.6, hx + s, hy + s * 0.6);
+    }
+  } else if (age === "bronze") {
+    // Wall segment + banner rect.
+    g.lineBetween(hx - s, hy, hx + s, hy);
+    g.lineBetween(hx - s, hy - s * 0.5, hx - s, hy + s * 0.5);
+    g.lineBetween(hx + s, hy - s * 0.5, hx + s, hy + s * 0.5);
+    g.strokeRect(hx + s * 0.2, hy - s * 1.1, s * 0.6, s * 0.5);
+  } else if (age === "iron") {
+    // Forge square + anvil L.
+    g.strokeRect(hx - s * 0.7, hy - s * 0.7, s * 1.4, s * 1.4);
+    g.lineBetween(hx - s, hy + s, hx + s * 0.4, hy + s);
+    g.lineBetween(hx + s * 0.4, hy + s, hx + s * 0.4, hy + s * 0.2);
+  } else if (age === "industrial") {
+    // Twin rails + gear circle.
+    g.lineBetween(hx - s, hy - s * 0.3, hx + s, hy - s * 0.3);
+    g.lineBetween(hx - s, hy + s * 0.3, hx + s, hy + s * 0.3);
+    g.strokeCircle(hx + s * 0.2, hy - s * 0.9, s * 0.45);
+  } else if (age === "atomic") {
+    // Reactor ring + core dot + radar sweep tick.
+    g.strokeCircle(hx, hy, s * 0.8);
+    g.fillStyle(color, alpha + 0.2);
+    g.fillCircle(hx, hy, s * 0.22);
+    g.lineBetween(hx, hy - s * 0.8, hx + s * 0.6, hy - s * 1.3);
+  } else {
+    // Satellite bus + orbital ellipse trace.
+    g.strokeRect(hx - s * 0.5, hy - s * 0.3, s, s * 0.6);
+    g.lineBetween(hx - s * 1.3, hy, hx - s * 0.5, hy);
+    g.lineBetween(hx + s * 0.5, hy, hx + s * 1.3, hy);
+    g.lineStyle(1, color, alpha * 0.7);
+    g.strokeEllipse(hx, hy, s * 3.2, s * 1.6);
   }
 }
 
