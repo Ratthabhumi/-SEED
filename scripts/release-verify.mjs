@@ -84,7 +84,7 @@ if (!existsSync(indexPath)) {
   check(absolute.length === 0, "all asset references relative", absolute.slice(0, 3).join(","));
   const missing = refs.filter((u) => !existsSync(path.join(tmp, u.split("?")[0].split("#")[0])));
   check(missing.length === 0, "no missing referenced assets", missing.slice(0, 3).join(","));
-  check(!/BEGIN .*PRIVATE KEY|AKIA[0-9A-Z]{16}/.test(html), "no secrets in index.html");
+  check(!/BEGIN .*PRIVATE KEY|AKIA[0-9A-Z]{16}/.test(html), "known-secret-pattern scan of index.html");
 }
 
 // ---- licenses ----
@@ -92,9 +92,9 @@ for (const f of ["THIRD_PARTY_NOTICES.txt", "licenses/PHASER-MIT.txt", "licenses
   check(existsSync(path.join(tmp, f)), `licensed notice packaged: ${f}`);
 }
 
-// ---- secret filenames ----
+// ---- secret filenames (basic forbidden-file check) ----
 const secretFiles = fileNames.filter((n) => /\.(pem|key|env)$/i.test(n));
-check(secretFiles.length === 0, "no secret files in artifact");
+check(secretFiles.length === 0, "no forbidden secret files in artifact");
 
 rmSync(tmp, { recursive: true, force: true });
 if (failures > 0) {

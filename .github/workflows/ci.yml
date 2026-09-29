@@ -21,6 +21,11 @@ jobs:
       - run: npm run check
       - run: npm run zip
       - run: npm run release:verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seed-web-v0.1.1
+          path: release/seed-web-v0.1.1.zip
+          retention-days: 14
 
   e2e:
     runs-on: ubuntu-latest
