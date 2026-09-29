@@ -28,6 +28,13 @@ recorded as suspect parent E2E evidence; fixed on this branch (`gate.id`) and
 re-verified green. E2E per-test timeout raised 60s → 120s (slow office
 machine accommodation; assertions unchanged).
 
+Truth repair 2026-09-29 home machine (docs-only, this pass): fixed stale
+current-state metadata that still pointed at the stabilization branch —
+active branch is `fix/v011-readability-20260929`, code checkpoint
+`35f6b73e2d14aa413ac1db7b66851b7643aac8c6`, rollback
+`737ddf3b57d14ab3bc26d191261d01d92a378340`, CI run `36589398303` green on the
+exact readability SHA. No history removed; failed-gate evidence preserved.
+
 Visual Review Round 2, 2026-09-29 home machine (this session,
 presentation-only, same branch): human Round-1 verdict NOT PASSED
 (hostile/Knowledge silhouette collision, debug-marker POIs, swarm identity,
@@ -54,8 +61,11 @@ human visual review still open). Stabilization branch kept as rollback point.
 
 ## Implementation Checkpoint
 
-`3af2668dd0baead10dd632c503ad970d9ae117e5` (readability branch base) plus
-Round-2 working commit(s) on top — see `git log` for exact HEAD at push time.
+READABILITY CODE CHECKPOINT:
+`35f6b73e2d14aa413ac1db7b66851b7643aac8c6`
+(verified `git rev-parse HEAD` + GitHub; CI green on this exact SHA).
+Ancestry: readability = stabilization `737ddf3` + 5 presentation-only commits,
+0 behind (clean rollback to `737ddf3` preserved).
 
 SESSION_HANDOFF.md may be one documentation-only commit ahead of this
 implementation checkpoint. On resume, `git rev-parse HEAD` is authoritative
@@ -124,10 +134,11 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Release / CI State
 
 - GitHub Actions `ci`: Node 22 + Node 24 verify jobs (`npm ci`, `check`,
-  fresh `zip`, `release:verify`) + Chromium E2E job. Latest: run 36505017447,
-  all SUCCESS on the pushed branch HEAD.
-- Verified artifact `seed-web-v0.1.1` uploaded from CI (14-day retention;
-  CI-built copy measured 846,545 bytes, downloadable).
+  fresh `zip`, `release:verify`) + Chromium E2E job. Latest, on readability
+  code checkpoint `35f6b73`: run 36589398303 — verify(22) PASS, verify(24)
+  PASS, e2e PASS, artifact `seed-web-v0.1.1` present and downloadable.
+- History: run 36505017447 was green on the stabilization SHA (kept as
+  rollback evidence, not the active line).
 - `release:verify` = 17 checks (root index.html, relative refs, itch limits,
   licenses, basic known-pattern secret scan — honest wording, not proof of
   absence). Fresh-ZIP-only script (old ZIP deleted first).
@@ -135,16 +146,16 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Automated Verification
 
 - `npm run typecheck` — PASS
-- `npm run test` — 27 files / 187 tests PASS (22/164 baseline + 14 QA + 9 visual)
+- `npm run test` — 27 files / 194 tests PASS
 - `npm run build` — PASS
 - `npm run check` — PASS
 - `npm run zip` — PASS (`release/seed-web-v0.1.1.zip`)
 - `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — 9/9 PASS (6 existing + QA flow + 2 visual-lab)
+- `npm run test:e2e` — 10/10 PASS (9 existing + lab grayscale toggle)
   (per-test timeout 120s on the slow office machine; assertions unchanged)
-- GitHub Actions run 36505017447 — Node 22 verify PASS, Node 24 verify PASS,
+- GitHub Actions run 36589398303 — Node 22 verify PASS, Node 24 verify PASS,
   Chromium E2E PASS, artifact `seed-web-v0.1.1` downloadable.
-  (Ran on the stabilization SHA; readability-branch CI pending after push.)
+  (Green on readability code checkpoint `35f6b73`, not the stabilization SHA.)
 - This is NOT a human-release approval.
 
 ## Audit Round 3 Findings Closed
@@ -208,13 +219,15 @@ rolling F3, fresh ZIP, verifier, notices, smoke E2E).
 
 ## Git Safety State
 
-- Branch `fix/v011-stabilization-20260929` tracks
-  `origin/fix/v011-stabilization-20260929`; working tree clean at handoff.
+- ACTIVE branch `fix/v011-readability-20260929` tracks
+  `origin/fix/v011-readability-20260929`; working tree clean at handoff.
+- ROLLBACK / PARENT checkpoint: stabilization
+  `737ddf3b57d14ab3bc26d191261d01d92a378340` (branch kept, never merged).
+- Readability vs stabilization: ahead 5 / behind 0. Readability vs
+  `origin/main` (`5e6d5c6`): ahead 22 / behind 0.
 - No force-push, no rewritten history, no merge to main, no tags.
-- 14 commits above `origin/main` (`5e6d5c6`), milestone-structured.
-- Branch HEAD verified at office sync:
-  `544fb81d1375e85f13382a962d8c5f93185d4bfe` (local == `git ls-remote` remote
-  HEAD; `origin/main` still `5e6d5c65ea905bc3859f115e73bfd02913988d45`).
+- Branch HEAD verified = code checkpoint `35f6b73`
+  (local == `git ls-remote` remote HEAD; `origin/main` still `5e6d5c6`).
 
 ## Exact Resume Procedure
 
@@ -224,8 +237,8 @@ Fresh machine:
 git clone https://github.com/Ratthabhumi/-SEED.git
 cd -SEED
 git fetch origin
-git checkout fix/v011-stabilization-20260929
-git pull --ff-only origin fix/v011-stabilization-20260929
+git checkout fix/v011-readability-20260929
+git pull --ff-only origin fix/v011-readability-20260929
 git status
 git branch --show-current
 git rev-parse HEAD
@@ -240,8 +253,8 @@ Existing repository:
 cd <existing-repo>
 git status
 git fetch origin
-git checkout fix/v011-stabilization-20260929
-git pull --ff-only origin fix/v011-stabilization-20260929
+git checkout fix/v011-readability-20260929
+git pull --ff-only origin fix/v011-readability-20260929
 git status
 git rev-parse HEAD
 npm ci
@@ -252,9 +265,10 @@ Safety rule: if `git status` is not clean before pulling — STOP, inspect local
 changes, do not reset/delete them automatically. NEVER use `git reset --hard`,
 `git clean -fd`, or force checkout as routine resume steps.
 
-At the office: sync/check ONLY first (`status`, `fetch`, `checkout`,
-`pull --ff-only`, `status`, `rev-parse`, `npm ci`, `npm run check`). If green
-and SHA matches this handoff, begin the human gates (full run → F3 numbers →
+Resume rule: the ACTIVE branch is `fix/v011-readability-20260929`
+(code checkpoint `35f6b73`). Do NOT resume on `fix/v011-stabilization-20260929`
+— that branch is the rollback point only (`737ddf3`). If green and SHA matches
+this handoff, begin the human gates (visual review → full run → F3 numbers →
 Thai → Firefox → itch draft) before any editing.
 
 ## QA Harness (Human Gate Tooling)
@@ -297,6 +311,11 @@ Human/auditor assessment of Round-1 lab screenshots:
 Round-2 remediation (this branch, presentation-only) addresses each item;
 awaiting human Round-2 review of `?visual=1` (NORMAL + GRAYSCALE + ไทย).
 Do NOT run a full gameplay run until the lab passes.
+Round-2 evidence captures (local only, gitignored under `test-results/`):
+`lab-r2-normal-final.png`, `lab-r2-gray-final.png`, `lab-r2-poi-final.png`,
+`lab-r2-thai-900-final.png`, `lab-r2-thai-game-final.png` — Verdant composite
+readable in NORMAL and GRAYSCALE; 6 POI glyphs distinct with boosted pillars;
+Thai strings + 300px wrap box correct at 900px. Auditor verdict pending.
 
 ## Next Three Actions
 
