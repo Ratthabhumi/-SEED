@@ -176,6 +176,15 @@ export const en = {
   "archive.anomaly": "Anomaly Class II",
   "archive.nomads": "Nomad Origin",
   "archive.builders": "Builder Origin",
+  "ui.contrast": "Gameplay Contrast",
+  "ui.contrastNormal": "Normal",
+  "ui.contrastHigh": "High",
+  "hint.move": "Move — WASD / Arrow Keys",
+  "hint.auto": "Your civilization attacks automatically.",
+  "hint.knowledge": "Collect Knowledge to evolve.",
+  "hint.draft": "Choose one technology.",
+  "hint.gated": "Check the objective line: kills, Knowledge, or time gates progress.",
+  "hint.poi": "Follow the ◈ beacon to a landmark.",
 } as const;
 
 export type EnKeys = keyof typeof en;

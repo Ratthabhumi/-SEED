@@ -88,6 +88,11 @@ const FEEDBACK_LABELS = [
   "UI ภาษาไทยมีปัญหา",
   "ยากเกิน",
   "ง่ายเกิน",
+  "สนามอ่านออกไหม?",
+  "รู้ว่าไปไหนไหม?",
+  "แยกศัตรูได้ไหม?",
+  "แยกอาวุธ/กระสุนได้ไหม?",
+  "ภาษาไทยอ่านง่ายไหม?",
 ];
 
 function download(filename: string, text: string, mime: string): void {

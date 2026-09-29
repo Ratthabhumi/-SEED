@@ -2,7 +2,7 @@
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
 import Phaser from "phaser";
-import { normalizeSeedString, deriveUint32, generateRandomSeed } from "../../core/seed/hash";
+import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { InputLatch } from "../../core/sim/InputLatch";
@@ -25,6 +25,13 @@ import { uiRoot, clearUI, el, button, toast } from "../ui";
 import { TITLE_SEED_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
+import { drawEnemy } from "../render/EnemyRenderer";
+import { drawPlayer } from "../render/PlayerRenderer";
+import {
+  drawFriendlyProj, drawHostileProj, drawBeam, drawAura, drawOrbit, drawSummon, drawMine, drawKnowledge,
+} from "../render/ProjectileRenderer";
+import { drawGround, drawPoi } from "../render/WorldRenderer";
+import { nearestInterest, drawOffscreenIndicator } from "../render/NavigationRenderer";
 import pkg from "../../../package.json";
 
 function percentile(sorted: number[], p: number): number {
@@ -51,6 +58,12 @@ export class GameScene extends Phaser.Scene {
   private keyHandlers: { event: string; fn: () => void }[] = [];
   private hud: Record<string, HTMLElement> = {};
   private hudT = 0;
+  // Presentation state (never canonical): facing, hurt flash, contrast, hints.
+  private playerFacing = -Math.PI / 2;
+  private lastHurtT = -10;
+  private bossGfx: Phaser.GameObjects.Graphics | null = null;
+  private navT = 0;
+  private onboard: { done: Set<string>; active: string; until: number } = { done: new Set(), active: "", until: 0 };
 
   // QA harness (read-only observer, ?qa=1 only — null in normal play).
   private qa: QaSession | null = null;
@@ -96,9 +109,15 @@ export class GameScene extends Phaser.Scene {
     this.ground = this.add.graphics().setDepth(-10);
     this.gfx = this.add.graphics().setDepth(0);
     this.playerArc = this.add.circle(0, 0, 16, 0xffd166) as unknown as Phaser.GameObjects.Arc;
-    this.playerArc.setStrokeStyle(3, 0x1a1405);
+    // Camera anchor only — the player body is drawn by PlayerRenderer.
+    this.playerArc.setVisible(false);
     this.playerArc.setDepth(10);
     this.cameras.main.startFollow(this.playerArc, false, 0.14, 0.14);
+    this.bossGfx = this.add.graphics().setDepth(45);
+    this.bossGfx.setScrollFactor(0);
+    this.playerFacing = -Math.PI / 2;
+    this.lastHurtT = -10;
+    this.onboard = { done: new Set(), active: "", until: 0 };
 
     const kb = this.input.keyboard;
     if (kb) {
@@ -367,6 +386,7 @@ export class GameScene extends Phaser.Scene {
     this.qa = null;
     this.qaGfx = null;
     this.qaText = null;
+    this.bossGfx = null;
     document.removeEventListener("visibilitychange", this.onHidden);
     this.input.off("pointerdown", this.unlockAudio);
     const kb = this.input.keyboard;
@@ -397,8 +417,22 @@ export class GameScene extends Phaser.Scene {
     // buttons every HUD refresh breaks focus/click stability (P1-01 class).
     const ascendWrap = el("div", "hud-ascend");
     hud.appendChild(ascendWrap);
+    // Wayfinding compass (nearest interest) + persistent boss bar + hints.
+    const compass = el("div", "nav-compass");
+    hud.appendChild(compass);
+    const bossBar = el("div", "boss-bar");
+    bossBar.style.display = "none";
+    const bossFill = document.createElement("div");
+    bossFill.className = "boss-fill";
+    bossBar.appendChild(bossFill);
+    const bossLabel = el("div", "boss-label", "ui.boss");
+    bossBar.appendChild(bossLabel);
+    hud.appendChild(bossBar);
     root.appendChild(hud);
-    this.hud = { hpFill, xpFill, stats, age, ascendWrap };
+    const hint = el("div", "onboard-hint");
+    hint.style.display = "none";
+    root.appendChild(hint);
+    this.hud = { hpFill, xpFill, stats, age, ascendWrap, compass, bossBar, bossFill, hint };
     this.refreshHUD();
   }
 
@@ -443,6 +477,13 @@ export class GameScene extends Phaser.Scene {
       const boss = s.enemies[s.bossIndex];
       if (boss?.active) add(`${t("ui.boss")} ${Math.ceil((boss.hp / boss.maxHp) * 100)}%`);
     }
+    this.refreshBossBar();
+    this.navT -= 0.15;
+    if (this.navT <= 0) {
+      this.navT = 1;
+      this.updateCompass();
+    }
+    this.updateOnboard();
     // Age-progress block: why am I (not) advancing?
     const next = s.ageIndex + 1;
     if (next < AGES.length) {
@@ -458,6 +499,90 @@ export class GameScene extends Phaser.Scene {
     } else {
       age.textContent = `${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
     }
+  }
+
+  /** Persistent top-of-screen boss bar (localized label + fraction). */
+  private refreshBossBar(): void {
+    const bar = this.hud.bossBar;
+    const fill = this.hud.bossFill;
+    if (!bar || !fill) return;
+    const s = this.sim.state;
+    const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    if (boss?.active) {
+      bar.style.display = "block";
+      fill.style.width = `${Math.max(0, Math.min(100, (boss.hp / boss.maxHp) * 100))}%`;
+    } else {
+      bar.style.display = "none";
+    }
+  }
+
+  /** Compass strip: boss takes priority, else nearest undiscovered POI. */
+  private updateCompass(): void {
+    const c = this.hud.compass;
+    if (!c) return;
+    const s = this.sim.state;
+    const arrowFor = (dx: number, dy: number): string => {
+      const arrows = ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"];
+      const idx = ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;
+      return arrows[idx] as string;
+    };
+    const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    if (boss?.active) {
+      const dx = boss.x - s.px;
+      const dy = boss.y - s.py;
+      c.textContent = `${arrowFor(dx, dy)} ${t("ui.boss")} ${Math.hypot(dx, dy).toFixed(0)}u`;
+      return;
+    }
+    // Nearest undiscovered POI (presentation scan; throttled to 1 Hz).
+    const { cx, cy } = worldToChunk(s.px, s.py);
+    const cands: Array<{ x: number; y: number; label: string }> = [];
+    for (let ox = -2; ox <= 2; ox++) {
+      for (let oy = -2; oy <= 2; oy++) {
+        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (s.poisWorld.includes(poi.id)) continue;
+          cands.push({ x: poi.wx, y: poi.wy, label: t(`poi.${poi.type}.name` as EnKeys) });
+        }
+      }
+    }
+    const hit = nearestInterest(s.px, s.py, cands);
+    c.textContent = hit ? `◈ ${hit.label} ${hit.dist.toFixed(0)}u ${arrowFor(Math.cos(hit.angleRad), Math.sin(hit.angleRad))}` : "";
+  }
+
+  /** Lightweight contextual teaching: one line at a time, auto-dismissed. */
+  private updateOnboard(): void {
+    const h = this.hud.hint;
+    if (!h) return;
+    const s = this.sim.state;
+    const now = performance.now() / 1000;
+    const moved = Math.hypot(s.px, s.py) > 60;
+    if (this.onboard.active !== "") {
+      if (now >= this.onboard.until || (this.onboard.active === "move" && moved)) {
+        h.style.display = "none";
+        this.onboard.active = "";
+      } else {
+        return;
+      }
+    }
+    const show = (id: string, key: EnKeys, dur = 7): boolean => {
+      if (this.onboard.done.has(id)) return false;
+      this.onboard.done.add(id);
+      this.onboard.active = id;
+      this.onboard.until = now + dur;
+      h.textContent = t(key);
+      h.style.display = "block";
+      return true;
+    };
+    if (show("move", "hint.move", 9)) return;
+    if (!moved) return;
+    let foes = 0;
+    for (const e of s.enemies) if (e.active) foes++;
+    if (foes > 0 && show("auto", "hint.auto")) return;
+    if (s.knowledgeTotal > 0 && show("knowledge", "hint.knowledge")) return;
+    if ((s.draftOpen || s.stats.techsTaken > 0) && show("draft", "hint.draft")) return;
+    if (s.ageIndex < AGES.length - 1 && s.ageElapsed > 90 && show(`gated-${s.ageIndex}`, "hint.gated")) return;
+    const c = this.hud.compass;
+    if (c && c.textContent !== "" && show("poi", "hint.poi")) return;
   }
 
   // ------------------------------------------------------------- draft
@@ -731,6 +856,7 @@ export class GameScene extends Phaser.Scene {
           break;
         case "player_hurt":
           sfx.hurt();
+          this.lastHurtT = performance.now() / 1000;
           break;
         case "enemy_killed":
           killsThisFrame++;
@@ -753,7 +879,17 @@ export class GameScene extends Phaser.Scene {
     if (this.keys.D?.isDown || this.keys.RIGHT?.isDown) ix += 1;
     if (this.keys.W?.isDown || this.keys.UP?.isDown) iy -= 1;
     if (this.keys.S?.isDown || this.keys.DOWN?.isDown) iy += 1;
+    if (ix !== 0 || iy !== 0) this.playerFacing = Math.atan2(iy, ix);
     this.latch.setMove(ix, iy);
+  }
+
+  /** Presentation-only contrast preference (settings, never gameplay). */
+  private highContrast(): boolean {
+    try {
+      return loadSave(localStorage).settings.contrast === "high";
+    } catch {
+      return false;
+    }
   }
 
   private pushSample(arr: number[], v: number, cap = 240): void {
@@ -840,36 +976,32 @@ export class GameScene extends Phaser.Scene {
     const { cx, cy } = worldToChunk(s.px, s.py);
     // Visual radius extends one chunk beyond the simulated active radius.
     const R = ACTIVE_RADIUS_CHUNKS + 1;
-    const ageId = AGES[s.ageIndex] as AgeId;
-    const civ = CIV_LAYER[ageId];
+    const civ = CIV_LAYER[AGES[s.ageIndex] as AgeId];
+    const now = performance.now() / 1000;
+    drawGround(g, {
+      getChunk: (x, y) => this.sim.chunks.get(s.worldSeed, s.worldNonce, x, y),
+      styleFor: (biome) => BIOME_STYLE[biome],
+      civColor: civ.color,
+      civDensity: civ.density,
+      cx,
+      cy,
+      radius: R,
+      worldSeed: s.worldSeed,
+      time: now,
+      highContrast: this.highContrast(),
+    });
+    // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     for (let ox = -R; ox <= R; ox++) {
       for (let oy = -R; oy <= R; oy++) {
         const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
-        const style = BIOME_STYLE[desc.biome];
-        const gx = (cx + ox) * CHUNK_SIZE;
-        const gy = (cy + oy) * CHUNK_SIZE;
-        g.fillStyle(style.ground, 1);
-        g.fillRect(gx, gy, CHUNK_SIZE, CHUNK_SIZE);
-        g.fillStyle(style.groundAlt, 1);
-        const hatch = deriveUint32(s.worldSeed, `hatch:${desc.x},${desc.y}`) % 4;
-        for (let i = 0; i < 4; i++) {
-          g.fillRect(gx + ((hatch * 130 + i * 170) % CHUNK_SIZE), gy + ((i * 190 + hatch * 70) % CHUNK_SIZE), 46, 46);
-        }
-        const du = deriveUint32(s.worldSeed, `civ:${desc.x},${desc.y}`);
-        g.fillStyle(civ.color, 0.85);
-        for (let i = 0; i < civ.density * 2; i++) {
-          const hx = (du + i * 137) % CHUNK_SIZE;
-          const hy = (du * 3 + i * 251) % CHUNK_SIZE;
-          if (s.ageIndex <= 1) g.fillCircle(gx + hx, gy + hy, 3);
-          else if (s.ageIndex <= 3) g.fillRect(gx + hx, gy + hy, 7, 7);
-          else g.fillTriangle(gx + hx, gy + hy, gx + hx + 9, gy + hy, gx + hx + 4, gy + hy - 10);
-        }
         for (const poi of desc.poi) {
-          const found = s.poisWorld.includes(poi.id);
-          g.lineStyle(2, found ? 0x555555 : 0xffd166, 1);
-          g.strokeCircle(poi.wx, poi.wy, 16);
-          g.fillStyle(found ? 0x555555 : 0xffd166, 1);
-          g.fillCircle(poi.wx, poi.wy, 5);
+          drawPoi(g, {
+            wx: poi.wx,
+            wy: poi.wy,
+            found: s.poisWorld.includes(poi.id),
+            time: now,
+            highContrast: this.highContrast(),
+          });
         }
       }
     }
@@ -885,81 +1017,88 @@ export class GameScene extends Phaser.Scene {
     const vx1 = cam.scrollX + cam.width + 60;
     const vy1 = cam.scrollY + cam.height + 60;
     const vis = (x: number, y: number): boolean => x >= vx0 && y >= vy0 && x <= vx1 && y <= vy1;
+    const now = performance.now() / 1000;
+    const hc = this.highContrast();
+    const wopts = { time: now, highContrast: hc };
 
     for (const k of s.pickups) {
       if (!k.active || !vis(k.x, k.y)) continue;
-      g.fillStyle(0x53e0c8, 1);
-      g.fillCircle(k.x, k.y, 4 + Math.min(3, k.value * 0.3));
+      drawKnowledge(g, k);
     }
     for (const m of s.mines) {
       if (!m.active || !vis(m.x, m.y)) continue;
-      g.lineStyle(1, 0xc9b458, 0.8);
-      g.strokeCircle(m.x, m.y, 8);
+      drawMine(g, m, wopts);
     }
-    const ageId = AGES[s.ageIndex] as AgeId;
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
-      const base = ENEMY_LINEAGE[e.family].color[ageId];
-      g.fillStyle(e.flash > 0 ? 0xffffff : base, 1);
-      g.fillCircle(e.x, e.y, e.radius);
-      if (e.elite || e.boss) {
-        // Affix telegraph ring: volatile pulses red, shielded cyan, armored gray.
-        const ring = e.affix === "volatile" ? 0xff2222 : e.affix === "shielded" ? 0x53e0c8 : e.boss ? 0xff2222 : 0xffd166;
-        g.lineStyle(e.boss ? 4 : 2, ring, 1);
-        g.strokeCircle(e.x, e.y, e.radius + 4);
-        if (e.shield > 0) {
-          g.lineStyle(1, 0x7fb8ff, 0.9);
-          g.strokeCircle(e.x, e.y, e.radius + 8);
-        }
-        const w = e.radius * 2;
-        g.fillStyle(0x330000, 1);
-        g.fillRect(e.x - w / 2, e.y - e.radius - 12, w, 5);
-        g.fillStyle(0xff3333, 1);
-        g.fillRect(e.x - w / 2, e.y - e.radius - 12, w * Math.max(0, e.hp / e.maxHp), 5);
-      }
+      drawEnemy(g, e, {
+        bodyColor: ENEMY_LINEAGE[e.family].color[AGES[s.ageIndex] as AgeId],
+        facing: Math.atan2(s.py - e.y, s.px - e.x),
+        time: now,
+        highContrast: hc,
+      });
     }
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
-      g.fillStyle(p.color, 1);
-      g.fillCircle(p.x, p.y, p.radius);
+      if (p.friendly) drawFriendlyProj(g, p);
+      else drawHostileProj(g, p, wopts);
     }
     const b = s.build;
     const est = getWeaponStage("energy", s.weaponStage.energy);
     if (est.archetype === "aura" || b.bonusAura > 0) {
-      g.lineStyle(2, 0xffb03c, 0.35);
-      g.strokeCircle(s.px, s.py, est.radius + b.bonusAura * 30);
+      drawAura(g, s.px, s.py, est.radius + b.bonusAura * 30, 0xffb03c);
     }
     const fst = getWeaponStage("field", s.weaponStage.field);
     if (fst.archetype === "orbit" || b.bonusOrbit > 0) {
-      g.fillStyle(0xb48cff, 1);
       const blades = 2 + b.bonusOrbit;
       for (let i = 0; i < blades; i++) {
         const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
-        g.fillCircle(s.px + Math.cos(a) * (fst.radius || 110), s.py + Math.sin(a) * (fst.radius || 110), 8);
+        drawOrbit(g, s.px, s.py, fst.radius || 110, 1, a, 0xb48cff, 8);
       }
     }
     const dst = getWeaponStage("defense", s.weaponStage.defense);
     if (dst.archetype === "orbit") {
-      g.fillStyle(dst.color, 1);
       const blades = Math.max(1, dst.count + b.bonusOrbit);
-      for (let i = 0; i < blades; i++) {
-        const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
-        g.fillCircle(s.px + Math.cos(a) * dst.radius, s.py + Math.sin(a) * dst.radius, 7);
-      }
+      drawOrbit(g, s.px, s.py, dst.radius, blades, s.orbitAng, dst.color, 7);
     }
     const guardians = Math.min((dst.archetype === "summon" ? dst.count : 0) + b.bonusGuardians, 8);
     if (guardians > 0) {
-      g.fillStyle(dst.color, 1);
       for (let i = 0; i < guardians; i++) {
         const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-        g.fillCircle(s.px + Math.cos(a) * 80, s.py + Math.sin(a) * 80, 7);
+        drawSummon(g, s.px + Math.cos(a) * 80, s.py + Math.sin(a) * 80, 7, dst.color, s.px, s.py);
       }
     }
     if (s.beamFlash) {
-      g.lineStyle(6, 0xfff07f, 0.9);
-      g.lineBetween(s.px, s.py, s.beamFlash.x2, s.beamFlash.y2);
+      drawBeam(g, s.px, s.py, s.beamFlash.x2, s.beamFlash.y2, 6, 0xfff07f);
     }
+    // Player: unique silhouette (camera still follows the invisible anchor).
     this.playerArc.setPosition(s.px, s.py);
-    this.playerArc.setFillStyle(s.iframe > 0 ? 0x9fd8ff : 0xffd166);
+    drawPlayer(g, s.px, s.py, 16, {
+      facing: this.playerFacing,
+      dashing: s.dashT > 0,
+      iframe: s.iframe > 0,
+      hurtFlash: now - this.lastHurtT < 0.25,
+      time: now,
+      highContrast: hc,
+    });
+    this.drawBossIndicator();
+  }
+
+  /** Persistent off-screen boss indicator (screen space). */
+  private drawBossIndicator(): void {
+    const g = this.bossGfx;
+    if (!g) return;
+    g.clear();
+    const s = this.sim.state;
+    if (s.bossIndex < 0) return;
+    const boss = s.enemies[s.bossIndex];
+    if (!boss?.active) return;
+    const cam = this.cameras.main;
+    drawOffscreenIndicator(g, {
+      scrollX: cam.scrollX,
+      scrollY: cam.scrollY,
+      width: cam.width,
+      height: cam.height,
+    }, boss.x, boss.y, 0xff2222, 12);
   }
 }

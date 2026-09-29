@@ -39,6 +39,7 @@ export class TitleScene extends Phaser.Scene {
     // QA gate (?qa=1 only): one-click golden-seed start. Normal flow untouched.
     if (isQAMode(window.location.search)) {
       const gate = el("div", "qa-gate");
+      gate.id = "qa-gate";
       const gh = document.createElement("div");
       gh.className = "qa-gate-title";
       gh.textContent = "-SEED HUMAN GATE A";
@@ -163,6 +164,25 @@ export class TitleScene extends Phaser.Scene {
     });
     shakeRow.appendChild(sh);
     panel.appendChild(shakeRow);
+
+    const contrastRow = el("div", "settings-row");
+    contrastRow.appendChild(el("span", "", "ui.contrast"));
+    const contrasts = el("div", "lang-row");
+    const bNormal = document.createElement("button");
+    bNormal.className = "btn" + (save.settings.contrast === "normal" ? " active" : "");
+    bNormal.textContent = t("ui.contrastNormal");
+    bNormal.addEventListener("click", () => {
+      save.settings.contrast = "normal"; storeSave(localStorage, save); this.scene.restart();
+    });
+    const bHigh = document.createElement("button");
+    bHigh.className = "btn" + (save.settings.contrast === "high" ? " active" : "");
+    bHigh.textContent = t("ui.contrastHigh");
+    bHigh.addEventListener("click", () => {
+      save.settings.contrast = "high"; storeSave(localStorage, save); this.scene.restart();
+    });
+    contrasts.appendChild(bNormal); contrasts.appendChild(bHigh);
+    contrastRow.appendChild(contrasts);
+    panel.appendChild(contrastRow);
 
     const langRow = el("div", "settings-row");
     langRow.appendChild(el("span", "", "ui.language"));

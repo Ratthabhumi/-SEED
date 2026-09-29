@@ -13,3 +13,12 @@ export function isQAMode(search: string): boolean {
     return false;
   }
 }
+
+/** True when the visual-language lab should boot instead of the game. */
+export function isVisualMode(search: string): boolean {
+  try {
+    return new URLSearchParams(search).has("visual");
+  } catch {
+    return false;
+  }
+}

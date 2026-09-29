@@ -6,7 +6,11 @@ import { AGES } from "../tech/graph";
 
 export type Lang = "en" | "th";
 
-export interface Settings { lang: Lang; shake: boolean; volume: number; }
+export type Contrast = "normal" | "high";
+
+// Additive presentation preference only (defaults safe for old saves — no
+// schema bump, no gameplay effect, never part of canonical snapshots).
+export interface Settings { lang: Lang; shake: boolean; volume: number; contrast: Contrast; }
 
 export interface BestStats {
   bestTimeSec: number; bestKills: number; bestAge: string; bestAscension: number; runs: number;
@@ -25,7 +29,7 @@ export const SAVE_KEY = "seed-game-save-v1";
 export function defaultSave(): SaveData {
   return {
     schema: SAVE_SCHEMA_VERSION,
-    settings: { lang: "en", shake: true, volume: 0.6 },
+    settings: { lang: "en", shake: true, volume: 0.6, contrast: "normal" },
     archive: [],
     best: { bestTimeSec: 0, bestKills: 0, bestAge: "stone", bestAscension: 0, runs: 0 },
     history: [],
@@ -41,7 +45,8 @@ function cleanSettings(raw: unknown): Settings {
     ? Math.min(1, Math.max(0, r.volume))
     : d.volume;
   const shake = typeof r.shake === "boolean" ? r.shake : d.shake;
-  return { lang, volume, shake };
+  const contrast = r.contrast === "high" ? "high" : "normal";
+  return { lang, volume, shake, contrast };
 }
 
 function cleanBest(raw: unknown): BestStats {

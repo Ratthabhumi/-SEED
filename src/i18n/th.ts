@@ -178,4 +178,13 @@ export const th: Record<EnKeys, string> = {
   "archive.anomaly": "ความผิดปกติระดับ II",
   "archive.nomads": "ชาติกำเนิดเร่ร่อน",
   "archive.builders": "ชาติกำเนิดผู้สร้าง",
+  "ui.contrast": "คอนทราสต์เกมเพลย์",
+  "ui.contrastNormal": "ปกติ",
+  "ui.contrastHigh": "สูง",
+  "hint.move": "เคลื่อนที่ — WASD / ปุ่มลูกศร",
+  "hint.auto": "อารยธรรมของคุณโจมตีอัตโนมัติ",
+  "hint.knowledge": "เก็บ Knowledge เพื่อวิวัฒนาการ",
+  "hint.draft": "เลือกเทคโนโลยีหนึ่งอย่าง",
+  "hint.gated": "ดูแถววัตถุประสงค์: กำจัด / Knowledge / เวลา คือเงื่อนไข",
+  "hint.poi": "ตามบีคอน ◈ ไปยังสถานที่สำคัญ",
 };
