@@ -5,13 +5,20 @@ import type { InputFrame } from "../../src/core/sim/InputFrame";
 
 const IDLE: InputFrame = { moveX: 0, moveY: 0, dashPressed: false };
 const FAMS: WeaponFamily[] = ["kinetic", "energy", "defense", "field"];
+// Origin covering each family under test (origin gating is the v0.2 contract).
+const FAM_ORIGIN: Record<WeaponFamily, string> = {
+  kinetic: "hunters",
+  energy: "resonant",
+  defense: "engineers",
+  field: "hunters",
+};
 
 // P1-04: every family × tier archetype must have a working executable path.
 describe("weapon archetype execution", () => {
   for (const fam of FAMS) {
     for (let tier = 0; tier < 6; tier++) {
       it(`${fam} tier ${tier} (${getWeaponStage(fam, tier).archetype}) damages enemies`, () => {
-        const sim = new RunSimulation({ masterSeed: "EPOCH-GOLDEN-001" });
+        const sim = new RunSimulation({ masterSeed: "EPOCH-GOLDEN-001", originId: FAM_ORIGIN[fam] });
         sim.state.spawnT = 99999;
         sim.state.eliteT = 99999;
         sim.state.build.hp = 99999;

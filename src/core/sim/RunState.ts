@@ -4,6 +4,7 @@ import type { AgeId } from "../tech/graph";
 import type { WeaponFamily } from "../combat/weapons";
 import type { EnemyFamily, EliteAffix } from "../director/director";
 import type { TechNode } from "../tech/graph";
+import type { POIType } from "../world/poi";
 import type { EffectTarget } from "./progression";
 
 export interface SimEnemy {
@@ -56,6 +57,15 @@ export interface RunState {
   ownedTags: string[];
   breakthroughs: string[];
   weaponStage: Record<WeaponFamily, number>;
+  // Build identity (ADR-0006): origin pair + at most one expansion unlock.
+  originId: string;
+  expansionFamily: WeaponFamily | "";
+  // Ascension legacy prestige: bounded inherited defs (max 3, FIFO).
+  legacies: string[];
+  // First-discovery major POI rewards, one per family per world.
+  poiFamiliesClaimed: POIType[];
+  // Draft provenance for UI titles ("level" vs "poi").
+  draftContext: "level" | "poi";
   // Timers / angles (transient but canonical — recreated identically per run)
   spawnT: number; eliteT: number; mineT: number; auraT: number;
   weaponCd: Record<WeaponFamily, number>;

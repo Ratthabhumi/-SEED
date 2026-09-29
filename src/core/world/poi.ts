@@ -1,5 +1,6 @@
 // Deterministic POI candidates + spacing/constraint filter. Stateless per chunk.
 import { deriveUint32, featureFloat01, FeatureSalt } from "../seed/hash";
+import type { TechNode } from "../tech/graph";
 
 export type POIType = "ruin" | "meteor" | "vault" | "signal" | "megasite" | "worldtree";
 
@@ -27,6 +28,31 @@ export function poiTypeFor(type: POIType): { knowledge: number; note: string } {
     case "worldtree": return { knowledge: 60, note: "WORLD_TREE" };
   }
 }
+
+/**
+ * First-discovery reward contract per POI family (ADR-0006 Decision 5).
+ * "draft" families open a themed discovery draft; "cache" pays Knowledge +
+ * full repair with no modal. Positions/visuals untouched.
+ */
+export const POI_MAJOR_KIND: Record<POIType, "draft" | "cache"> = {
+  ruin: "draft",
+  meteor: "draft",
+  vault: "draft",
+  signal: "draft",
+  megasite: "cache",
+  worldtree: "draft",
+};
+
+/** Themed discovery-draft filters — the per-family distinct reward contract. */
+export const POI_DRAFT_FILTERS: Record<POIType, (n: TechNode) => boolean> = {
+  ruin: (n) => n.domain === "science" || n.domain === "culture",
+  meteor: (n) =>
+    n.domain === "warfare" || n.synergyTags.includes("kinetic") || n.synergyTags.includes("energy"),
+  vault: (n) => n.domain === "industry" || n.tags.includes("defense"),
+  signal: (n) => n.rarity === "rare" || n.rarity === "mythic",
+  megasite: () => true, // unreachable: megasite never opens a modal
+  worldtree: (n) => n.effects.some((e) => e.kind === "regenAdd" || e.kind === "maxHpAdd"),
+};
 
 /**
  * 0–1 POIs per chunk (rarely 2 in high-anomaly chunks).

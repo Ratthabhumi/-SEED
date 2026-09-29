@@ -20,12 +20,14 @@ import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
 import { checkBreakthroughs } from "../tech/synergy";
 import { canAdvanceAge } from "../progression/ages";
+import { activeFamilies, lockedFamilies, originById, ORIGINS } from "../progression/origins";
+import { legacyCandidates, legacyDefById, MAX_LEGACIES, type LegacyDef } from "../progression/legacies";
 import {
   threatBudget, composeFromBudget, pickFamily, eligibleFamilies,
   ELITE_AFFIXES, ELITE_AFFIX_DEFS, type EnemyFamily, type EliteAffix,
 } from "../director/director";
 import { getWeaponStage, type WeaponFamily } from "../combat/weapons";
-import { poiTypeFor } from "../world/poi";
+import { poiTypeFor, POI_DRAFT_FILTERS, type POIType } from "../world/poi";
 import type { RunConfig } from "./RunConfig";
 import type { InputFrame } from "./InputFrame";
 import type { SimEvent } from "./SimEvent";
@@ -68,14 +70,14 @@ export class RunSimulation {
   constructor(config: RunConfig) {
     this.masterSeed = config.masterSeed;
     this.difficultyMul = config.difficultyMul ?? 1;
-    this.state = this.freshWorldState(config.masterSeed, 0);
+    this.state = this.freshWorldState(config.masterSeed, 0, originById(config.originId ?? "").id);
     this.streams = initRunRng(this.state.worldSeed);
     this.graph = generateTechGraph(this.state.worldSeed, 0).nodes;
     this.grantNode("spine-tools");
   }
 
   // ------------------------------------------------------------ construction
-  private freshWorldState(masterSeed: string, ascension: number): RunState {
+  private freshWorldState(masterSeed: string, ascension: number, originId: string): RunState {
     const worldSeed = ascension === 0 ? masterSeed : deriveAscensionSeed(masterSeed, ascension);
     return {
       masterSeed, worldSeed,
@@ -89,6 +91,10 @@ export class RunSimulation {
       pendingLevels: 0, draftOpen: false, draftChoices: [],
       owned: [], ownedTags: [], breakthroughs: [],
       weaponStage: { kinetic: 0, energy: 0, defense: 0, field: 0 },
+      originId, expansionFamily: "",
+      legacies: [],
+      poiFamiliesClaimed: [],
+      draftContext: "level",
       spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
       guardianAng: 0, orbitAng: 0, beamFlash: null,
@@ -110,34 +116,42 @@ export class RunSimulation {
     };
   }
 
-  /** Ascend to a child world. Fresh streams, world-scoped reset, build kept. */
-  ascend(): SimEvent[] {
+  /** Ascend to a child world as legacy prestige (ADR-0006 Decision 5).
+   *  World-build progression resets (level 1, fresh tech/weapons/origin);
+   *  run totals + bounded legacies persist. Requires a valid legacy + origin. */
+  ascend(legacyId: string, originId: string): SimEvent[] {
     const s = this.state;
-    if (!s.ascendReady || s.over) return [];
-    const keepBuild = { ...s.build };
+    const ev: SimEvent[] = [];
+    if (!s.ascendReady || s.over) return ev;
+    const offers = this.legacyOffers();
+    const legacy = offers.find((d) => d.id === legacyId);
+    const origin = ORIGINS.find((o) => o.id === originId);
+    if (!legacy || !origin) return ev;
     const keep = {
-      owned: [...s.owned], tags: [...s.ownedTags], bt: [...s.breakthroughs],
-      level: s.level, xp: s.xp, xpNext: s.xpNext, knowledge: s.knowledgeTotal,
-      stages: { ...s.weaponStage },
       stats: { ...s.stats, chunksTotal: s.stats.chunksTotal, poisTotal: s.stats.poisTotal },
       dmg: { ...s.damageBySource }, top: s.topDamageSource, high: s.highestAge,
       // RUN-level chronicle data — a new world resets WORLD state, never these.
       runElapsed: s.runElapsed, runHighestAge: s.runHighestAge, runKills: s.runKills,
     };
     const asc = s.ascension + 1;
-    const fresh = this.freshWorldState(this.masterSeed, asc);
+    const fresh = this.freshWorldState(this.masterSeed, asc, origin.id);
     // Restore run-persistent data.
-    fresh.build = keepBuild;
-    fresh.owned = keep.owned; fresh.ownedTags = keep.tags; fresh.breakthroughs = keep.bt;
-    fresh.level = keep.level; fresh.xp = keep.xp; fresh.xpNext = keep.xpNext;
-    fresh.knowledgeTotal = keep.knowledge;
-    fresh.weaponStage = keep.stages;
     fresh.stats = keep.stats;
     fresh.damageBySource = keep.dmg; fresh.topDamageSource = keep.top;
     fresh.highestAge = keep.high;
     fresh.runElapsed = keep.runElapsed;
     fresh.runHighestAge = keep.runHighestAge;
     fresh.runKills = keep.runKills;
+    // Bounded legacy inheritance (FIFO cap), effects applied to the fresh build.
+    fresh.legacies = [...s.legacies, legacy.id].slice(-MAX_LEGACIES);
+    for (const lid of fresh.legacies) {
+      const def = legacyDefById(lid);
+      if (!def) continue;
+      for (const e of def.effects) applyTechEffect(fresh.build, e);
+      if (def.breakthroughId && !fresh.breakthroughs.includes(def.breakthroughId)) {
+        fresh.breakthroughs.push(def.breakthroughId);
+      }
+    }
     fresh.build.hp = fresh.build.maxHp; // full repair on arrival
     Object.assign(s, fresh);
     // COMPLETELY fresh child-world streams (restored in place — the reference
@@ -147,7 +161,16 @@ export class RunSimulation {
       this.streams[k].restore(child[k].snapshot());
     });
     this.graph = generateTechGraph(s.worldSeed, asc).nodes;
-    return [{ type: "ascended", worldSeed: s.worldSeed, ascension: asc }];
+    this.grantNode("spine-tools");
+    ev.push({ type: "legacy_granted", id: legacy.id });
+    ev.push({ type: "ascended", worldSeed: s.worldSeed, ascension: asc });
+    return ev;
+  }
+
+  /** Deterministic Legacy candidates for the completed world (no RNG). */
+  legacyOffers(): LegacyDef[] {
+    const s = this.state;
+    return legacyCandidates({ breakthroughs: s.breakthroughs, topDamageSource: s.topDamageSource, ascension: s.ascension });
   }
 
   hash(): string {
@@ -196,10 +219,16 @@ export class RunSimulation {
   private availableNodes(): TechNode[] {
     const s = this.state;
     const owned = new Set(s.owned);
+    const active = new Set(activeFamilies(s.originId, s.expansionFamily));
     return this.graph.filter((n) => {
       if (owned.has(n.id)) return false;
       if (!n.prerequisites.every((p) => owned.has(p))) return false;
       if (n.exclusions.some((e) => owned.has(e))) return false;
+      // Origin gating (ADR-0006): a node whose family-bound effect would do
+      // nothing for this world's active families is never offered.
+      for (const e of n.effects) {
+        if (e.family && !active.has(e.family)) return false;
+      }
       const rank = AGES.indexOf(n.age);
       return rank <= s.ageIndex + 1;
     });
@@ -210,9 +239,15 @@ export class RunSimulation {
     return this.availableNodes().length;
   }
 
-  private buildDraft(): void {
+  private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
     const s = this.state;
-    const pool = this.availableNodes();
+    let pool = this.availableNodes();
+    if (filter) {
+      const picked = pool.filter(filter);
+      // A themed draft with zero candidates falls back to the open pool
+      // (still a real choice, never an empty modal).
+      if (picked.length > 0) pool = picked;
+    }
     const scored = pool.map((n) => ({ n, w: n.weight * (0.5 + this.streams.draft.nextFloat()) }));
     scored.sort((a, b) => b.w - a.w);
     const picks: TechNode[] = [];
@@ -231,6 +266,18 @@ export class RunSimulation {
     while (picks.length < 3) picks.push(fb[picks.length] as TechNode);
     s.draftChoices = picks;
     s.draftOpen = true;
+    s.draftContext = context;
+  }
+
+  /**
+   * Filtered draft opener shared by POI discovery (ADR-0006 Decision 3).
+   * No modal stacking (caller checks draftOpen).
+   */
+  private openFilteredDraft(filter: (n: TechNode) => boolean, ev: SimEvent[]): void {
+    const s = this.state;
+    s.pendingLevels++;
+    this.buildDraft("poi", filter);
+    ev.push({ type: "draft_opened", context: "poi" });
   }
 
   /** Apply a draft pick. Returns events (tech_selected, breakthrough*, maybe draft_opened). */
@@ -242,6 +289,7 @@ export class RunSimulation {
     if (!n) return ev;
     s.draftOpen = false;
     s.draftChoices = [];
+    s.draftContext = "level";
     this.grantNode(n.id, n);
     s.stats.techsTaken++;
     ev.push({ type: "tech_selected", techId: n.id });
@@ -254,9 +302,23 @@ export class RunSimulation {
     }
     s.pendingLevels--;
     if (s.pendingLevels > 0 && !s.over) {
-      this.buildDraft();
-      ev.push({ type: "draft_opened" });
+      this.buildDraft("level");
+      ev.push({ type: "draft_opened", context: "level" });
     }
+    return ev;
+  }
+
+  /**
+   * WORLD EXPANSION choice (ADR-0006 Decision 1): unlock exactly one of the
+   * two inactive families. Valid only once per world, only a locked family.
+   */
+  chooseExpansion(fam: WeaponFamily): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over || s.expansionFamily !== "") return ev;
+    if (!lockedFamilies(s.originId, "").includes(fam)) return ev;
+    s.expansionFamily = fam;
+    ev.push({ type: "expansion_unlocked", family: fam });
     return ev;
   }
 
@@ -269,7 +331,11 @@ export class RunSimulation {
     for (const st of n.synergyTags) if (!s.ownedTags.includes(st)) s.ownedTags.push(st);
     for (const e of n.effects) {
       if (e.kind === "weaponEvolve") {
-        s.weaponStage = { kinetic: 5, energy: 5, defense: 5, field: 5 };
+        // Orbital Program evolves ACTIVE families only (origin identity holds).
+        const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+        for (const fam of (Object.keys(s.weaponStage) as WeaponFamily[])) {
+          if (active.has(fam)) s.weaponStage[fam] = 5;
+        }
       } else {
         applyTechEffect(s.build, e);
       }
@@ -293,8 +359,8 @@ export class RunSimulation {
       s.pendingLevels++;
     }
     if (s.pendingLevels > 0 && !s.draftOpen) {
-      this.buildDraft();
-      ev.push({ type: "draft_opened" });
+      this.buildDraft("level");
+      ev.push({ type: "draft_opened", context: "level" });
     }
   }
 
@@ -670,13 +736,20 @@ export class RunSimulation {
     const s = this.state;
     const b = s.build;
     const cdM = Math.max(0.3, b.cooldownMul);
+    // Origin identity (ADR-0006): inactive families neither render attacks
+    // nor deal simulation damage. Bonus counters tied to an inactive family
+    // stay dormant with it.
+    const kOn = activeFamilies(s.originId, s.expansionFamily).includes("kinetic");
+    const eOn = activeFamilies(s.originId, s.expansionFamily).includes("energy");
+    const dOn = activeFamilies(s.originId, s.expansionFamily).includes("defense");
+    const fOn = activeFamilies(s.originId, s.expansionFamily).includes("field");
     const tick = (fam: WeaponFamily, cd: number, fire: () => void): void => {
       const left = s.weaponCd[fam] - dt;
       if (left <= 0) { s.weaponCd[fam] = cd; fire(); }
       else s.weaponCd[fam] = left;
     };
     // Kinetic: projectile stages fan shots; the Space beam stage fires a ray.
-    {
+    if (kOn) {
       const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
       tick("kinetic", st.cooldown * cdM, () => {
         if (st.archetype === "beam") this.beamStrike("kinetic", st, 800, ev);
@@ -684,7 +757,7 @@ export class RunSimulation {
       });
     }
     // Energy: projectile / aura / beam per stage, plus bonus-granted systems.
-    {
+    if (eOn) {
       const st = getWeaponStage("energy", s.weaponStage.energy);
       if (st.archetype === "aura" || b.bonusAura > 0) {
         s.auraT -= dt;
@@ -703,7 +776,8 @@ export class RunSimulation {
       }
     }
     // Defense: orbit stages spin blades; summon stages keep guardian gunners.
-    {
+    // Bonus-guardian counters only materialize through an active defense core.
+    if (dOn) {
       const st = getWeaponStage("defense", s.weaponStage.defense);
       s.guardianAng += dt * 2.6;
       if (st.archetype === "orbit") {
@@ -717,7 +791,7 @@ export class RunSimulation {
     }
     // Field: mines are the family signature (see mine section); the stage
     // archetype adds aura or orbit control on top.
-    {
+    if (fOn) {
       const st = getWeaponStage("field", s.weaponStage.field);
       if (st.archetype === "aura" || b.bonusAura > 0) {
         s.auraT -= dt;
@@ -791,6 +865,13 @@ export class RunSimulation {
         };
         b.hp = Math.min(b.maxHp, b.hp + b.maxHp * 0.3);
         ev.push({ type: "age_reached", age: ageId });
+        // WORLD EXPANSION decision at Industrial (ADR-0006 Decision 1).
+        if (next === 3 && s.expansionFamily === "") {
+          const locked = lockedFamilies(s.originId, "");
+          if (locked.length === 2) {
+            ev.push({ type: "expansion_offered", families: [locked[0] as WeaponFamily, locked[1] as WeaponFamily] });
+          }
+        }
         for (let i = 0; i < 3; i++) {
           this.spawnEnemy("chaser", true, false, this.streams.event.nextFloat() * Math.PI * 2, 700, ev);
         }
@@ -855,11 +936,11 @@ export class RunSimulation {
       }
     }
 
-    // 8. Mines.
+    // 8. Mines (field-family signature — dormant without an active field core).
     s.mineT -= dt;
     if (s.mineT <= 0) {
       s.mineT = 1.2;
-      const want = 1 + b.bonusMines;
+      const want = activeFamilies(s.originId, s.expansionFamily).includes("field") ? 1 + b.bonusMines : 0;
       let placed = 0;
       for (const m of s.mines) {
         if (placed >= want) break;
@@ -919,14 +1000,53 @@ export class RunSimulation {
           if (Math.hypot(poi.wx - s.px, poi.wy - s.py) < 70) {
             s.poisWorld.push(poi.id);
             s.stats.poisTotal++;
-            const info = poiTypeFor(poi.type);
-            this.gainKnowledge(info.knowledge, "poi", ev);
-            ev.push({ type: "poi_discovered", poiType: poi.type, knowledge: scaleKnowledge(info.knowledge, b.knowledgeMul) });
+            this.poiReward(poi.type, ev);
           }
         }
       }
     }
     return ev;
+  }
+
+  /**
+   * POI reward contract (ADR-0006 Decision 3). First discovery of each family
+   * per world pays a DISTINCT deterministic reward; repeats pay Knowledge.
+   * Positions/visuals untouched. At most one modal per family per world, and
+   * never stacked over an open draft (falls back to base Knowledge).
+   */
+  private poiReward(type: POIType, ev: SimEvent[]): void {
+    const s = this.state;
+    const b = s.build;
+    const info = poiTypeFor(type);
+    if (s.poiFamiliesClaimed.includes(type)) {
+      this.gainKnowledge(info.knowledge, "poi", ev);
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: scaleKnowledge(info.knowledge, b.knowledgeMul) });
+      return;
+    }
+    s.poiFamiliesClaimed.push(type);
+    ev.push({ type: "poi_major", poiType: type });
+    if (type === "megasite") {
+      // Major cache + full repair, no modal interruption.
+      this.gainKnowledge(150, "poi", ev);
+      b.hp = b.maxHp;
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: scaleKnowledge(150, b.knowledgeMul) });
+      return;
+    }
+    if (type === "worldtree") {
+      b.hp = b.maxHp;
+    }
+    if (s.draftOpen) {
+      // Exactly-one draft surface wins: no modal stacking, base Knowledge instead.
+      this.gainKnowledge(info.knowledge, "poi", ev);
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: scaleKnowledge(info.knowledge, b.knowledgeMul) });
+      return;
+    }
+    this.openPoiDraft(type, ev);
+  }
+
+  /** Themed discovery draft filters — the per-family reward contract. */
+  private openPoiDraft(type: POIType, ev: SimEvent[]): void {
+    this.openFilteredDraft(POI_DRAFT_FILTERS[type], ev);
   }
 }
 

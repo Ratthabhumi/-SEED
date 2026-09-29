@@ -22,7 +22,7 @@ function ascendWithSpam(master: string, spam: boolean): RunSimulation {
     }
   }
   sim.state.ascendReady = true; // test hook: state is plain data
-  const ev = sim.ascend();
+  const ev = sim.ascend("affinity-kinetic", "hunters");
   expect(ev.some((e) => e.type === "ascended")).toBe(true);
   return sim;
 }
@@ -85,7 +85,7 @@ describe("ascension stream isolation (real 10k spam)", () => {
     sim.state.runHighestAge = "space";
     sim.state.runKills = 500;
     sim.state.ascendReady = true;
-    sim.ascend();
+    sim.ascend("affinity-kinetic", "hunters");
     expect(sim.state.chunksWorld).toEqual([]);
     expect(sim.state.poisWorld).toEqual([]);
     expect(sim.state.stats.chunksTotal).toBe(5);

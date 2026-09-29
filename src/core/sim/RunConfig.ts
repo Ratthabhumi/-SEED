@@ -4,4 +4,6 @@ export interface RunConfig {
   masterSeed: string;
   /** Difficulty multiplier for the threat budget. */
   difficultyMul?: number;
+  /** Civilization origin id (validated against ORIGINS; default hunters). */
+  originId?: string;
 }

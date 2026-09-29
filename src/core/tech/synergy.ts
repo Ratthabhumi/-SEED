@@ -43,3 +43,59 @@ export const BREAKTHROUGHS: Breakthrough[] = [
 export function checkBreakthroughs(ownedTags: Set<string>, unlocked: Set<string>): Breakthrough[] {
   return BREAKTHROUGHS.filter((b) => !unlocked.has(b.id) && b.requires.every((t) => ownedTags.has(t)));
 }
+
+/** Tags with localized display names (used by synergy progress UI). */
+const DISPLAY_TAGS = [
+  "fire", "tools", "ballistics", "rotary", "medicine",
+  "breeding", "tesla", "reactor", "fort", "armor",
+] as const;
+
+/** i18n key for a tag, or null when the tag has no display name. */
+export function tagDisplayKey(tag: string): EnKeys | null {
+  return (DISPLAY_TAGS as readonly string[]).includes(tag) ? (`tag.${tag}` as EnKeys) : null;
+}
+
+export interface SynergyProgress {
+  id: string;
+  titleKey: EnKeys;
+  have: number;
+  need: number;
+  missing: string[];
+}
+
+/** Progress of every un-unlocked breakthrough, sorted nearest-first (stable). */
+export function breakthroughProgress(ownedTags: readonly string[], unlocked: readonly string[]): SynergyProgress[] {
+  const owned = new Set(ownedTags);
+  const done = new Set(unlocked);
+  return BREAKTHROUGHS
+    .filter((b) => !done.has(b.id))
+    .map((b) => {
+      const missing = b.requires.filter((t) => !owned.has(t));
+      return { id: b.id, titleKey: b.titleKey, have: b.requires.length - missing.length, need: b.requires.length, missing };
+    })
+    .sort((a, b) => (a.need - a.have) - (b.need - b.have));
+}
+
+/** Nearest N breakthrough goals for the HUD build panel. */
+export function nearestBreakthroughs(ownedTags: readonly string[], unlocked: readonly string[], n = 2): SynergyProgress[] {
+  return breakthroughProgress(ownedTags, unlocked).slice(0, Math.max(0, n));
+}
+
+/**
+ * Which (single) breakthrough would `node` complete right now, if any?
+ * Truth contract: the UI COMPLETES preview must match actual unlock —
+ * node tags + owned tags must cover requires, and it must not be unlocked.
+ */
+export function completingBreakthrough(
+  nodeTags: readonly string[],
+  ownedTags: readonly string[],
+  unlocked: readonly string[],
+): Breakthrough | null {
+  const combined = new Set([...ownedTags, ...nodeTags]);
+  const done = new Set(unlocked);
+  for (const b of BREAKTHROUGHS) {
+    if (done.has(b.id)) continue;
+    if (b.requires.every((t) => combined.has(t))) return b;
+  }
+  return null;
+}

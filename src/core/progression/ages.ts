@@ -11,11 +11,11 @@ export interface AgeDef {
 
 export const AGE_DEFS: AgeDef[] = [
   { id: "stone", index: 0, minTimeSec: 0, knowledgeThreshold: 0, objectiveKey: "objective.stone" },
-  { id: "bronze", index: 1, minTimeSec: 100, knowledgeThreshold: 60, objectiveKey: "objective.bronze" },
-  { id: "iron", index: 2, minTimeSec: 220, knowledgeThreshold: 180, objectiveKey: "objective.iron" },
-  { id: "industrial", index: 3, minTimeSec: 340, knowledgeThreshold: 360, objectiveKey: "objective.industrial" },
-  { id: "atomic", index: 4, minTimeSec: 460, knowledgeThreshold: 600, objectiveKey: "objective.atomic" },
-  { id: "space", index: 5, minTimeSec: 580, knowledgeThreshold: 900, objectiveKey: "objective.space" },
+  { id: "bronze", index: 1, minTimeSec: 100, knowledgeThreshold: 500, objectiveKey: "objective.bronze" },
+  { id: "iron", index: 2, minTimeSec: 220, knowledgeThreshold: 1500, objectiveKey: "objective.iron" },
+  { id: "industrial", index: 3, minTimeSec: 340, knowledgeThreshold: 2800, objectiveKey: "objective.industrial" },
+  { id: "atomic", index: 4, minTimeSec: 460, knowledgeThreshold: 4500, objectiveKey: "objective.atomic" },
+  { id: "space", index: 5, minTimeSec: 580, knowledgeThreshold: 6500, objectiveKey: "objective.space" },
 ];
 
 /** Can advance from current age to nextIndex given total time + age dwell + knowledge + objective. */
