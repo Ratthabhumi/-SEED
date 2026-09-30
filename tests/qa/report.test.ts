@@ -28,11 +28,11 @@ describe("playtest report", () => {
     const md = renderMarkdown(snap);
     for (const section of [
       "## Environment", "## Seed / Versions", "## Route", "## Age Transition Times",
-      "## Knowledge At Age", "## Build Identity / Engagement",
+      "## Knowledge At Age", "## Build Identity / Engagement", "## Civilization Command Loop Usage",
       "## Boss", "## Ascension", "## Performance Summary", "## Peak Entity Counts",
       "## Pool Saturation", "## Functional Runtime Assertions", "## Console Errors / Warnings",
       "## EN/TH Switching", "## UI Overflow Findings", "## Human Feedback Markers",
-      "## Human Ratings", "## Automatic Gate Result", "## Items Requiring Human Judgment",
+      "## Human Ratings", "## Human Comment (optional)", "## Automatic Gate Result", "## Items Requiring Human Judgment",
     ]) {
       expect(md).toContain(section);
     }

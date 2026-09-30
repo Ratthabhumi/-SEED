@@ -5,7 +5,9 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SUMMARY = join(ROOT, "docs", "playtests", "latest-v020-engagement.md");
+const V22_SUMMARY = join(ROOT, "docs", "playtests", "latest-v022-human-revalidation.md");
+const V20_SUMMARY = join(ROOT, "docs", "playtests", "latest-v020-engagement.md");
+const SUMMARY = existsSync(V22_SUMMARY) ? V22_SUMMARY : V20_SUMMARY;
 const HANDOFF = join(ROOT, "SESSION_HANDOFF.md");
 
 export const START_MARK = "<!-- QA-ENGAGEMENT-START -->";

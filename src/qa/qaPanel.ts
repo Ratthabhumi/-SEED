@@ -814,7 +814,48 @@ export class QaSession {
     if (document.getElementById("qa-complete")) return;
     const d = document.createElement("div");
     d.id = "qa-complete";
-    d.textContent = "PLAYTEST COMPLETE — Evidence saved automatically. You can stop playing.";
+    d.className = "qa-complete-banner";
+
+    const title = document.createElement("div");
+    title.className = "qa-complete-title";
+    title.textContent = "PLAYTEST COMPLETE — Evidence saved automatically. You can stop playing.";
+    d.appendChild(title);
+
+    const commentBox = document.createElement("div");
+    commentBox.className = "qa-comment-box";
+    const label = document.createElement("span");
+    label.className = "qa-comment-label";
+    label.textContent = "มีอะไรที่จำได้หรือรู้สึกชัดเป็นพิเศษไหม?";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.maxLength = 200;
+    input.placeholder = "พิมพ์สั้น ๆ (ไม่บังคับ)...";
+    input.className = "qa-comment-input";
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn primary qa-comment-btn";
+    saveBtn.textContent = "บันทึก";
+    const skipBtn = document.createElement("button");
+    skipBtn.className = "btn qa-comment-btn";
+    skipBtn.textContent = "ข้าม (SKIP)";
+
+    const finishComment = (val: string | null) => {
+      this.recorder.setHumanComment(val);
+      this.persistReports("target-complete", true);
+      commentBox.remove();
+    };
+
+    saveBtn.addEventListener("click", () => {
+      const val = input.value.trim();
+      finishComment(val.length > 0 ? val : null);
+    });
+    skipBtn.addEventListener("click", () => finishComment(null));
+
+    commentBox.appendChild(label);
+    commentBox.appendChild(input);
+    commentBox.appendChild(saveBtn);
+    commentBox.appendChild(skipBtn);
+    d.appendChild(commentBox);
+
     document.getElementById("ui")?.appendChild(d) ?? document.body.appendChild(d);
     this.refreshPanel();
   }

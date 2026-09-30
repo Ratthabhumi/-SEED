@@ -205,8 +205,18 @@ button, input { font-family: inherit; }
   position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
   background: rgba(10, 26, 16, 0.94); border: 1px solid #53e0c8; color: var(--text);
   border-radius: 10px; padding: 10px 18px; font-size: 14px; line-height: 1.7;
-  pointer-events: none; z-index: 30; max-width: 92vw; text-align: center;
+  z-index: 30; max-width: 92vw; text-align: center;
 }
+.qa-comment-box {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 8px; flex-wrap: wrap; pointer-events: auto;
+}
+.qa-comment-label { font-size: 13px; color: #a4e8d8; }
+.qa-comment-input {
+  background: #0e1b14; border: 1px solid #336655; border-radius: 6px;
+  padding: 4px 10px; color: #fff; font-size: 13px; min-width: 240px;
+}
+.qa-comment-btn { padding: 4px 12px; font-size: 12px; min-height: 28px; }
 
 /* v0.2.1 civilization command loop: compact HUD, age card, territory, tech map. */
 .status-card {

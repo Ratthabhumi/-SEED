@@ -135,6 +135,7 @@ export interface RecorderSnapshot {
   overflows: QaOverflow[];
   poolSaturations: QaPoolSaturation[];
   simMarks: QaSimMark[];
+  humanComment?: string | null;
   endReason: string;
   wallStart: number;
   wallEnd: number;
@@ -147,7 +148,7 @@ const MAX_OVERFLOWS = 200;
 const MAX_LANG = 40;
 const MAX_RATINGS = 25;
 const MAX_ENGAGEMENT = 60;
-const MAX_SIMMARKS = 400;
+const MAX_SIMMARKS = 1200;
 
 export class PlaytestRecorder {
   private checkpoints: QaCheckpoint[] = [];
@@ -167,6 +168,7 @@ export class PlaytestRecorder {
   private poolSaturations: QaPoolSaturation[] = [];
   private poolKeys = new Set<string>();
   private simMarks: QaSimMark[] = [];
+  private humanComment: string | null = null;
   private perfCheckpoints: CheckpointStats[] = [];
   private environment: QaEnvironment | null = null;
   private endReason = "";
@@ -307,6 +309,10 @@ export class PlaytestRecorder {
     this.wallEnd = wallTime;
   }
 
+  setHumanComment(comment: string | null): void {
+    this.humanComment = comment;
+  }
+
   /** Machine-checkable verdict only — NEVER a human-gate PASS. */
   autoResult(): "AUTOMATED_CHECKS_PASS" | "AUTOMATED_CHECKS_FAIL" {
     const fail = this.assertions.some((a) => !a.pass);
@@ -344,6 +350,7 @@ export class PlaytestRecorder {
       overflows: [...this.overflows],
       poolSaturations: [...this.poolSaturations],
       simMarks: [...this.simMarks],
+      humanComment: this.humanComment,
       endReason: this.endReason,
       wallStart: this.wallStart,
       wallEnd: this.wallEnd,

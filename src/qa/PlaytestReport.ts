@@ -103,6 +103,76 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
       `poi [${g.poiClaims.join("+") || "-"}]`);
   }
   L.push(``);
+  L.push(`## Civilization Command Loop Usage`);
+  L.push(``);
+  const marks = snap.simMarks ?? [];
+  const techMapOpens = marks.filter((m) => m.kind === "techmap_open").length;
+  const firstTechMap = marks.find((m) => m.kind === "techmap_open");
+  const firstTechMapTime = firstTechMap ? `${f2(firstTechMap.simTime)}s sim` : "NEVER";
+  const pinMarks = marks.filter((m) => m.kind === "pin");
+  const pinnedIds = [...new Set(pinMarks.map((m) => m.detail))];
+  const reserveCount = marks.filter((m) => m.kind === "draft_reserve").length;
+  const rerollCount = marks.filter((m) => m.kind === "draft_reroll").length;
+  const skipCount = marks.filter((m) => m.kind === "draft_skip").length;
+  const breakthroughMarks = marks.filter((m) => m.kind === "breakthrough");
+  const breakthroughIds = [...new Set(breakthroughMarks.map((m) => m.detail))];
+
+  const territoryMarks = marks.filter((m) => m.kind === "territory_claimed");
+  const firstTerritory = territoryMarks[0];
+  const firstTerritoryTime = firstTerritory ? `${f2(firstTerritory.simTime)}s sim` : "NEVER";
+  const specMarks = marks.filter((m) => m.kind === "outpost_spec");
+  const specR = specMarks.filter((m) => m.detail.endsWith(":research")).length;
+  const specM = specMarks.filter((m) => m.detail.endsWith(":military")).length;
+  const specE = specMarks.filter((m) => m.detail.endsWith(":economy")).length;
+  const upgrades = marks.filter((m) => m.kind === "outpost_upgraded").length;
+  const raidsIn = marks.filter((m) => m.kind === "raid_incoming").length;
+  const raidsDef = marks.filter((m) => m.kind === "raid_repelled").length;
+  const raidsLost = marks.filter((m) => m.kind === "outpost_lost").length;
+  const outpostsRepaired = marks.filter((m) => m.kind === "outpost_repaired").length;
+
+  const rallyCount = marks.filter((m) => m.kind === "squad_command" && m.detail === "follow").length;
+  const focusCount = marks.filter((m) => m.kind === "squad_command" && m.detail === "focus").length;
+  const holdCount = marks.filter((m) => m.kind === "squad_command" && m.detail === "hold").length;
+  const abilityCount = marks.filter((m) => m.kind === "ability_used").length;
+  const civMapOpens = marks.filter((m) => m.kind === "civmap_open").length;
+
+  L.push(`- Tech Map opened: ${techMapOpens}`);
+  L.push(`- First Tech Map open: ${firstTechMapTime}`);
+  L.push(`- Paths pinned: ${pinMarks.length} [${pinnedIds.join(", ") || "-"}]`);
+  L.push(`- Reserve uses: ${reserveCount}`);
+  L.push(`- Rerolls: ${rerollCount}`);
+  L.push(`- Skips: ${skipCount}`);
+  L.push(`- Breakthroughs completed: ${breakthroughMarks.length} [${breakthroughIds.join(", ") || "-"}]`);
+  L.push(``);
+  L.push(`- Territories claimed: ${territoryMarks.length} [${territoryMarks.map((m) => m.detail.split(":")[1]).filter(Boolean).join(", ") || "-"}]`);
+  L.push(`- First territory time: ${firstTerritoryTime}`);
+  L.push(`- Outpost types: [Research: ${specR}, Military: ${specM}, Economy: ${specE}]`);
+  L.push(`- Outpost upgrades: ${upgrades}`);
+  L.push(`- Raids incoming: ${raidsIn}`);
+  L.push(`- Raids defended: ${raidsDef}`);
+  L.push(`- Raids lost: ${raidsLost}`);
+  L.push(`- Outposts repaired: ${outpostsRepaired}`);
+  L.push(``);
+  L.push(`- Rally commands (Q): ${rallyCount}`);
+  L.push(`- Focus commands (E): ${focusCount}`);
+  L.push(`- Hold commands (R): ${holdCount}`);
+  L.push(`- Origin ability uses (F): ${abilityCount}`);
+  L.push(`- Civ Map opens (M): ${civMapOpens}`);
+  L.push(``);
+  L.push(`- Age gate block summary:`);
+  const tStone = t("STONE_START");
+  const tBronze = t("BRONZE_REACHED");
+  const tIron = t("IRON_REACHED");
+  const tInd = t("INDUSTRIAL_REACHED");
+  const tAtom = t("ATOMIC_REACHED");
+  const tSpace = t("SPACE_REACHED");
+  if (tStone !== null && tBronze !== null) L.push(`  - Stone dwell: ${f2(tBronze - tStone)}s`);
+  if (tBronze !== null && tIron !== null) L.push(`  - Bronze dwell: ${f2(tIron - tBronze)}s`);
+  if (tIron !== null && tInd !== null) L.push(`  - Iron dwell: ${f2(tInd - tIron)}s`);
+  if (tInd !== null && tAtom !== null) L.push(`  - Industrial dwell: ${f2(tAtom - tInd)}s`);
+  if (tAtom !== null && tSpace !== null) L.push(`  - Atomic dwell: ${f2(tSpace - tAtom)}s`);
+  if (tSpace !== null && t("BOSS_KILLED") !== null) L.push(`  - Space to Boss kill: ${f2((t("BOSS_KILLED") ?? 0) - tSpace)}s`);
+  L.push(``);
   L.push(`## Boss`);
   L.push(``);
   L.push(`- spawned: ${fmtT(t("BOSS_SPAWNED"))}`);
@@ -182,6 +252,10 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   for (const r of snap.ratings) {
     L.push(`- ${r.question}: ${r.score}/5 (${f2(r.simTime)}s)`);
   }
+  L.push(``);
+  L.push(`## Human Comment (optional)`);
+  L.push(``);
+  L.push(snap.humanComment ? `- comment: "${snap.humanComment}"` : `- comment: NOT PROVIDED`);
   L.push(``);
   L.push(`## Automatic Gate Result`);
   L.push(``);

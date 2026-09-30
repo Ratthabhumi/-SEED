@@ -975,6 +975,7 @@ export class GameScene extends Phaser.Scene {
     if (s.draftOpen || this.blockingModal) return;
     this.techMapOpen = true;
     this.techMapSel = "";
+    this.qa?.noteSimEvent("techmap_open", "open");
     this.renderTechMap();
   }
 
@@ -1012,6 +1013,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (s.draftOpen || this.blockingModal) return;
     this.civMapOpen = true;
+    this.qa?.noteSimEvent("civmap_open", "open");
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "civmap-screen";
@@ -1735,40 +1737,50 @@ export class GameScene extends Phaser.Scene {
           break;
         case "draft_reserved":
           sfx.select();
+          this.qa?.noteSimEvent("draft_reserve", e.techId);
           break;
         case "draft_rerolled":
           sfx.select();
+          this.qa?.noteSimEvent("draft_reroll", `${e.rerollsLeft} left`);
           break;
         case "draft_skipped":
           sfx.select();
+          this.qa?.noteSimEvent("draft_skip", "skip");
           break;
         case "pin_set":
           sfx.select();
+          this.qa?.noteSimEvent("pin", e.target);
           break;
         case "mission_complete":
           toast("ui.missionComplete", t(`age.${e.age}` as EnKeys));
           sfx.age();
+          this.qa?.noteSimEvent("mission_complete", e.age);
           break;
         case "territory_claimed":
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys));
           sfx.select();
           this.spawnVfx("seed_claim_glow", s.px, s.py, 0.8, 0x53e0c8, 450);
+          this.qa?.noteSimEvent("territory_claimed", `${e.poiId}:${e.poiType}`);
           break;
         case "outpost_spec":
           toast(e.spec === "research" ? "ui.specResearch" : e.spec === "military" ? "ui.specMilitary" : "ui.specEconomy");
           sfx.select();
+          this.qa?.noteSimEvent("outpost_spec", `${e.poiId}:${e.spec}`);
           break;
         case "outpost_upgraded":
           toast("ui.upgrade");
           sfx.age();
+          this.qa?.noteSimEvent("outpost_upgraded", e.poiId);
           break;
         case "outpost_lost":
           toast("ui.outpostLost");
           sfx.hurt();
+          this.qa?.noteSimEvent("outpost_lost", e.poiId);
           break;
         case "outpost_repaired":
           toast("ui.outpostRepaired");
           sfx.select();
+          this.qa?.noteSimEvent("outpost_repaired", e.poiId);
           break;
         case "raid_incoming": {
           const terr = this.sim.state.territories.find((x) => x.poiId === e.poiId);
@@ -1776,18 +1788,22 @@ export class GameScene extends Phaser.Scene {
           toast("ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
           sfx.boss();
           this.spawnVfx("seed_raid_alert", s.px, s.py, 1.0, 0xff5533, 600);
+          this.qa?.noteSimEvent("raid_incoming", `${e.poiId}:${Math.ceil(e.seconds)}s`);
           break;
         }
         case "raid_repelled":
           toast("ui.raidRepelled");
           sfx.age();
+          this.qa?.noteSimEvent("raid_repelled", e.poiId);
           break;
         case "squad_command":
+          this.qa?.noteSimEvent("squad_command", e.mode);
           break;
         case "ability_used": {
           const abil = ORIGIN_ABILITY[originById(this.sim.state.originId).id];
           toast("ui.ability", t(abil.nameKey));
           sfx.select();
+          this.qa?.noteSimEvent("ability_used", abil.id);
           break;
         }
         case "breakthrough": {
@@ -1802,10 +1818,12 @@ export class GameScene extends Phaser.Scene {
           if (save.settings.shake) this.cameras.main.shake(250, 0.008);
           this.lastGroundKey = "";
           this.showAgeTransition(e.age);
+          this.qa?.noteSimEvent("age_reached", e.age);
           break;
         case "poi_discovered":
           sfx.age();
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys), `+${Math.floor(e.knowledge)} ${t("ui.knowledge")}`);
+          this.qa?.noteSimEvent("poi_discovered", `${e.poiType}:+${Math.floor(e.knowledge)}`);
           break;
         case "poi_major":
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys));
