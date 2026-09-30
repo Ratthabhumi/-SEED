@@ -230,6 +230,7 @@ export const en = {
   "ui.expansionSub": "Unlock one more weapon family for this world.",
   "ui.legacyTitle": "Choose a Legacy",
   "ui.legacySub": "Carry one achievement into the next world.",
+  "ui.legacyRequires": "Requires an Origin with",
   "ui.buildGoals": "Near breakthroughs",
   "ui.synergy": "SYNERGY",
   "ui.completes": "COMPLETES",

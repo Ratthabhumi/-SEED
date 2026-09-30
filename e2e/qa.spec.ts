@@ -41,3 +41,27 @@ test("qa mode: gate start, live panel, report export", async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+test("qa mode: human-selected origin reaches the simulation", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+
+  for (const [btn, origin, families] of [
+    ["#qa-origin-resonant", "resonant", "Energy+Field"],
+    ["#qa-origin-engineers", "engineers", "Kinetic+Defense"],
+  ] as const) {
+    await page.goto("/?qa=1&e2e=1");
+    await expect(page.locator("#qa-gate")).toBeVisible();
+    await page.locator(btn).click();
+    await page.locator("#qa-start-playtest").click();
+    await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
+    const snap = JSON.parse(
+      (await page.evaluate(() => (window as unknown as { __seedE2E?: { snapshot: () => string } }).__seedE2E?.snapshot() ?? "{}")) as string,
+    ) as { origin: [string, string, string[], string[]] };
+    expect(snap.origin[0]).toBe(origin);
+    const goals = await page.locator(".hud-goals").textContent();
+    for (const fam of families.split("+")) expect(goals).toContain(fam);
+  }
+
+  expect(errors).toEqual([]);
+});

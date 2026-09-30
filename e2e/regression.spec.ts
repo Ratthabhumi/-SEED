@@ -8,6 +8,7 @@ declare global {
       grant: (n: number) => void;
       kill: () => void;
       readyAscend: () => void;
+      readyExpansion: () => void;
       hash: () => string;
       snapshot: () => string;
       seed: () => string;
@@ -124,8 +125,10 @@ test("ascension smoke: child world, run stats retained, world reset", async ({ p
   await expect(page.locator("#legacy-screen")).toBeVisible();
   expect(await page.locator("#legacy-screen .card").count()).toBe(3);
   await page.locator("#legacy-screen .card").first().click();
+  // First offer on a fresh sim is the kinetic affinity: only the two
+  // Kinetic origins are compatible (P1-05), never a dead pick.
   await expect(page.locator("#origin-screen")).toBeVisible();
-  expect(await page.locator("#origin-screen .card").count()).toBe(4);
+  expect(await page.locator("#origin-screen .card").count()).toBe(2);
   await page.locator("#origin-screen .card").first().click();
   await page.waitForTimeout(800);
   const after: { runElapsed: number; world: string; asc: number; age: number } = await page.evaluate(() => {
@@ -141,6 +144,31 @@ test("ascension smoke: child world, run stats retained, world reset", async ({ p
   expect(after.world).not.toBe(before.world);
   expect(after.age).toBe(0);
   expect(after.runElapsed).toBeGreaterThanOrEqual(before.runElapsed);
+  await expect(page.locator(".hud")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("industrial payoff precedes expansion choice, one modal at a time", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await startRun(page, "EPOCH-EXPAND-01");
+  await page.evaluate(() => window.__seedE2E?.readyExpansion());
+  // Age payoff surfaces first; expansion must not overlap it.
+  await expect(page.locator("#age-screen")).toBeVisible({ timeout: 10000 });
+  expect(await page.locator("#expansion-screen").count()).toBe(0);
+  // Dismiss the payoff (Continue) if still up — it also auto-dismisses.
+  const cont = page.locator("#age-screen").getByRole("button", { name: "Continue" });
+  if ((await cont.count()) > 0) await cont.click();
+  // Expansion choice follows, then gameplay resumes with 3 active families.
+  await expect(page.locator("#expansion-screen")).toBeVisible({ timeout: 10000 });
+  expect(await page.locator("#age-screen").count()).toBe(0);
+  expect(await page.locator("#expansion-screen .card").count()).toBe(2);
+  await page.locator("#expansion-screen .card").first().click();
+  await expect(page.locator("#expansion-screen")).toHaveCount(0);
+  const snap = JSON.parse((await page.evaluate(() => window.__seedE2E?.snapshot() ?? "{}")) as string) as {
+    origin: [string, string, string[], string[]];
+  };
+  expect(["energy", "defense"]).toContain(snap.origin[1]); // hunters + one unlock
   await expect(page.locator(".hud")).toBeVisible();
   expect(errors).toEqual([]);
 });

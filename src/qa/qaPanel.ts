@@ -150,6 +150,7 @@ export class QaSession {
   private postAscSim = 0;
   private post30Done = false;
   private post60Done = false;
+  private post120Done = false;
   private origError: typeof console.error | null = null;
   private origWarn: typeof console.warn | null = null;
   private onWinError: ((e: ErrorEvent) => void) | null = null;
@@ -297,6 +298,7 @@ export class QaSession {
         this.postAscSim = f.simTime;
         this.post30Done = false;
         this.post60Done = false;
+        this.post120Done = false;
         this.prevAscension = f.ascension;
       } else {
         this.recorder.assert("ascension", "Ascension contract", false,
@@ -328,7 +330,7 @@ export class QaSession {
     } else if (!f.ascendReady && this.prevAscendReady && f.ascension === this.prevAscension) {
       this.prevAscendReady = false;
     }
-    // Post-ascension +30/+60s perf snapshots.
+    // Post-ascension +30/+60/+120s perf snapshots (120s = engagement target).
     if (this.postAscWall > 0) {
       if (!this.post30Done && (this.wallNow() - this.postAscWall >= 30 || f.simTime - this.postAscSim >= 30)) {
         this.post30Done = true;
@@ -337,6 +339,10 @@ export class QaSession {
       if (!this.post60Done && (this.wallNow() - this.postAscWall >= 60 || f.simTime - this.postAscSim >= 60)) {
         this.post60Done = true;
         this.recorder.perfSnapshot("post-ascension+60s", ctx);
+      }
+      if (!this.post120Done && (this.wallNow() - this.postAscWall >= 120 || f.simTime - this.postAscSim >= 120)) {
+        this.post120Done = true;
+        this.recorder.perfSnapshot("post-ascension+120s", ctx);
       }
     }
     // Death / run end.
@@ -533,7 +539,7 @@ export class QaSession {
       ["Space", has("SPACE_REACHED")],
       ["Boss", has("BOSS_KILLED")],
       ["Ascension", has("CHILD_WORLD_STARTED")],
-      ["Post-Ascension 60s", this.post60Done],
+      ["Post-Ascension 120s", this.post120Done],
     ];
     return rows.map(([label, done]) => `<div class="qa-row">${done ? "✓" : "○"} ${label}</div>`).join("");
   }

@@ -41,6 +41,10 @@
   Industry/Defense draft; signal → rare/mythic draft; megasite → 150 Knowledge
   + full heal (no modal); worldtree → full heal + survival draft. Repeats pay
   base Knowledge. Never stacks over an open draft.
+  Reachability truth: only ruin/meteor/vault/signal spawn in worldgen;
+  megasite/worldtree are authored, unit-tested and visualized but NOT
+  worldgen-integrated (integrating them changes seeded POI type distribution —
+  deliberate versioning decision deferred until after the engagement test).
 - Ascension legacy prestige: child world resets level/XP/Knowledge/techs/build/
   weapons/origin (Level 1 Stone); run totals persist; exactly 1 of 3
   deterministic legacies (signature-breakthrough heir, top-family affinity, or

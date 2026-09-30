@@ -232,6 +232,7 @@ export const th: Record<EnKeys, string> = {
   "ui.expansionSub": "ปลดล็อกอาวุธอีกหนึ่งสายในโลกนี้",
   "ui.legacyTitle": "เลือกมรดก",
   "ui.legacySub": "นำความสำเร็จหนึ่งอย่างสู่โลกใหม่",
+  "ui.legacyRequires": "ต้องใช้ชาติกำเนิดที่มี",
   "ui.buildGoals": "เป้าหมายใกล้ตัว",
   "ui.synergy": "ผสานพลัง",
   "ui.completes": "สำเร็จ",

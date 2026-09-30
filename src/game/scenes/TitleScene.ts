@@ -55,6 +55,26 @@ export class TitleScene extends Phaser.Scene {
       gn.className = "qa-gate-sub";
       gn.textContent = "You only need to play. Everything else is recorded automatically. / แค่เล่น ที่เหลือระบบจดให้";
       gate.appendChild(gn);
+      // P1-01: QA runs must use the HUMAN-selected Origin (never forced).
+      let qaOrigin: OriginId = DEFAULT_ORIGIN;
+      const qoRow = document.createElement("div");
+      qoRow.className = "qa-origin-row";
+      const qoBtns: HTMLButtonElement[] = [];
+      for (const o of ORIGINS) {
+        const b = document.createElement("button");
+        b.id = `qa-origin-${o.id}`;
+        b.className = "btn qa-origin-btn" + (o.id === qaOrigin ? " active" : "");
+        b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
+        b.addEventListener("click", () => {
+          sfx.unlock(); sfx.select();
+          qaOrigin = o.id;
+          for (const x of qoBtns) x.classList.remove("active");
+          b.classList.add("active");
+        });
+        qoRow.appendChild(b);
+        qoBtns.push(b);
+      }
+      gate.appendChild(qoRow);
       const startQa = document.createElement("button");
       startQa.id = "qa-start-playtest";
       startQa.className = "btn primary";
@@ -62,7 +82,7 @@ export class TitleScene extends Phaser.Scene {
       startQa.addEventListener("click", () => {
         sfx.unlock(); sfx.select();
         sessionStorage.setItem(TITLE_SEED_KEY, GOLDEN_QA_SEED);
-        sessionStorage.setItem(TITLE_ORIGIN_KEY, DEFAULT_ORIGIN);
+        sessionStorage.setItem(TITLE_ORIGIN_KEY, qaOrigin);
         this.scene.start("game");
       });
       gate.appendChild(startQa);

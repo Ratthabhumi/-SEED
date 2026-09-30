@@ -66,6 +66,8 @@ export class GameScene extends Phaser.Scene {
   // stepping until decided; timed beats (breakthrough/age) pause briefly.
   private blockingModal: HTMLElement | null = null;
   private modalT = 0;
+  /** FIFO builders for modals requested while another is visible (P1-02). */
+  private modalQueue: Array<() => void> = [];
   // Presentation state (never canonical): facing, hurt flash, contrast, hints.
   private playerFacing = -Math.PI / 2;
   private lastHurtT = -10;
@@ -108,6 +110,7 @@ export class GameScene extends Phaser.Scene {
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw });
+    this.modalQueue = [];
     this.closeBlocking();
     this.acc = new FixedAccumulator();
     this.latch = new InputLatch();
@@ -196,6 +199,17 @@ export class GameScene extends Phaser.Scene {
           // Test-only shortcut for the boss-kill trigger; ascend() itself
           // (child world, fresh streams, stat separation) runs the real path.
           this.sim.state.ascendReady = true;
+          this.refreshHUD();
+        },
+        readyExpansion: () => {
+          // Test-only staging for the Industrial transition: sets genuine
+          // preconditions; the age-up, events, and modal queue run real code.
+          const s = this.sim.state;
+          s.ageIndex = 2;
+          s.elapsed = 400;
+          s.ageElapsed = 100;
+          s.knowledgeTotal = 2800;
+          s.ageKills = 120;
           this.refreshHUD();
         },
         hash: () => this.sim.hash(),
@@ -741,6 +755,7 @@ export class GameScene extends Phaser.Scene {
   private restartRun(): void {
     // P2-01: Restart = SAME master seed, clean simulation. (Play Again uses a
     // fresh random seed; Quit returns to title.) Origin choice is preserved.
+    this.modalQueue = [];
     this.closeBlocking();
     document.getElementById("pause-screen")?.remove();
     document.getElementById("draft-screen")?.remove();
@@ -859,9 +874,22 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Blocking modal shell (choice or timed beat). Pauses stepping while up. */
-  private showBlocking(id: string, dur = 0): HTMLElement {
-    this.closeBlocking();
+  /**
+   * Blocking modal shell (choice or timed beat). Pauses stepping while up.
+   * P1-02: a request arriving while another modal is visible is QUEUED as a
+   * build thunk and shown on drain — surfaces never overlap, never overwrite.
+   */
+  private showBlocking(id: string, dur = 0, build?: (screen: HTMLElement) => void): void {
+    if (this.blockingModal) {
+      this.modalQueue.push(() => this.showBlockingFresh(id, dur, build));
+      return;
+    }
+    this.showBlockingFresh(id, dur, build);
+  }
+
+  private showBlockingFresh(id: string, dur: number, build?: (screen: HTMLElement) => void): void {
+    // Caller (or queue drain) guarantees no live modal; never re-enter drain.
+    this.blockingModal?.remove();
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = id;
@@ -871,26 +899,31 @@ export class GameScene extends Phaser.Scene {
     if (dur > 0) {
       screen.addEventListener("click", () => this.closeBlocking());
     }
-    return screen;
+    if (build) build(screen);
   }
 
   private closeBlocking(): void {
     this.blockingModal?.remove();
     this.blockingModal = null;
     this.modalT = 0;
+    // Drain exactly one queued modal (FIFO). showBlockingFresh never drains,
+    // so no cascade: at most one new surface per close.
+    const next = this.modalQueue.shift();
+    if (next) next();
   }
 
   /** Short reward beat: breakthrough title + effects, distinct sting. */
   private showBreakthroughBeat(id: string): void {
     const b = BREAKTHROUGHS.find((x) => x.id === id);
     if (!b) return;
-    const screen = this.showBlocking("beat-screen", 1.1);
-    const panel = el("div", "panel");
-    panel.appendChild(el("h2", "", b.titleKey as EnKeys));
-    const d = document.createElement("p");
-    d.textContent = t(b.descriptionKey as EnKeys);
-    panel.appendChild(d);
-    screen.appendChild(panel);
+    this.showBlocking("beat-screen", 1.1, (screen) => {
+      const panel = el("div", "panel");
+      panel.appendChild(el("h2", "", b.titleKey as EnKeys));
+      const d = document.createElement("p");
+      d.textContent = t(b.descriptionKey as EnKeys);
+      panel.appendChild(d);
+      screen.appendChild(panel);
+    });
     sfx.breakthrough();
   }
 
@@ -898,24 +931,25 @@ export class GameScene extends Phaser.Scene {
   private showAgeTransition(age: AgeId): void {
     const s = this.sim.state;
     const idx = AGES.indexOf(age);
-    const screen = this.showBlocking("age-screen", 1.1);
-    const panel = el("div", "panel");
-    panel.appendChild(el("h1", "logo", `age.${age}` as EnKeys));
-    const spine = CRITICAL_SPINE.find((c) => c.age === age);
-    if (spine) {
-      const g = document.createElement("p");
-      g.textContent = `${t(`tech.${spine.id}.name` as EnKeys)} — ${t(`tech.${spine.id}.description` as EnKeys)}`;
-      panel.appendChild(g);
-    }
-    const forms = activeFamilies(s.originId, s.expansionFamily)
-      .map((f) => t(getWeaponStage(f, idx).nameKey as EnKeys)).join(" · ");
-    const w = document.createElement("div");
-    w.className = "toast-sub";
-    w.textContent = forms;
-    panel.appendChild(w);
-    const cont = button("ui.ageContinue", () => this.closeBlocking(), "btn primary");
-    panel.appendChild(cont);
-    screen.appendChild(panel);
+    this.showBlocking("age-screen", 1.1, (screen) => {
+      const panel = el("div", "panel");
+      panel.appendChild(el("h1", "logo", `age.${age}` as EnKeys));
+      const spine = CRITICAL_SPINE.find((c) => c.age === age);
+      if (spine) {
+        const g = document.createElement("p");
+        g.textContent = `${t(`tech.${spine.id}.name` as EnKeys)} — ${t(`tech.${spine.id}.description` as EnKeys)}`;
+        panel.appendChild(g);
+      }
+      const forms = activeFamilies(s.originId, s.expansionFamily)
+        .map((f) => t(getWeaponStage(f, idx).nameKey as EnKeys)).join(" · ");
+      const w = document.createElement("div");
+      w.className = "toast-sub";
+      w.textContent = forms;
+      panel.appendChild(w);
+      const cont = button("ui.ageContinue", () => this.closeBlocking(), "btn primary");
+      panel.appendChild(cont);
+      screen.appendChild(panel);
+    });
     sfx.ageSting();
   }
 
@@ -943,76 +977,99 @@ export class GameScene extends Phaser.Scene {
     document.getElementById("ascend-screen")?.remove();
     const offers = this.sim.legacyOffers();
     if (offers.length === 0) return;
-    const screen = this.showBlocking("legacy-screen");
-    const panel = el("div", "panel");
-    panel.appendChild(el("h2", "", "ui.legacyTitle"));
-    panel.appendChild(el("div", "logo-sub", "ui.legacySub"));
-    const cards = el("div", "cards");
-    for (const o of offers) {
-      const c = el("div", "card");
-      c.setAttribute("role", "button");
-      const h = document.createElement("h3");
-      h.textContent = t(o.nameKey);
-      const d = document.createElement("p");
-      d.textContent = t(o.descKey);
-      c.appendChild(h);
-      c.appendChild(d);
-      c.addEventListener("click", () => this.showOriginPick(o.id));
-      cards.appendChild(c);
-    }
-    panel.appendChild(cards);
-    screen.appendChild(panel);
+    this.showBlocking("legacy-screen", 0, (screen) => {
+      const panel = el("div", "panel");
+      panel.appendChild(el("h2", "", "ui.legacyTitle"));
+      panel.appendChild(el("div", "logo-sub", "ui.legacySub"));
+      const cards = el("div", "cards");
+      for (const o of offers) {
+        const c = el("div", "card");
+        c.setAttribute("role", "button");
+        const h = document.createElement("h3");
+        h.textContent = t(o.nameKey);
+        const d = document.createElement("p");
+        const reqTxt = o.requiredFamily
+          ? ` ${t("ui.legacyRequires")} ${t(`family.${o.requiredFamily}` as EnKeys)}.`
+          : "";
+        d.textContent = t(o.descKey) + reqTxt;
+        c.appendChild(h);
+        c.appendChild(d);
+        // Close-then-show: navigating modals must not queue behind themselves.
+        c.addEventListener("click", () => {
+          this.closeBlocking();
+          this.showOriginPick(o.id);
+        });
+        cards.appendChild(c);
+      }
+      panel.appendChild(cards);
+      screen.appendChild(panel);
+    });
   }
 
   /** Origin choice modal for the child world (blocking). */
   private showOriginPick(legacyId: string): void {
-    const screen = this.showBlocking("origin-screen");
-    const panel = el("div", "panel");
-    panel.appendChild(el("h2", "", "ui.chooseOrigin"));
-    const cards = el("div", "cards");
-    for (const o of ORIGINS) {
-      const c = el("div", "card");
-      c.setAttribute("role", "button");
-      const h = document.createElement("h3");
-      h.textContent = t(o.nameKey);
-      const d = document.createElement("p");
-      d.textContent = `${t(o.descKey)} (${o.families.map((f) => t(`family.${f}` as EnKeys)).join("+")})`;
-      c.appendChild(h);
-      c.appendChild(d);
-      c.addEventListener("click", () => this.doAscend(legacyId, o.id));
-      cards.appendChild(c);
-    }
-    panel.appendChild(cards);
-    screen.appendChild(panel);
+    // P1-05: only Origins where the chosen Legacy functions are selectable,
+    // with the requirement stated — never a dead pick.
+    const req = this.sim.legacyOffers().find((d) => d.id === legacyId)?.requiredFamily;
+    const choices = req
+      ? ORIGINS.filter((o) => (o.families as readonly string[]).includes(req))
+      : [...ORIGINS];
+    if (choices.length === 0) return;
+    this.showBlocking("origin-screen", 0, (screen) => {
+      const panel = el("div", "panel");
+      panel.appendChild(el("h2", "", "ui.chooseOrigin"));
+      if (req) {
+        const note = document.createElement("div");
+        note.className = "logo-sub";
+        note.textContent = `${t("ui.legacyRequires")} ${t(`family.${req}` as EnKeys)}`;
+        panel.appendChild(note);
+      }
+      const cards = el("div", "cards");
+      for (const o of choices) {
+        const c = el("div", "card");
+        c.setAttribute("role", "button");
+        const h = document.createElement("h3");
+        h.textContent = t(o.nameKey);
+        const d = document.createElement("p");
+        d.textContent = `${t(o.descKey)} (${o.families.map((f) => t(`family.${f}` as EnKeys)).join("+")})`;
+        c.appendChild(h);
+        c.appendChild(d);
+        c.addEventListener("click", () => this.doAscend(legacyId, o.id));
+        cards.appendChild(c);
+      }
+      panel.appendChild(cards);
+      screen.appendChild(panel);
+    });
   }
 
   /** Expansion choice modal at Industrial (blocking until decided). */
   private showExpansionPick(families: [WeaponFamily, WeaponFamily]): void {
     const s = this.sim.state;
-    const screen = this.showBlocking("expansion-screen");
-    const panel = el("div", "panel");
-    panel.appendChild(el("h2", "", "ui.expansionTitle"));
-    panel.appendChild(el("div", "logo-sub", "ui.expansionSub"));
-    const cards = el("div", "cards");
-    for (const f of families) {
-      const c = el("div", "card");
-      c.setAttribute("role", "button");
-      const h = document.createElement("h3");
-      h.textContent = t(`family.${f}` as EnKeys);
-      const d = document.createElement("p");
-      d.textContent = t(getWeaponStage(f, s.ageIndex).nameKey as EnKeys);
-      c.appendChild(h);
-      c.appendChild(d);
-      c.addEventListener("click", () => {
-        const ev = this.sim.chooseExpansion(f);
-        this.closeBlocking();
-        this.handleEvents(ev);
-        this.refreshHUD();
-      });
-      cards.appendChild(c);
-    }
-    panel.appendChild(cards);
-    screen.appendChild(panel);
+    this.showBlocking("expansion-screen", 0, (screen) => {
+      const panel = el("div", "panel");
+      panel.appendChild(el("h2", "", "ui.expansionTitle"));
+      panel.appendChild(el("div", "logo-sub", "ui.expansionSub"));
+      const cards = el("div", "cards");
+      for (const f of families) {
+        const c = el("div", "card");
+        c.setAttribute("role", "button");
+        const h = document.createElement("h3");
+        h.textContent = t(`family.${f}` as EnKeys);
+        const d = document.createElement("p");
+        d.textContent = t(getWeaponStage(f, s.ageIndex).nameKey as EnKeys);
+        c.appendChild(h);
+        c.appendChild(d);
+        c.addEventListener("click", () => {
+          const ev = this.sim.chooseExpansion(f);
+          this.closeBlocking();
+          this.handleEvents(ev);
+          this.refreshHUD();
+        });
+        cards.appendChild(c);
+      }
+      panel.appendChild(cards);
+      screen.appendChild(panel);
+    });
     sfx.levelup();
   }
 
