@@ -10,6 +10,7 @@ import { POI_DRAFT_FILTERS, POI_MAJOR_KIND, type POIType } from "../../src/core/
 import { AGE_DEFS } from "../../src/core/progression/ages";
 import { CRITICAL_SPINE } from "../../src/core/tech/graph";
 import { generateTechGraph } from "../../src/core/tech/generator";
+import { worldToChunk } from "../../src/core/world/chunks";
 import type { InputFrame } from "../../src/core/sim/InputFrame";
 
 const IDLE: InputFrame = { moveX: 0, moveY: 0, dashPressed: false };
@@ -95,25 +96,78 @@ describe("origins and active families", () => {
   });
 
   it("all origins can progress to Space", async () => {
+    // v021 pacing simulation: an ENGAGED bot (steers to POIs, claims/specs/
+    // upgrades territory, defends raids, picks first draft) must complete the
+    // full mission chain. Same seed + same policy replays identically.
+    const SPECS = ["research", "military", "economy"] as const;
     for (const o of ORIGINS) {
       const sim = new RunSimulation({ masterSeed: "EPOCH-GOLDEN-001", originId: o.id });
       sim.state.build.hp = 1e9;
       sim.state.build.maxHp = 1e9;
       let steps = 0;
-      // Viability floor (not speed): dumb play, godmode, generous cap.
-      // Breathe movement lets close-range families contribute.
-      while (sim.state.ageIndex < 5 && !sim.state.over && steps < 72000) {
-        const still = Math.floor(steps / 2400) % 3 === 2;
-        const ev = sim.step(1 / 60, still
-          ? { moveX: 0, moveY: 0, dashPressed: false }
-          : { moveX: Math.cos(steps / 40), moveY: Math.sin(steps / 40), dashPressed: false });
+      let specIdx = 0;
+      let spaceAt = -1;
+      while (sim.state.ageIndex < 5 && !sim.state.over && steps < 90000) {
+        const s = sim.state;
+        // Steering: defend an active raid, else head for the nearest
+        // undiscovered POI, else breathe in place and fight.
+        let tx: number | null = null;
+        let ty: number | null = null;
+        if (s.raid) {
+          const t = s.territories.find((x) => x.poiId === s.raid?.poiId);
+          if (t) { tx = t.x; ty = t.y; }
+        }
+        if (tx === null) {
+          const { cx, cy } = worldToChunk(s.px, s.py);
+          let bd = 2500;
+          for (let ox = -3; ox <= 3; ox++) {
+            for (let oy = -3; oy <= 3; oy++) {
+              const desc = sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+              for (const poi of desc.poi) {
+                if (s.poisWorld.includes(poi.id)) continue;
+                const d = Math.hypot(poi.wx - s.px, poi.wy - s.py);
+                if (d < bd) { bd = d; tx = poi.wx; ty = poi.wy; }
+              }
+            }
+          }
+        }
+        let input: InputFrame;
+        if (tx === null || ty === null) {
+          input = { moveX: Math.cos(steps / 40), moveY: Math.sin(steps / 40), dashPressed: false };
+        } else {
+          const dx = tx - s.px;
+          const dy = ty - s.py;
+          const d = Math.max(1, Math.hypot(dx, dy));
+          input = d < 40
+            ? { moveX: 0, moveY: 0, dashPressed: false }
+            : { moveX: dx / d, moveY: dy / d, dashPressed: false };
+        }
+        const ev = sim.step(1 / 60, input);
         for (const e of ev) {
           if (e.type === "draft_opened") sim.chooseDraft(0);
           else if (e.type === "expansion_offered") sim.chooseExpansion(e.families[0] as "kinetic");
         }
+        // Engaged decisions every step (all idempotent when ineligible).
+        for (const c of sim.claimablePOIs()) {
+          if (!c.clear) continue;
+          sim.claimTerritory(c.poiId);
+          const terr = sim.state.territories.find((x) => x.poiId === c.poiId);
+          if (terr && terr.spec === "") {
+            sim.setOutpostSpec(c.poiId, SPECS[specIdx % SPECS.length] as "research" | "military" | "economy");
+            specIdx++;
+          }
+        }
+        for (const terr of sim.state.territories) sim.upgradeOutpost(terr.poiId);
+        if (sim.state.ageIndex >= 5 && spaceAt < 0) spaceAt = sim.state.elapsed;
         steps++;
       }
       expect(sim.state.ageIndex, `origin ${o.id} reached space`).toBe(5);
+      expect(spaceAt, `origin ${o.id} space time recorded`).toBeGreaterThan(0);
+      // Pacing: engaged godmode play reaches Space well inside 25 minutes,
+      // and the mission chain (not the clock) sets the pace floor.
+      expect(spaceAt, `origin ${o.id} pacing`).toBeLessThan(1500);
+      expect(sim.state.territories.length, `origin ${o.id} claimed territory`).toBeGreaterThan(0);
+      expect(sim.state.history.length, `origin ${o.id} build history`).toBeGreaterThan(10);
     }
   }, 240000);
 });

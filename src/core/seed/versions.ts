@@ -14,8 +14,16 @@
 //   availability (origin-gated drafts), POI reward semantics (major first
 //   discoveries), and Ascension progression (legacy prestige reset).
 //   Worlds look the same; what you can build in them differs.
+//
+// v0.2.1 civilization-command loop:
+// - WORLDGEN_VERSION stays 2: chunk/POI coordinates and types unchanged
+//   (territories reference generated POI ids; generation itself untouched).
+// - CONTENT_VERSION 3 -> 4: three-gate age contract (no global time gate),
+//   age missions, draft agency (pin/reserve/reroll/skip), territory/outpost/
+//   raid systems, command squads + origin abilities. Same seed + same player
+//   decisions still replay identically; old decision traces diverge by design.
 export const WORLDGEN_VERSION = 2;
-export const CONTENT_VERSION = 3;
+export const CONTENT_VERSION = 4;
 export const SAVE_SCHEMA_VERSION = 1;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;

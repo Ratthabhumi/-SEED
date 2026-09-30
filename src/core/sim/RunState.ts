@@ -6,6 +6,8 @@ import type { EnemyFamily, EliteAffix } from "../director/director";
 import type { TechNode } from "../tech/graph";
 import type { POIType } from "../world/poi";
 import type { EffectTarget } from "./progression";
+import type { Territory, RaidState } from "../world/territory";
+import type { SimAlly, SquadMode } from "../combat/squad";
 
 export interface SimEnemy {
   active: boolean; x: number; y: number;
@@ -13,6 +15,8 @@ export interface SimEnemy {
   family: EnemyFamily; speed: number; dmg: number; radius: number; xp: number;
   elite: boolean; affix: EliteAffix | ""; flash: number; shootT: number;
   boss: boolean; hitCd: number;
+  /** Raid siege unit: marches on the raided outpost instead of the player. */
+  siege: boolean;
 }
 
 export interface SimProj {
@@ -57,6 +61,10 @@ export interface RunState {
   ownedTags: string[];
   breakthroughs: string[];
   weaponStage: Record<WeaponFamily, number>;
+  // Draft agency (canonical — pinned/reserved/rerolls shape future drafts).
+  reservedTech: string;
+  rerolls: number;
+  pinnedTarget: string;
   // Build identity (ADR-0006): origin pair + at most one expansion unlock.
   originId: string;
   expansionFamily: WeaponFamily | "";
@@ -64,6 +72,25 @@ export interface RunState {
   legacies: string[];
   // First-discovery major POI rewards, one per family per world.
   poiFamiliesClaimed: POIType[];
+  // Age-mission counters (elitesAge resets on every age advance + ascension).
+  elitesAge: number;
+  raidsSurvived: number;
+  signalSecured: boolean;
+  /** Mission-complete toast already emitted for the current age (reset per age). */
+  missionDoneCache: boolean;
+  // Territory / raid (world-scoped; reset per ascension with the world).
+  territories: Territory[];
+  raid: RaidState | null;
+  lastRaidAt: number;
+  // Origin command squad + active ability timers.
+  squad: SimAlly[];
+  squadMode: SquadMode;
+  focusX: number;
+  focusY: number;
+  abilityCd: number;
+  overdriveT: number;
+  // Build history: bounded FIFO of player decisions (chronicle + tech map).
+  history: Array<{ t: number; kind: string; label: string }>;
   // Draft provenance for UI titles ("level" vs "poi").
   draftContext: "level" | "poi";
   // Timers / angles (transient but canonical — recreated identically per run)

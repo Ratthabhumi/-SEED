@@ -60,9 +60,14 @@ describe("balance sanity across generated seeds", () => {
     }
   });
 
-  it("age gating is satisfiable (thresholds reachable, no NaN)", () => {
-    expect(canAdvanceAge(1, 500, 500, 10_000, true)).toBe(true);
-    expect(canAdvanceAge(1, 0, 0, 0, false)).toBe(false);
-    expect(canAdvanceAge(99, 9999, 9999, 99999, true)).toBe(false);
+  it("age gating is satisfiable (three gates, no NaN)", () => {
+    const rich = { ageKills: 50, territoriesClaimed: 3, elitesAge: 5, outpostsTier2: 2, raidsSurvived: 2, signalSecured: true };
+    const poor = { ageKills: 0, territoriesClaimed: 0, elitesAge: 0, outpostsTier2: 0, raidsSurvived: 0, signalSecured: false };
+    // Same predicate the sim and the HUD checklist share (v021 three-gate).
+    expect(canAdvanceAge(1, 500, 10_000, rich)).toBe(true);
+    expect(canAdvanceAge(1, 0, 0, poor)).toBe(false);
+    // No global-time gate: huge elapsed alone never advances.
+    expect(canAdvanceAge(1, 0, 0, { ...poor, ageKills: 50 })).toBe(false);
+    expect(canAdvanceAge(99, 9999, 99999, rich)).toBe(false);
   });
 });

@@ -6,6 +6,8 @@
 //   Knowledge/XP/level, owned tech, breakthroughs, origin/expansion/legacies,
 //   POI family claims, enemies, projectiles,
 //   pickups, mines, boss state, pending drafts (+choice ids), world/ascension,
+//   draft agency (pinned/reserved/rerolls), mission counters, territories,
+//   raid, squad + ability timers, build history,
 //   gameplay RNG stream snapshots, director timers.
 // Excluded (presentation/cosmetic only): beam flash, spatial indices, scratch
 // buffers, camera/DOM/audio/particles/debug state.
@@ -45,7 +47,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     if (!e.active) continue;
     enemies.push(
       [r6(e.x), r6(e.y), r6(e.hp), r6(e.shield), e.family, e.elite ? e.affix : "", e.boss ? 1 : 0,
-        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd)].join(","),
+        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), e.siege ? 1 : 0].join(","),
     );
   }
   enemies.sort();
@@ -79,6 +81,10 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     lvl: [s.level, r6(s.xp), s.xpNext, r6(s.knowledgeTotal), s.pendingLevels, s.draftOpen ? 1 : 0,
       // P1-03: draft order is gameplay (chooseDraft(i) indexes it) — preserved.
       s.draftChoices.map((n) => n.id)],
+    // v021: draft agency shapes future drafts — canonical.
+    agency: [s.reservedTech, s.rerolls, s.pinnedTarget],
+    // v021: age-mission counters.
+    mission: [s.elitesAge, s.raidsSurvived, s.signalSecured ? 1 : 0, s.missionDoneCache ? 1 : 0],
     o: [[...s.owned].sort(), [...s.ownedTags].sort(), [...s.breakthroughs].sort()],
     // P1-03: Legacy FIFO order decides future eviction — preserved.
     origin: [s.originId, s.expansionFamily, [...s.legacies], [...s.poiFamiliesClaimed].sort()],
@@ -90,6 +96,14 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
       r6(s.weaponCd.kinetic), r6(s.weaponCd.energy), r6(s.weaponCd.defense), r6(s.weaponCd.field),
       r6(s.guardianAng), r6(s.orbitAng)],
     world: [[...s.chunksWorld].sort(), [...s.poisWorld].sort()],
+    // v021: territory / raid / squad / ability / history (all canonical).
+    terr: [...s.territories].sort((a, b) => (a.poiId < b.poiId ? -1 : 1)).map((t) =>
+      [t.poiId, t.poiType, r6(t.x), r6(t.y), t.spec, t.tier, r6(t.hp), t.disabled ? 1 : 0, r6(t.heldSince), r6(t.repairT)].join(",")),
+    raid: s.raid ? [s.raid.poiId, r6(s.raid.tMinus)] : [],
+    raidAt: r6(s.lastRaidAt),
+    squad: [s.squadMode, r6(s.focusX), r6(s.focusY), r6(s.abilityCd), r6(s.overdriveT),
+      ...s.squad.map((a) => [a.active ? 1 : 0, r6(a.x), r6(a.y), r6(a.hp), r6(a.cd), r6(a.inv)].join(","))],
+    hist: s.history.map((h) => `${r6(h.t)}:${h.kind}:${h.label}`),
     boss: [s.bossSpawned ? 1 : 0, s.ascendReady ? 1 : 0, s.bossIndex, s.over ? 1 : 0],
     st: [s.stats.kills, s.stats.elites, s.stats.bosses, s.stats.techsTaken, s.stats.chunksTotal, s.stats.poisTotal, r6(s.stats.knowledgeEarned)],
     dmg: dmgSrc,

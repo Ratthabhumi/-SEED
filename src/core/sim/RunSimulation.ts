@@ -5,8 +5,9 @@
 // No Phaser / DOM / storage / audio imports — events go out via SimEvent[].
 //
 // Phase order per step (documented, tested at cell boundaries):
-//   input → player movement → director/spawn → enemy movement → spatial rebuild
-//   → weapons/projectiles/collisions → mines → pickups/progression → POI → events
+//   input → player movement → age/mission → director/spawn + raids → enemy
+//   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
+//   collisions → mines → pickups/economy → territory upkeep → chunks/POI
 import { fnv1a32 } from "../seed/hash";
 import { initRunRng, type RunRngStreams } from "../seed/runRng";
 import { deriveAscensionSeed } from "../seed/streams";
@@ -18,8 +19,20 @@ import { ChunkCache } from "./chunkCache";
 import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from "./stateHash";
 import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
-import { checkBreakthroughs } from "../tech/synergy";
+import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
 import { canAdvanceAge } from "../progression/ages";
+import { missionDone, type MissionState } from "../progression/missions";
+import {
+  CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS, OUTPOST_MAXHP, RAID_INTERVAL, RAID_WARN_SEC,
+  RAID_SIZE_BASE, TIER2_HOLD_SEC, REPAIR_NEED, activeTerritories,
+  territoryKnowledgeBonus, militaryBonusSlots, economyRegenAt,
+  territoryById, type OutpostSpec,
+} from "../world/territory";
+import {
+  SQUAD_BASE_CAP, SQUAD_MAX, SQUAD_HP, SQUAD_DMG, SQUAD_SPEED, SQUAD_RANGE, SQUAD_CD,
+  ORIGIN_ABILITY, OVERDRIVE_DURATION, NOVA_RADIUS, NOVA_DMG,
+  VOLLEY_COUNT, VOLLEY_DMG, BULWARK_REPAIR, BULWARK_IFRAME, squadCap, type SquadMode,
+} from "../combat/squad";
 import { activeFamilies, lockedFamilies, originById, ORIGINS } from "../progression/origins";
 import { legacyCandidates, legacyDefById, MAX_LEGACIES, type LegacyDef } from "../progression/legacies";
 import {
@@ -91,10 +104,21 @@ export class RunSimulation {
       pendingLevels: 0, draftOpen: false, draftChoices: [],
       owned: [], ownedTags: [], breakthroughs: [],
       weaponStage: { kinetic: 0, energy: 0, defense: 0, field: 0 },
+      reservedTech: "", rerolls: 1, pinnedTarget: "",
       originId, expansionFamily: "",
       legacies: [],
       poiFamiliesClaimed: [],
       draftContext: "level",
+      elitesAge: 0, raidsSurvived: 0, signalSecured: false,
+      missionDoneCache: false,
+      territories: [], raid: null, lastRaidAt: 0,
+      squad: Array.from({ length: SQUAD_MAX }, (_, i) => ({
+        active: i < SQUAD_BASE_CAP, x: (i === 0 ? -30 : 30), y: 0,
+        hp: SQUAD_HP, maxHp: SQUAD_HP, dmg: SQUAD_DMG, cd: 0, inv: 0,
+      })),
+      squadMode: "follow" as SquadMode, focusX: 0, focusY: 0,
+      abilityCd: 0, overdriveT: 0,
+      history: [],
       spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
       guardianAng: 0, orbitAng: 0, beamFlash: null,
@@ -102,6 +126,7 @@ export class RunSimulation {
         active: false, x: 0, y: 0, hp: 1, maxHp: 1, shield: 0,
         family: "chaser" as EnemyFamily, speed: 100, dmg: 5, radius: 12, xp: 1,
         elite: false, affix: "" as EliteAffix | "", flash: 0, shootT: 0, boss: false, hitCd: 0,
+        siege: false,
       })),
       projs: Array.from({ length: MAX_PROJ }, () => ({
         active: false, x: 0, y: 0, vx: 0, vy: 0, dmg: 1, radius: 5,
@@ -148,6 +173,8 @@ export class RunSimulation {
     fresh.runElapsed = keep.runElapsed;
     fresh.runHighestAge = keep.runHighestAge;
     fresh.runKills = keep.runKills;
+    // Build history is run evidence — a new world extends it, never wipes it.
+    fresh.history = s.history;
     // Bounded legacy inheritance (FIFO cap), effects applied to the fresh build.
     fresh.legacies = [...s.legacies, legacy.id].slice(-MAX_LEGACIES);
     for (const lid of fresh.legacies) {
@@ -168,6 +195,7 @@ export class RunSimulation {
     });
     this.graph = generateTechGraph(s.worldSeed, asc).nodes;
     this.grantNode("spine-tools");
+    this.logHistory("ascension", `world-${asc}`);
     ev.push({ type: "legacy_granted", id: legacy.id });
     ev.push({ type: "ascended", worldSeed: s.worldSeed, ascension: asc });
     return ev;
@@ -240,6 +268,66 @@ export class RunSimulation {
     });
   }
 
+  /** Read-only tech graph for the Tech Map UI (same nodes the sim drafts). */
+  techGraph(): readonly TechNode[] {
+    return this.graph;
+  }
+
+  /**
+   * Owned/available state per node, computed by the SIMULATION (the Tech Map
+   * renders this verbatim, so UI display and draft gating match by construction).
+   */
+  nodeStates(): Array<{ id: string; owned: boolean; available: boolean }> {
+    const avail = new Set(this.availableNodes().map((n) => n.id));
+    const owned = new Set(this.state.owned);
+    return this.graph.map((n) => ({ id: n.id, owned: owned.has(n.id), available: avail.has(n.id) }));
+  }
+
+  /**
+   * Node ids on the pinned build path: the target plus its transitive unowned
+   * prerequisites (tech target), or unowned nodes carrying tags a pinned
+   * breakthrough still needs. Bounded draft weighting only — never a guarantee.
+   */
+  pinnedPathIds(): Set<string> {
+    const s = this.state;
+    const out = new Set<string>();
+    const t = s.pinnedTarget;
+    if (t === "") return out;
+    const byId = new Map(this.graph.map((n) => [n.id, n]));
+    const node = byId.get(t);
+    if (node) {
+      const stack: TechNode[] = [node];
+      while (stack.length > 0) {
+        const n = stack.pop() as TechNode;
+        if (out.has(n.id) || s.owned.includes(n.id)) continue;
+        out.add(n.id);
+        for (const p of n.prerequisites) {
+          const pn = byId.get(p);
+          if (pn) stack.push(pn);
+        }
+      }
+      return out;
+    }
+    const b = BREAKTHROUGHS.find((x) => x.id === t);
+    if (!b) return out;
+    const ownedTags = new Set(s.ownedTags);
+    const missing = b.requires.filter((tag) => !ownedTags.has(tag));
+    for (const n of this.graph) {
+      if (s.owned.includes(n.id)) continue;
+      if (n.tags.some((tag) => missing.includes(tag)) || n.synergyTags.some((tag) => missing.includes(tag))) {
+        out.add(n.id);
+      }
+    }
+    return out;
+  }
+
+  /** Bounded history log for the Chronicle build-history view (FIFO cap). */
+  private logHistory(kind: string, label: string): void {
+    const s = this.state;
+    s.history.push({ t: Math.round(s.elapsed * 10) / 10, kind, label });
+    while (s.history.length > 64) s.history.shift();
+  }
+
   /** Count of generated (non-fallback) options currently available — frontier test hook. */
   generatedOptionsCount(): number {
     return this.availableNodes().length;
@@ -254,7 +342,13 @@ export class RunSimulation {
       // (still a real choice, never an empty modal).
       if (picked.length > 0) pool = picked;
     }
-    const scored = pool.map((n) => ({ n, w: n.weight * (0.5 + this.streams.draft.nextFloat()) }));
+    const path = this.pinnedPathIds();
+    const poolIds = new Set(pool.map((n) => n.id));
+    const scored = pool.map((n) => ({
+      n,
+      // Pinned-path nodes get a bounded ×2 weight (variety preserved).
+      w: n.weight * (0.5 + this.streams.draft.nextFloat()) * (path.has(n.id) ? 2 : 1),
+    }));
     scored.sort((a, b) => b.w - a.w);
     const picks: TechNode[] = [];
     const kinds = new Set<string>();
@@ -265,6 +359,12 @@ export class RunSimulation {
         kinds.add(k);
       }
       if (picks.length >= 3) break;
+    }
+    // Reserved card reappears in the next compatible draft (replaces the
+    // weakest pick; never a 4th card, never a fallback slot steal).
+    if (s.reservedTech !== "" && poolIds.has(s.reservedTech) && !picks.some((n) => n.id === s.reservedTech)) {
+      const node = pool.find((n) => n.id === s.reservedTech);
+      if (node && picks.length > 0) picks[picks.length - 1] = node;
     }
     // Emergency fallback only (should be rare with the wide-frontier graph).
     // Dedicated keys whose numbers match the effects EXACTLY (P2 localization).
@@ -297,6 +397,7 @@ export class RunSimulation {
     s.draftChoices = [];
     s.draftContext = "level";
     this.grantNode(n.id, n);
+    if (s.reservedTech === n.id) s.reservedTech = "";
     s.stats.techsTaken++;
     ev.push({ type: "tech_selected", techId: n.id });
     const ownedTags = new Set(s.ownedTags);
@@ -306,6 +407,7 @@ export class RunSimulation {
       // Earned-in-this-world evidence (P1-04); inherited heirs never land here.
       if (!s.worldBreakthroughsEarned.includes(b.id)) s.worldBreakthroughsEarned.push(b.id);
       for (const e of b.effects) applyTechEffect(s.build, e);
+      this.logHistory("breakthrough", b.id);
       ev.push({ type: "breakthrough", id: b.id });
     }
     s.pendingLevels--;
@@ -313,6 +415,78 @@ export class RunSimulation {
       this.buildDraft("level");
       ev.push({ type: "draft_opened", context: "level" });
     }
+    return ev;
+  }
+
+  /**
+   * RESERVE one unselected card for the next compatible draft (one slot).
+   * Fallback emergency cards cannot be reserved. Direct UI call (paused).
+   */
+  reserveCard(i: number): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over) return ev;
+    const n = s.draftChoices[i];
+    if (!n || n.id.startsWith("fb-")) return ev;
+    s.reservedTech = n.id;
+    ev.push({ type: "draft_reserved", techId: n.id });
+    return ev;
+  }
+
+  /**
+   * REROLL the open draft (bounded: 1 per age, reset on age advance).
+   * Consumes the draft stream — deterministic for the same decision trace.
+   */
+  rerollDraft(): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over || s.rerolls <= 0) return ev;
+    s.rerolls--;
+    this.buildDraft(s.draftContext);
+    this.logHistory("reroll", s.draftContext);
+    ev.push({ type: "draft_rerolled", rerollsLeft: s.rerolls });
+    return ev;
+  }
+
+  /**
+   * SKIP the open draft: no tech, small bounded knowledge consolation.
+   * Queued drafts still chain (pendingLevels preserved).
+   */
+  skipDraft(): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over) return ev;
+    s.draftOpen = false;
+    s.draftChoices = [];
+    s.draftContext = "level";
+    s.pendingLevels--;
+    this.gainKnowledge(10 + s.level * 2, "skip", ev);
+    this.logHistory("skip", `level-${s.level}`);
+    ev.push({ type: "draft_skipped" });
+    if (s.pendingLevels > 0 && !s.over) {
+      this.buildDraft("level");
+      ev.push({ type: "draft_opened", context: "level" });
+    }
+    return ev;
+  }
+
+  /**
+   * PIN a build-path target (tech id or breakthrough id). Empty string clears.
+   * Canonical: pinned weighting shapes future drafts deterministically.
+   */
+  pinTarget(id: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    if (id === "") {
+      s.pinnedTarget = "";
+      return ev;
+    }
+    const isTech = this.graph.some((n) => n.id === id);
+    const isBreakthrough = BREAKTHROUGHS.some((b) => b.id === id);
+    if (!isTech && !isBreakthrough) return ev;
+    s.pinnedTarget = id;
+    ev.push({ type: "pin_set", target: id });
     return ev;
   }
 
@@ -326,15 +500,319 @@ export class RunSimulation {
     if (s.over || s.expansionFamily !== "") return ev;
     if (!lockedFamilies(s.originId, "").includes(fam)) return ev;
     s.expansionFamily = fam;
+    this.logHistory("expansion", fam);
     ev.push({ type: "expansion_unlocked", family: fam });
     return ev;
+  }
+
+  // ------------------------------------------------- territory & outposts
+  /**
+   * POIs the player could claim RIGHT NOW (UI CLAIM buttons poll this).
+   * Discovered + unclaimed + in reach. `clear` reports the threat-free check.
+   * Uses the last rebuilt spatial index (same freshness as weapon targeting).
+   */
+  claimablePOIs(): Array<{ poiId: string; poiType: POIType; x: number; y: number; dist: number; clear: boolean }> {
+    const s = this.state;
+    const out: Array<{ poiId: string; poiType: POIType; x: number; y: number; dist: number; clear: boolean }> = [];
+    if (s.over) return out;
+    const claimed = new Set(s.territories.map((t) => t.poiId));
+    const { cx, cy } = worldToChunk(s.px, s.py);
+    for (let ox = -2; ox <= 2; ox++) {
+      for (let oy = -2; oy <= 2; oy++) {
+        const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (!s.poisWorld.includes(poi.id) || claimed.has(poi.id)) continue;
+          const dist = Math.hypot(poi.wx - s.px, poi.wy - s.py);
+          if (dist > CLAIM_REACH_RADIUS) continue;
+          this.scratch.length = 0;
+          const foes = this.queryRadius(poi.wx, poi.wy, CLAIM_CLEAR_RADIUS, this.scratch);
+          out.push({ poiId: poi.id, poiType: poi.type, x: poi.wx, y: poi.wy, dist, clear: foes.length === 0 });
+        }
+      }
+    }
+    out.sort((a, b) => a.dist - b.dist);
+    return out;
+  }
+
+  /**
+   * CLAIM a cleared POI as civilization territory (one claim per POI id).
+   * Direct UI call. Fails silently (returns no events) unless every
+   * precondition holds — the UI disables the button via claimablePOIs().
+   */
+  claimTerritory(poiId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    if (s.territories.some((t) => t.poiId === poiId)) return ev;
+    if (!s.poisWorld.includes(poiId)) return ev;
+    const cand = this.claimablePOIs().find((c) => c.poiId === poiId);
+    if (!cand || !cand.clear) return ev;
+    s.territories.push({
+      poiId, poiType: cand.poiType, x: cand.x, y: cand.y,
+      spec: "", tier: 1, hp: OUTPOST_MAXHP, maxHp: OUTPOST_MAXHP,
+      disabled: false, heldSince: s.elapsed, repairT: 0,
+    });
+    // First claim starts the raid clock (grace window, not instant pressure).
+    if (s.lastRaidAt === 0) s.lastRaidAt = s.elapsed;
+    if (cand.poiType === "signal") s.signalSecured = true;
+    this.logHistory("claim", cand.poiType);
+    ev.push({ type: "territory_claimed", poiId, poiType: cand.poiType });
+    return ev;
+  }
+
+  /** Choose the ONE specialization for a fresh claim. Irreversible. */
+  setOutpostSpec(poiId: string, spec: OutpostSpec): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    const t = territoryById(s.territories, poiId);
+    if (!t || t.spec !== "" || t.disabled) return ev;
+    t.spec = spec;
+    if (spec === "military") this.reinforceSquad();
+    this.logHistory("outpost", `${spec}@${t.poiType}`);
+    ev.push({ type: "outpost_spec", poiId, spec });
+    return ev;
+  }
+
+  /** Tier 2 after holding long enough with a chosen spec. */
+  upgradeOutpost(poiId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    const t = territoryById(s.territories, poiId);
+    if (!t || t.disabled || t.spec === "" || t.tier !== 1) return ev;
+    if (s.elapsed - t.heldSince < TIER2_HOLD_SEC) return ev;
+    t.tier = 2;
+    t.hp = t.maxHp;
+    this.logHistory("upgrade", `${t.spec}@${t.poiType}`);
+    ev.push({ type: "outpost_upgraded", poiId });
+    return ev;
+  }
+
+  /** Activate reserve allies up to the military-bonus cap. */
+  private reinforceSquad(): void {
+    const s = this.state;
+    const cap = squadCap(militaryBonusSlots(activeTerritories(s.territories)));
+    let active = 0;
+    for (const a of s.squad) {
+      if (a.active) { active++; continue; }
+      if (active >= cap) break;
+      a.active = true;
+      a.hp = a.maxHp;
+      a.x = s.px - 30;
+      a.y = s.py;
+      active++;
+    }
+  }
+
+  // ------------------------------------------------------------------ raids
+  /** Deterministic raid scheduler (event stream picks the target). */
+  private updateRaid(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const targets = s.territories.filter((t) => !t.disabled && t.spec !== "");
+    if (!s.raid) {
+      if (targets.length > 0 && s.elapsed - s.lastRaidAt >= RAID_INTERVAL) {
+        const pick = targets[this.streams.event.nextInt(0, targets.length)] as (typeof targets)[number];
+        s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false };
+        ev.push({ type: "raid_incoming", poiId: pick.poiId, seconds: RAID_WARN_SEC });
+      }
+      return;
+    }
+    const t = territoryById(s.territories, s.raid.poiId);
+    if (!t || t.disabled) {
+      // Target gone meanwhile: raiders dissolve into the normal hunt.
+      for (const e of s.enemies) if (e.active && e.siege) e.siege = false;
+      s.raid = null;
+      return;
+    }
+    if (!s.raid.landed) {
+      s.raid.tMinus -= dt;
+      if (s.raid.tMinus > 0) return;
+      s.raid.landed = true;
+      const n = RAID_SIZE_BASE + s.ascension;
+      for (let i = 0; i < n; i++) {
+        const ang = this.streams.event.nextFloat() * Math.PI * 2;
+        const e = this.spawnEnemyAt("chaser", false, t.x + Math.cos(ang) * 500, t.y + Math.sin(ang) * 500, ev);
+        if (e) e.siege = true;
+      }
+      return;
+    }
+    // Repelled when no siege unit remains.
+    let siegeAlive = false;
+    for (const e of s.enemies) {
+      if (e.active && e.siege) { siegeAlive = true; break; }
+    }
+    if (!siegeAlive) {
+      const poiId = s.raid.poiId;
+      s.raid = null;
+      s.lastRaidAt = s.elapsed;
+      s.raidsSurvived++;
+      this.gainKnowledge(100, "raid", ev);
+      this.logHistory("raid", "repelled");
+      ev.push({ type: "raid_repelled", poiId });
+    }
+  }
+
+  /** Spawn at an explicit world position (siege waves); player-relative otherwise. */
+  private spawnEnemyAt(family: EnemyFamily, elite: boolean, x: number, y: number, ev: SimEvent[]): SimEnemy | null {
+    const s = this.state;
+    const e = this.allocEnemy();
+    if (!e) return null;
+    const dx = x - s.px;
+    const dy = y - s.py;
+    const spawned = this.spawnEnemy(family, elite, false, Math.atan2(dy, dx), Math.max(1, Math.hypot(dx, dy)), ev);
+    return spawned;
+  }
+
+  /** Outpost destroyed under siege: disabled, raid ends, siege dissolves. */
+  private loseOutpost(t: { poiId: string }, ev: SimEvent[]): void {
+    const s = this.state;
+    const terr = territoryById(s.territories, t.poiId);
+    if (!terr || terr.disabled) return;
+    terr.disabled = true;
+    terr.hp = 0;
+    terr.repairT = 0;
+    for (const e of s.enemies) if (e.active && e.siege) e.siege = false;
+    s.raid = null;
+    s.lastRaidAt = s.elapsed;
+    this.logHistory("outpost-lost", terr.poiType);
+    ev.push({ type: "outpost_lost", poiId: terr.poiId });
+  }
+
+  /** Territory upkeep: repair presence + economy aura (called every step). */
+  private updateTerritories(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const b = s.build;
+    const regen = economyRegenAt(activeTerritories(s.territories), s.px, s.py);
+    if (regen > 0) b.hp = Math.min(b.maxHp, b.hp + regen * dt);
+    for (const t of s.territories) {
+      if (!t.disabled) continue;
+      if (Math.hypot(t.x - s.px, t.y - s.py) > CLAIM_REACH_RADIUS) {
+        t.repairT = 0;
+        continue;
+      }
+      t.repairT += dt;
+      if (t.repairT >= REPAIR_NEED) {
+        t.disabled = false;
+        t.hp = t.maxHp * 0.5;
+        t.repairT = 0;
+        this.logHistory("outpost-repaired", t.poiType);
+        ev.push({ type: "outpost_repaired", poiId: t.poiId });
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------- squad
+  /** Direct UI command: rally / focus / hold. Focus aims at the nearest foe. */
+  setSquadMode(mode: SquadMode): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    s.squadMode = mode;
+    if (mode === "focus") {
+      const tgt = this.nearestEnemy(s.px, s.py, 700);
+      s.focusX = tgt ? tgt.x : s.px;
+      s.focusY = tgt ? tgt.y : s.py;
+    }
+    ev.push({ type: "squad_command", mode });
+    return ev;
+  }
+
+  /** Origin active ability (F key). Bounded cooldown, deterministic effects. */
+  tryAbility(): SimEvent[] {
+    const s = this.state;
+    const b = s.build;
+    const ev: SimEvent[] = [];
+    if (s.over || s.abilityCd > 0) return ev;
+    const abil = ORIGIN_ABILITY[originById(s.originId).id];
+    s.abilityCd = abil.cooldown;
+    if (abil.id === "volley") {
+      for (let i = 0; i < VOLLEY_COUNT; i++) {
+        const a = (i * Math.PI * 2) / VOLLEY_COUNT;
+        this.fireProjectile(s.px, s.py, s.px + Math.cos(a) * 100, s.py + Math.sin(a) * 100,
+          480, VOLLEY_DMG * b.damageMul, 0xffc93c, "ability", true, 6);
+      }
+    } else if (abil.id === "overdrive") {
+      s.overdriveT = OVERDRIVE_DURATION;
+    } else if (abil.id === "nova") {
+      this.scratch.length = 0;
+      const hit = this.queryRadius(s.px, s.py, NOVA_RADIUS, this.scratch);
+      for (const e of hit) this.hurtEnemy(e, NOVA_DMG * b.damageMul, "ability", ev);
+    } else {
+      b.hp = Math.min(b.maxHp, b.hp + BULWARK_REPAIR);
+      s.iframe = Math.max(s.iframe, BULWARK_IFRAME);
+    }
+    ev.push({ type: "ability_used", id: abil.id });
+    return ev;
+  }
+
+  private damageAlly(index: number, dmg: number): void {
+    const s = this.state;
+    const a = s.squad[index];
+    if (!a || !a.active || a.inv > 0) return;
+    a.hp -= dmg;
+    a.inv = 0.5;
+    if (a.hp <= 0) {
+      a.hp = 0;
+      a.active = false;
+    }
+  }
+
+  /** Squad movement + supporting fire (runs after weapons, before projectiles). */
+  private updateSquad(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    if (s.abilityCd > 0) s.abilityCd -= dt;
+    if (s.overdriveT > 0) s.overdriveT -= dt;
+    const mult = s.overdriveT > 0 ? 0.4 : 1;
+    void ev;
+    let idx = 0;
+    for (const a of s.squad) {
+      if (!a.active) continue;
+      if (a.inv > 0) a.inv -= dt;
+      let tx = s.px;
+      let ty = s.py;
+      if (s.squadMode === "follow") {
+        const ang = Math.PI * 0.75 + idx * 1.1;
+        tx = s.px + Math.cos(ang) * 70;
+        ty = s.py + Math.sin(ang) * 70;
+      } else if (s.squadMode === "focus") {
+        tx = s.focusX;
+        ty = s.focusY;
+      } else {
+        tx = a.x;
+        ty = a.y;
+      }
+      const dx = tx - a.x;
+      const dy = ty - a.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 8) {
+        const stepLen = Math.min(d, SQUAD_SPEED * dt);
+        a.x += (dx / d) * stepLen;
+        a.y += (dy / d) * stepLen;
+      }
+      a.cd -= dt;
+      if (a.cd <= 0) {
+        const tgt = this.nearestEnemy(a.x, a.y, SQUAD_RANGE);
+        if (tgt) {
+          a.cd = SQUAD_CD * mult;
+          this.fireProjectile(a.x, a.y, tgt.x, tgt.y, 520, a.dmg * s.build.damageMul, 0x9fd8ff, "squad", true, 5);
+        } else {
+          a.cd = 0.2;
+        }
+      }
+      idx++;
+    }
   }
 
   private grantNode(id: string, node?: TechNode): void {
     const s = this.state;
     const n = node ?? this.graph.find((x) => x.id === id);
     if (!n) return;
-    if (!s.owned.includes(id)) s.owned.push(id);
+    const first = !s.owned.includes(id);
+    if (first) {
+      s.owned.push(id);
+      this.logHistory("tech", id);
+    }
     for (const tg of n.tags) if (!s.ownedTags.includes(tg)) s.ownedTags.push(tg);
     for (const st of n.synergyTags) if (!s.ownedTags.includes(st)) s.ownedTags.push(st);
     for (const e of n.effects) {
@@ -350,12 +828,37 @@ export class RunSimulation {
     }
   }
 
+  /** Mission-readable counters derived from canonical state (single source). */
+  private missionState(): MissionState {
+    const s = this.state;
+    const active = activeTerritories(s.territories);
+    return {
+      ageKills: s.ageKills,
+      territoriesClaimed: s.territories.length,
+      elitesAge: s.elitesAge,
+      outpostsTier2: active.filter((t) => t.tier >= 2).length,
+      raidsSurvived: s.raidsSurvived,
+      signalSecured: s.signalSecured,
+    };
+  }
+
+  /** Effective knowledge multiplier: build multiplier × research outposts. */
+  private knowledgeMult(): number {
+    const s = this.state;
+    return s.build.knowledgeMul * (1 + territoryKnowledgeBonus(activeTerritories(s.territories)));
+  }
+
+  /** Single canonical knowledge scaling (exactly-once, outpost-aware). */
+  private scaledKnowledge(baseAmount: number): number {
+    return scaleKnowledge(baseAmount, this.knowledgeMult());
+  }
+
   // --------------------------------------------------------------- knowledge
   /** THE canonical progression op. Multiplier applied exactly once here. */
   gainKnowledge(baseAmount: number, source: string, ev: SimEvent[]): void {
     const s = this.state;
     if (s.over || baseAmount <= 0) return;
-    const total = scaleKnowledge(baseAmount, s.build.knowledgeMul);
+    const total = this.scaledKnowledge(baseAmount);
     s.xp += total;
     s.knowledgeTotal += total;
     s.stats.knowledgeEarned += total;
@@ -489,11 +992,16 @@ export class RunSimulation {
     s.stats.kills++;
     s.runKills++;
     s.ageKills++;
-    ev.push({ type: "enemy_killed", elite: wasElite, boss: wasBoss });
-    if (wasElite && !wasBoss) s.stats.elites++;
+    ev.push({ type: "enemy_killed", elite: wasElite, boss: wasBoss, x: deathX, y: deathY });
+    if (wasElite && !wasBoss) {
+      s.stats.elites++;
+      s.elitesAge++;
+    }
     if (wasBoss) {
       s.stats.bosses++;
       s.stats.elites++;
+      s.elitesAge++;
+      this.logHistory("boss", "boss");
       s.bossIndex = -1;
       // Boss drop burst — scatter uses the loot stream (never draft/world).
       for (let i = 0; i < 12; i++) {
@@ -523,6 +1031,12 @@ export class RunSimulation {
     if (def && def.volatileRadius > 0) {
       const d = Math.hypot(deathX - s.px, deathY - s.py);
       if (d <= def.volatileRadius) this.hurtPlayer(def.volatileDamage, ev);
+      // Blast catches nearby allies too (squad positioning matters).
+      for (let ai = 0; ai < s.squad.length; ai++) {
+        const a = s.squad[ai] as (typeof s.squad)[number];
+        if (!a.active) continue;
+        if (Math.hypot(a.x - deathX, a.y - deathY) <= def.volatileRadius) this.damageAlly(ai, def.volatileDamage);
+      }
     }
     this.dropPickup(deathX, deathY, deathReward);
   }
@@ -858,14 +1372,30 @@ export class RunSimulation {
     }
     if (b.regen > 0) b.hp = Math.min(b.maxHp, b.hp + b.regen * dt);
 
-    // 3. Age progression (design A: transition auto-grants the age spine).
+    // 3. Age progression (v021 three-gate contract: knowledge + mission +
+    // stabilization; design A transition still auto-grants the age spine).
     const next = s.ageIndex + 1;
     if (next < AGES.length) {
-      const need = OBJECTIVE_KILLS[next] ?? 0;
-      if (canAdvanceAge(next, s.elapsed, s.ageElapsed, s.knowledgeTotal, s.ageKills >= need)) {
+      const ms = this.missionState();
+      const targetAge = AGES[next] as AgeId;
+      if (next > 0 && missionDone(targetAge as Exclude<AgeId, "stone">, ms) && !s.missionDoneCache) {
+        s.missionDoneCache = true;
+        ev.push({ type: "mission_complete", age: targetAge });
+      }
+      if (canAdvanceAge(next, s.ageElapsed, s.knowledgeTotal, ms)) {
         s.ageIndex = next;
         s.ageElapsed = 0;
         s.ageKills = 0;
+        s.elitesAge = 0;
+        s.rerolls = 1;
+        s.missionDoneCache = false;
+        // Regroup: the squad reforms at full strength on every age advance.
+        for (const a of s.squad) {
+          a.active = true;
+          a.hp = a.maxHp;
+          a.x = s.px + (a.x >= s.px ? 30 : -30);
+          a.y = s.py;
+        }
         const ageId = AGES[next] as AgeId;
         s.highestAge = ageId;
         if (next > AGES.indexOf(s.runHighestAge)) s.runHighestAge = ageId;
@@ -878,6 +1408,7 @@ export class RunSimulation {
           field: Math.max(s.weaponStage.field, next),
         };
         b.hp = Math.min(b.maxHp, b.hp + b.maxHp * 0.3);
+        this.logHistory("age", ageId);
         ev.push({ type: "age_reached", age: ageId });
         // WORLD EXPANSION decision at Industrial (ADR-0006 Decision 1).
         if (next === 3 && s.expansionFamily === "") {
@@ -892,14 +1423,36 @@ export class RunSimulation {
       }
     }
 
-    // 4. Director / spawning.
+    // 4. Director / spawning + deterministic raid scheduler.
     this.director(dt, ev);
     if (s.over) return ev;
+    this.updateRaid(dt, ev);
+    if (s.over) return ev;
 
-    // 5. Enemy movement.
+    // 5. Enemy movement (siege units march on the raided outpost).
     for (const e of s.enemies) {
       if (!e.active) continue;
       if (e.flash > 0) e.flash -= dt;
+      if (e.siege) {
+        const t = s.raid ? territoryById(s.territories, s.raid.poiId) : undefined;
+        if (!t || t.disabled || !s.raid) {
+          e.siege = false;
+        } else {
+          const sx = t.x - e.x;
+          const sy = t.y - e.y;
+          const sd = Math.max(1, Math.hypot(sx, sy));
+          e.x += (sx / sd) * e.speed * dt;
+          e.y += (sy / sd) * e.speed * dt;
+          e.hitCd -= dt;
+          if (sd < 70 && e.hitCd <= 0) {
+            e.hitCd = 1;
+            t.hp -= e.dmg;
+            if (t.hp <= 0) this.loseOutpost({ poiId: t.poiId }, ev);
+          }
+          if (s.over) return ev;
+          continue;
+        }
+      }
       const dx = s.px - e.x;
       const dy = s.py - e.y;
       const d = Math.max(1, Math.hypot(dx, dy));
@@ -917,13 +1470,24 @@ export class RunSimulation {
       }
       if (d < e.radius + 14) this.hurtPlayer(e.dmg, ev);
       if (s.over) return ev;
+      // Command squad takes contact damage too (positioning matters).
+      for (let ai = 0; ai < s.squad.length; ai++) {
+        const a = s.squad[ai] as (typeof s.squad)[number];
+        if (!a.active) continue;
+        if (Math.hypot(a.x - e.x, a.y - e.y) < e.radius + 10) this.damageAlly(ai, e.dmg);
+      }
     }
 
     // 6. Spatial rebuild AFTER movement, BEFORE weapons/collisions.
     this.rebuildSpatial();
 
-    // 7. Weapons + projectiles.
+    // 7. Weapons + command squad + projectiles.
     this.updateWeapons(dt, ev);
+    if (s.over) return ev;
+    this.updateSquad(dt, ev);
+    if (s.over) return ev;
+    // Territory upkeep (repair presence, economy aura) every step.
+    this.updateTerritories(dt, ev);
     if (s.over) return ev;
     for (const p of s.projs) {
       if (!p.active) continue;
@@ -1034,7 +1598,7 @@ export class RunSimulation {
     const info = poiTypeFor(type);
     if (s.poiFamiliesClaimed.includes(type)) {
       this.gainKnowledge(info.knowledge, "poi", ev);
-      ev.push({ type: "poi_discovered", poiType: type, knowledge: scaleKnowledge(info.knowledge, b.knowledgeMul) });
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: this.scaledKnowledge(info.knowledge) });
       return;
     }
     s.poiFamiliesClaimed.push(type);
@@ -1043,7 +1607,7 @@ export class RunSimulation {
       // Major cache + full repair, no modal interruption.
       this.gainKnowledge(150, "poi", ev);
       b.hp = b.maxHp;
-      ev.push({ type: "poi_discovered", poiType: type, knowledge: scaleKnowledge(150, b.knowledgeMul) });
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: this.scaledKnowledge(150) });
       return;
     }
     if (type === "worldtree") {
@@ -1052,7 +1616,7 @@ export class RunSimulation {
     if (s.draftOpen) {
       // Exactly-one draft surface wins: no modal stacking, base Knowledge instead.
       this.gainKnowledge(info.knowledge, "poi", ev);
-      ev.push({ type: "poi_discovered", poiType: type, knowledge: scaleKnowledge(info.knowledge, b.knowledgeMul) });
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: this.scaledKnowledge(info.knowledge) });
       return;
     }
     this.openPoiDraft(type, ev);
