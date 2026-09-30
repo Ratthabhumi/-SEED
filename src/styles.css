@@ -254,32 +254,68 @@ button, input { font-family: inherit; }
 .draft-stays { color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 10px; text-align: center; max-width: 640px; }
 .btn.card-reserve { font-size: 12px; padding: 6px 10px; min-height: 32px; margin-top: 6px; }
 .chron-history { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 4px 0 8px; max-height: 180px; overflow-y: auto; }
+#techmap-screen {
+  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(11,14,20,0.55) 0%, rgba(11,14,20,0.88) 100%);
+  pointer-events: auto;
+}
 .techmap-wrap {
   background: rgba(8,12,18,0.97); border: 1px solid #2c3a52; border-radius: 12px;
-  width: min(1060px, 94vw); max-height: 88vh; display: flex; flex-direction: column;
-  padding: 12px 16px; pointer-events: auto;
+  width: min(1200px, 96vw); max-height: 92vh; display: flex; flex-direction: column;
+  padding: 12px 16px; pointer-events: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
 }
-.techmap-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.techmap-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.techmap-title-group { display: flex; align-items: center; gap: 8px; }
+.techmap-prompt-icon { width: 20px; height: 20px; image-rendering: pixelated; vertical-align: middle; }
 .techmap-title { font-size: 17px; font-weight: 800; color: var(--accent); }
-.techmap-pin { font-size: 13px; color: #7fd4ff; }
-.techmap-body { display: flex; gap: 14px; min-height: 0; }
-.techmap-cols { position: relative; flex: 1; display: flex; gap: 8px; overflow-x: auto; min-height: 300px; max-height: 60vh; overflow-y: auto; }
-.techmap-links { position: absolute; inset: 0; pointer-events: none; }
-.techmap-link { stroke: #3a5a78; stroke-width: 1.5; }
-.techmap-col { display: flex; flex-direction: column; gap: 6px; min-width: 128px; }
-.techmap-age { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.techmap-node {
-  font-size: 12px; line-height: 1.6; padding: 6px 8px; border-radius: 8px; text-align: left;
-  background: #141d2e; border: 1px solid #3a4a63; color: var(--text); cursor: pointer;
+.techmap-controls { display: flex; align-items: center; gap: 4px; margin-left: 12px; }
+.techmap-controls .btn { font-size: 12px; padding: 4px 8px; min-height: 28px; min-width: 32px; text-align: center; }
+.techmap-pin-group { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.techmap-pin { font-size: 13px; color: #7fd4ff; font-weight: 600; }
+.techmap-btn-close { margin-left: 8px; font-size: 12px; padding: 4px 10px; min-height: 28px; }
+.techmap-body { display: flex; gap: 14px; min-height: 0; flex: 1; }
+.techmap-viewport {
+  position: relative; flex: 1; min-height: 480px; max-height: 72vh; overflow: hidden;
+  background: #070d17; border-radius: 8px; border: 1px solid #1f2f47; cursor: grab;
+  user-select: none; touch-action: none;
 }
-.techmap-node.available { border-color: #53e0c8; }
-.techmap-node.owned { border-color: var(--accent); color: var(--accent); }
-.techmap-node.pinned { box-shadow: 0 0 0 2px #7fb8ff; }
-.techmap-side { width: 300px; min-width: 260px; overflow-y: auto; font-size: 13px; line-height: 1.7; }
-.techmap-side h3 { margin: 6px 0 4px; font-size: 15px; }
+.techmap-viewport:active { cursor: grabbing; }
+.techmap-canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.techmap-svg { position: absolute; inset: 0; pointer-events: none; }
+.techmap-lane-bg { fill: rgba(18, 28, 45, 0.35); stroke: rgba(44, 67, 101, 0.4); stroke-width: 1px; rx: 6px; }
+.techmap-lane-title { fill: #617b9f; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; font-family: inherit; }
+.techmap-nodes { position: absolute; inset: 0; pointer-events: none; }
+.techmap-node {
+  position: absolute; pointer-events: auto; box-sizing: border-box;
+  font-size: 12px; line-height: 1.4; padding: 6px 8px; border-radius: 6px; text-align: left;
+  background: #111a2a; border: 1px solid #2a3d58; color: var(--text); cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.techmap-node:hover { border-color: #53e0c8; background: #162338; }
+.techmap-node.selected { border-color: #ffffff; box-shadow: 0 0 12px rgba(255, 255, 255, 0.45); }
+.techmap-node.available { border-color: #53e0c8; color: #e2fbf6; }
+.techmap-node.owned { border-color: var(--accent); color: #ffd987; background: #1a2318; }
+.techmap-node.pinned { border-color: #7fd4ff; box-shadow: 0 0 10px rgba(127, 212, 255, 0.65); }
+.techmap-node.breakthrough { border-style: dashed; }
+.techmap-node.breakthrough.available { border-color: #c77dff; color: #f3e5ff; }
+.techmap-node-mark { font-weight: 800; font-size: 12px; opacity: 0.85; }
+.techmap-node-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.techmap-node-star { color: #ffd24c; font-size: 13px; }
+.techmap-edge { fill: none; stroke: #263852; stroke-width: 2px; transition: stroke 0.2s, stroke-width 0.2s; }
+.techmap-edge.pinned { stroke: #7fd4ff; stroke-width: 3.5px; filter: drop-shadow(0 0 4px rgba(127, 212, 255, 0.8)); }
+.techmap-side { width: 310px; min-width: 270px; overflow-y: auto; font-size: 13px; line-height: 1.7; }
+.techmap-side h3 { margin: 6px 0 4px; font-size: 15px; color: var(--accent); }
 .techmap-meta { color: var(--muted); font-size: 12px; }
+.techmap-desc { color: var(--text); font-size: 12px; line-height: 1.6; margin-top: 6px; }
 .techmap-req { font-size: 12px; color: var(--text); margin-top: 4px; }
 .techmap-req-title { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.techmap-pin-btn { margin-top: 10px; width: 100%; min-height: 36px; }
+/* Prompt badges and asset integrations */
+.prompt-badge { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; }
+.prompt-key-icon { width: 16px; height: 16px; image-rendering: pixelated; vertical-align: -2px; }
+.structure-preview-icon { width: 24px; height: 24px; image-rendering: pixelated; vertical-align: middle; margin-right: 6px; }
+.terr-spec-btn { display: inline-flex; align-items: center; gap: 6px; }
 .civmap-panel { width: min(560px, 94vw); }
 .civmap-panel canvas { width: 100%; border-radius: 8px; border: 1px solid #2c3a52; }
 .civmap-list { font-size: 13px; line-height: 1.8; margin: 8px 0; text-align: left; }
