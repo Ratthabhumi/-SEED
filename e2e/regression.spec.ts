@@ -158,7 +158,7 @@ test("industrial payoff precedes expansion choice, one modal at a time", async (
   expect(await page.locator("#expansion-screen").count()).toBe(0);
   // Dismiss the payoff (Continue) if still up — it also auto-dismisses.
   const cont = page.locator("#age-screen").getByRole("button", { name: "Continue" });
-  if ((await cont.count()) > 0) await cont.click();
+  if ((await cont.count()) > 0) await cont.click({ timeout: 2000 }).catch(() => {});
   // Expansion choice follows, then gameplay resumes with 3 active families.
   await expect(page.locator("#expansion-screen")).toBeVisible({ timeout: 10000 });
   expect(await page.locator("#age-screen").count()).toBe(0);

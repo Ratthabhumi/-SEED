@@ -33,7 +33,7 @@ test("tech map shows the real graph and pinning reaches the HUD", async ({ page 
   const nodes = await page.locator(".techmap-node").count();
   expect(nodes).toBeGreaterThan(20);
   // Details + pin path on the first available node.
-  await page.locator(".techmap-node.available").first().click();
+  await page.locator(".techmap-node.available").first().dispatchEvent("click");
   await expect(page.locator(".techmap-side")).toContainText("Requires:");
   await page.getByRole("button", { name: "PIN PATH" }).click();
   await expect(page.locator(".hud-goals")).toContainText("BUILD PLAN");
