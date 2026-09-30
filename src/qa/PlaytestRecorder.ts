@@ -67,6 +67,11 @@ export interface QaOverflow {
   wallTime: number;
 }
 
+export interface QaSimMark extends QaCtx {
+  kind: string;
+  detail: string;
+}
+
 export interface QaPoolSaturation extends QaCtx {
   pool: string;
   used: number;
@@ -128,6 +133,7 @@ export interface RecorderSnapshot {
   langSwitches: QaLangSwitch[];
   overflows: QaOverflow[];
   poolSaturations: QaPoolSaturation[];
+  simMarks: QaSimMark[];
   endReason: string;
   wallStart: number;
   wallEnd: number;
@@ -140,6 +146,7 @@ const MAX_OVERFLOWS = 200;
 const MAX_LANG = 40;
 const MAX_RATINGS = 25;
 const MAX_ENGAGEMENT = 60;
+const MAX_SIMMARKS = 400;
 
 export class PlaytestRecorder {
   private checkpoints: QaCheckpoint[] = [];
@@ -158,6 +165,7 @@ export class PlaytestRecorder {
   private overflowKeys = new Set<string>();
   private poolSaturations: QaPoolSaturation[] = [];
   private poolKeys = new Set<string>();
+  private simMarks: QaSimMark[] = [];
   private perfCheckpoints: CheckpointStats[] = [];
   private environment: QaEnvironment | null = null;
   private endReason = "";
@@ -273,6 +281,22 @@ export class PlaytestRecorder {
     this.poolSaturations.push({ pool, used, cap, ...ctx });
   }
 
+  /** Ordered sim-decision marks (tech picks, breakthroughs, POI majors, ...). */
+  simMark(kind: string, detail: string, ctx: QaCtx): void {
+    if (this.simMarks.length >= MAX_SIMMARKS) return;
+    this.simMarks.push({ kind, detail, ...ctx });
+  }
+
+  /**
+   * Target-complete predicate for zero-friction auto-finalization:
+   * ascended at least once, child world started, 120s post-Ascension evidence.
+   * Pure function of recorded checkpoints — unit-tested, no DOM.
+   */
+  isTargetComplete(): boolean {
+    if (!this.hasCheckpoint("CHILD_WORLD_STARTED")) return false;
+    return this.hasCheckpoint("POST_ASCENSION_120S") || this.perfCheckpoints.some((p) => p.label === "post-ascension+120s");
+  }
+
   finish(reason: string, wallTime: number): void {
     this.endReason = reason;
     this.wallEnd = wallTime;
@@ -314,6 +338,7 @@ export class PlaytestRecorder {
       langSwitches: [...this.langSwitches],
       overflows: [...this.overflows],
       poolSaturations: [...this.poolSaturations],
+      simMarks: [...this.simMarks],
       endReason: this.endReason,
       wallStart: this.wallStart,
       wallEnd: this.wallEnd,

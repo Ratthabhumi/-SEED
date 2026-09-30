@@ -212,6 +212,23 @@ export class GameScene extends Phaser.Scene {
           s.ageKills = 120;
           this.refreshHUD();
         },
+        advance: (seconds: number) => {
+          // Test-only deterministic fast-forward (E2E time travel): godmode
+          // on, idle input, queued drafts auto-picked. Never in normal play.
+          const s = this.sim.state;
+          s.build.hp = 1e9;
+          s.build.maxHp = 1e9;
+          const steps = Math.max(0, Math.floor(seconds * 60));
+          for (let i = 0; i < steps; i++) {
+            const ev = this.sim.step(SIM_DT, { moveX: 0, moveY: 0, dashPressed: false });
+            for (const e of ev) {
+              if (e.type === "draft_opened") { while (s.draftOpen && !s.over) this.sim.chooseDraft(0); }
+            }
+            if (s.over) break;
+          }
+          while (s.draftOpen && !s.over) this.sim.chooseDraft(0);
+          this.refreshHUD();
+        },
         hash: () => this.sim.hash(),
         snapshot: () => this.sim.snapshot(),
         seed: () => this.masterSeed,
@@ -1096,9 +1113,11 @@ export class GameScene extends Phaser.Scene {
           break;
         case "tech_selected":
           sfx.select();
+          this.qa?.noteSimEvent("tech", e.techId);
           break;
         case "breakthrough": {
           this.showBreakthroughBeat(e.id);
+          this.qa?.noteSimEvent("breakthrough", e.id);
           break;
         }
         case "age_reached":
@@ -1115,6 +1134,7 @@ export class GameScene extends Phaser.Scene {
         case "poi_major":
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys));
           sfx.levelup();
+          this.qa?.noteSimEvent("poi-major", e.poiType);
           break;
         case "expansion_offered":
           this.showExpansionPick(e.families);
@@ -1122,6 +1142,7 @@ export class GameScene extends Phaser.Scene {
         case "expansion_unlocked":
           toast("ui.expansionTitle", t(`family.${e.family}` as EnKeys));
           sfx.select();
+          this.qa?.noteSimEvent("expansion", e.family);
           break;
         case "boss_warning":
           sfx.boss();
@@ -1137,6 +1158,7 @@ export class GameScene extends Phaser.Scene {
         case "legacy_granted": {
           const def = legacyDefById(e.id);
           if (def) toast("ui.legacyTitle", t(def.nameKey));
+          this.qa?.noteSimEvent("legacy", e.id);
           break;
         }
         case "ascended":

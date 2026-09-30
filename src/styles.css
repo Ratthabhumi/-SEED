@@ -102,8 +102,12 @@ button, input { font-family: inherit; }
 .hud-stats { display: flex; gap: 12px; flex-wrap: wrap; color: var(--text); text-shadow: 0 1px 3px #000; background: rgba(8,12,18,0.55); border-radius: 8px; padding: 4px 10px; width: fit-content; max-width: 100%; }
 .hud-seed { color: var(--muted); font-size: 11px; opacity: 0.85; }
 .hud-objective { color: var(--accent); font-size: 14px; font-weight: 700; background: rgba(8,12,18,0.55); border-radius: 8px; padding: 4px 10px; width: fit-content; max-width: 100%; line-height: 1.7; }
-.hud-ascend { position: absolute; top: 132px; right: 12px; pointer-events: none; }
+.hud-ascend { position: absolute; top: 132px; right: 12px; pointer-events: none; z-index: 25; }
 .hud-ascend .btn { pointer-events: auto; }
+:has(#qa-panel) .hud-ascend,
+.has-qa .hud-ascend {
+  right: 288px;
+}
 
 /* Draft cards */
 .cards { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
@@ -193,3 +197,9 @@ button, input { font-family: inherit; }
 .qa-rate-row span { flex: 1; }
 .btn.qa-rate { padding: 4px 10px; font-size: 12px; min-height: 30px; }
 .btn.qa-rate.active { border-color: var(--accent); color: var(--accent); }
+#qa-complete {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  background: rgba(10, 26, 16, 0.94); border: 1px solid #53e0c8; color: var(--text);
+  border-radius: 10px; padding: 10px 18px; font-size: 14px; line-height: 1.7;
+  pointer-events: none; z-index: 30; max-width: 92vw; text-align: center;
+}

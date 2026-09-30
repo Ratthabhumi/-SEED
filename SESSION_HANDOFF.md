@@ -310,6 +310,15 @@ answer the five 1–5 ratings) before any further editing.
 - Code: `src/qa/{qaMode,PerformanceSampler,PlaytestRecorder,PlaytestReport,VisualChecks,qaPanel}.ts`
   (`src/core` untouched/pure); `docs/ADR/0004-qa-harness.md`.
 
+## Latest Human Engagement Test (auto-updated)
+
+<!-- QA-ENGAGEMENT-START -->
+
+No v0.2 human engagement run recorded yet. Run `?qa=1` to target-complete,
+then `npm run qa:finalize` to fill this section from the sanitized summary.
+
+<!-- QA-ENGAGEMENT-END -->
+
 ## Human Gate A Result — FAIL_BLOCKING_READABILITY (recorded, not erased)
 
 - Seed `EPOCH-GOLDEN-001`: 10:15 survival, Space reached, 1258 kills, 56 elites,

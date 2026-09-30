@@ -44,6 +44,17 @@ npm run check      # typecheck + tests + production build
 npm run test:e2e   # Playwright Chromium smoke (needs production build)
 ```
 
+## Zero-friction human playtest
+
+```powershell
+npm run qa:human    # dev server + local report sink → open http://localhost:5173/?qa=1
+# choose Origin → START PLAYTEST → play until PLAYTEST COMPLETE (auto-saves)
+npm run qa:finalize # sanitized summary + handoff section (docs only, no git)
+```
+
+Raw reports stay in gitignored `test-results/human-playtests/`; only the
+sanitized `docs/playtests/latest-v020-engagement.md` is committable.
+
 ## Testing
 
 ```powershell

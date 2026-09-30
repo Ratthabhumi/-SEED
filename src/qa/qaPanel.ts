@@ -151,6 +151,9 @@ export class QaSession {
   private post30Done = false;
   private post60Done = false;
   private post120Done = false;
+  private persistedTerminal = false;
+  private errorPersisted = false;
+  private lastAutosave = 0;
   private origError: typeof console.error | null = null;
   private origWarn: typeof console.warn | null = null;
   private onWinError: ((e: ErrorEvent) => void) | null = null;
@@ -188,6 +191,22 @@ export class QaSession {
       level: f.level,
       weapons: f.weaponStages,
     }, ctx);
+  }
+
+  /** Adapter hook: record ordered sim decisions (tech picks, beats, ...). */
+  noteSimEvent(type: string, detail: string): void {
+    const f = this.lastFrame;
+    if (!f) return;
+    this.recorder.simMark(type, detail, this.ctx(f));
+  }
+
+  /** Zero-friction auto-finalization: target-complete ends the session. */
+  private maybeAutoFinalize(): void {
+    if (this.disposed || this.ended) return;
+    if (!this.recorder.isTargetComplete()) return;
+    this.end("target-complete");
+    this.persistReports("target-complete", true);
+    this.showComplete();
   }
 
   start(): void {
@@ -228,6 +247,7 @@ export class QaSession {
     if (n % 30 === 0) this.samplePerf(f);
     if (n % 300 === 0) this.scanOverflow();
     if (n % 60 === 0) this.refreshPanel();
+    this.maybeAutoFinalize();
   }
 
   private checkTransitions(f: QaFrameData, prev: QaFrameData | null): void {
@@ -334,14 +354,20 @@ export class QaSession {
     if (this.postAscWall > 0) {
       if (!this.post30Done && (this.wallNow() - this.postAscWall >= 30 || f.simTime - this.postAscSim >= 30)) {
         this.post30Done = true;
+        this.samplePerf(f);
+        this.recorder.checkpoint("POST_ASCENSION_30S", ctx);
         this.recorder.perfSnapshot("post-ascension+30s", ctx);
       }
       if (!this.post60Done && (this.wallNow() - this.postAscWall >= 60 || f.simTime - this.postAscSim >= 60)) {
         this.post60Done = true;
+        this.samplePerf(f);
+        this.recorder.checkpoint("POST_ASCENSION_60S", ctx);
         this.recorder.perfSnapshot("post-ascension+60s", ctx);
       }
       if (!this.post120Done && (this.wallNow() - this.postAscWall >= 120 || f.simTime - this.postAscSim >= 120)) {
         this.post120Done = true;
+        this.samplePerf(f);
+        this.recorder.checkpoint("POST_ASCENSION_120S", ctx);
         this.recorder.perfSnapshot("post-ascension+120s", ctx);
       }
     }
@@ -358,6 +384,8 @@ export class QaSession {
     if (f.enemies >= f.enemyCap) this.recorder.poolSaturation("enemies", f.enemies, f.enemyCap, ctx);
     if (f.projs >= f.projCap) this.recorder.poolSaturation("projectiles", f.projs, f.projCap, ctx);
     if (f.pickups >= f.pickupCap) this.recorder.poolSaturation("pickups", f.pickups, f.pickupCap, ctx);
+    // Checkpoint autosave (throttled inside): evidence survives browser close.
+    this.autosaveReports();
   }
 
   private samplePerf(f: QaFrameData): void {
@@ -414,11 +442,19 @@ export class QaSession {
     };
     this.onWinError = (e: ErrorEvent) => {
       rec.console("error", String(e.message || "window.onerror"), String((e.error as Error | undefined)?.stack || ""), ctxOf());
+      if (!this.errorPersisted) {
+        this.errorPersisted = true;
+        this.persistReports("runtime-error", false);
+      }
     };
     this.onUnhandled = (e: PromiseRejectionEvent) => {
       const r = e.reason as unknown;
       rec.console("error", `unhandledrejection: ${r instanceof Error ? r.message : String(r)}`,
         r instanceof Error ? String(r.stack || "") : "", ctxOf());
+      if (!this.errorPersisted) {
+        this.errorPersisted = true;
+        this.persistReports("runtime-error", false);
+      }
     };
     window.addEventListener("error", this.onWinError);
     window.addEventListener("unhandledrejection", this.onUnhandled);
@@ -519,6 +555,7 @@ export class QaSession {
   // ------------------------------------------------------------ panel
   private buildPanel(): void {
     const root = document.getElementById("ui") ?? document.body;
+    root.classList.add("has-qa");
     const panel = document.createElement("div");
     panel.id = "qa-panel";
     root.appendChild(panel);
@@ -728,6 +765,57 @@ export class QaSession {
       }
     }
     this.recorder.finish(reason, this.wallNow());
+    this.persistReports(reason, true);
+    this.refreshPanel();
+  }
+
+  /**
+   * POST the current report to the local dev-only QA sink
+   * (POST /__seed_qa/report). Fire-and-forget: a missing sink (production
+   * build, plain dev server) must NEVER break gameplay — failures are silent.
+   */
+  private persistReports(reason: string, terminal: boolean): void {
+    if (terminal) {
+      if (this.persistedTerminal) return;
+      this.persistedTerminal = true;
+    }
+    try {
+      const snap = this.recorder.snapshot();
+      const payload = {
+        kind: "qa-report",
+        seed: snap.seed,
+        reason,
+        terminal,
+        savedAt: new Date().toISOString(),
+        markdown: renderMarkdown(snap),
+        data: snap,
+      };
+      const text = JSON.stringify(payload);
+      void fetch("/__seed_qa/report", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: text,
+      }).catch(() => undefined);
+    } catch {
+      // Never break gameplay.
+    }
+  }
+
+  /** Checkpoint autosave (throttled): protects evidence on browser close. */
+  private autosaveReports(): void {
+    const now = this.wallNow();
+    if (now - this.lastAutosave < 5) return;
+    this.lastAutosave = now;
+    if (!this.ended) this.persistReports("autosave", false);
+  }
+
+  /** Non-blocking completion message. Game keeps running; human is done. */
+  private showComplete(): void {
+    if (document.getElementById("qa-complete")) return;
+    const d = document.createElement("div");
+    d.id = "qa-complete";
+    d.textContent = "PLAYTEST COMPLETE — Evidence saved automatically. You can stop playing.";
+    document.getElementById("ui")?.appendChild(d) ?? document.body.appendChild(d);
     this.refreshPanel();
   }
 
@@ -787,6 +875,8 @@ export class QaSession {
     if (this.onUnhandled) window.removeEventListener("unhandledrejection", this.onUnhandled);
     if (this.origError) console.error = this.origError;
     if (this.origWarn) console.warn = this.origWarn;
+    const root = document.getElementById("ui") ?? document.body;
+    root.classList.remove("has-qa");
     this.panel?.remove();
     this.panel = null;
   }

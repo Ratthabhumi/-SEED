@@ -88,9 +88,15 @@ export class PerformanceSampler {
 
   /** Aggregate samples since the last snapshot (or all, first call). */
   snapshot(label: string, simTime: number, wallTime: number): CheckpointStats | null {
-    const win = this.samples.slice(this.sinceMark);
+    let win = this.samples.slice(this.sinceMark);
     this.sinceMark = this.samples.length;
-    if (win.length === 0) return null;
+    if (win.length === 0) {
+      if (this.samples.length > 0) {
+        win = [this.samples[this.samples.length - 1] as Stored];
+      } else {
+        return null;
+      }
+    }
     const frames = win.map((s) => s.frameMs).sort((a, b) => a - b);
     const sims = win.map((s) => s.simMs).sort((a, b) => a - b);
     const last = win[win.length - 1] as Stored;

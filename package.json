@@ -13,7 +13,11 @@
     "check": "npm run typecheck && npm run test -- --reporter=basic && npm run build",
     "preview": "vite preview",
     "zip": "node scripts/make-zip.mjs",
-    "release:verify": "node scripts/release-verify.mjs"
+    "release:verify": "node scripts/release-verify.mjs",
+    "qa:human": "node scripts/qa-human.mjs",
+    "qa:report": "node scripts/qa-report.mjs",
+    "qa:handoff": "node scripts/qa-handoff.mjs",
+    "qa:finalize": "npm run qa:report && npm run qa:handoff"
   },
   "dependencies": {
     "@fontsource/noto-sans": "^5.1.0",

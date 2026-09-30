@@ -48,6 +48,33 @@ describe("playtest recorder ratings and engagement", () => {
     r.feedbackMark("read", "ภาพอ่านยาก", "", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 0, projs: 0, build: "" }, ctx());
     expect(r.snapshot().feedback[0]?.category).toBe("read");
   });
+
+  it("target-complete needs child world plus 120s evidence", () => {
+    const r = recorder();
+    expect(r.isTargetComplete()).toBe(false);
+    r.checkpoint("CHILD_WORLD_STARTED", ctx(700, "stone", 1));
+    expect(r.isTargetComplete()).toBe(false);
+    r.pushPerf({
+      fps: 60, frameMs: 16, simMs: 2, enemies: 10, projs: 20, pickups: 5, mines: 1,
+      enemyPoolUsed: 10, projPoolUsed: 20, pickupPoolUsed: 5, queries: 3, buckets: 2,
+      chunkHits: 9, chunkMisses: 1,
+    });
+    r.perfSnapshot("post-ascension+120s", ctx(820, "stone", 1));
+    expect(r.isTargetComplete()).toBe(true);
+  });
+
+  it("records ordered sim decision marks", () => {
+    const r = recorder();
+    r.simMark("tech", "stone-hunt", ctx(30));
+    r.simMark("breakthrough", "metallurgy", ctx(120));
+    r.simMark("legacy", "heir-metallurgy", ctx(700, "stone", 1));
+    const marks = r.snapshot().simMarks;
+    expect(marks.map((m) => `${m.kind}:${m.detail}`)).toEqual([
+      "tech:stone-hunt",
+      "breakthrough:metallurgy",
+      "legacy:heir-metallurgy",
+    ]);
+  });
 });
 
 describe("playtest recorder assertions", () => {
