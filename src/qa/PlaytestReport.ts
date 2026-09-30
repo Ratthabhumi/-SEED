@@ -71,6 +71,9 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(routeLine(snap, "BOSS_KILLED", "Boss killed"));
   L.push(routeLine(snap, "ASCENSION_OFFERED", "Ascension offered"));
   L.push(routeLine(snap, "CHILD_WORLD_STARTED", "Child world started"));
+  L.push(routeLine(snap, "POST_ASCENSION_30S", "Post-ascension +30s"));
+  L.push(routeLine(snap, "POST_ASCENSION_60S", "Post-ascension +60s"));
+  L.push(routeLine(snap, "POST_ASCENSION_120S", "Post-ascension +120s"));
   L.push(routeLine(snap, "PLAYER_DIED", "Player died"));
   L.push(routeLine(snap, "RUN_END", "Run ended"));
   L.push(``);

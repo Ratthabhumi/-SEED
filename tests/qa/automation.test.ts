@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { buildSanitizedMarkdown } from "../../scripts/qa-report.mjs";
 import { applyHandoffSection, START_MARK, END_MARK } from "../../scripts/qa-handoff.mjs";
+import { ReportDetector, isTerminalReport, reportIdentity, finalizeReport, checkAndFinalize } from "../../scripts/qa-watcher.mjs";
+import { QA_REPORT_DIR } from "../../scripts/qa-sink.mjs";
+
+declare const process: { env: Record<string, string | undefined> };
 
 function snap() {
   return {
@@ -67,5 +71,138 @@ describe("handoff section update (qa:handoff)", () => {
 
   it("throws when markers are missing", () => {
     expect(() => applyHandoffSection("# no markers", "# x")).toThrow();
+  });
+});
+
+describe("zero-friction QA watcher and auto-finalization", () => {
+  it("8. launcher ignores stale terminal latest.json existing before startup", () => {
+    const stale = snap();
+    const staleId = reportIdentity(stale as never);
+    const detector = new ReportDetector(staleId);
+    expect(detector.shouldFinalize(stale as never)).toBe(false);
+  });
+
+  it("9. launcher ignores autosave/non-terminal report", () => {
+    const detector = new ReportDetector();
+    const autosave = { ...snap(), endReason: "autosave" };
+    expect(isTerminalReport(autosave as never)).toBe(false);
+    expect(detector.shouldFinalize(autosave as never)).toBe(false);
+
+    const empty = { ...snap(), endReason: "" };
+    expect(isTerminalReport(empty as never)).toBe(false);
+    expect(detector.shouldFinalize(empty as never)).toBe(false);
+  });
+
+  it("10. launcher detects a new terminal report", () => {
+    const detector = new ReportDetector();
+    const terminal = snap();
+    expect(isTerminalReport(terminal as never)).toBe(true);
+    expect(detector.shouldFinalize(terminal as never)).toBe(true);
+  });
+
+  it("11. new terminal report finalizes exactly once", () => {
+    const detector = new ReportDetector();
+    const terminal = snap();
+    expect(detector.shouldFinalize(terminal as never)).toBe(true);
+    // Duplicate fs events with the same terminal report identity are ignored
+    expect(detector.shouldFinalize(terminal as never)).toBe(false);
+    expect(detector.shouldFinalize(terminal as never)).toBe(false);
+  });
+
+  it("12. sanitized summary is generated", () => {
+    const md = buildSanitizedMarkdown(snap() as never);
+    expect(md).toContain("# v0.2 Human Engagement Test — Sanitized Evidence");
+    expect(md).toContain("## Route");
+    expect(md).toContain("## Performance Summary");
+  });
+
+  it("13. handoff update preserves all historical sections outside markers", () => {
+    const base = `# Handoff\n\nOld failed-gate evidence stays.\n\n${START_MARK}\n\nOld section.\n\n${END_MARK}\n\nTail stays.\n`;
+    const out = applyHandoffSection(base, "# New summary");
+    expect(out).toContain("Old failed-gate evidence stays.");
+    expect(out).toContain("Tail stays.");
+    expect(out).toContain("# New summary");
+    expect(out).not.toContain("Old section.");
+  });
+
+  it("14. raw reports stay under gitignored test-results", () => {
+    expect(QA_REPORT_DIR).toBe("test-results/human-playtests");
+    expect(QA_REPORT_DIR.startsWith("test-results/")).toBe(true);
+  });
+
+  it("15. missing QA sink never breaks gameplay", () => {
+    const originalFetch = globalThis.fetch;
+    try {
+      globalThis.fetch = () => Promise.reject(new Error("sink not available (e.g. 404 or production)"));
+      expect(() => {
+        fetch("/__seed_qa/report", { method: "POST", body: "{}" }).catch(() => undefined);
+      }).not.toThrow();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("16. production build does not require QA sink", () => {
+    const orig = process.env.SEED_QA_SINK;
+    delete process.env.SEED_QA_SINK;
+    const isSinkEnabled = process.env.SEED_QA_SINK === "1";
+    expect(isSinkEnabled).toBe(false);
+    if (orig !== undefined) process.env.SEED_QA_SINK = orig;
+  });
+
+  it("finalizes report and updates handoff when new terminal report is detected", () => {
+    const files = new Map<string, string>();
+    const dirs: string[] = [];
+    const norm = (p: string) => p.replace(/\\/g, "/");
+    const mem = {
+      write: (p: string, t: string) => files.set(norm(p), t),
+      read: (p: string) => files.get(norm(p)) ?? "",
+      mkdir: (p: string) => dirs.push(norm(p)),
+      exists: (p: string) => files.has(norm(p)),
+    };
+
+    const root = "/repo";
+    const handoffPath = `${root}/SESSION_HANDOFF.md`;
+    mem.write(handoffPath, `# Handoff\n\n${START_MARK}\nOld.\n${END_MARK}\n\nTail.\n`);
+
+    const reportPath = `${root}/${QA_REPORT_DIR}/latest.json`;
+    const s = snap();
+    const detector = new ReportDetector();
+
+    // 1. File doesn't exist yet -> returns null
+    expect(checkAndFinalize(reportPath, detector, root, null, mem.read, mem.exists)).toBeNull();
+
+    // 2. Report written -> detected and finalized
+    mem.write(reportPath, JSON.stringify(s));
+    const result = checkAndFinalize(
+      reportPath,
+      detector,
+      root,
+      null,
+      mem.read,
+      mem.exists,
+      (snapItem: unknown, r: string) => finalizeReport(snapItem, r, mem.write, mem.read, mem.mkdir, mem.exists),
+    );
+    expect(result).not.toBeNull();
+    const outSummary = files.get(`${root}/docs/playtests/latest-v020-engagement.md`);
+    expect(outSummary).toBeDefined();
+    expect(outSummary).toContain("# v0.2 Human Engagement Test — Sanitized Evidence");
+
+    const updatedHandoff = files.get(handoffPath);
+    expect(updatedHandoff).toContain("# v0.2 Human Engagement Test — Sanitized Evidence");
+    expect(updatedHandoff).toContain("Tail.");
+
+    // 3. Duplicate check does not re-finalize (exactly once)
+    expect(
+      checkAndFinalize(
+        reportPath,
+        detector,
+        root,
+        null,
+        mem.read,
+        mem.exists,
+        (snapItem: unknown, r: string) => finalizeReport(snapItem, r, mem.write, mem.read, mem.mkdir, mem.exists),
+      ),
+    ).toBeNull();
   });
 });

@@ -9,6 +9,7 @@ export type QaCheckpointName =
   | "ATOMIC_REACHED" | "SPACE_REACHED"
   | "BOSS_SPAWNED" | "BOSS_KILLED"
   | "ASCENSION_OFFERED" | "ASCENSION_STARTED" | "CHILD_WORLD_STARTED"
+  | "POST_ASCENSION_30S" | "POST_ASCENSION_60S" | "POST_ASCENSION_120S"
   | "PLAYER_DIED" | "RUN_END";
 
 export interface QaCtx {
@@ -186,7 +187,11 @@ export class PlaytestRecorder {
 
   /** Exactly-once per checkpoint name (+ascension for repeatable ones). */
   checkpoint(name: QaCheckpointName, ctx: QaCtx, data?: Record<string, string | number>): boolean {
-    const repeatable = name === "CHILD_WORLD_STARTED";
+    const repeatable =
+      name === "CHILD_WORLD_STARTED" ||
+      name === "POST_ASCENSION_30S" ||
+      name === "POST_ASCENSION_60S" ||
+      name === "POST_ASCENSION_120S";
     const key = repeatable ? `${name}#${ctx.ascension}` : name;
     if (this.seenCheckpoints.has(key)) return false;
     this.seenCheckpoints.add(key);

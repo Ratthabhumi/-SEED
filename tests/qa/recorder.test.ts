@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PlaytestRecorder, type QaCtx, type QaVersions } from "../../src/qa/PlaytestRecorder";
+import { PlaytestRecorder, type QaCheckpointName, type QaCtx, type QaVersions } from "../../src/qa/PlaytestRecorder";
 
 const VERSIONS: QaVersions = { packageVersion: "0.1.1", worldgen: 2, content: 2, saveSchema: 1 };
 const ORDER = ["stone", "bronze", "iron", "industrial", "atomic", "space"];
@@ -21,6 +21,29 @@ describe("playtest recorder checkpoints", () => {
     expect(r.hasCheckpoint("BRONZE_REACHED")).toBe(true);
     expect(r.hasCheckpoint("SPACE_REACHED")).toBe(false);
     // Repeatable across ascensions only.
+    expect(r.checkpoint("CHILD_WORLD_STARTED", ctx(700, "stone", 1))).toBe(true);
+    expect(r.checkpoint("CHILD_WORLD_STARTED", ctx(701, "stone", 1))).toBe(false);
+    expect(r.checkpoint("CHILD_WORLD_STARTED", ctx(1400, "stone", 2))).toBe(true);
+  });
+
+  it("POST_ASCENSION_30S, POST_ASCENSION_60S, and POST_ASCENSION_120S are legal QaCheckpointNames", () => {
+    const legalNames: QaCheckpointName[] = [
+      "POST_ASCENSION_30S",
+      "POST_ASCENSION_60S",
+      "POST_ASCENSION_120S",
+    ];
+    expect(legalNames).toHaveLength(3);
+  });
+
+  it("records POST_ASCENSION_120S per-ascension and dedupes within same ascension", () => {
+    const r = recorder();
+    // 4. POST_ASCENSION_120S ascension 1 records
+    expect(r.checkpoint("POST_ASCENSION_120S", ctx(820, "stone", 1))).toBe(true);
+    // 5. duplicate POST_ASCENSION_120S ascension 1 does not duplicate
+    expect(r.checkpoint("POST_ASCENSION_120S", ctx(825, "stone", 1))).toBe(false);
+    // 6. POST_ASCENSION_120S ascension 2 also records
+    expect(r.checkpoint("POST_ASCENSION_120S", ctx(1520, "stone", 2))).toBe(true);
+    // 7. CHILD_WORLD_STARTED remains repeatable per Ascension
     expect(r.checkpoint("CHILD_WORLD_STARTED", ctx(700, "stone", 1))).toBe(true);
     expect(r.checkpoint("CHILD_WORLD_STARTED", ctx(701, "stone", 1))).toBe(false);
     expect(r.checkpoint("CHILD_WORLD_STARTED", ctx(1400, "stone", 2))).toBe(true);

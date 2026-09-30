@@ -39,7 +39,11 @@ export function buildSanitizedMarkdown(snap) {
     ["INDUSTRIAL_REACHED", "Industrial"], ["ATOMIC_REACHED", "Atomic"], ["SPACE_REACHED", "Space"],
     ["BOSS_SPAWNED", "boss spawned"], ["BOSS_KILLED", "boss killed"],
     ["ASCENSION_OFFERED", "ascension offered"], ["ASCENSION_STARTED", "ascension started"],
-    ["CHILD_WORLD_STARTED", "child world"], ["PLAYER_DIED", "player died"], ["RUN_END", "run ended"],
+    ["CHILD_WORLD_STARTED", "child world"],
+    ["POST_ASCENSION_30S", "post-ascension +30s"],
+    ["POST_ASCENSION_60S", "post-ascension +60s"],
+    ["POST_ASCENSION_120S", "post-ascension +120s"],
+    ["PLAYER_DIED", "player died"], ["RUN_END", "run ended"],
   ]) {
     L.push(`- [${at(ev) ? "x" : " "}] ${label} ${at(ev) ? `(${f2(at(ev).simTime)}s)` : ""}`);
   }
