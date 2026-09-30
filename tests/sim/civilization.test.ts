@@ -9,7 +9,7 @@ import { AGES } from "../../src/core/tech/graph";
 import { BREAKTHROUGHS } from "../../src/core/tech/synergy";
 import {
   CLAIM_REACH_RADIUS, RAID_INTERVAL, activeTerritories,
-  territoryKnowledgeBonus, militaryBonusSlots, squadCap as squadCapOf,
+  territoryKnowledgeBonus, militaryBonusSlots,
 } from "../../src/core/world/territory";
 import { SQUAD_BASE_CAP, squadCap } from "../../src/core/combat/squad";
 import { minimapCells } from "../../src/game/render/NavigationRenderer";
@@ -411,7 +411,10 @@ describe("presentation purity", () => {
     const cells = minimapCells(["0,0", "1,0", "0,1"], 0, 0, 2);
     expect(cells).toHaveLength(25);
     expect(cells.filter((c) => c.seen)).toHaveLength(3);
-    expect(cells.every((c) => ["0,0", "1,0", "0,1"].includes(`${c.cx ?? 0},${c.cy ?? 0}`) || !c.seen)).toBe(true);
+    const seenKeys = new Set(cells.filter((c) => c.seen).map((c) => `${c.ox},${c.oy}`));
+    expect(seenKeys.has("0,0")).toBe(true);
+    expect(seenKeys.has("1,0")).toBe(true);
+    expect(seenKeys.has("0,1")).toBe(true);
   });
 
   it("HP-bar rule: elites/boss always, normals only when hit or focused", () => {

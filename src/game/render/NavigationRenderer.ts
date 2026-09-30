@@ -31,9 +31,31 @@ export interface CameraView {
   height: number;
 }
 
+export interface MinimapCell {
+  ox: number;
+  oy: number;
+  /** Only visited chunks render — fog is structural, not a style choice. */
+  seen: boolean;
+}
+
+/**
+ * Pure minimap model: exactly the visited chunk keys in range, nothing more.
+ * The canvas views render this verbatim, so the map can never reveal the
+ * undiscovered world (contract-tested).
+ */
+export function minimapCells(chunksWorld: readonly string[], cx: number, cy: number, range: number): MinimapCell[] {
+  const seen = new Set(chunksWorld);
+  const out: MinimapCell[] = [];
+  for (let ox = -range; ox <= range; ox++) {
+    for (let oy = -range; oy <= range; oy++) {
+      out.push({ ox, oy, seen: seen.has(`${cx + ox},${cy + oy}`) });
+    }
+  }
+  return out;
+}
+
 /** True when the world point is outside the current view (with margin). */
-export function isOffscreen(view: CameraView, wx: number, wy: number, margin = 40): boolean {
-  return (
+export function isOffscreen(view: CameraView, wx: number, wy: number, margin = 40): boolean {  return (
     wx < view.scrollX - margin ||
     wy < view.scrollY - margin ||
     wx > view.scrollX + view.width + margin ||

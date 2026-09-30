@@ -219,3 +219,73 @@ export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
   g.fillStyle(VL.beacon, 0.9);
   g.fillCircle(a.wx, a.wy, 4);
 }
+
+export interface TerritoryDressingArgs {
+  x: number;
+  y: number;
+  ageIndex: number;
+  tier: 1 | 2;
+  disabled: boolean;
+}
+
+/**
+ * Claimed-territory dressing: the map visibly grows a civilization.
+ * Stone camp/fire → bronze walls/banners → iron forge → industrial factory →
+ * atomic reactor → space energy grid. Pure presentation over territory state.
+ */
+export function drawTerritoryDressing(g: Phaser.GameObjects.Graphics, a: TerritoryDressingArgs): void {
+  const alpha = a.disabled ? 0.25 : 0.8;
+  const c = a.disabled ? 0x555555 : 0x53e0c8;
+  const R = 26 + a.tier * 4;
+  if (a.ageIndex <= 0) {
+    // Camp: fire triangle + marker stones.
+    g.fillStyle(0xff9a3c, alpha);
+    g.fillTriangle(a.x - 5, a.y + 4, a.x + 5, a.y + 4, a.x, a.y - 6);
+    g.lineStyle(1, c, alpha);
+    g.strokeCircle(a.x, a.y, R);
+  } else if (a.ageIndex === 1) {
+    // Walls + banners.
+    g.lineStyle(3, c, alpha);
+    g.strokeRect(a.x - R, a.y - R, R * 2, R * 2);
+    g.fillStyle(0xc9a227, alpha);
+    g.fillRect(a.x - R - 2, a.y - R - 14, 4, 14);
+    g.fillRect(a.x + R - 2, a.y - R - 14, 4, 14);
+  } else if (a.ageIndex === 2) {
+    // Forge fortification: double wall + anvil block.
+    g.lineStyle(3, c, alpha);
+    g.strokeRect(a.x - R, a.y - R, R * 2, R * 2);
+    g.lineStyle(1, c, alpha);
+    g.strokeRect(a.x - R + 6, a.y - R + 6, R * 2 - 12, R * 2 - 12);
+    g.fillStyle(0x8a8f98, alpha);
+    g.fillRect(a.x - 6, a.y - 6, 12, 12);
+  } else if (a.ageIndex === 3) {
+    // Factory: blocks + rails.
+    g.fillStyle(c, alpha * 0.8);
+    g.fillRect(a.x - R, a.y - 6, 18, 12);
+    g.fillRect(a.x + R - 18, a.y - 6, 18, 12);
+    g.lineStyle(2, 0x8a8f98, alpha);
+    g.lineBetween(a.x - R, a.y + 12, a.x + R, a.y + 12);
+    g.lineBetween(a.x - R, a.y + 18, a.x + R, a.y + 18);
+  } else if (a.ageIndex === 4) {
+    // Reactor + radar sweep.
+    g.lineStyle(2, c, alpha);
+    g.strokeCircle(a.x, a.y, R);
+    g.fillStyle(0x53e0c8, alpha);
+    g.fillCircle(a.x, a.y, 5);
+    g.lineStyle(1, c, alpha * 0.7);
+    g.strokeCircle(a.x, a.y, R + 10);
+  } else {
+    // Energy grid: cross lattice + corner nodes.
+    g.lineStyle(2, c, alpha);
+    g.lineBetween(a.x - R, a.y, a.x + R, a.y);
+    g.lineBetween(a.x, a.y - R, a.x, a.y + R);
+    g.fillStyle(c, alpha);
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+      g.fillCircle(a.x + sx * R, a.y + sy * R, 3);
+    }
+  }
+  if (a.tier >= 2) {
+    g.lineStyle(2, 0xffd166, alpha);
+    g.strokeCircle(a.x, a.y, R + 6);
+  }
+}

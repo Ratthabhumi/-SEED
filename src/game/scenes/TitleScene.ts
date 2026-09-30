@@ -39,42 +39,21 @@ export class TitleScene extends Phaser.Scene {
 
     const logo = el("div", "logo", undefined, "-SEED");
     panel.appendChild(logo);
-    // QA gate (?qa=1 only): one-click golden-seed start. Normal flow untouched.
+    // Civilization Origin: two starting weapon families (ADR-0006 Decision 1).
+    // ONE shared selector — QA mode reuses it (no duplicated start UI).
+    let pickedOrigin: OriginId = DEFAULT_ORIGIN;
+    // QA gate (?qa=1 only): small testing banner + one-click golden-seed start.
     if (isQAMode(window.location.search)) {
       const gate = el("div", "qa-gate");
       gate.id = "qa-gate";
       const gh = document.createElement("div");
       gh.className = "qa-gate-title";
-      gh.textContent = "-SEED HUMAN GATE A";
+      gh.textContent = t("qa.banner");
       gate.appendChild(gh);
-      const gs = document.createElement("div");
-      gs.className = "qa-gate-sub";
-      gs.textContent = `Seed ${GOLDEN_QA_SEED} · Stone → Space → Boss → Ascension`;
-      gate.appendChild(gs);
       const gn = document.createElement("div");
       gn.className = "qa-gate-sub";
-      gn.textContent = "You only need to play. Everything else is recorded automatically. / แค่เล่น ที่เหลือระบบจดให้";
+      gn.textContent = t("qa.recorded");
       gate.appendChild(gn);
-      // P1-01: QA runs must use the HUMAN-selected Origin (never forced).
-      let qaOrigin: OriginId = DEFAULT_ORIGIN;
-      const qoRow = document.createElement("div");
-      qoRow.className = "qa-origin-row";
-      const qoBtns: HTMLButtonElement[] = [];
-      for (const o of ORIGINS) {
-        const b = document.createElement("button");
-        b.id = `qa-origin-${o.id}`;
-        b.className = "btn qa-origin-btn" + (o.id === qaOrigin ? " active" : "");
-        b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
-        b.addEventListener("click", () => {
-          sfx.unlock(); sfx.select();
-          qaOrigin = o.id;
-          for (const x of qoBtns) x.classList.remove("active");
-          b.classList.add("active");
-        });
-        qoRow.appendChild(b);
-        qoBtns.push(b);
-      }
-      gate.appendChild(qoRow);
       const startQa = document.createElement("button");
       startQa.id = "qa-start-playtest";
       startQa.className = "btn primary";
@@ -82,7 +61,7 @@ export class TitleScene extends Phaser.Scene {
       startQa.addEventListener("click", () => {
         sfx.unlock(); sfx.select();
         sessionStorage.setItem(TITLE_SEED_KEY, GOLDEN_QA_SEED);
-        sessionStorage.setItem(TITLE_ORIGIN_KEY, qaOrigin);
+        sessionStorage.setItem(TITLE_ORIGIN_KEY, pickedOrigin);
         this.scene.start("game");
       });
       gate.appendChild(startQa);
@@ -106,8 +85,7 @@ export class TitleScene extends Phaser.Scene {
     seedRow.appendChild(dice);
     panel.appendChild(seedRow);
 
-    // Civilization Origin: two starting weapon families (ADR-0006 Decision 1).
-    let pickedOrigin: OriginId = DEFAULT_ORIGIN;
+    // Shared Origin selector (normal + QA flows read pickedOrigin).
     panel.appendChild(el("div", "origin-title", "ui.chooseOrigin"));
     const descLine = el("div", "logo-sub", ORIGINS[0]!.descKey as never);
     const oRow = el("div", "btn-row");
@@ -115,6 +93,8 @@ export class TitleScene extends Phaser.Scene {
     for (const o of ORIGINS) {
       const b = document.createElement("button");
       b.className = "btn" + (o.id === pickedOrigin ? " active" : "");
+      // Stable hook for automation; the selector itself stays shared.
+      if (isQAMode(window.location.search)) b.id = `qa-origin-${o.id}`;
       b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
       b.addEventListener("click", () => {
         sfx.unlock(); sfx.select();

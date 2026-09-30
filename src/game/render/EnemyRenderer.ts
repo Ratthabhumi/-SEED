@@ -4,7 +4,7 @@
 import type Phaser from "phaser";
 import type { SimEnemy } from "../../core/sim/RunState";
 import type { EnemyFamily, EliteAffix } from "../../core/director/director";
-import { familyShape, affixMarker, VL } from "./VisualLanguage";
+import { familyShape, affixMarker, VL, shouldShowHpBar, enemyTrim } from "./VisualLanguage";
 import { fillPoly, strokePoly, type Pt } from "./paths";
 
 export interface EnemyDrawOpts {
@@ -16,6 +16,13 @@ export interface EnemyDrawOpts {
   time: number;
   /** High-contrast setting raises outline weights. */
   highContrast: boolean;
+  /**
+   * Show the compact HP bar. Adapter rule: damaged recently (flash), focused
+   * target, or elite/boss (always). Undefined keeps the legacy elite/boss rule.
+   */
+  hpBar?: boolean;
+  /** World age: iron+ adds plating, atomic+ adds energy trim (family kept). */
+  ageIndex?: number;
 }
 
 /** Ranged aim tell: fires when shootT hits 0 (sim), so <0.5s reads as "aiming". */
@@ -134,11 +141,26 @@ export function drawEnemy(
     return;
   }
   familyBody(g, e.family, e.x, e.y, r, opts.facing, fill);
+  // Age extras layer over the family silhouette (never instead of it).
+  const trim = enemyTrim(opts.ageIndex ?? 0);
+  if (trim.plating && e.family === "tank") {
+    g.lineStyle(2, 0xc8ccd2, 0.9);
+    g.strokeRect(e.x - r * 0.55, e.y - r * 0.55, r * 1.1, r * 1.1);
+  } else if (trim.plating) {
+    g.lineStyle(2, 0xc8ccd2, 0.85);
+    g.strokeCircle(e.x, e.y, r * 0.55);
+  }
+  if (trim.energy) {
+    g.fillStyle(0x53e0c8, 0.95);
+    g.fillCircle(e.x, e.y - r - 4, 2.5);
+  }
   if (e.family === "ranged" && e.shootT < AIM_TELL_SEC && e.flash <= 0) {
     // Pre-fire aiming tell along the facing (toward player).
     g.lineStyle(2, VL.aimTick, 0.9);
     g.lineBetween(e.x, e.y, e.x + Math.cos(opts.facing) * (r + 14), e.y + Math.sin(opts.facing) * (r + 14));
   }
+  const showBar = opts.hpBar ?? shouldShowHpBar({ elite: e.elite, boss: e.boss, flash: e.flash, focused: false });
+  if (showBar) drawHpBar(g, e.x, e.y - r - 14, r * 2, bossHpFraction(e.hp, e.maxHp));
   if (e.elite) {
     const w = opts.highContrast ? 4 : 3;
     g.lineStyle(w, VL.eliteRing, 1);
@@ -146,7 +168,6 @@ export function drawEnemy(
     g.lineStyle(1, VL.eliteRingInner, 0.8);
     g.strokeCircle(e.x, e.y, r + 8);
     if (e.affix !== "") affixGlyph(g, e.affix, e.x, e.y, r, opts.time);
-    drawHpBar(g, e.x, e.y - r - 14, r * 2, e.hp / e.maxHp);
   } else if (e.shield > 0) {
     g.lineStyle(1, 0x7fb8ff, 0.9);
     g.strokeCircle(e.x, e.y, r + 8);

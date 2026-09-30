@@ -49,7 +49,7 @@ function fakeEnemy(family: EnemyFamily, affix: EliteAffix | "" = "", boss = fals
     active: true, x: 0, y: 0, hp: 50, maxHp: 100, shield: affix === "shielded" ? 10 : 0,
     family, speed: 100, dmg: 8, radius: radius ?? (boss ? 34 : 14), xp: 5,
     elite: affix !== "" || boss, affix, flash: 0, shootT: family === "ranged" ? 0.3 : 2,
-    boss, hitCd: 0,
+    boss, hitCd: 0, siege: false,
   };
 }
 
@@ -76,10 +76,17 @@ export class VisualLabScene extends Phaser.Scene {
     const W = this.scale.width;
     let y = 76;
     y = this.specRow(g, "PLAYER — 1x game scale + 2x inspection", y, W, time, [
-      { label: "1x core", draw: (gg, x, yy) => drawPlayer(gg, x, yy, 16, { facing: -0.5, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc }) },
-      { label: "1x dash", draw: (gg, x, yy) => drawPlayer(gg, x, yy, 16, { facing: -0.5, dashing: true, iframe: false, hurtFlash: false, time, highContrast: hc }) },
-      { label: "2x core", draw: (gg, x, yy) => drawPlayer(gg, x, yy, 32, { facing: -0.5, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc }) },
+      { label: "1x core", draw: (gg, x, yy) => drawPlayer(gg, x, yy, 16, { facing: -0.5, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc, originId: "engineers", ageIndex: 2 }) },
+      { label: "1x dash", draw: (gg, x, yy) => drawPlayer(gg, x, yy, 16, { facing: -0.5, dashing: true, iframe: false, hurtFlash: false, time, highContrast: hc, originId: "engineers", ageIndex: 2 }) },
+      { label: "2x core", draw: (gg, x, yy) => drawPlayer(gg, x, yy, 32, { facing: -0.5, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc, originId: "engineers", ageIndex: 2 }) },
     ]);
+    y = this.specRow(g, "PLAYER LINEAGE — 4 origins × stone..space trim", y, W, time,
+      (["hunters", "engineers", "resonant", "sentinels"] as const).flatMap((o) => [0, 2, 5].map((a) => ({
+        label: `${o}@${a}`,
+        draw: (gg: Phaser.GameObjects.Graphics, x: number, yy: number) =>
+          drawPlayer(gg, x, yy, 14, { facing: -0.5, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc, originId: o, ageIndex: a }),
+      }))),
+    );
     y = this.specRow(g, "ENEMIES — 1x + 2x per family (chaser/ranged/tank/swarm)", y, W, time,
       (["chaser", "ranged", "tank", "swarm"] as EnemyFamily[]).flatMap((f) => [
         {
@@ -279,7 +286,7 @@ export class VisualLabScene extends Phaser.Scene {
     g: Phaser.GameObjects.Graphics, tok: string, x: number, y: number, time: number, hc: boolean,
   ): void {
     if (tok === "player") {
-      drawPlayer(g, x, y, 12, { facing: 0, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc });
+      drawPlayer(g, x, y, 12, { facing: 0, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc, originId: "hunters", ageIndex: 0 });
     } else if (tok === "chaser" || tok === "swarm") {
       const e = fakeEnemy(tok as EnemyFamily, "", false, tok === "swarm" ? 9 : 14);
       e.x = x;
@@ -334,7 +341,7 @@ export class VisualLabScene extends Phaser.Scene {
     const y = cy + p.dy;
     const facing = Math.atan2(-p.dy, -p.dx); // toward the player
     if (p.kind === "player") {
-      drawPlayer(g, x, y, 16, { facing: 0, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc });
+      drawPlayer(g, x, y, 16, { facing: 0, dashing: false, iframe: false, hurtFlash: false, time, highContrast: hc, originId: "sentinels", ageIndex: 5 });
     } else if (p.kind === "enemy" || p.kind === "elite") {
       const fam = p.family ?? "chaser";
       const e = fakeEnemy(fam, p.affix ?? "", false, FAMILY_RADIUS[fam]);

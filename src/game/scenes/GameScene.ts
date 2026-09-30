@@ -6,7 +6,7 @@ import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { InputLatch } from "../../core/sim/InputLatch";
-import { RunSimulation, AGE_OBJECTIVE_KILLS } from "../../core/sim/RunSimulation";
+import { RunSimulation } from "../../core/sim/RunSimulation";
 import type { SimEvent } from "../../core/sim/SimEvent";
 import { MAX_ENEMIES, MAX_PROJ, MAX_PICKUP } from "../../core/sim/RunState";
 import { worldToChunk, CHUNK_SIZE, ACTIVE_RADIUS_CHUNKS } from "../../core/world/chunks";
@@ -14,11 +14,13 @@ import { BIOME_STYLE, CIV_LAYER, ENEMY_LINEAGE } from "../../content/content";
 import type { AgeId } from "../../core/tech/graph";
 import { AGES } from "../../core/tech/graph";
 import { BREAKTHROUGHS, breakthroughProgress, nearestBreakthroughs, completingBreakthrough, tagDisplayKey } from "../../core/tech/synergy";
-import { activeFamilies, ORIGINS, type OriginId } from "../../core/progression/origins";
+import { activeFamilies, ORIGINS, originById, type OriginId } from "../../core/progression/origins";
 import { legacyDefById } from "../../core/progression/legacies";
 import type { WeaponFamily } from "../../core/combat/weapons";
 import { CRITICAL_SPINE } from "../../core/tech/graph";
-import { AGE_DEFS, dwellFor } from "../../core/progression/ages";
+import { AGE_DEFS, ageGates } from "../../core/progression/ages";
+import { ORIGIN_SQUAD_NAME, ORIGIN_ABILITY, squadCap } from "../../core/combat/squad";
+import { militaryBonusSlots, activeTerritories, type OutpostSpec } from "../../core/world/territory";
 import { threatBudget } from "../../core/director/director";
 import { getWeaponStage } from "../../core/combat/weapons";
 import { t, setLang, getLang } from "../../i18n/i18n";
@@ -34,8 +36,8 @@ import { drawPlayer } from "../render/PlayerRenderer";
 import {
   drawFriendlyProj, drawHostileProj, drawBeam, drawAura, drawOrbit, drawSummon, drawMine, drawKnowledge,
 } from "../render/ProjectileRenderer";
-import { drawGround, drawPoi } from "../render/WorldRenderer";
-import { nearestInterest, drawOffscreenIndicator } from "../render/NavigationRenderer";
+import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRenderer";
+import { nearestInterest, drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
 import pkg from "../../../package.json";
 
 function percentile(sorted: number[], p: number): number {
@@ -73,6 +75,10 @@ export class GameScene extends Phaser.Scene {
   private lastHurtT = -10;
   private bossGfx: Phaser.GameObjects.Graphics | null = null;
   private navT = 0;
+  /** Transient impact presentation (never canonical): death rings + damage numbers. */
+  private bursts: Array<{ x: number; y: number; t: number; max: number; big: boolean }> = [];
+  private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
+  private floatText: Phaser.GameObjects.Text[] = [];
   private onboard: { done: Set<string>; active: string; until: number } = { done: new Set(), active: "", until: 0 };
 
   // QA harness (read-only observer, ?qa=1 only — null in normal play).
@@ -88,6 +94,10 @@ export class GameScene extends Phaser.Scene {
   private simSamples: number[] = [];
   private frameSamples: number[] = [];
   private fpsEMA = 60;
+  /** Tech Map / Civ Map overlay open (pauses stepping like a modal). */
+  private techMapOpen = false;
+  private techMapSel = "";
+  private civMapOpen = false;
 
   constructor() {
     super("game");
@@ -159,6 +169,14 @@ export class GameScene extends Phaser.Scene {
         this.debugText.setVisible(this.showDebug);
       });
       on("keydown-ESC", () => {
+        if (this.techMapOpen) {
+          this.toggleTechMap();
+          return;
+        }
+        if (this.civMapOpen) {
+          this.toggleCivMap();
+          return;
+        }
         if (this.blockingModal) {
           // Timed beats dismiss; binding choices must be decided.
           if (this.modalT > 0) this.closeBlocking();
@@ -170,6 +188,13 @@ export class GameScene extends Phaser.Scene {
       on("keydown-ONE", () => this.pickCard(0));
       on("keydown-TWO", () => this.pickCard(1));
       on("keydown-THREE", () => this.pickCard(2));
+      // Command layer (v021): squad orders + origin ability + map screens.
+      on("keydown-Q", () => this.issueSquad("follow"));
+      on("keydown-E", () => this.issueSquad("focus"));
+      on("keydown-R", () => this.issueSquad("hold"));
+      on("keydown-F", () => this.useAbility());
+      on("keydown-T", () => this.toggleTechMap());
+      on("keydown-M", () => this.toggleCivMap());
     }
     this.input.on("pointerdown", this.unlockAudio);
 
@@ -233,6 +258,42 @@ export class GameScene extends Phaser.Scene {
         snapshot: () => this.sim.snapshot(),
         seed: () => this.masterSeed,
         setLang: (code: "en" | "th") => this.applyLanguage(code),
+        teleportToPOI: () => {
+          // Test-only staging: move to the nearest undiscovered POI so
+          // discovery/claim flows run without a 10-minute walk.
+          const s = this.sim.state;
+          const { cx, cy } = worldToChunk(s.px, s.py);
+          let best: { x: number; y: number; d: number } | null = null;
+          for (let ox = -3; ox <= 3; ox++) {
+            for (let oy = -3; oy <= 3; oy++) {
+              const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+              for (const poi of desc.poi) {
+                if (s.poisWorld.includes(poi.id)) continue;
+                const d = Math.hypot(poi.wx - s.px, poi.wy - s.py);
+                if (!best || d < best.d) best = { x: poi.wx, y: poi.wy, d };
+              }
+            }
+          }
+          if (best) {
+            s.px = best.x;
+            s.py = best.y;
+          }
+          this.refreshHUD();
+          return best !== null;
+        },
+        claimFirst: () => {
+          // Test-only staging: clear the field, then run the real
+          // claim + specialization path on the first claimable POI.
+          const s = this.sim.state;
+          for (const e of s.enemies) e.active = false;
+          const list = this.sim.claimablePOIs();
+          const c = list.find((x) => x.clear) ?? list[0];
+          if (!c) return "";
+          this.handleEvents(this.sim.claimTerritory(c.poiId));
+          this.handleEvents(this.sim.setOutpostSpec(c.poiId, "research"));
+          this.refreshHUD();
+          return c.poiId;
+        },
       };
     }
 
@@ -337,14 +398,20 @@ export class GameScene extends Phaser.Scene {
       chunkCy: worldToChunk(s.px, s.py).cy,
       biome: this.qaBiome,
       objective: next < AGES.length
-        ? {
-          killsHave: s.ageKills,
-          killsNeed: AGE_OBJECTIVE_KILLS[next] ?? 0,
-          knowHave: Math.floor(s.knowledgeTotal),
-          knowNeed: AGE_DEFS[next]?.knowledgeThreshold ?? 0,
-          elapsedHave: Math.floor(s.elapsed),
-          elapsedNeed: AGE_DEFS[next]?.minTimeSec ?? 0,
-        }
+        ? (() => {
+          const gates = ageGates(next, s.ageElapsed, s.knowledgeTotal, this.missionStateOf(s));
+          const kn = gates.find((g) => g.id === "knowledge");
+          const st = gates.find((g) => g.id === "stabilization");
+          const mi = gates.find((g) => g.id === "mission");
+          return {
+            killsHave: mi?.have ?? 0,
+            killsNeed: mi?.need ?? 0,
+            knowHave: kn?.have ?? 0,
+            knowNeed: kn?.need ?? 0,
+            elapsedHave: st?.have ?? 0,
+            elapsedNeed: st?.need ?? 0,
+          };
+        })()
         : null,
       nearestPOI: this.qaPoi,
       buildSummary: `lv${s.level}+${s.stats.techsTaken}t[${s.breakthroughs.join("+") || "-"}]`,
@@ -456,30 +523,66 @@ export class GameScene extends Phaser.Scene {
     clearUI();
     const root = uiRoot();
     const hud = el("div", "hud");
+    // Top strip (secondary info; classes kept for QA structural checks).
     const top = el("div", "hud-top");
-    const hpBar = el("div", "bar hp");
-    const hpFill = document.createElement("div");
-    hpBar.appendChild(hpFill);
-    const xpBar = el("div", "bar xp");
-    const xpFill = document.createElement("div");
-    xpBar.appendChild(xpFill);
-    top.appendChild(hpBar);
-    top.appendChild(xpBar);
     const stats = el("div", "hud-stats");
-    const age = el("div", "hud-objective");
     top.appendChild(stats);
+    const age = el("div", "hud-objective");
     top.appendChild(age);
-    // Build identity + nearest breakthrough goals (Phase 4, DOM only).
-    const goals = el("div", "hud-goals");
-    top.appendChild(goals);
+    const compass = el("div", "nav-compass");
+    top.appendChild(compass);
     hud.appendChild(top);
-    // Persistent action container OUTSIDE the wiped stats block: recreating
-    // buttons every HUD refresh breaks focus/click stability (P1-01 class).
+    // Bottom-left player status card (PRIMARY).
+    const status = el("div", "status-card");
+    const hpLine = el("div", "status-hp");
+    const hpBar = el("div", "mini-bar");
+    const hpFill = document.createElement("div");
+    hpFill.className = "mini-fill hp";
+    hpBar.appendChild(hpFill);
+    status.appendChild(hpLine);
+    status.appendChild(hpBar);
+    const identLine = el("div", "status-ident");
+    status.appendChild(identLine);
+    const squadLine = el("div", "status-squad");
+    status.appendChild(squadLine);
+    hud.appendChild(status);
+    // Bottom-center knowledge progress (SECONDARY).
+    const know = el("div", "knowledge-card");
+    const knowLabel = el("div", "knowledge-label", "ui.knowledge");
+    const knowNums = el("div", "knowledge-nums");
+    const knowBar = el("div", "mini-bar");
+    const knowFill = document.createElement("div");
+    knowFill.className = "mini-fill kn";
+    knowBar.appendChild(knowFill);
+    know.appendChild(knowLabel);
+    know.appendChild(knowNums);
+    know.appendChild(knowBar);
+    hud.appendChild(know);
+    // Top-right next-age checklist card (PRIMARY objective).
+    const ageCard = el("div", "age-card");
+    hud.appendChild(ageCard);
+    // Build plan line (kept class for e2e; shows pinned target + goals).
+    const goals = el("div", "hud-goals");
+    hud.appendChild(goals);
+    // Persistent action container OUTSIDE wiped blocks (P1-01 class).
     const ascendWrap = el("div", "hud-ascend");
     hud.appendChild(ascendWrap);
-    // Wayfinding compass (nearest interest) + persistent boss bar + hints.
-    const compass = el("div", "nav-compass");
-    hud.appendChild(compass);
+    // Territory / claim action bar.
+    const terrBar = el("div", "territory-bar");
+    hud.appendChild(terrBar);
+    // Tech map button (T also works).
+    const techBtn = document.createElement("button");
+    techBtn.id = "techmap-btn";
+    techBtn.className = "btn";
+    techBtn.textContent = `${t("ui.techMap")} [T]`;
+    techBtn.addEventListener("click", () => this.toggleTechMap());
+    hud.appendChild(techBtn);
+    // Tactical minimap (bottom-right canvas).
+    const mm = document.createElement("canvas");
+    mm.id = "minimap";
+    mm.width = 148;
+    mm.height = 148;
+    hud.appendChild(mm);
     const bossBar = el("div", "boss-bar");
     bossBar.style.display = "none";
     const bossFill = document.createElement("div");
@@ -492,19 +595,22 @@ export class GameScene extends Phaser.Scene {
     const hint = el("div", "onboard-hint");
     hint.style.display = "none";
     root.appendChild(hint);
-    this.hud = { hpFill, xpFill, stats, age, goals, ascendWrap, compass, bossBar, bossFill, hint };
+    this.hud = {
+      stats, age, compass, status, hpLine, hpFill, identLine, squadLine,
+      know, knowNums, knowFill, ageCard, goals, ascendWrap, terrBar, techBtn,
+      minimap: mm, bossBar, bossFill, hint,
+    };
     this.refreshHUD();
   }
 
   private refreshHUD(): void {
     const s = this.sim.state;
-    const { hpFill, xpFill, stats, age } = this.hud;
-    if (!hpFill || !xpFill || !stats || !age) return;
-    hpFill.style.width = `${Math.max(0, (s.build.hp / s.build.maxHp) * 100)}%`;
-    xpFill.style.width = `${Math.min(100, (s.xp / s.xpNext) * 100)}%`;
+    const { stats, age, hpLine, hpFill, identLine, squadLine, knowNums, knowFill, ageCard, goals } = this.hud;
+    if (!stats || !age || !hpLine || !hpFill || !identLine || !squadLine || !knowNums || !knowFill || !ageCard || !goals) return;
     const ageId = AGES[s.ageIndex] as AgeId;
     const mm = Math.floor(s.runElapsed / 60);
     const ss = Math.floor(s.runElapsed % 60).toString().padStart(2, "0");
+    // Top strip: level · time · kills · seed (secondary, compact).
     stats.innerHTML = "";
     const add = (txt: string, cls = ""): void => {
       const span = document.createElement("span");
@@ -513,12 +619,65 @@ export class GameScene extends Phaser.Scene {
       stats.appendChild(span);
     };
     add(`${t("ui.level")} ${s.level}`);
-    add(t(`age.${ageId}` as EnKeys));
     add(`${mm}:${ss}`);
     add(`☠ ${s.stats.kills}`);
     add(this.masterSeed, "hud-seed");
+    // Status card: HP number + compact bar, origin · age, squad state.
+    hpLine.textContent = `♥ ${Math.ceil(Math.max(0, s.build.hp))} / ${Math.ceil(s.build.maxHp)}`;
+    hpFill.style.width = `${Math.max(0, (s.build.hp / s.build.maxHp) * 100)}%`;
+    const origin = ORIGINS.find((o) => o.id === s.originId);
+    identLine.textContent = `${origin ? t(origin.nameKey) : s.originId} · ${t(`age.${ageId}` as EnKeys)}`;
+    const alive = s.squad.filter((a) => a.active).length;
+    const abil = ORIGIN_ABILITY[originById(s.originId).id];
+    const abilTxt = s.abilityCd > 0 ? `${t("ui.ability")} ${Math.ceil(s.abilityCd)}s` : `${t("ui.ability")}: ${t(abil.nameKey)} [F]`;
+    squadLine.textContent = `${t(ORIGIN_SQUAD_NAME[originById(s.originId).id])} ${alive}/${s.squad.length} · ${s.squadMode.toUpperCase()} · ${abilTxt}`;
+    // Knowledge card: progress toward the next age's threshold.
+    const next = s.ageIndex + 1;
+    const nextNeed = next < AGES.length ? (AGE_DEFS[next]?.knowledgeThreshold ?? 1) : 1;
+    knowNums.textContent = `${Math.floor(s.knowledgeTotal)} / ${nextNeed}`;
+    knowFill.style.width = `${Math.min(100, (s.knowledgeTotal / Math.max(1, nextNeed)) * 100)}%`;
+    // Age card: one checklist row per gate (the SAME predicate as the sim).
+    ageCard.innerHTML = "";
+    if (next < AGES.length) {
+      const title = document.createElement("div");
+      title.className = "age-card-title";
+      title.textContent = `${t("ui.nextAge")}: ${t(`age.${AGES[next] as AgeId}` as EnKeys)}`;
+      ageCard.appendChild(title);
+      const gates = ageGates(next, s.ageElapsed, s.knowledgeTotal, this.missionStateOf(s));
+      for (const g of gates) {
+        const row = document.createElement("div");
+        row.className = "gate-row" + (g.done ? " done" : "");
+        const mark = document.createElement("span");
+        mark.className = "gate-mark";
+        mark.textContent = g.done ? "✓" : "✗";
+        const lab = document.createElement("span");
+        lab.className = "gate-label";
+        lab.textContent = `${t(g.labelKey)} ${g.have}/${g.need}`;
+        const bar = document.createElement("div");
+        bar.className = "gate-bar";
+        const fill = document.createElement("div");
+        fill.className = "gate-fill";
+        fill.style.width = `${g.need > 0 ? Math.min(100, (g.have / g.need) * 100) : 100}%`;
+        bar.appendChild(fill);
+        row.appendChild(mark);
+        row.appendChild(lab);
+        row.appendChild(bar);
+        ageCard.appendChild(row);
+        for (const mstep of g.mission) {
+          const sub = document.createElement("div");
+          sub.className = "gate-sub" + (mstep.done ? " done" : "");
+          sub.textContent = `${mstep.done ? "✓" : "○"} ${t(mstep.labelKey)} ${mstep.have}/${mstep.need}`;
+          ageCard.appendChild(sub);
+        }
+      }
+    } else {
+      ageCard.textContent = `${t(`age.${ageId}` as EnKeys)} · ${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
+    }
+    // Mission one-liner under the top strip (QA structural class retained).
+    age.textContent = next < AGES.length
+      ? this.missionSummary(next)
+      : t(`age.${ageId}` as EnKeys);
     // Persistent Ascension entry (STAY dismisses the offer screen; this stays).
-    // Created once, removed once — never rebuilt per refresh (P1-01 class).
     const wrap = this.hud.ascendWrap;
     if (wrap) {
       const want = s.ascendReady && !s.over;
@@ -534,46 +693,477 @@ export class GameScene extends Phaser.Scene {
         ab.remove();
       }
     }
+    // Build plan line: pinned target + nearest breakthrough goals.
+    const pin = s.pinnedTarget !== "" ? `${t("ui.buildPlan")}: ${this.planLabel(s.pinnedTarget)} · ` : "";
+    const near = nearestBreakthroughs([...s.ownedTags], [...s.breakthroughs], 2)
+      .map((p) => `${t(p.titleKey)} ${p.have}/${p.need}`).join(" · ");
+    goals.textContent = pin + near;
     if (s.bossIndex >= 0) {
       const boss = s.enemies[s.bossIndex];
-      if (boss?.active) add(`${t("ui.boss")} ${Math.ceil((boss.hp / boss.maxHp) * 100)}%`);
+      if (boss?.active) {
+        const span = document.createElement("span");
+        span.textContent = ` ${t("ui.boss")} ${Math.ceil((boss.hp / boss.maxHp) * 100)}%`;
+        stats.appendChild(span);
+      }
     }
     this.refreshBossBar();
     this.navT -= 0.15;
     if (this.navT <= 0) {
       this.navT = 1;
       this.updateCompass();
+      this.updateTerritoryBar();
+      this.drawMinimap();
     }
     this.updateOnboard();
-    // Age-progress block: why am I (not) advancing?
-    const next = s.ageIndex + 1;
-    if (next < AGES.length) {
-      const def = AGE_DEFS[next]!;
-      const needK = AGE_OBJECTIVE_KILLS[next] ?? 0;
-      const dwell = dwellFor(next);
-      const parts = [
-        `${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)} / ${def.knowledgeThreshold}`,
-        `${t("ui.progressObjective")} ☠ ${Math.min(s.ageKills, needK)} / ${needK}`,
-        `${Math.floor(s.elapsed)}s / ${def.minTimeSec}s · ⏳${Math.floor(s.ageElapsed)}s / ${dwell}s`,
-      ];
-      age.textContent = parts.join("   ");
-    } else {
-      age.textContent = `${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
+  }
+
+  /** Mission counters for the shared advancement contract (HUD == sim). */
+  private missionStateOf(s: RunSimulation["state"]): import("../../core/progression/missions").MissionState {
+    const active = activeTerritories(s.territories);
+    return {
+      ageKills: s.ageKills,
+      territoriesClaimed: s.territories.length,
+      elitesAge: s.elitesAge,
+      outpostsTier2: active.filter((x) => x.tier >= 2).length,
+      raidsSurvived: s.raidsSurvived,
+      signalSecured: s.signalSecured,
+    };
+  }
+
+  /** One-line mission status for the top strip. */
+  private missionSummary(next: number): string {
+    const s = this.sim.state;
+    const def = AGE_DEFS[next];
+    if (!def || next === 0) return t(`age.${AGES[s.ageIndex] as AgeId}` as EnKeys);
+    const gates = ageGates(next, s.ageElapsed, s.knowledgeTotal, this.missionStateOf(s));
+    const mission = gates.find((g) => g.id === "mission");
+    const open = mission?.mission.find((m) => !m.done);
+    if (!open) {
+      const blocker = gates.find((g) => !g.done);
+      return blocker ? `${t(`age.${def.id}` as EnKeys)}: ${t(blocker.labelKey)} ${blocker.have}/${blocker.need}` : t(`age.${def.id}` as EnKeys);
     }
-    // Build identity + nearest breakthrough goals (Phase 4).
-    const goals = this.hud.goals;
-    if (goals) {
-      const fams = activeFamilies(s.originId, s.expansionFamily)
-        .map((f) => t(`family.${f}` as EnKeys)).join("+");
-      const origin = ORIGINS.find((o) => o.id === s.originId);
-      const near = nearestBreakthroughs([...s.ownedTags], [...s.breakthroughs], 2)
-        .map((p) => `${t(p.titleKey)} ${p.have}/${p.need}`).join(" · ");
-      goals.textContent = `${t("ui.origin")}: ${origin ? t(origin.nameKey) : s.originId} (${fams})` +
-        (near !== "" ? `   ${t("ui.buildGoals")}: ${near}` : "");
+    return `${t(open.labelKey)} ${open.have}/${open.need}`;
+  }
+
+  /** Human label for a pinned target (tech name or breakthrough title). */
+  private planLabel(id: string): string {
+    const s = this.sim.state;
+    const node = s.owned.includes(id)
+      ? undefined
+      : this.sim.techGraph().find((n) => n.id === id);
+    if (node) return t(node.titleKey as EnKeys);
+    const b = BREAKTHROUGHS.find((x) => x.id === id);
+    if (b) return t(b.titleKey);
+    return id;
+  }
+
+  /** Squad order / origin ability entry points (Q/E/R/F). */
+  private issueSquad(mode: "follow" | "focus" | "hold"): void {
+    const s = this.sim.state;
+    if (s.over || this.techMapOpen) return;
+    this.handleEvents(this.sim.setSquadMode(mode));
+  }
+
+  private useAbility(): void {
+    const s = this.sim.state;
+    if (s.over || this.techMapOpen) return;
+    this.handleEvents(this.sim.tryAbility());
+  }
+
+  /** Territory action bar: CLAIM buttons + spec/upgrade for owned posts. */
+  private updateTerritoryBar(): void {
+    const bar = this.hud.terrBar;
+    if (!bar) return;
+    const s = this.sim.state;
+    bar.innerHTML = "";
+    for (const terr of s.territories) {
+      if (terr.spec !== "" || terr.disabled) continue;
+      const b = document.createElement("button");
+      b.className = "btn terr-spec-btn";
+      b.textContent = `${t("ui.outpostSpec")} (${t(`poi.${terr.poiType}.name` as EnKeys)})`;
+      b.addEventListener("click", () => this.showSpecPicker(terr.poiId));
+      bar.appendChild(b);
+    }
+    for (const terr of s.territories) {
+      if (terr.disabled || terr.spec === "" || terr.tier !== 1) continue;
+      const ready = s.elapsed - terr.heldSince >= 90;
+      const b = document.createElement("button");
+      b.className = "btn terr-up-btn";
+      b.disabled = !ready;
+      b.textContent = ready
+        ? `${t("ui.upgrade")} (${t(`poi.${terr.poiType}.name` as EnKeys)})`
+        : t("ui.upgradeNeedHold");
+      if (ready) b.addEventListener("click", () => this.handleEvents(this.sim.upgradeOutpost(terr.poiId)));
+      bar.appendChild(b);
+    }
+    for (const c of this.sim.claimablePOIs()) {
+      const b = document.createElement("button");
+      b.className = "btn terr-claim-btn";
+      b.disabled = !c.clear;
+      b.textContent = c.clear
+        ? `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)}`
+        : t("ui.claimNeedClear");
+      if (c.clear) {
+        b.addEventListener("click", () => {
+          const ev = this.sim.claimTerritory(c.poiId);
+          this.handleEvents(ev);
+          const terr = s.territories.find((x) => x.poiId === c.poiId);
+          if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
+        });
+      }
+      bar.appendChild(b);
     }
   }
 
-  /** Persistent top-of-screen boss bar (localized label + fraction). */
+  /** Binding outpost-specialization picker (pauses stepping until decided). */
+  private showSpecPicker(poiId: string): void {
+    const specs: Array<{ id: OutpostSpec; name: EnKeys; desc: EnKeys }> = [
+      { id: "research", name: "ui.specResearch", desc: "ui.specResearchDesc" },
+      { id: "military", name: "ui.specMilitary", desc: "ui.specMilitaryDesc" },
+      { id: "economy", name: "ui.specEconomy", desc: "ui.specEconomyDesc" },
+    ];
+    this.showBlocking("spec-screen", 0, (screen) => {
+      const panel = el("div", "panel");
+      panel.appendChild(el("h2", "", "ui.outpostSpec"));
+      const row = el("div", "btn-row");
+      for (const sp of specs) {
+        const b = document.createElement("button");
+        b.className = "btn primary";
+        b.textContent = `${t(sp.name)} — ${t(sp.desc)}`;
+        b.addEventListener("click", () => {
+          this.handleEvents(this.sim.setOutpostSpec(poiId, sp.id));
+          this.closeBlocking();
+        });
+        row.appendChild(b);
+      }
+      panel.appendChild(row);
+      screen.appendChild(panel);
+    });
+  }
+
+  /** Tech Map (T): the SAME deterministic graph the sim drafts, made visible. */
+  private toggleTechMap(): void {
+    const s = this.sim.state;
+    if (s.over) return;
+    if (this.civMapOpen) this.toggleCivMap();
+    if (this.techMapOpen) {
+      document.getElementById("techmap-screen")?.remove();
+      this.techMapOpen = false;
+      return;
+    }
+    if (s.draftOpen || this.blockingModal) return;
+    this.techMapOpen = true;
+    this.techMapSel = "";
+    this.renderTechMap();
+  }
+
+  private renderTechMap(): void {
+    document.getElementById("techmap-screen")?.remove();
+    const s = this.sim.state;
+    const root = uiRoot();
+    const screen = el("div", "screen");
+    screen.id = "techmap-screen";
+    const wrap = el("div", "techmap-wrap");
+    const head = el("div", "techmap-head");
+    head.appendChild(el("span", "techmap-title", "ui.techMap"));
+    if (s.pinnedTarget !== "") {
+      const pin = document.createElement("span");
+      pin.className = "techmap-pin";
+      pin.textContent = `${t("ui.buildPlan")}: ${this.planLabel(s.pinnedTarget)}`;
+      head.appendChild(pin);
+      const unpin = document.createElement("button");
+      unpin.className = "btn";
+      unpin.textContent = t("ui.unpin");
+      unpin.addEventListener("click", () => {
+        this.handleEvents(this.sim.pinTarget(""));
+        this.renderTechMap();
+      });
+      head.appendChild(unpin);
+    }
+    const close = document.createElement("button");
+    close.className = "btn";
+    close.textContent = "✕ [T]";
+    close.addEventListener("click", () => this.toggleTechMap());
+    head.appendChild(close);
+    wrap.appendChild(head);
+    const body = el("div", "techmap-body");
+    const cols = el("div", "techmap-cols");
+    const states = new Map(this.sim.nodeStates().map((x) => [x.id, x]));
+    const byId = new Map(this.sim.techGraph().map((n) => [n.id, n]));
+    const path = this.sim.pinnedPathIds();
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", "techmap-links");
+    for (const age of AGES) {
+      const col = el("div", "techmap-col");
+      const ageTitle = document.createElement("div");
+      ageTitle.className = "techmap-age";
+      ageTitle.textContent = t(`age.${age}` as EnKeys);
+      col.appendChild(ageTitle);
+      for (const n of this.sim.techGraph().filter((x) => x.age === age)) {
+        const st = states.get(n.id);
+        const b = document.createElement("button");
+        const cls = st?.owned ? "owned" : st?.available ? "available" : "locked";
+        b.className = `techmap-node ${cls}` + (s.pinnedTarget === n.id || path.has(n.id) ? " pinned" : "");
+        b.dataset.nodeId = n.id;
+        const star = [...n.tags, ...n.synergyTags].some((tg) =>
+          BREAKTHROUGHS.some((br) => !s.breakthroughs.includes(br.id) && br.requires.includes(tg)));
+        b.textContent = `${st?.owned ? "✓ " : st?.available ? "● " : "🔒 "}${t(n.titleKey as EnKeys)}${star ? " ★" : ""}`;
+        b.addEventListener("click", () => {
+          this.techMapSel = n.id;
+          this.renderTechMap();
+        });
+        col.appendChild(b);
+      }
+      cols.appendChild(col);
+    }
+    body.appendChild(cols);
+    body.appendChild(svg);
+    const side = el("div", "techmap-side");
+    const sel = this.techMapSel !== "" ? byId.get(this.techMapSel) : undefined;
+    if (sel) {
+      const h = document.createElement("h3");
+      h.textContent = t(sel.titleKey as EnKeys);
+      side.appendChild(h);
+      const meta = document.createElement("div");
+      meta.className = "techmap-meta";
+      meta.textContent = `${t(`age.${sel.age}` as EnKeys)} · ${t(`domain.${sel.domain}` as EnKeys)} · ${t(`rarity.${sel.rarity}` as EnKeys)}`;
+      side.appendChild(meta);
+      const desc = document.createElement("div");
+      desc.textContent = t(sel.descriptionKey as EnKeys);
+      side.appendChild(desc);
+      const reqTitle = document.createElement("div");
+      reqTitle.className = "techmap-req-title";
+      reqTitle.textContent = `${t("ui.requires")}:`;
+      side.appendChild(reqTitle);
+      const req = document.createElement("div");
+      req.className = "techmap-req";
+      req.textContent = sel.prerequisites.length === 0 ? "—" : sel.prerequisites.map((p) => {
+        const pn = byId.get(p);
+        return `${s.owned.includes(p) ? "✓" : "○"} ${pn ? t(pn.titleKey as EnKeys) : p}`;
+      }).join(" · ");
+      side.appendChild(req);
+      const leadsTitle = document.createElement("div");
+      leadsTitle.className = "techmap-req-title";
+      leadsTitle.textContent = `${t("ui.leadsTo")}:`;
+      side.appendChild(leadsTitle);
+      const leads = document.createElement("div");
+      leads.className = "techmap-req";
+      leads.textContent = this.sim.techGraph()
+        .filter((n) => n.prerequisites.includes(sel.id))
+        .map((n) => t(n.titleKey as EnKeys)).join(" · ") || "—";
+      side.appendChild(leads);
+      const pinBtn = document.createElement("button");
+      pinBtn.className = "btn primary";
+      const isPinned = s.pinnedTarget === sel.id;
+      pinBtn.textContent = isPinned ? t("ui.unpin") : t("ui.pinPath");
+      pinBtn.addEventListener("click", () => {
+        this.handleEvents(this.sim.pinTarget(isPinned ? "" : sel.id));
+        this.renderTechMap();
+      });
+      side.appendChild(pinBtn);
+      void states;
+    }
+    const buildTitle = document.createElement("h3");
+    buildTitle.textContent = t("ui.ownedBuild");
+    side.appendChild(buildTitle);
+    const origin = ORIGINS.find((o) => o.id === s.originId);
+    const ob = document.createElement("div");
+    ob.className = "techmap-req";
+    const fams = activeFamilies(s.originId, s.expansionFamily).map((f) => t(`family.${f}` as EnKeys)).join("+");
+    ob.textContent = `${origin ? t(origin.nameKey) : s.originId} (${fams})` +
+      (s.expansionFamily !== "" ? ` +${t(`family.${s.expansionFamily}` as EnKeys)}` : "") +
+      ` · ★ ${s.breakthroughs.map((id) => {
+        const bb = BREAKTHROUGHS.find((x) => x.id === id);
+        return bb ? t(bb.titleKey) : id;
+      }).join(", ") || "—"}` +
+      (s.reservedTech !== "" ? ` · ${t("ui.reserve")}: ${this.planLabel(s.reservedTech)}` : "");
+    side.appendChild(ob);
+    const domains = ["warfare", "industry", "science", "culture"] as const;
+    for (const d of domains) {
+      const list = s.owned
+        .map((id) => byId.get(id))
+        .filter((n) => n && n.domain === d)
+        .map((n) => t((n as { titleKey: EnKeys }).titleKey));
+      if (list.length === 0) continue;
+      const row = document.createElement("div");
+      row.className = "techmap-req";
+      row.textContent = `${t(`domain.${d}` as EnKeys)}: ${list.join(" · ")}`;
+      side.appendChild(row);
+    }
+    body.appendChild(side);
+    wrap.appendChild(body);
+    screen.appendChild(wrap);
+    root.appendChild(screen);
+    this.drawTechLinks(svg, cols);
+  }
+
+  /** Prerequisite connector lines (best-effort presentation; chips carry meaning). */
+  private drawTechLinks(svg: SVGSVGElement, cols: HTMLElement): void {
+    try {
+      const host = cols.getBoundingClientRect();
+      const pos = new Map<string, { x: number; y: number }>();
+      for (const b of cols.querySelectorAll<HTMLButtonElement>("button.techmap-node")) {
+        const r = b.getBoundingClientRect();
+        if (b.dataset.nodeId) pos.set(b.dataset.nodeId, { x: r.left - host.left + r.width / 2, y: r.top - host.top + r.height / 2 });
+      }
+      svg.setAttribute("width", String(host.width));
+      svg.setAttribute("height", String(host.height));
+      const byId = new Map(this.sim.techGraph().map((n) => [n.id, n]));
+      for (const [id, p] of pos) {
+        const n = byId.get(id);
+        if (!n) continue;
+        for (const pre of n.prerequisites) {
+          const q = pos.get(pre);
+          if (!q) continue;
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", String(q.x));
+          line.setAttribute("y1", String(q.y));
+          line.setAttribute("x2", String(p.x));
+          line.setAttribute("y2", String(p.y));
+          line.setAttribute("class", "techmap-link");
+          svg.appendChild(line);
+        }
+      }
+    } catch {
+      // Links are decorative; chips carry the prerequisite meaning.
+    }
+  }
+
+  /** Civilization map (M): large explored-world view + territory ledger. */
+  private toggleCivMap(): void {
+    const s = this.sim.state;
+    if (s.over) return;
+    if (this.techMapOpen) this.toggleTechMap();
+    if (this.civMapOpen) {
+      document.getElementById("civmap-screen")?.remove();
+      this.civMapOpen = false;
+      return;
+    }
+    if (s.draftOpen || this.blockingModal) return;
+    this.civMapOpen = true;
+    const root = uiRoot();
+    const screen = el("div", "screen");
+    screen.id = "civmap-screen";
+    const panel = el("div", "panel civmap-panel");
+    panel.appendChild(el("h2", "", "ui.civilizationMap"));
+    const cv = document.createElement("canvas");
+    cv.width = 420;
+    cv.height = 300;
+    panel.appendChild(cv);
+    const list = el("div", "civmap-list");
+    if (s.territories.length === 0) {
+      const d = document.createElement("div");
+      d.textContent = "—";
+      list.appendChild(d);
+    }
+    for (const terr of s.territories) {
+      const d = document.createElement("div");
+      const specKey = terr.spec === "" ? null : (`ui.spec${terr.spec[0]?.toUpperCase()}${terr.spec.slice(1)}` as EnKeys);
+      const raidMark = s.raid && s.raid.poiId === terr.poiId ? ` ⚠ ${t("ui.raidIncoming")} ${Math.ceil(s.raid.tMinus)}s` : "";
+      d.textContent = `◈ ${t(`poi.${terr.poiType}.name` as EnKeys)} · ` +
+        `${specKey ? t(specKey) : "—"} · T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}${terr.disabled ? " · ✗" : ""}${raidMark}`;
+      list.appendChild(d);
+    }
+    panel.appendChild(list);
+    panel.appendChild(button("ui.back", () => this.toggleCivMap(), "btn primary"));
+    screen.appendChild(panel);
+    root.appendChild(screen);
+    this.drawCivMap(cv);
+  }
+
+  private drawCivMap(cv: HTMLCanvasElement): void {
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+    const s = this.sim.state;
+    const W = cv.width;
+    const H = cv.height;
+    const RANGE = 12;
+    const { cx, cy } = worldToChunk(s.px, s.py);
+    ctx.fillStyle = "#0b0e14";
+    ctx.fillRect(0, 0, W, H);
+    const cellX = W / (RANGE * 2 + 1);
+    const cellY = H / (RANGE * 2 + 1);
+    for (const m of minimapCells(s.chunksWorld, cx, cy, RANGE)) {
+      if (!m.seen) continue;
+      ctx.fillStyle = "#1d2a3a";
+      ctx.fillRect((m.ox + RANGE) * cellX + 1, (m.oy + RANGE) * cellY + 1, cellX - 2, cellY - 2);
+    }
+    const dot = (wx: number, wy: number, color: string, r = 3): void => {
+      const dx = (wx - s.px) / 512;
+      const dy = (wy - s.py) / 512;
+      if (Math.abs(dx) > RANGE || Math.abs(dy) > RANGE) return;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(W / 2 + dx * cellX, H / 2 + dy * cellY, r, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    for (const terr of s.territories) dot(terr.x, terr.y, terr.disabled ? "#555555" : "#53e0c8", 4);
+    for (let ox = -RANGE; ox <= RANGE; ox++) {
+      for (let oy = -RANGE; oy <= RANGE; oy++) {
+        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (s.poisWorld.includes(poi.id)) continue;
+          dot(poi.wx, poi.wy, "#ffd166", 2);
+        }
+      }
+    }
+    const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    if (boss?.active) dot(boss.x, boss.y, "#ff2222", 5);
+    dot(s.px, s.py, "#ffffff", 4);
+  }
+  private drawMinimap(): void {
+    const cv = this.hud.minimap as HTMLCanvasElement | undefined;
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+    const s = this.sim.state;
+    const W = cv.width;
+    const H = cv.height;
+    const RANGE = 4;
+    const { cx, cy } = worldToChunk(s.px, s.py);
+    ctx.fillStyle = "rgba(8,12,18,0.85)";
+    ctx.fillRect(0, 0, W, H);
+    const cell = W / (RANGE * 2 + 1);
+    // Fog by construction: only visited chunk keys render (contract-tested).
+    for (const m of minimapCells(s.chunksWorld, cx, cy, RANGE)) {
+      if (!m.seen) continue;
+      ctx.fillStyle = "#1d2a3a";
+      ctx.fillRect((m.ox + RANGE) * cell + 1, (m.oy + RANGE) * cell + 1, cell - 2, cell - 2);
+    }
+    const dot = (wx: number, wy: number, color: string, r = 2.5): void => {
+      const dx = (wx - s.px) / 512;
+      const dy = (wy - s.py) / 512;
+      if (Math.abs(dx) > RANGE || Math.abs(dy) > RANGE) return;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(W / 2 + dx * cell, H / 2 + dy * cell, r, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    for (const terr of s.territories) {
+      dot(terr.x, terr.y, terr.disabled ? "#555555" : "#53e0c8", 3.5);
+    }
+    if (s.raid) {
+      const terr = s.territories.find((x) => x.poiId === s.raid?.poiId);
+      if (terr) {
+        const pulse = 3 + 2 * Math.sin(performance.now() / 200);
+        dot(terr.x, terr.y, "#ff2222", pulse);
+      }
+    }
+    for (let ox = -RANGE; ox <= RANGE; ox++) {
+      for (let oy = -RANGE; oy <= RANGE; oy++) {
+        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (s.poisWorld.includes(poi.id)) continue;
+          dot(poi.wx, poi.wy, "#ffd166", 2);
+        }
+      }
+    }
+    const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    if (boss?.active) dot(boss.x, boss.y, "#ff2222", 4);
+    dot(s.px, s.py, "#ffffff", 3);
+  }
+
   private refreshBossBar(): void {
     const bar = this.hud.bossBar;
     const fill = this.hud.bossFill;
@@ -669,6 +1259,9 @@ export class GameScene extends Phaser.Scene {
   private openDraft(): void {
     const s = this.sim.state;
     if (document.getElementById("draft-screen")) return; // exactly-one guard
+    // Drafts take precedence over informational map overlays.
+    if (this.techMapOpen) this.toggleTechMap();
+    if (this.civMapOpen) this.toggleCivMap();
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "draft-screen";
@@ -712,8 +1305,43 @@ export class GameScene extends Phaser.Scene {
       c.appendChild(r);
       c.addEventListener("click", () => this.pickCard(i));
       cards.appendChild(c);
+      // Per-card RESERVE (one slot; fallback cards cannot be reserved).
+      if (!n.id.startsWith("fb-")) {
+        const rs = document.createElement("button");
+        rs.className = "btn card-reserve";
+        rs.textContent = `${t("ui.reserve")}${s.reservedTech === n.id ? " ✓" : ""}`;
+        rs.addEventListener("click", (ev2) => {
+          ev2.stopPropagation();
+          this.handleEvents(this.sim.reserveCard(i));
+          this.refreshHUD();
+        });
+        c.appendChild(rs);
+      }
     });
     screen.appendChild(cards);
+    // Draft agency row: reroll (bounded) + skip + owned-stays truth.
+    const agency = el("div", "draft-agency");
+    const reroll = document.createElement("button");
+    reroll.className = "btn";
+    reroll.disabled = s.rerolls <= 0;
+    reroll.textContent = `${t("ui.reroll")} (${s.rerolls})`;
+    reroll.addEventListener("click", () => {
+      this.handleEvents(this.sim.rerollDraft());
+      // Choices changed: drop the stale surface so syncDraftUI rebuilds.
+      document.getElementById("draft-screen")?.remove();
+    });
+    const skip = document.createElement("button");
+    skip.className = "btn";
+    skip.textContent = t("ui.skip");
+    skip.addEventListener("click", () => {
+      this.handleEvents(this.sim.skipDraft());
+      document.getElementById("draft-screen")?.remove();
+    });
+    agency.appendChild(reroll);
+    agency.appendChild(skip);
+    screen.appendChild(agency);
+    const stays = el("div", "draft-stays", "ui.ownedStays");
+    screen.appendChild(stays);
     root.appendChild(screen);
   }
 
@@ -774,9 +1402,13 @@ export class GameScene extends Phaser.Scene {
     // fresh random seed; Quit returns to title.) Origin choice is preserved.
     this.modalQueue = [];
     this.closeBlocking();
+    this.techMapOpen = false;
+    this.civMapOpen = false;
     document.getElementById("pause-screen")?.remove();
     document.getElementById("draft-screen")?.remove();
     document.getElementById("ascend-screen")?.remove();
+    document.getElementById("techmap-screen")?.remove();
+    document.getElementById("civmap-screen")?.remove();
     sessionStorage.setItem(TITLE_SEED_KEY, this.masterSeed);
     sessionStorage.setItem(TITLE_ORIGIN_KEY, this.sim.state.originId);
     this.scene.restart();
@@ -847,6 +1479,18 @@ export class GameScene extends Phaser.Scene {
       dl.appendChild(dd);
     }
     panel.appendChild(dl);
+    // Build history: decision timings for build-order mastery (Phase 20).
+    if (s.history.length > 0) {
+      panel.appendChild(el("h2", "", "ui.buildHistory"));
+      const hist = document.createElement("div");
+      hist.className = "chron-history";
+      for (const h of s.history.slice(-14)) {
+        const line = document.createElement("div");
+        line.textContent = `${this.fmtTime(h.t)} · ${h.kind} · ${h.label}`;
+        hist.appendChild(line);
+      }
+      panel.appendChild(hist);
+    }
     const rowBtn = el("div", "btn-row");
     const copy = button("ui.copySeed", () => undefined);
     copy.addEventListener("click", () => void this.copySeed(copy));
@@ -1115,6 +1759,61 @@ export class GameScene extends Phaser.Scene {
           sfx.select();
           this.qa?.noteSimEvent("tech", e.techId);
           break;
+        case "draft_reserved":
+          sfx.select();
+          break;
+        case "draft_rerolled":
+          sfx.select();
+          break;
+        case "draft_skipped":
+          sfx.select();
+          break;
+        case "pin_set":
+          sfx.select();
+          break;
+        case "mission_complete":
+          toast("ui.missionComplete", t(`age.${e.age}` as EnKeys));
+          sfx.age();
+          break;
+        case "territory_claimed":
+          toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys));
+          sfx.select();
+          break;
+        case "outpost_spec":
+          toast(e.spec === "research" ? "ui.specResearch" : e.spec === "military" ? "ui.specMilitary" : "ui.specEconomy");
+          sfx.select();
+          break;
+        case "outpost_upgraded":
+          toast("ui.upgrade");
+          sfx.age();
+          break;
+        case "outpost_lost":
+          toast("ui.outpostLost");
+          sfx.hurt();
+          break;
+        case "outpost_repaired":
+          toast("ui.outpostRepaired");
+          sfx.select();
+          break;
+        case "raid_incoming": {
+          const terr = this.sim.state.territories.find((x) => x.poiId === e.poiId);
+          const nm = terr ? t(`poi.${terr.poiType}.name` as EnKeys) : e.poiId;
+          toast("ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
+          sfx.boss();
+          break;
+        }
+        case "raid_repelled":
+          toast("ui.raidRepelled");
+          sfx.age();
+          break;
+        case "squad_command":
+          break;
+        case "ability_used": {
+          const abil = ORIGIN_ABILITY[originById(this.sim.state.originId).id];
+          toast("ui.ability", t(abil.nameKey));
+          sfx.select();
+          break;
+        }
         case "breakthrough": {
           this.showBreakthroughBeat(e.id);
           this.qa?.noteSimEvent("breakthrough", e.id);
@@ -1167,9 +1866,14 @@ export class GameScene extends Phaser.Scene {
         case "player_hurt":
           sfx.hurt();
           this.lastHurtT = performance.now() / 1000;
+          this.dmgNums.push({ x: s.px, y: s.py - 24, txt: `-${Math.ceil(e.damage)}`, t: 0.9 });
+          if (this.dmgNums.length > 12) this.dmgNums.shift();
           break;
         case "enemy_killed":
           killsThisFrame++;
+          this.bursts.push({ x: e.x, y: e.y, t: e.boss ? 0.5 : 0.3, max: e.boss ? 0.5 : 0.3, big: e.boss });
+          if (this.bursts.length > 24) this.bursts.shift();
+          if (e.boss && save.settings.shake) this.cameras.main.shake(400, 0.012);
           break;
         case "player_died":
           this.persistRunEnd();
@@ -1214,7 +1918,9 @@ export class GameScene extends Phaser.Scene {
     this.pushSample(this.frameSamples, deltaMs);
 
     const s = this.sim.state;
-    if (!this.paused && !s.over && !s.draftOpen && !this.blockingModal) {
+    // Map overlays pause stepping (informational screens, not decisions).
+    const stepping = !this.paused && !s.over && !s.draftOpen && !this.blockingModal && !this.techMapOpen && !this.civMapOpen;
+    if (stepping) {
       this.sampleMove();
       const steps = this.acc.steps(dt);
       for (let i = 0; i < steps; i++) {
@@ -1235,6 +1941,11 @@ export class GameScene extends Phaser.Scene {
       this.modalT -= dt;
       if (this.modalT <= 0) this.closeBlocking();
     }
+    // Transient impact timers (presentation only).
+    if (this.bursts.length > 0) {
+      for (const burst of this.bursts) burst.t -= dt;
+      this.bursts = this.bursts.filter((burst) => burst.t > 0);
+    }
 
     this.drawFrame();
     this.hudT -= dt;
@@ -1244,7 +1955,8 @@ export class GameScene extends Phaser.Scene {
     }
     // Ground follows chunk/age/POI discovery; CAMERA moves every frame (R4).
     const { cx, cy } = worldToChunk(s.px, s.py);
-    const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}`;
+    const terrSig = s.territories.map((t) => `${t.poiId}:${t.spec}:${t.tier}:${t.disabled ? 0 : 1}`).join("|");
+    const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}:t${terrSig}`;
     if (gk !== this.lastGroundKey) {
       this.lastGroundKey = gk;
       this.refreshGround(false);
@@ -1307,6 +2019,8 @@ export class GameScene extends Phaser.Scene {
       highContrast: this.highContrast(),
     });
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
+    // Claimed territories get age-dressing: the map grows a civilization.
+    const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
     for (let ox = -R; ox <= R; ox++) {
       for (let oy = -R; oy <= R; oy++) {
         const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
@@ -1319,6 +2033,13 @@ export class GameScene extends Phaser.Scene {
             time: now,
             highContrast: this.highContrast(),
           });
+          const terr = terrByPoi.get(poi.id);
+          if (terr) {
+            drawTerritoryDressing(g, {
+              x: poi.wx, y: poi.wy,
+              ageIndex: s.ageIndex, tier: terr.tier, disabled: terr.disabled,
+            });
+          }
         }
       }
     }
@@ -1337,6 +2058,9 @@ export class GameScene extends Phaser.Scene {
     const now = performance.now() / 1000;
     const hc = this.highContrast();
     const wopts = { time: now, highContrast: hc };
+    // Focused target = nearest foe to the player (HP bar while focused).
+    let focus: (typeof s.enemies)[number] | null = null;
+    let focusDist = 420;
 
     for (const k of s.pickups) {
       if (!k.active || !vis(k.x, k.y)) continue;
@@ -1348,11 +2072,22 @@ export class GameScene extends Phaser.Scene {
     }
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
+      // Focused target = nearest foe to the player (HP bar while focused).
+      const fd = Math.hypot(e.x - s.px, e.y - s.py);
+      if (fd < focusDist) {
+        focusDist = fd;
+        focus = e;
+      }
+    }
+    for (const e of s.enemies) {
+      if (!e.active || !vis(e.x, e.y)) continue;
       drawEnemy(g, e, {
         bodyColor: ENEMY_LINEAGE[e.family].color[AGES[s.ageIndex] as AgeId],
         facing: Math.atan2(s.py - e.y, s.px - e.x),
         time: now,
         highContrast: hc,
+        hpBar: e.elite || e.boss || e.flash > 0 || e === focus,
+        ageIndex: s.ageIndex,
       });
     }
     for (const p of s.projs) {
@@ -1397,11 +2132,48 @@ export class GameScene extends Phaser.Scene {
       hurtFlash: now - this.lastHurtT < 0.25,
       time: now,
       highContrast: hc,
+      originId: s.originId,
+      ageIndex: s.ageIndex,
     });
+    // Command squad renders as origin-identified allies with mode glyph.
+    for (const a of s.squad) {
+      if (!a.active || !vis(a.x, a.y)) continue;
+      drawSummon(g, a.x, a.y, 7, 0x9fd8ff, s.px, s.py);
+    }
+    // Transient impact: death rings + floating damage numbers.
+    for (const burst of this.bursts) {
+      const f = burst.t / burst.max;
+      g.lineStyle(burst.big ? 4 : 2, burst.big ? 0xff5533 : 0xffe08a, f);
+      g.strokeCircle(burst.x, burst.y, (1 - f) * (burst.big ? 90 : 34) + 6);
+    }
+    for (const dn of this.dmgNums) {
+      this.floatTextAt(dn.x, dn.y, dn.txt, "#ff6b6b");
+    }
+    this.dmgNums.length = 0;
     this.drawBossIndicator();
   }
 
-  /** Persistent off-screen boss indicator (screen space). */
+  /** Pooled floating combat text (transient presentation, zero per-frame allocs). */
+  private floatTextAt(x: number, y: number, txt: string, color: string): void {
+    let t = this.floatText.find((o) => !o.visible);
+    if (!t) {
+      if (this.floatText.length >= 12) return;
+      const created = this.add.text(0, 0, "", {
+        fontSize: "14px", color, fontFamily: "monospace", backgroundColor: "rgba(0,0,0,0.55)",
+      });
+      created.setDepth(44);
+      this.floatText.push(created);
+      t = created;
+    }
+    t.setText(txt);
+    t.setColor(color);
+    t.setPosition(x - 18, y - 10);
+    t.setAlpha(1);
+    t.setVisible(true);
+    const ref = t;
+    this.time.delayedCall(700, () => ref.setVisible(false));
+  }
+
   private drawBossIndicator(): void {
     const g = this.bossGfx;
     if (!g) return;

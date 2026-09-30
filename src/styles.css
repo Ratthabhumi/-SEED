@@ -203,3 +203,83 @@ button, input { font-family: inherit; }
   border-radius: 10px; padding: 10px 18px; font-size: 14px; line-height: 1.7;
   pointer-events: none; z-index: 30; max-width: 92vw; text-align: center;
 }
+
+/* v0.2.1 civilization command loop: compact HUD, age card, territory, tech map. */
+.status-card {
+  position: absolute; left: 12px; bottom: 12px; min-width: 210px; max-width: 300px;
+  background: rgba(8,12,18,0.72); border: 1px solid #2c3a52; border-radius: 10px;
+  padding: 8px 12px; line-height: 1.7; pointer-events: none;
+}
+.status-hp { font-size: 17px; font-weight: 800; color: #ff8a8a; }
+.status-ident { font-size: 13px; color: var(--text); }
+.status-squad { font-size: 12px; color: #9fd8ff; }
+.mini-bar { height: 10px; background: #141c2a; border: 1px solid #2c3a52; border-radius: 6px; overflow: hidden; margin-top: 2px; }
+.mini-fill { height: 100%; transition: width 0.15s; }
+.mini-fill.hp { background: linear-gradient(90deg, #ff5a5a, #ff9a3c); }
+.mini-fill.kn { background: linear-gradient(90deg, #53e0c8, #7fb8ff); }
+.knowledge-card {
+  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  width: min(420px, 44vw); background: rgba(8,12,18,0.72); border: 1px solid #2c3a52;
+  border-radius: 10px; padding: 6px 14px; line-height: 1.7; pointer-events: none; text-align: center;
+}
+.knowledge-label { font-size: 11px; letter-spacing: 2px; color: #53e0c8; font-weight: 700; }
+.knowledge-nums { font-size: 14px; font-weight: 700; }
+.age-card {
+  position: absolute; top: 10px; right: 12px; width: 250px; max-width: 40vw;
+  background: rgba(8,12,18,0.78); border: 1px solid #2c3a52; border-radius: 10px;
+  padding: 8px 12px; line-height: 1.7; pointer-events: none;
+}
+.age-card-title { font-size: 14px; font-weight: 800; color: var(--accent); }
+.gate-row { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: 4px; }
+.gate-mark { font-weight: 800; width: 16px; color: #ff6b6b; }
+.gate-row.done .gate-mark { color: #53e0c8; }
+.gate-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gate-bar { flex: 1; min-width: 48px; height: 8px; background: #141c2a; border-radius: 5px; overflow: hidden; }
+.gate-fill { height: 100%; background: #7fb8ff; }
+.gate-row.done .gate-fill { background: #53e0c8; }
+.gate-sub { font-size: 12px; color: var(--muted); padding-left: 22px; }
+.gate-sub.done { color: #53e0c8; }
+.territory-bar {
+  position: absolute; left: 12px; bottom: 132px; display: flex; flex-direction: column;
+  gap: 6px; max-width: 320px;
+}
+.territory-bar:empty { display: none; }
+.territory-bar .btn { pointer-events: auto; font-size: 13px; padding: 8px 12px; min-height: 40px; text-align: left; }
+#techmap-btn { position: absolute; left: 12px; bottom: 96px; pointer-events: auto; font-size: 13px; padding: 8px 12px; min-height: 40px; }
+#minimap {
+  position: absolute; right: 12px; bottom: 12px; width: 148px; height: 148px;
+  border: 1px solid #2c3a52; border-radius: 10px; pointer-events: none;
+}
+.draft-agency { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+.draft-stays { color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 10px; text-align: center; max-width: 640px; }
+.btn.card-reserve { font-size: 12px; padding: 6px 10px; min-height: 32px; margin-top: 6px; }
+.chron-history { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 4px 0 8px; max-height: 180px; overflow-y: auto; }
+.techmap-wrap {
+  background: rgba(8,12,18,0.97); border: 1px solid #2c3a52; border-radius: 12px;
+  width: min(1060px, 94vw); max-height: 88vh; display: flex; flex-direction: column;
+  padding: 12px 16px; pointer-events: auto;
+}
+.techmap-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.techmap-title { font-size: 17px; font-weight: 800; color: var(--accent); }
+.techmap-pin { font-size: 13px; color: #7fd4ff; }
+.techmap-body { display: flex; gap: 14px; min-height: 0; }
+.techmap-cols { position: relative; flex: 1; display: flex; gap: 8px; overflow-x: auto; min-height: 300px; max-height: 60vh; overflow-y: auto; }
+.techmap-links { position: absolute; inset: 0; pointer-events: none; }
+.techmap-link { stroke: #3a5a78; stroke-width: 1.5; }
+.techmap-col { display: flex; flex-direction: column; gap: 6px; min-width: 128px; }
+.techmap-age { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.techmap-node {
+  font-size: 12px; line-height: 1.6; padding: 6px 8px; border-radius: 8px; text-align: left;
+  background: #141d2e; border: 1px solid #3a4a63; color: var(--text); cursor: pointer;
+}
+.techmap-node.available { border-color: #53e0c8; }
+.techmap-node.owned { border-color: var(--accent); color: var(--accent); }
+.techmap-node.pinned { box-shadow: 0 0 0 2px #7fb8ff; }
+.techmap-side { width: 300px; min-width: 260px; overflow-y: auto; font-size: 13px; line-height: 1.7; }
+.techmap-side h3 { margin: 6px 0 4px; font-size: 15px; }
+.techmap-meta { color: var(--muted); font-size: 12px; }
+.techmap-req { font-size: 12px; color: var(--text); margin-top: 4px; }
+.techmap-req-title { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.civmap-panel { width: min(560px, 94vw); }
+.civmap-panel canvas { width: 100%; border-radius: 8px; border: 1px solid #2c3a52; }
+.civmap-list { font-size: 13px; line-height: 1.8; margin: 8px 0; text-align: left; }

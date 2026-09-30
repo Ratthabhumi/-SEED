@@ -103,6 +103,51 @@ export function bossShapeId(): string {
   return "hex-crown";
 }
 
+/**
+ * Compact HP-bar rule (adapter feeds flash/focus state; renderer stays dumb).
+ * Elites/bosses always; normals only when recently hit or actively focused.
+ */
+export function shouldShowHpBar(opts: { elite: boolean; boss: boolean; flash: number; focused: boolean }): boolean {
+  return opts.elite || opts.boss || opts.flash > 0 || opts.focused;
+}
+
+export type PlayerTrim = "none" | "frame" | "rig" | "pack" | "exo" | "orbital";
+
+/**
+ * Player age trim — authored visual lineage per age (presentation only, never
+ * mutates simulation). Stone bares the core; each age bolts on one component.
+ */
+export function playerTrim(ageIndex: number): PlayerTrim {
+  if (ageIndex <= 0) return "none";
+  if (ageIndex === 1) return "frame";
+  if (ageIndex === 2) return "rig";
+  if (ageIndex === 3) return "pack";
+  if (ageIndex === 4) return "exo";
+  return "orbital";
+}
+
+export type OriginGlyph = "chevron" | "square" | "ring" | "triangle";
+
+/** Origin identity mark drawn beside the player core (shape, not color). */
+export function originGlyph(originId: string): OriginGlyph {
+  switch (originId) {
+    case "hunters": return "chevron";
+    case "engineers": return "square";
+    case "resonant": return "ring";
+    default: return "triangle";
+  }
+}
+
+export interface EnemyTrim {
+  plating: boolean;
+  energy: boolean;
+}
+
+/** Enemy age extras layer over (never instead of) the family silhouette. */
+export function enemyTrim(ageIndex: number): EnemyTrim {
+  return { plating: ageIndex >= 2, energy: ageIndex >= 4 };
+}
+
 // Palette: dark outlines for identity on any background; gold reserved for
 // player-adjacent importance (player accents, elites, boss, POI beacons).
 export const VL = {
