@@ -266,7 +266,9 @@ export const th: Record<EnKeys, string> = {
   "ui.buildPlan": "แผนการสร้าง",
   "ui.ownedBuild": "สิ่งที่สร้างแล้ว",
   "ui.techMap": "แผนที่เทคโนโลยี",
+  "ui.fit": "พอดีหน้าจอ",
   "ui.reserve": "สำรอง",
+
   "ui.reroll": "สุ่มใหม่",
   "ui.skip": "ข้าม",
   "ui.pinPath": "ปักหมุดเส้นทาง",

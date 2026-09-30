@@ -264,7 +264,9 @@ export const en = {
   "ui.buildPlan": "BUILD PLAN",
   "ui.ownedBuild": "CURRENT BUILD",
   "ui.techMap": "Tech Map",
+  "ui.fit": "Fit",
   "ui.reserve": "RESERVE",
+
   "ui.reroll": "REROLL",
   "ui.skip": "SKIP",
   "ui.pinPath": "PIN PATH",

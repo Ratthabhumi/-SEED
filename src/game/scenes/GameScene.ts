@@ -318,6 +318,12 @@ export class GameScene extends Phaser.Scene {
         hash: () => this.sim.hash(),
         snapshot: () => this.sim.snapshot(),
         seed: () => this.masterSeed,
+        cleanPresentation: () => {
+          const s = this.sim.state;
+          s.build.hp = 100;
+          s.build.maxHp = 100;
+          this.refreshHUD();
+        },
         setLang: (code: "en" | "th") => this.applyLanguage(code),
         teleportToPOI: () => {
           // Test-only staging: move to the nearest undiscovered POI so
@@ -355,8 +361,14 @@ export class GameScene extends Phaser.Scene {
           this.refreshHUD();
           return c.poiId;
         },
+        openSpecPicker: (poiId?: string) => {
+          const s = this.sim.state;
+          const id = poiId || s.territories[0]?.poiId || "e2e_outpost";
+          this.showSpecPicker(id);
+        },
       };
     }
+
 
     // QA playtest harness: read-only observer, query-gated, zero gameplay effect.
     if (isQAMode(window.location.search)) this.startQa();
@@ -1511,6 +1523,8 @@ export class GameScene extends Phaser.Scene {
   private showBlockingFresh(id: string, dur: number, build?: (screen: HTMLElement) => void): void {
     // Caller (or queue drain) guarantees no live modal; never re-enter drain.
     this.blockingModal?.remove();
+    // Dismiss any active toasts to prevent overlapping presentation text
+    document.querySelectorAll(".toast").forEach((t) => t.remove());
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = id;

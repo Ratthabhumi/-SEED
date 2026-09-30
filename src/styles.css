@@ -25,9 +25,11 @@ button, input { font-family: inherit; }
 #ui .screen {
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 14px;
-  background: radial-gradient(ellipse at center, rgba(11,14,20,0.55) 0%, rgba(11,14,20,0.88) 100%);
+  background: radial-gradient(ellipse at center, rgba(11,14,20,0.7) 0%, rgba(11,14,20,0.92) 100%);
   pointer-events: auto; padding: 20px; text-align: center;
+  z-index: 50;
 }
+
 .panel {
   background: var(--panel); border: 1px solid #2a3444; border-radius: 14px;
   padding: 22px 26px; max-width: 560px; width: min(92vw, 560px);
@@ -129,7 +131,9 @@ button, input { font-family: inherit; }
   position: absolute; top: 76px; left: 50%; transform: translate(-50%, -12px);
   background: var(--panel); border: 1px solid var(--accent); border-radius: 12px;
   padding: 12px 22px; opacity: 0; transition: all 0.35s; text-align: center; max-width: 90vw;
+  z-index: 40;
 }
+
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast-title { font-size: 19px; font-weight: 700; color: var(--accent); line-height: 1.7; }
 .toast-sub { color: var(--muted); font-size: 14px; line-height: 1.7; }
@@ -281,11 +285,19 @@ button, input { font-family: inherit; }
   user-select: none; touch-action: none;
 }
 .techmap-viewport:active { cursor: grabbing; }
-.techmap-canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.techmap-canvas { position: absolute; left: 0; top: 0; }
 .techmap-svg { position: absolute; inset: 0; pointer-events: none; }
 .techmap-lane-bg { fill: rgba(18, 28, 45, 0.35); stroke: rgba(44, 67, 101, 0.4); stroke-width: 1px; rx: 6px; }
-.techmap-lane-title { fill: #617b9f; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; font-family: inherit; }
+.techmap-lane-pill { fill: rgba(18, 28, 45, 0.95); stroke: rgba(83, 224, 200, 0.5); stroke-width: 1.5px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.techmap-lane-pill-stone { stroke: #9e8d7c; fill: rgba(38, 33, 29, 0.95); }
+.techmap-lane-pill-bronze { stroke: #e09653; fill: rgba(48, 32, 20, 0.95); }
+.techmap-lane-pill-iron { stroke: #7bb3f0; fill: rgba(24, 38, 58, 0.95); }
+.techmap-lane-pill-industrial { stroke: #f0a340; fill: rgba(52, 35, 16, 0.95); }
+.techmap-lane-pill-atomic { stroke: #53e0c8; fill: rgba(16, 42, 38, 0.95); }
+.techmap-lane-pill-space { stroke: #c77dff; fill: rgba(42, 20, 60, 0.95); }
+.techmap-lane-title { fill: #f0f6fc; font-size: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; font-family: inherit; }
 .techmap-nodes { position: absolute; inset: 0; pointer-events: none; }
+
 .techmap-node {
   position: absolute; pointer-events: auto; box-sizing: border-box;
   font-size: 12px; line-height: 1.4; padding: 6px 8px; border-radius: 6px; text-align: left;

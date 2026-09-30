@@ -156,7 +156,7 @@ export class TechMapView {
 
     const btnFit = document.createElement("button");
     btnFit.className = "btn techmap-btn-fit techmap-no-pan";
-    btnFit.textContent = t("ui.fit" as EnKeys) || "FIT";
+    btnFit.textContent = t("ui.fit");
     btnFit.title = "Fit graph to viewport";
     btnFit.addEventListener("click", () => this.fit());
     controls.appendChild(btnFit);
@@ -237,11 +237,23 @@ export class TechMapView {
       laneRect.setAttribute("class", `techmap-lane-bg techmap-lane-${lane.age}`);
       svg.appendChild(laneRect);
 
+      // High-contrast age lane header pill
+      const pillWidth = Math.min(lane.maxX - lane.minX + 24, 220);
+      const pillX = (lane.minX + lane.maxX) / 2 - pillWidth / 2;
+      const pillRect = document.createElementNS(svgNS, "rect");
+      pillRect.setAttribute("x", String(pillX));
+      pillRect.setAttribute("y", "8");
+      pillRect.setAttribute("width", String(pillWidth));
+      pillRect.setAttribute("height", "36");
+      pillRect.setAttribute("rx", "8");
+      pillRect.setAttribute("class", `techmap-lane-pill techmap-lane-pill-${lane.age}`);
+      svg.appendChild(pillRect);
+
       const laneText = document.createElementNS(svgNS, "text");
       laneText.setAttribute("x", String((lane.minX + lane.maxX) / 2));
-      laneText.setAttribute("y", "28");
+      laneText.setAttribute("y", "32");
       laneText.setAttribute("text-anchor", "middle");
-      laneText.setAttribute("class", "techmap-lane-title");
+      laneText.setAttribute("class", `techmap-lane-title techmap-lane-title-${lane.age}`);
       laneText.textContent = t(`age.${lane.age}` as EnKeys);
       svg.appendChild(laneText);
     }
@@ -358,9 +370,8 @@ export class TechMapView {
 
     try {
       this.panzoom = Panzoom(this.canvasEl, {
-        minScale: 0.35,
-        maxScale: 2.2,
-        contain: "outside",
+        minScale: 0.3,
+        maxScale: 2.5,
         excludeClass: "techmap-no-pan",
       });
 
@@ -392,18 +403,26 @@ export class TechMapView {
     const bh = this.layoutResult.height;
     if (bw <= 0 || bh <= 0) return;
 
-    const padding = 48;
-    const scale = Math.max(0.35, Math.min(1.2, Math.min((vw - padding) / bw, (vh - padding) / bh)));
-    const panX = Math.max(20, (vw - bw * scale) / 2);
-    const panY = Math.max(20, (vh - bh * scale) / 2);
+    const padding = 56;
+    const scale = Math.max(0.3, Math.min(1.0, Math.min((vw - padding) / bw, (vh - padding) / bh)));
+    const panX = (vw - bw) / (2 * scale);
+    const panY = (vh - bh) / (2 * scale);
 
     this.panzoom.zoom(scale, { animate: true });
     this.panzoom.pan(panX, panY, { animate: true });
   }
 
   public reset(): void {
-    if (!this.panzoom) return;
-    this.panzoom.reset({ animate: true });
+    if (!this.panzoom || !this.viewportEl) return;
+    const vw = this.viewportEl.clientWidth || 800;
+    const vh = this.viewportEl.clientHeight || 500;
+    const bw = this.layoutResult.width;
+    const bh = this.layoutResult.height;
+    // 1:1 scale centered on graph
+    const panX = (vw - bw) / 2;
+    const panY = (vh - bh) / 2;
+    this.panzoom.zoom(1.0, { animate: true });
+    this.panzoom.pan(panX, panY, { animate: true });
   }
 
   public zoomIn(): void {
