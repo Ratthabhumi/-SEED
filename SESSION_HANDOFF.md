@@ -2,15 +2,21 @@
 
 ## Timestamp
 
-2026-09-29 ~03:05 Asia/Bangkok. Documentation-only checkpoint; no code, test,
-dependency, or build change in this pass.
+2026-10-01 ~01:25 Asia/Bangkok. v0.22 Open-Source Leverage Foundation completed.
+Branch `feat/v022-open-source-leverage-20260930` created from v0.21 verified HEAD `181558d5e23aae838c29740cef423dbef9868d94`.
+Implementation:
+- @dagrejs/dagre 3.1.1 (MIT) integrated in presentation adapter `src/game/tech/TechGraphLayout.ts`.
+- @panzoom/panzoom 4.6.2 (MIT) integrated in `src/game/tech/TechMapView.ts` with Fit/Reset/Zoom controls and defensive fallback.
+- 8 approved gamedev-skills installed in project-local `.agents/skills/`.
+- 5 approved Kenney CC0 asset packs downloaded with provenance and 18 normalized production assets created in `assets/seed/`.
+- All governance docs created: `docs/ART_BIBLE.md`, `docs/THIRD_PARTY_LICENSES.md`, `docs/OPEN_SOURCE_LEVERAGE.md`, `docs/DEPENDENCY_POLICY.md`, `docs/DEVELOPMENT_TOOLING.md`.
+- `ROADMAP.md` fully rewritten with 10 production sections.
+- Verification: typecheck PASS, 35 unit test files (287 tests) PASS, verify:third-party PASS, production build PASS, 24/24 E2E tests PASS.
+- Visual audit evidence: 10 screenshots captured in `docs/visual_audit_v022/`.
+- GitHub Actions CI run 36757840977: verify (22) PASS, verify (24) PASS, e2e PASS on exact SHA.
+- Pure core isolation intact: zero presentation imports in `src/core/**`.
+- Canonical versions intact: WORLDGEN_VERSION=2, CONTENT_VERSION=4, SAVE_SCHEMA_VERSION=1.
 
-Office sync 2026-09-29 Asia/Bangkok: fresh `git clone` + checkout of
-`fix/v011-stabilization-20260929` at
-`544fb81d1375e85f13382a962d8c5f93185d4bfe` (= remote HEAD, one docs-only
-commit ahead of implementation checkpoint `b5750f1`); working tree clean;
-`npm ci` + `npm run check` green on this machine (typecheck PASS, 22 files /
-164 tests PASS, production build PASS, EXIT 0).
 
 Office QA-harness session 2026-09-29 Asia/Bangkok (human-authorized): added
 read-only `src/qa/` playtest harness (`?qa=1`), 14 new unit tests
@@ -64,11 +70,9 @@ feedback semantics + 1–5 ratings + compact panel + F4-off default. See
 
 ## Branch
 
-`feat/v021-civilization-command-loop-20260930` — **UNMERGED, UNTAGGED, NO ITCH**
-(deliberate; awaiting auditor review + next human test). Parent
-`feat/v020-engagement-loop-20260930` (@`fb29b8c`, finalized FAIL evidence)
-frozen and pushed. Readability `fix/v011-readability-20260929` remains the
-technical baseline; stabilization `737ddf3` the deep rollback point.
+`feat/v022-open-source-leverage-20260930` — **UNMERGED, UNTAGGED, NO ITCH**
+(deliberate; awaiting auditor review + human Tech Map usability check).
+Parent `feat/v021-civilization-command-loop-20260930` (@`181558d`) verified and untouched.
 
 ## Origin Main
 
@@ -76,9 +80,9 @@ technical baseline; stabilization `737ddf3` the deep rollback point.
 
 ## Implementation Checkpoint
 
-v0.2 WORKING BRANCH (see `git log` for exact HEAD at push time).
-Frozen baseline: readability `e4d4f8940cac2537fafd0a05895e1ea23b8f7ac2`
-(CI green). No force-push, no history rewrite on any line.
+v0.22 WORKING BRANCH HEAD: `6fd3e79ef7815d0707143dc4ea869f96de63ebf9`
+(CI run 36757840977 green: Node 22 PASS, Node 24 PASS, E2E PASS).
+No force-push, no history rewrite on any line.
 
 SESSION_HANDOFF.md may be one documentation-only commit ahead of this
 implementation checkpoint. On resume, `git rev-parse HEAD` is authoritative
