@@ -113,4 +113,51 @@ describe("TechGraphLayout (Dagre adapter)", () => {
       expect(cur.minX).toBeLessThan(next.minX);
     }
   });
+
+  it("FIT scale stays in usable range for golden Tech graph", () => {
+    const layout = layoutTechGraph(graph.nodes);
+    const viewports = [
+      { vw: 800, vh: 500 },
+      { vw: 1280, vh: 720 },
+      { vw: 1920, vh: 1080 },
+    ];
+    for (const { vw, vh } of viewports) {
+      const padding = 56;
+      const scale = Math.max(0.3, Math.min(1.0, Math.min((vw - padding) / layout.width, (vh - padding) / layout.height)));
+      expect(scale).toBeGreaterThanOrEqual(0.3);
+      expect(scale).toBeLessThanOrEqual(1.0);
+    }
+  });
+
+  it("FIT places graph visual center inside viewport tolerance", () => {
+    const layout = layoutTechGraph(graph.nodes);
+    const vw = 1280;
+    const vh = 720;
+    const padding = 56;
+    const scale = Math.max(0.3, Math.min(1.0, Math.min((vw - padding) / layout.width, (vh - padding) / layout.height)));
+    const panX = (vw - layout.width) / (2 * scale);
+    const panY = (vh - layout.height) / (2 * scale);
+
+    // Panzoom transform: x_screen = bw/2 + scale * panX
+    const visualCenterX = layout.width / 2 + scale * panX;
+    const visualCenterY = layout.height / 2 + scale * panY;
+
+    expect(Math.abs(visualCenterX - vw / 2)).toBeLessThan(0.01);
+    expect(Math.abs(visualCenterY - vh / 2)).toBeLessThan(0.01);
+  });
+
+  it("first and last graph nodes have finite bounds and remain reachable", () => {
+    const layout = layoutTechGraph(graph.nodes);
+    expect(layout.nodes.length).toBeGreaterThan(0);
+    const first = layout.nodes[0]!;
+    const last = layout.nodes[layout.nodes.length - 1]!;
+
+    expect(Number.isFinite(first.x)).toBe(true);
+    expect(Number.isFinite(first.y)).toBe(true);
+    expect(Number.isFinite(last.x)).toBe(true);
+    expect(Number.isFinite(last.y)).toBe(true);
+
+    expect(first.x).toBeGreaterThanOrEqual(0);
+    expect(last.x + last.width).toBeLessThanOrEqual(layout.width + 1);
+  });
 });

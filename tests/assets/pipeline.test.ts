@@ -6,7 +6,9 @@ interface NodeFS {
   existsSync(p: string): boolean;
   readFileSync(p: string, encoding: string): string;
   statSync(p: string): { size: number };
+  readdirSync(p: string, options?: any): any[];
 }
+
 interface NodePath {
   join(...paths: string[]): string;
 }
@@ -88,9 +90,109 @@ describe("Asset Pipeline and Manifest Verification", () => {
     }
   });
 
-  it("verifies TH and EN localization keys render for UI elements", () => {
+  it("verifies exact package.json and lockfile dependencies and licenses", () => {
+    const pkgRaw = fs.readFileSync(path.join(root, "package.json"), "utf-8");
+    const pkg = JSON.parse(pkgRaw);
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+    expect(deps["@dagrejs/dagre"]).toBe("3.1.1");
+    expect(deps["@panzoom/panzoom"]).toBe("4.6.2");
+
+    const lockRaw = fs.readFileSync(path.join(root, "package-lock.json"), "utf-8");
+    const lock = JSON.parse(lockRaw);
+    expect(lock.packages["node_modules/@dagrejs/dagre"]?.version).toBe("3.1.1");
+    expect(lock.packages["node_modules/@dagrejs/dagre"]?.license).toBe("MIT");
+    expect(lock.packages["node_modules/@panzoom/panzoom"]?.version).toBe("4.6.2");
+    expect(lock.packages["node_modules/@panzoom/panzoom"]?.license).toBe("MIT");
+  });
+
+  it("verifies SHA256 integrity and vendor file existence for every manifest asset", () => {
+    const crypto = require("crypto");
+    const raw = fs.readFileSync(manifestPath, "utf-8");
+    const manifest = JSON.parse(raw);
+    const list = Array.isArray(manifest) ? manifest : manifest.assets;
+
+    const seenIds = new Set<string>();
+    const seenPaths = new Set<string>();
+
+    for (const a of list) {
+      expect(seenIds.has(a.id), `Duplicate asset ID: ${a.id}`).toBe(false);
+      seenIds.add(a.id);
+
+      expect(seenPaths.has(a.projectPath), `Duplicate projectPath: ${a.projectPath}`).toBe(false);
+      seenPaths.add(a.projectPath);
+
+      const prodFull = path.join(root, a.projectPath);
+      const vendorFull = path.join(root, a.vendorSourcePath);
+
+      expect(fs.existsSync(prodFull), `Production file must exist: ${a.projectPath}`).toBe(true);
+      expect(fs.existsSync(vendorFull), `Vendor file must exist: ${a.vendorSourcePath}`).toBe(true);
+
+      const prodSha = crypto.createHash("sha256").update(fs.readFileSync(prodFull, "")).digest("hex");
+      const vendorSha = crypto.createHash("sha256").update(fs.readFileSync(vendorFull, "")).digest("hex");
+
+      expect(prodSha).toBe(a.productionSha256);
+      expect(vendorSha).toBe(a.vendorSourceSha256);
+      expect(prodSha).toBe(vendorSha);
+      expect(a.modified).toBe(false);
+      expect(a.status).toBe("production-selected");
+    }
+  });
+
+  it("verifies all files under assets/seed/ are accounted for in the manifest", () => {
+    const raw = fs.readFileSync(manifestPath, "utf-8");
+    const manifest = JSON.parse(raw);
+    const list = Array.isArray(manifest) ? manifest : manifest.assets;
+    const manifestedPaths = new Set(list.map((x: { projectPath: string }) => path.join(root, x.projectPath)));
+
+    function walk(dir: string): string[] {
+      let results: string[] = [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const ent of entries) {
+        const full = path.join(dir, ent.name);
+        if (ent.isDirectory()) results = results.concat(walk(full));
+        else results.push(full);
+      }
+      return results;
+    }
+
+    const diskFiles = walk(path.join(root, "assets", "seed"));
+    for (const df of diskFiles) {
+      expect(manifestedPaths.has(df), `Disk file ${df} must be manifested`).toBe(true);
+    }
+  });
+
+  it("verifies no personal workstation file:/// URLs exist in repository markdown", () => {
+    function walkMd(dir: string): string[] {
+      let results: string[] = [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const ent of entries) {
+        const full = path.join(dir, ent.name);
+        if (ent.isDirectory()) results = results.concat(walkMd(full));
+        else if (ent.name.endsWith(".md")) results.push(full);
+      }
+      return results;
+    }
+
+    const docs = [
+      ...walkMd(path.join(root, "docs")),
+      path.join(root, "ROADMAP.md"),
+      path.join(root, "README.md"),
+      path.join(root, "MVP_CONTRACT.md"),
+      path.join(root, "SESSION_HANDOFF.md"),
+    ];
+
+    for (const d of docs) {
+      if (!fs.existsSync(d)) continue;
+      const text = fs.readFileSync(d, "utf-8");
+      expect(/file:\/\/\/[a-zA-Z]:/i.test(text), `Forbidden local path in ${d}`).toBe(false);
+    }
+  });
+
+  it("verifies TH and EN localization keys render for UI elements including ui.fit", () => {
     const enTech = t("ui.techMap");
     expect(enTech).toBe("Tech Map");
+    const enFit = t("ui.fit");
+    expect(enFit).toBe("Fit");
     const enClaim = t("ui.claim");
     expect(enClaim).toBe("CLAIM");
   });
