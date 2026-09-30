@@ -2,20 +2,25 @@
 
 ## Timestamp
 
-2026-10-01 ~01:25 Asia/Bangkok. v0.22 Open-Source Leverage Foundation completed.
-Branch `feat/v022-open-source-leverage-20260930` created from v0.21 verified HEAD `181558d5e23aae838c29740cef423dbef9868d94`.
-Implementation:
-- @dagrejs/dagre 3.1.1 (MIT) integrated in presentation adapter `src/game/tech/TechGraphLayout.ts`.
-- @panzoom/panzoom 4.6.2 (MIT) integrated in `src/game/tech/TechMapView.ts` with Fit/Reset/Zoom controls and defensive fallback.
-- 8 approved gamedev-skills installed in project-local `.agents/skills/`.
-- 5 approved Kenney CC0 asset packs downloaded with provenance and 18 normalized production assets created in `assets/seed/`.
-- All governance docs created: `docs/ART_BIBLE.md`, `docs/THIRD_PARTY_LICENSES.md`, `docs/OPEN_SOURCE_LEVERAGE.md`, `docs/DEPENDENCY_POLICY.md`, `docs/DEVELOPMENT_TOOLING.md`.
-- `ROADMAP.md` fully rewritten with 10 production sections.
-- Verification: typecheck PASS, 35 unit test files (287 tests) PASS, verify:third-party PASS, production build PASS, 24/24 E2E tests PASS.
-- Visual audit evidence: 10 screenshots captured in `docs/visual_audit_v022/`.
-- GitHub Actions CI run 36757840977: verify (22) PASS, verify (24) PASS, e2e PASS on exact SHA.
-- Pure core isolation intact: zero presentation imports in `src/core/**`.
-- Canonical versions intact: WORLDGEN_VERSION=2, CONTENT_VERSION=4, SAVE_SCHEMA_VERSION=1.
+2026-10-01 ~05:45 Asia/Bangkok. v0.22 Final Provenance + Visual Corrective Pass R2 completed.
+Branch `feat/v022-open-source-leverage-20260930` continued from tip `23d732e6f93e174add7804fcddcd1bf3a947fe4f`.
+Corrective Implementation:
+- Kenney Provenance Reconciled: Extracted archive `License.txt` files verified:
+  - `board-game-icons`: `Board Game Icons (1.1)` -> `EXACT_VERSION_VERIFIED` (1.1)
+  - `input-prompts`: `Input Prompts (1.5A)` -> `EXACT_VERSION_VERIFIED` (1.5a)
+  - `particle-pack`: `Particle Pack (1.1)` -> `EXACT_VERSION_VERIFIED` (1.1)
+  - `ui-pack-sci-fi`: `UI Pack: Sci-fi (2.0)` -> `EXACT_VERSION_VERIFIED` (2.0)
+  - `sci-fi-rts`: `RTS Pack: Sci-Fi` -> `VERSION_UNVERIFIED_CURRENT_SOURCE` (1.0 official page latest; verified source download as of 2026-10-01)
+  - Preserved original `License.txt` into `assets/vendor/kenney/*/License.txt`.
+- Truthful Asset Ledger: `modified: false`, `modifications: "None at file level"`, `status: "production-selected"`, explicit `presentationTransform` metadata for runtime scaling/tinting/anchoring. Added SHA256 hashes (`vendorSourceSha256`, `productionSha256`) and `byteSize`.
+- Upgraded `verify:third-party.mjs` and test suite: verified exact package.json and lockfile resolutions (3.1.1 & 4.6.2), lockfile MIT licenses, real file SHA256 integrity, no duplicate IDs/paths, all `assets/seed/` files manifested, zero personal `file:///` URLs.
+- Documentation Portability: Eliminated all `file:///` local paths in `ROADMAP.md`, `docs/THIRD_PARTY_LICENSES.md`, `docs/OPEN_SOURCE_LEVERAGE.md`. Corrected `@panzoom/panzoom` integration path to `TechMapView.ts`. Updated status to `AUTOMATED VERIFIED — HUMAN AUDIT PENDING`.
+- Tech Map Usability & Localization: Added `ui.fit` to EN ("Fit") and TH ("พอดีหน้าจอ") with 100% key parity. Removed `contain: "outside"` and `transform-origin: 0 0` on `.techmap-canvas`. Implemented unconstrained centered `fit()` and `reset()` (1:1 centered). Added high-contrast colored Age lane header pills.
+- Outpost Modal Collision: Dismissed active toasts upon `showBlockingFresh()` and set `#ui .screen` `z-index: 50`.
+- Visual Audit R2 Evidence: Captured 11 clean screenshots in `docs/visual_audit_v022_r2/` (1280x720, zero godmode/debug values, realistic HP 100/100). Status: `EVIDENCE_CAPTURED — HUMAN_REVIEW_PENDING`.
+- Verification: typecheck PASS, 35 unit test files (295 tests) PASS, verify:third-party PASS, production build PASS, 25/25 E2E tests PASS.
+- Canonical versions intact: WORLDGEN_VERSION=2, CONTENT_VERSION=4, SAVE_SCHEMA_VERSION=1. Zero core simulation diff.
+
 
 
 Office QA-harness session 2026-09-29 Asia/Bangkok (human-authorized): added
