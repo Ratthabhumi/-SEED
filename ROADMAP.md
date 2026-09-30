@@ -38,14 +38,14 @@
 - **v0.1 Vertical Slice**: Stone Age survivor vertical slice, basic tech drafting, golden seed harness — `VERIFIED`.
 - **v0.1.1 Stabilization & Readability**: Entity pooling (650 enemies, 600 proj), visual lab, Thai typography rules (`line-height >= 1.7`) — `VERIFIED`.
 - **v0.2 Engagement Loop**: Stone → Space progression, Origins, Legacies, Ascension child-world reset, zero-friction playtest automation sink — `VERIFIED`.
-- **v0.21 Civilization Command Loop**: Squad commands (Rally/Focus/Hold), active abilities, Outpost expansion (Research/Military/Economic), territory control, raid threats, minimap/civ map, build history — `IMPLEMENTED (AUTOMATED VERIFIED; HUMAN RE-VALIDATION PENDING)`.
+- **v0.21 Civilization Command Loop**: Squad commands (Rally/Focus/Hold), active abilities, Outpost expansion (Research/Military/Economic), territory control, raid threats, minimap/civ map, build history — `AUTOMATED VERIFIED — HUMAN REVALIDATION EVIDENCE CAPTURED — AUDITOR VERDICT PENDING`.
 
 ---
 
 ## 5. Release Train
 
 ### v0.22 — Open-Source Leverage Foundation
-- **Status**: `IN PROGRESS`
+- **Status**: `AUTOMATED VERIFIED — HUMAN REVALIDATION EVIDENCE CAPTURED — AUDITOR VERDICT PENDING`
 - **Goal**: Stop rebuilding commodity tooling/assets; integrate proven open-source components for presentation while hardening governance.
 - **Key Deliverables**:
   - Dagre-powered procedural Tech DAG presentation layout (`@dagrejs/dagre: 3.1.1`).
