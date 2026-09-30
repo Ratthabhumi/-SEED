@@ -64,10 +64,11 @@ feedback semantics + 1–5 ratings + compact panel + F4-off default. See
 
 ## Branch
 
-`feat/v020-engagement-loop-20260930` — **UNMERGED, UNTAGGED, NO ITCH**
-(deliberate; awaiting v0.2 engagement playtest). Readability branch
-`fix/v011-readability-20260929` (@`e4d4f89`) frozen as the technical baseline;
-stabilization `737ddf3` remains the deep rollback point.
+`feat/v021-civilization-command-loop-20260930` — **UNMERGED, UNTAGGED, NO ITCH**
+(deliberate; awaiting auditor review + next human test). Parent
+`feat/v020-engagement-loop-20260930` (@`fb29b8c`, finalized FAIL evidence)
+frozen and pushed. Readability `fix/v011-readability-20260929` remains the
+technical baseline; stabilization `737ddf3` the deep rollback point.
 
 ## Origin Main
 
@@ -166,16 +167,16 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Automated Verification (v0.2 working branch)
 
 - `npm run typecheck` — PASS
-- `npm run test` — 30 files / 225 tests PASS (incl. engagement contracts +
-  origin viability runs + ordered-state/world-evidence/compatibility)
+- `npm run test` — 33 files / 273+ tests PASS (incl. 24 civilization
+  contracts + engaged-bot pacing sim: all origins reach Space)
 - `npm run build` — PASS
 - `npm run check` — PASS
 - `npm run zip` — PASS (`release/seed-web-v0.2.0-dev.0.zip`, dev only)
-- `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — 12/12 PASS (QA origin select, industrial modal
-  sequence, legacy→compatible-origin ascend chain, compact QA)
+- `npm run release:verify` — PASS
+- `npm run test:e2e` — 18/18 PASS (12 prior + 5 civilization: tech map/pin,
+  draft agency, claim→minimap/civmap, squad keys/ability, 3-gate/TH card)
 - GitHub Actions run 36650409241 — Node 22 verify PASS, Node 24 verify PASS,
-  Chromium E2E PASS on branch HEAD (docs-only tip over green code SHA).
+  Chromium E2E PASS on the v020 baseline. v021 CI pending after push.
 - This is NOT a human-release approval.
 
 ## Audit Round 3 Findings Closed
@@ -476,6 +477,33 @@ Thai strings + 300px wrap box correct at 900px. Auditor verdict pending.
 3. Return the playtest-report.md/json + ratings: auditor decides merge/tag
    (still gated), itch draft, and any evidence-driven tuning. Do NOT begin
    anything beyond v0.2 scope unless explicitly authorized.
+
+## v021 Civilization Command Loop (implementation record)
+
+- Base: v020 finalized evidence HEAD `fb29b8c` (pushed, frozen). No merge,
+  no tag, no force-push, no V0.2 systems beyond the accepted spec.
+- Human failures addressed: compact HUD (status card / knowledge bar /
+  3-gate age checklist card), age missions per layer, Tech Map (T) on the real
+  graph + pinning (bounded weight), reserve/reroll/skip + owned-stays truth,
+  owned-build sidebar, explored-only minimap + civ map (M), claim/spec/tier
+  territory, scheduled raids with warning + defend-or-lose, one command squad
+  per origin (Q/E/R) + origin ability (F), conditional enemy HP bars, impact
+  FX + damage numbers, origin/age player lineage, enemy age trim, per-age
+  territory dressing, build history in Chronicle, single shared QA origin
+  selector (+ `qa.banner` / `qa.recorded`).
+- Gameplay contracts changed (intended): 3-gate advancement (global clock
+  removed), missions, draft agency, territory/outposts/raids, squads. Numbers
+  otherwise untouched (threat/XP/weapon/boss values identical).
+- Versions: WORLDGEN 2 (unchanged), CONTENT 3 → 4, SAVE 1 (unchanged),
+  package stays `0.2.0-dev.0`. No public release.
+- Honest findings during verification: (1) committed v020 title gate lacked
+  `id="qa-gate"` while `qa.spec` asserts it — recorded, fixed, re-verified;
+  (2) full-suite E2E on the office i5 needs wall-clock headroom (120s cap,
+  unchanged assertions); (3) E2E staging hook `readyExpansion` extended for
+  the mission-inclusive contract (fields + real claim).
+- Next human action: answer the 10 mastery questions in a new ?qa=1 run
+  (Tech Map planning, build recall, territory care, macro/micro decisions).
+  STOP before further feature development.
 
 ## Do-Not-Break Invariants
 

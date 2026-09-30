@@ -229,12 +229,34 @@ export class GameScene extends Phaser.Scene {
         readyExpansion: () => {
           // Test-only staging for the Industrial transition: sets genuine
           // preconditions; the age-up, events, and modal queue run real code.
+          // v021: the industrial mission (1 elite + 1 held territory) is part
+          // of the contract, so the hook stages a real claim too.
           const s = this.sim.state;
           s.ageIndex = 2;
           s.elapsed = 400;
-          s.ageElapsed = 100;
+          s.ageElapsed = 130;
           s.knowledgeTotal = 2800;
           s.ageKills = 120;
+          s.elitesAge = 1;
+          for (const e of s.enemies) e.active = false;
+          const { cx, cy } = worldToChunk(s.px, s.py);
+          outer: for (let r = 0; r < 4; r++) {
+            for (let ox = -r; ox <= r; ox++) {
+              for (let oy = -r; oy <= r; oy++) {
+                const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+                for (const poi of desc.poi) {
+                  if (s.poisWorld.includes(poi.id)) continue;
+                  s.px = poi.wx;
+                  s.py = poi.wy;
+                  s.poisWorld.push(poi.id);
+                  s.stats.poisTotal++;
+                  this.handleEvents(this.sim.claimTerritory(poi.id));
+                  this.handleEvents(this.sim.setOutpostSpec(poi.id, "research"));
+                  break outer;
+                }
+              }
+            }
+          }
           this.refreshHUD();
         },
         advance: (seconds: number) => {
@@ -626,7 +648,9 @@ export class GameScene extends Phaser.Scene {
     hpLine.textContent = `♥ ${Math.ceil(Math.max(0, s.build.hp))} / ${Math.ceil(s.build.maxHp)}`;
     hpFill.style.width = `${Math.max(0, (s.build.hp / s.build.maxHp) * 100)}%`;
     const origin = ORIGINS.find((o) => o.id === s.originId);
-    identLine.textContent = `${origin ? t(origin.nameKey) : s.originId} · ${t(`age.${ageId}` as EnKeys)}`;
+    const fams = activeFamilies(s.originId, s.expansionFamily)
+      .map((f) => t(`family.${f}` as EnKeys)).join("+");
+    identLine.textContent = `${origin ? t(origin.nameKey) : s.originId} (${fams}) · ${t(`age.${ageId}` as EnKeys)}`;
     const alive = s.squad.filter((a) => a.active).length;
     const abil = ORIGIN_ABILITY[originById(s.originId).id];
     const abilTxt = s.abilityCd > 0 ? `${t("ui.ability")} ${Math.ceil(s.abilityCd)}s` : `${t("ui.ability")}: ${t(abil.nameKey)} [F]`;

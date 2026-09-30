@@ -59,8 +59,9 @@ test("qa mode: human-selected origin reaches the simulation", async ({ page }) =
       (await page.evaluate(() => (window as unknown as { __seedE2E?: { snapshot: () => string } }).__seedE2E?.snapshot() ?? "{}")) as string,
     ) as { origin: [string, string, string[], string[]] };
     expect(snap.origin[0]).toBe(origin);
-    const goals = await page.locator(".hud-goals").textContent();
-    for (const fam of families.split("+")) expect(goals).toContain(fam);
+    // Origin identity + families stay visible on the status card (Phase 1 HUD).
+    const ident = await page.locator(".status-ident").textContent();
+    for (const fam of families.split("+")) expect(ident).toContain(fam);
   }
 
   expect(errors).toEqual([]);
