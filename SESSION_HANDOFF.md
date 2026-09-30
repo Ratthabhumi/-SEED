@@ -166,15 +166,16 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Automated Verification (v0.2 working branch)
 
 - `npm run typecheck` — PASS
-- `npm run test` — 28 files / 213 tests PASS (incl. engagement contracts +
-  origin viability runs)
+- `npm run test` — 30 files / 225 tests PASS (incl. engagement contracts +
+  origin viability runs + ordered-state/world-evidence/compatibility)
 - `npm run build` — PASS
 - `npm run check` — PASS
 - `npm run zip` — PASS (`release/seed-web-v0.2.0-dev.0.zip`, dev only)
 - `npm run release:verify` — 17/17 PASS
-- `npm run test:e2e` — 10/10 PASS (incl. legacy→origin ascend chain + compact QA)
-- GitHub Actions run 36621627791 — Node 22 verify PASS, Node 24 verify PASS,
-  Chromium E2E PASS on exact code SHA below.
+- `npm run test:e2e` — 12/12 PASS (QA origin select, industrial modal
+  sequence, legacy→compatible-origin ascend chain, compact QA)
+- GitHub Actions run 36650409241 — Node 22 verify PASS, Node 24 verify PASS,
+  Chromium E2E PASS on branch HEAD (docs-only tip over green code SHA).
 - This is NOT a human-release approval.
 
 ## Audit Round 3 Findings Closed
