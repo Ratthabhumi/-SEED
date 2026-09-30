@@ -167,7 +167,7 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 ## Automated Verification (v0.2 working branch)
 
 - `npm run typecheck` — PASS
-- `npm run test` — 33 files / 273+ tests PASS (incl. 24 civilization
+- `npm run test` — 33 files / 273 tests PASS (incl. 24 civilization
   contracts + engaged-bot pacing sim: all origins reach Space)
 - `npm run build` — PASS
 - `npm run check` — PASS
