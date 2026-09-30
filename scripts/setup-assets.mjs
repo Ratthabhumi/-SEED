@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 // Asset plan:
 // Select only necessary files for proof-of-leverage to keep bundle lean and disciplined.
@@ -15,7 +16,7 @@ const plan = [
     seedPath: 'assets/seed/input/prompt_q.png',
     id: 'kenney-input-q',
     purpose: 'Squad Rally command input prompt',
-    modifications: 'Renamed and normalized to standard 32x32 size for HUD command prompt bar',
+    presentationTransform: 'Scaled/styled at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'input-prompts',
@@ -24,7 +25,7 @@ const plan = [
     seedPath: 'assets/seed/input/prompt_e.png',
     id: 'kenney-input-e',
     purpose: 'Squad Focus target command input prompt',
-    modifications: 'Renamed and normalized to standard 32x32 size for HUD command prompt bar',
+    presentationTransform: 'Scaled/styled at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'input-prompts',
@@ -33,7 +34,7 @@ const plan = [
     seedPath: 'assets/seed/input/prompt_r.png',
     id: 'kenney-input-r',
     purpose: 'Squad Hold ground command input prompt',
-    modifications: 'Renamed and normalized to standard 32x32 size for HUD command prompt bar',
+    presentationTransform: 'Scaled/styled at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'input-prompts',
@@ -42,7 +43,7 @@ const plan = [
     seedPath: 'assets/seed/input/prompt_f.png',
     id: 'kenney-input-f',
     purpose: 'Active Civilization ability trigger input prompt',
-    modifications: 'Renamed and normalized to standard 32x32 size for HUD command prompt bar',
+    presentationTransform: 'Scaled/styled at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'input-prompts',
@@ -51,7 +52,7 @@ const plan = [
     seedPath: 'assets/seed/input/prompt_t.png',
     id: 'kenney-input-t',
     purpose: 'Tech Map toggle key input prompt',
-    modifications: 'Renamed and normalized to standard 32x32 size for HUD prompt badges',
+    presentationTransform: 'Scaled/styled at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'input-prompts',
@@ -60,7 +61,7 @@ const plan = [
     seedPath: 'assets/seed/input/prompt_m.png',
     id: 'kenney-input-m',
     purpose: 'Minimap / Civ Map toggle key input prompt',
-    modifications: 'Renamed and normalized to standard 32x32 size for HUD prompt badges',
+    presentationTransform: 'Scaled/styled at runtime by HTML/CSS and Phaser',
   },
 
   // 2. Sci-Fi RTS (Outposts)
@@ -71,7 +72,7 @@ const plan = [
     seedPath: 'assets/seed/structures/outpost_research.png',
     id: 'kenney-outpost-research',
     purpose: 'Visual presentation sprite for civilization Research Outposts',
-    modifications: 'Isolated structure sprite, normalized scale and anchor point for world rendering',
+    presentationTransform: 'Scaled/anchored at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'sci-fi-rts',
@@ -80,7 +81,7 @@ const plan = [
     seedPath: 'assets/seed/structures/outpost_military.png',
     id: 'kenney-outpost-military',
     purpose: 'Visual presentation sprite for civilization Military Outposts',
-    modifications: 'Isolated structure sprite, normalized scale and anchor point for world rendering',
+    presentationTransform: 'Scaled/anchored at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'sci-fi-rts',
@@ -89,7 +90,7 @@ const plan = [
     seedPath: 'assets/seed/structures/outpost_economic.png',
     id: 'kenney-outpost-economic',
     purpose: 'Visual presentation sprite for civilization Economic Outposts',
-    modifications: 'Isolated structure sprite, normalized scale and anchor point for world rendering',
+    presentationTransform: 'Scaled/anchored at runtime by HTML/CSS and Phaser',
   },
 
   // 3. UI Pack - Sci-Fi
@@ -100,7 +101,7 @@ const plan = [
     seedPath: 'assets/seed/ui/panel_header_bar.png',
     id: 'kenney-ui-header-bar',
     purpose: 'Tech Map and Age requirement card chrome header styling',
-    modifications: 'Used as sliced/scaled background element for strategic overlay headers',
+    presentationTransform: 'Sliced/scaled at runtime by HTML/CSS',
   },
   {
     pack: 'ui-pack-sci-fi',
@@ -109,7 +110,7 @@ const plan = [
     seedPath: 'assets/seed/ui/button_frame.png',
     id: 'kenney-ui-button-frame',
     purpose: 'Tech Map controls (FIT, RESET, zoom) and command action buttons',
-    modifications: 'Normalized button framing asset for UI components',
+    presentationTransform: 'Framed/scaled at runtime by HTML/CSS',
   },
 
   // 4. Particle Pack
@@ -120,7 +121,7 @@ const plan = [
     seedPath: 'assets/seed/vfx/hit_impact.png',
     id: 'kenney-vfx-hit',
     purpose: 'Combat hit impact VFX texture',
-    modifications: 'Cleaned alpha channel texture for additive particle emitter in Phaser',
+    presentationTransform: 'Scaled/tinted/faded at runtime by Phaser particle tweens',
   },
   {
     pack: 'particle-pack',
@@ -129,7 +130,7 @@ const plan = [
     seedPath: 'assets/seed/vfx/claim_glow.png',
     id: 'kenney-vfx-claim',
     purpose: 'Territory and Outpost claim animation pulse',
-    modifications: 'Glow alpha mask for territory expansion pulse',
+    presentationTransform: 'Scaled/tinted/faded at runtime by Phaser particle tweens',
   },
   {
     pack: 'particle-pack',
@@ -138,7 +139,7 @@ const plan = [
     seedPath: 'assets/seed/vfx/breakthrough_spark.png',
     id: 'kenney-vfx-breakthrough',
     purpose: 'Breakthrough discovery and Age transition milestone particle',
-    modifications: 'Radial burst particle texture for progression celebratory pulse',
+    presentationTransform: 'Scaled/tinted/faded at runtime by Phaser particle tweens',
   },
   {
     pack: 'particle-pack',
@@ -147,7 +148,7 @@ const plan = [
     seedPath: 'assets/seed/vfx/raid_alert.png',
     id: 'kenney-vfx-raid',
     purpose: 'Territory raid warning and breach alarm flare texture',
-    modifications: 'Warning flare indicator texture for raid proximity alerts',
+    presentationTransform: 'Scaled/tinted/faded at runtime by Phaser particle tweens',
   },
 
   // 5. Board Game Icons
@@ -158,7 +159,7 @@ const plan = [
     seedPath: 'assets/seed/icons/icon_research.png',
     id: 'kenney-icon-research',
     purpose: 'Knowledge and Research category indicator icon',
-    modifications: 'Normalized to 24x24 / 32x32 SVG-compatible icon asset',
+    presentationTransform: 'Scaled/rendered at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'board-game-icons',
@@ -167,7 +168,7 @@ const plan = [
     seedPath: 'assets/seed/icons/icon_military.png',
     id: 'kenney-icon-military',
     purpose: 'Military, defense and squad garrison indicator icon',
-    modifications: 'Normalized to 24x24 / 32x32 SVG-compatible icon asset',
+    presentationTransform: 'Scaled/rendered at runtime by HTML/CSS and Phaser',
   },
   {
     pack: 'board-game-icons',
@@ -176,7 +177,7 @@ const plan = [
     seedPath: 'assets/seed/icons/icon_economic.png',
     id: 'kenney-icon-economic',
     purpose: 'Economy, outpost yield and resource indicator icon',
-    modifications: 'Normalized to 24x24 / 32x32 SVG-compatible icon asset',
+    presentationTransform: 'Scaled/rendered at runtime by HTML/CSS and Phaser',
   }
 ];
 
@@ -184,46 +185,81 @@ const PACK_METADATA = {
   'input-prompts': {
     name: 'Kenney Input Prompts',
     url: 'https://kenney.nl/assets/input-prompts',
-    version: '1.5',
+    versionStatus: 'EXACT_VERSION_VERIFIED',
+    version: '1.5a',
+    officialPageLatestVersion: '1.5a',
+    sourceRelease: 'Input Prompts (1.5A)',
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
     author: 'Kenney',
+    vendorDir: 'input-prompts',
   },
   'sci-fi-rts': {
     name: 'Kenney Sci-Fi RTS',
     url: 'https://kenney.nl/assets/sci-fi-rts',
+    versionStatus: 'VERSION_UNVERIFIED_CURRENT_SOURCE',
     version: '1.0',
+    officialPageLatestVersion: '1.0',
+    sourceRelease: 'current official download as of 2026-10-01',
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
     author: 'Kenney',
+    vendorDir: 'sci-fi-rts',
   },
   'ui-pack-sci-fi': {
     name: 'Kenney UI Pack - Sci-Fi',
     url: 'https://kenney.nl/assets/ui-pack-sci-fi',
-    version: '1.0',
+    versionStatus: 'EXACT_VERSION_VERIFIED',
+    version: '2.0',
+    officialPageLatestVersion: '2.0',
+    sourceRelease: 'UI Pack: Sci-fi (2.0)',
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
     author: 'Kenney',
+    vendorDir: 'ui-sci-fi',
   },
   'particle-pack': {
     name: 'Kenney Particle Pack',
     url: 'https://kenney.nl/assets/particle-pack',
-    version: '1.0',
+    versionStatus: 'EXACT_VERSION_VERIFIED',
+    version: '1.1',
+    officialPageLatestVersion: '1.0',
+    sourceRelease: 'Particle Pack (1.1)',
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
     author: 'Kenney',
+    vendorDir: 'particles',
   },
   'board-game-icons': {
     name: 'Kenney Board Game Icons',
     url: 'https://kenney.nl/assets/board-game-icons',
-    version: '1.0',
+    versionStatus: 'EXACT_VERSION_VERIFIED',
+    version: '1.1',
+    officialPageLatestVersion: '1.1',
+    sourceRelease: 'Board Game Icons (1.1)',
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
     author: 'Kenney',
+    vendorDir: 'board-game-icons',
   }
 };
 
+function sha256(filePath) {
+  const buf = fs.readFileSync(filePath);
+  return crypto.createHash('sha256').update(buf).digest('hex');
+}
+
 const scratchBase = path.resolve('scratch/kenney_downloads');
+
+// Ensure vendor license files are preserved
+for (const [packKey, meta] of Object.entries(PACK_METADATA)) {
+  const srcLicense = path.join(scratchBase, packKey, 'License.txt');
+  if (fs.existsSync(srcLicense)) {
+    const destDir = path.join(VENDOR_BASE, meta.vendorDir);
+    fs.mkdirSync(destDir, { recursive: true });
+    fs.copyFileSync(srcLicense, path.join(destDir, 'License.txt'));
+  }
+}
 
 const manifestEntries = [];
 
@@ -241,6 +277,10 @@ for (const item of plan) {
   fs.copyFileSync(src, vendorFull);
   fs.copyFileSync(src, seedFull);
 
+  const vendorSha = sha256(vendorFull);
+  const prodSha = sha256(seedFull);
+  const size = fs.statSync(seedFull).size;
+
   const meta = PACK_METADATA[item.pack];
   manifestEntries.push({
     id: item.id,
@@ -252,18 +292,25 @@ for (const item of plan) {
     sourceLicense: meta.license,
     licenseUrl: meta.licenseUrl,
     author: meta.author,
+    versionStatus: meta.versionStatus,
     versionOrRelease: meta.version,
+    sourceRelease: meta.sourceRelease,
+    officialPageLatestVersion: meta.officialPageLatestVersion,
     downloadedAt: '2026-10-01T00:20:00Z',
-    modified: true,
-    modifications: item.modifications,
+    modified: false,
+    modifications: 'None at file level',
+    presentationTransform: item.presentationTransform,
     attributionRequired: false,
     purpose: item.purpose,
-    status: 'normalized'
+    status: 'production-selected',
+    byteSize: size,
+    vendorSourceSha256: vendorSha,
+    productionSha256: prodSha
   });
 }
 
 const manifest = {
-  version: 1,
+  version: 2,
   generatedAt: new Date().toISOString(),
   totalAssets: manifestEntries.length,
   assets: manifestEntries

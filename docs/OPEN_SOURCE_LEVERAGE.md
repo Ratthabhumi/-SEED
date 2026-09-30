@@ -40,9 +40,10 @@ To govern every external component, we enforce four explicit categories:
   - *Particle Pack* (Combat impact, claim pulse, breakthrough sparks, raid alarms)
   - *Board Game Icons* (Domain emblems for Research, Defense, Economy)
 - *Rules*:
-  - No "asset-flip" look. Every asset must satisfy [docs/ART_BIBLE.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/docs/ART_BIBLE.md).
+  - No "asset-flip" look. Every asset must satisfy [docs/ART_BIBLE.md](ART_BIBLE.md).
   - Only selected assets are bundled into `dist/`. No bulk imports of 1500 unused textures.
   - Manifested in `assets/ASSET_MANIFEST.json`.
+
 
 ---
 

@@ -112,21 +112,22 @@ Civilization progression visually transitions from raw geological forms to sleek
 
 ---
 
-## 10. Third-Party Asset Normalization Pipeline
+## 10. Third-Party Asset Selection & Presentation Pipeline
 To guarantee that vendored CC0 assets never look like an uncurated "asset flip":
 
-1. **Format & Scalability**:
-   - Source vector assets or 64px/128px PNGs are normalized to project standard resolutions (32x32 for prompts/icons, 64x64 for structures/particles).
-2. **Palette Conformity**:
-   - Kenney UI elements are recolored to match the project's cyan/slate theme (`#53e0c8`, `#141d2e`, `#0f172a`).
-   - Particles are converted to clean additive monochrome masks so Phaser tinting dynamically controls color.
+1. **Production Selection & Resolution Discipline**:
+   - Production assets are selectively extracted from vetted vendor source packs (prompts, structures, particles, icons, UI).
+   - Display scaling is governed cleanly at runtime by HTML/CSS and Phaser (e.g. 20-32px badges for prompts/icons, scaled world rendering for structures).
+2. **Runtime Palette Conformity**:
+   - UI frames and headers are styled with project CSS tokens (`#53e0c8`, `#141d2e`, `#0f172a`).
+   - Particles use additive blending and dynamic Phaser tinting (`setTint`, `alpha` tweens) for context-driven combat and age effects.
 3. **Contrast Testing**:
    - Every asset must pass visual inspection in:
      - Normal RGB mode
      - Full Grayscale mode (`filter: grayscale(1)`)
      - High-Contrast mode (`filter: contrast(1.5)`)
 4. **Anchor Points**:
-   - Units and Outposts anchored at `(0.5, 0.5)` or bottom center `(0.5, 0.8)` for isometric-consistent sorting.
-5. **Bundle Hygiene**:
-   - Only approved and normalized assets are referenced in production code.
-   - Raw vendor packs remain archived; zero unused assets bundled into `dist/`.
+   - Outposts and sprites are anchored at `(0.5, 0.5)` or bottom center `(0.5, 0.8)` for depth-consistent world rendering.
+5. **Bundle & Manifest Hygiene**:
+   - Only audited, production-selected assets are indexed in `assets/ASSET_MANIFEST.json` and bundled.
+   - Byte-level SHA256 integrity is continuously verified against original vendor source files.

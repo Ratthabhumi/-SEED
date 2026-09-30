@@ -168,10 +168,10 @@ A milestone is declared complete when:
 ---
 
 ## 10. Architectural References & Decision Log
-- [docs/ARCHITECTURE.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/docs/ARCHITECTURE.md): System boundaries, simulation engine, and rendering adapters.
-- [docs/OPEN_SOURCE_LEVERAGE.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/docs/OPEN_SOURCE_LEVERAGE.md): Category A/B/C/D evaluation ledger.
-- [docs/ART_BIBLE.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/docs/ART_BIBLE.md): Visual thesis, silhouette tiers, color tokens, and normalization rules.
-- [docs/DEPENDENCY_POLICY.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/docs/DEPENDENCY_POLICY.md): External package checklist and invariants.
-- [docs/THIRD_PARTY_LICENSES.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/docs/THIRD_PARTY_LICENSES.md): Legal ledger and full license notices.
-- [assets/ASSET_MANIFEST.json](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/assets/ASSET_MANIFEST.json): Machine-readable asset index.
-- [SESSION_HANDOFF.md](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/SESSION_HANDOFF.md): Workstream continuity and session state.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): System boundaries, simulation engine, and rendering adapters.
+- [docs/OPEN_SOURCE_LEVERAGE.md](docs/OPEN_SOURCE_LEVERAGE.md): Category A/B/C/D evaluation ledger.
+- [docs/ART_BIBLE.md](docs/ART_BIBLE.md): Visual thesis, silhouette tiers, color tokens, and normalization rules.
+- [docs/DEPENDENCY_POLICY.md](docs/DEPENDENCY_POLICY.md): External package checklist and invariants.
+- [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md): Legal ledger and full license notices.
+- [assets/ASSET_MANIFEST.json](assets/ASSET_MANIFEST.json): Machine-readable asset index.
+- [SESSION_HANDOFF.md](SESSION_HANDOFF.md): Workstream continuity and session state.

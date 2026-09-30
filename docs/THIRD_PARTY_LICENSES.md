@@ -1,7 +1,7 @@
 # Third-Party Licenses & Legal Ledger
 **Project**: -SEED  
 **Audit Baseline**: v0.22 Open-Source Leverage Pass  
-**Status**: APPROVED & AUDITED
+**Status**: AUTOMATED VERIFIED — HUMAN AUDIT PENDING
 
 ---
 
@@ -10,12 +10,13 @@
 | Component | Version | License | Source / Author | Used Where | Modified? | Attribution Required? |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `@dagrejs/dagre` | 3.1.1 | MIT | Chris Pettitt & contributors | `src/game/tech/TechGraphLayout.ts` (Tech DAG layout) | No | Yes (MIT notice below) |
-| `@panzoom/panzoom` | 4.6.2 | MIT | Timmy Willison | `src/game/tech/TechMapModal.ts` (Tech Map pan/zoom) | No | Yes (MIT notice below) |
-| `Kenney Input Prompts` | 1.5 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/input/` (Q/E/R/F/T/M keyboard prompts) | Yes (normalized) | No (CC0 Public Domain) |
-| `Kenney Sci-Fi RTS` | 1.0 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/structures/` (Outpost structure sprites) | Yes (normalized) | No (CC0 Public Domain) |
-| `Kenney UI Pack - Sci-Fi` | 1.0 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/ui/` (Modal headers, button borders) | Yes (normalized) | No (CC0 Public Domain) |
-| `Kenney Particle Pack` | 1.0 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/vfx/` (Hit, claim, breakthrough, raid VFX) | Yes (normalized) | No (CC0 Public Domain) |
-| `Kenney Board Game Icons`| 1.0 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/icons/` (Research, military, economy icons) | Yes (normalized) | No (CC0 Public Domain) |
+| `@panzoom/panzoom` | 4.6.2 | MIT | Timmy Willison | `src/game/tech/TechMapView.ts` (Tech Map pan/zoom) | No | Yes (MIT notice below) |
+| `Kenney Input Prompts` | 1.5a | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/input/` (Q/E/R/F/T/M keyboard prompts) | No (production-selected, runtime styled) | No (CC0 Public Domain) |
+| `Kenney Sci-Fi RTS` | 1.0 (verified source download 2026-10-01) | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/structures/` (Outpost structure sprites) | No (production-selected, runtime scaled/anchored) | No (CC0 Public Domain) |
+| `Kenney UI Pack - Sci-Fi` | 2.0 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/ui/` (Modal headers, button borders) | No (production-selected, runtime sliced/framed) | No (CC0 Public Domain) |
+| `Kenney Particle Pack` | 1.1 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/vfx/` (Hit, claim, breakthrough, raid VFX) | No (production-selected, runtime tinted/scaled/faded) | No (CC0 Public Domain) |
+| `Kenney Board Game Icons`| 1.1 | CC0 1.0 Universal | Kenney (kenney.nl) | `assets/seed/icons/` (Research, military, economy icons) | No (production-selected, runtime scaled) | No (CC0 Public Domain) |
+
 
 ---
 
@@ -95,7 +96,7 @@ Full legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
 ---
 
 ## 3. Provenance Verification
-Every vendored asset is indexed in [assets/ASSET_MANIFEST.json](file:///c:/Users/MewMew/Desktop/Co-op/-SEED/assets/ASSET_MANIFEST.json) with exact source URL, downloaded timestamp, checksum/source path, and documented modification record.
+Every vendored asset is indexed in [assets/ASSET_MANIFEST.json](../assets/ASSET_MANIFEST.json) with exact source URL, downloaded timestamp, checksum/source path, and documented modification record.
 
 Automated verification script:
 ```bash
