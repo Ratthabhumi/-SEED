@@ -10,18 +10,21 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "build": "vite build",
-    "check": "npm run typecheck && npm run test -- --reporter=basic && npm run build",
+    "check": "npm run typecheck && npm run test -- --reporter=basic && npm run verify:third-party && npm run build",
     "preview": "vite preview",
     "zip": "node scripts/make-zip.mjs",
     "release:verify": "node scripts/release-verify.mjs",
     "qa:human": "node scripts/qa-human.mjs",
     "qa:report": "node scripts/qa-report.mjs",
     "qa:handoff": "node scripts/qa-handoff.mjs",
-    "qa:finalize": "npm run qa:report && npm run qa:handoff"
+    "qa:finalize": "npm run qa:report && npm run qa:handoff",
+    "verify:third-party": "node scripts/verify-third-party.mjs"
   },
   "dependencies": {
+    "@dagrejs/dagre": "3.1.1",
     "@fontsource/noto-sans": "^5.1.0",
     "@fontsource/noto-sans-thai": "^5.1.0",
+    "@panzoom/panzoom": "4.6.2",
     "phaser": "4.2.1"
   },
   "devDependencies": {
