@@ -154,8 +154,11 @@ parity does NOT prove typography — Thai visual QA remains a human gate.
 - GitHub Actions `ci`: Node 22 + Node 24 verify jobs (`npm ci`, `check`,
   fresh `zip`, `release:verify`) + Chromium E2E job. v0.2 branch CI status:
   recorded at push time below (exact SHA required green).
-- History: run 36589398303 green on readability `35f6b73` (frozen baseline);
-  run 36505017447 green on stabilization (deep rollback).
+- History: run 36621627791 executed on code SHA
+  `29961a57f53d80b5f14898f7418014afd2b68df6` (all green). The branch HEAD
+  `079f692` was one docs-only commit ahead — do NOT call that run exact-SHA
+  verification for `079f692`. Same rule applies going forward: CI verifies
+  code SHAs; docs-only commits ahead are noted, not re-verified as code.
 - `release:verify` = 17 checks (root index.html, relative refs, itch limits,
   licenses, basic known-pattern secret scan — honest wording, not proof of
   absence). Fresh-ZIP-only script (old ZIP deleted first).
