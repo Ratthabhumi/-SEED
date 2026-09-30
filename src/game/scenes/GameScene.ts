@@ -38,6 +38,8 @@ import {
 } from "../render/ProjectileRenderer";
 import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRenderer";
 import { nearestInterest, drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
+import { TechMapView } from "../tech/TechMapView";
+import { SEED_ASSETS } from "../assets/seedAssets";
 import pkg from "../../../package.json";
 
 function percentile(sorted: number[], p: number): number {
@@ -97,10 +99,47 @@ export class GameScene extends Phaser.Scene {
   /** Tech Map / Civ Map overlay open (pauses stepping like a modal). */
   private techMapOpen = false;
   private techMapSel = "";
+  private techMapView: TechMapView | null = null;
   private civMapOpen = false;
+  private vfxPool: Phaser.GameObjects.Image[] = [];
 
   constructor() {
     super("game");
+  }
+
+  preload(): void {
+    this.load.image("seed_hit_impact", SEED_ASSETS.vfx.hitImpact);
+    this.load.image("seed_claim_glow", SEED_ASSETS.vfx.claimGlow);
+    this.load.image("seed_breakthrough_spark", SEED_ASSETS.vfx.breakthroughSpark);
+    this.load.image("seed_raid_alert", SEED_ASSETS.vfx.raidAlert);
+    this.load.image("seed_outpost_research", SEED_ASSETS.structures.research);
+    this.load.image("seed_outpost_military", SEED_ASSETS.structures.military);
+    this.load.image("seed_outpost_economic", SEED_ASSETS.structures.economic);
+  }
+
+  private spawnVfx(key: string, x: number, y: number, scale = 1, tint = 0xffffff, duration = 300): void {
+    let img = this.vfxPool.find((item) => !item.visible);
+    if (!img) {
+      if (this.vfxPool.length >= 16) return;
+      img = this.add.image(x, y, key);
+      img.setDepth(45);
+      this.vfxPool.push(img);
+    }
+    img.setTexture(key);
+    img.setPosition(x, y);
+    img.setScale(scale);
+    img.setAlpha(1);
+    img.setTint(tint);
+    img.setVisible(true);
+    this.tweens.add({
+      targets: img,
+      alpha: 0,
+      scale: scale * 1.35,
+      duration,
+      onComplete: () => {
+        img?.setVisible(false);
+      },
+    });
   }
 
   create(): void {
@@ -528,6 +567,8 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onShutdown(): void {
+    this.techMapView?.destroy();
+    this.techMapView = null;
     this.qa?.dispose();
     this.qa = null;
     this.qaGfx = null;
@@ -595,8 +636,15 @@ export class GameScene extends Phaser.Scene {
     // Tech map button (T also works).
     const techBtn = document.createElement("button");
     techBtn.id = "techmap-btn";
-    techBtn.className = "btn";
-    techBtn.textContent = `${t("ui.techMap")} [T]`;
+    techBtn.className = "btn prompt-badge";
+    const tIcon = document.createElement("img");
+    tIcon.src = SEED_ASSETS.prompts.t;
+    tIcon.className = "prompt-key-icon";
+    tIcon.alt = "T";
+    techBtn.appendChild(tIcon);
+    const tText = document.createElement("span");
+    tText.textContent = ` ${t("ui.techMap")} [T]`;
+    techBtn.appendChild(tText);
     techBtn.addEventListener("click", () => this.toggleTechMap());
     hud.appendChild(techBtn);
     // Tactical minimap (bottom-right canvas).
@@ -654,7 +702,35 @@ export class GameScene extends Phaser.Scene {
     const alive = s.squad.filter((a) => a.active).length;
     const abil = ORIGIN_ABILITY[originById(s.originId).id];
     const abilTxt = s.abilityCd > 0 ? `${t("ui.ability")} ${Math.ceil(s.abilityCd)}s` : `${t("ui.ability")}: ${t(abil.nameKey)} [F]`;
-    squadLine.textContent = `${t(ORIGIN_SQUAD_NAME[originById(s.originId).id])} ${alive}/${s.squad.length} · ${s.squadMode.toUpperCase()} · ${abilTxt}`;
+    squadLine.innerHTML = "";
+    const squadTitle = document.createElement("span");
+    squadTitle.textContent = `${t(ORIGIN_SQUAD_NAME[originById(s.originId).id])} ${alive}/${s.squad.length} · `;
+    squadLine.appendChild(squadTitle);
+
+    const modeBadge = document.createElement("span");
+    modeBadge.className = "prompt-badge";
+    const modeIcon = document.createElement("img");
+    modeIcon.className = "prompt-key-icon";
+    const modeKey = s.squadMode === "focus" ? "e" : s.squadMode === "hold" ? "r" : "q";
+    modeIcon.src = SEED_ASSETS.prompts[modeKey];
+    modeIcon.alt = modeKey.toUpperCase();
+    modeBadge.appendChild(modeIcon);
+    const modeText = document.createElement("span");
+    modeText.textContent = ` ${s.squadMode.toUpperCase()} · `;
+    modeBadge.appendChild(modeText);
+    squadLine.appendChild(modeBadge);
+
+    const abilBadge = document.createElement("span");
+    abilBadge.className = "prompt-badge";
+    const abilIcon = document.createElement("img");
+    abilIcon.className = "prompt-key-icon";
+    abilIcon.src = SEED_ASSETS.prompts.f;
+    abilIcon.alt = "F";
+    abilBadge.appendChild(abilIcon);
+    const abilSpan = document.createElement("span");
+    abilSpan.textContent = ` ${abilTxt}`;
+    abilBadge.appendChild(abilSpan);
+    squadLine.appendChild(abilBadge);
     // Knowledge card: progress toward the next age's threshold.
     const next = s.ageIndex + 1;
     const nextNeed = next < AGES.length ? (AGE_DEFS[next]?.knowledgeThreshold ?? 1) : 1;
@@ -852,8 +928,15 @@ export class GameScene extends Phaser.Scene {
       const row = el("div", "btn-row");
       for (const sp of specs) {
         const b = document.createElement("button");
-        b.className = "btn primary";
-        b.textContent = `${t(sp.name)} — ${t(sp.desc)}`;
+        b.className = "btn primary terr-spec-btn";
+        const icon = document.createElement("img");
+        icon.src = SEED_ASSETS.structures[sp.id];
+        icon.className = "structure-preview-icon";
+        icon.alt = sp.id;
+        b.appendChild(icon);
+        const txt = document.createElement("span");
+        txt.textContent = `${t(sp.name)} — ${t(sp.desc)}`;
+        b.appendChild(txt);
         b.addEventListener("click", () => {
           this.handleEvents(this.sim.setOutpostSpec(poiId, sp.id));
           this.closeBlocking();
@@ -865,12 +948,14 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  /** Tech Map (T): the SAME deterministic graph the sim drafts, made visible. */
+  /** Tech Map (T): the SAME deterministic graph the sim drafts, made visible with Dagre and Panzoom. */
   private toggleTechMap(): void {
     const s = this.sim.state;
     if (s.over) return;
     if (this.civMapOpen) this.toggleCivMap();
     if (this.techMapOpen) {
+      this.techMapView?.destroy();
+      this.techMapView = null;
       document.getElementById("techmap-screen")?.remove();
       this.techMapOpen = false;
       return;
@@ -882,176 +967,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   private renderTechMap(): void {
+    if (this.techMapView) {
+      this.techMapView.destroy();
+      this.techMapView = null;
+    }
     document.getElementById("techmap-screen")?.remove();
-    const s = this.sim.state;
-    const root = uiRoot();
-    const screen = el("div", "screen");
-    screen.id = "techmap-screen";
-    const wrap = el("div", "techmap-wrap");
-    const head = el("div", "techmap-head");
-    head.appendChild(el("span", "techmap-title", "ui.techMap"));
-    if (s.pinnedTarget !== "") {
-      const pin = document.createElement("span");
-      pin.className = "techmap-pin";
-      pin.textContent = `${t("ui.buildPlan")}: ${this.planLabel(s.pinnedTarget)}`;
-      head.appendChild(pin);
-      const unpin = document.createElement("button");
-      unpin.className = "btn";
-      unpin.textContent = t("ui.unpin");
-      unpin.addEventListener("click", () => {
-        this.handleEvents(this.sim.pinTarget(""));
-        this.renderTechMap();
-      });
-      head.appendChild(unpin);
-    }
-    const close = document.createElement("button");
-    close.className = "btn";
-    close.textContent = "✕ [T]";
-    close.addEventListener("click", () => this.toggleTechMap());
-    head.appendChild(close);
-    wrap.appendChild(head);
-    const body = el("div", "techmap-body");
-    const cols = el("div", "techmap-cols");
-    const states = new Map(this.sim.nodeStates().map((x) => [x.id, x]));
-    const byId = new Map(this.sim.techGraph().map((n) => [n.id, n]));
-    const path = this.sim.pinnedPathIds();
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("class", "techmap-links");
-    for (const age of AGES) {
-      const col = el("div", "techmap-col");
-      const ageTitle = document.createElement("div");
-      ageTitle.className = "techmap-age";
-      ageTitle.textContent = t(`age.${age}` as EnKeys);
-      col.appendChild(ageTitle);
-      for (const n of this.sim.techGraph().filter((x) => x.age === age)) {
-        const st = states.get(n.id);
-        const b = document.createElement("button");
-        const cls = st?.owned ? "owned" : st?.available ? "available" : "locked";
-        b.className = `techmap-node ${cls}` + (s.pinnedTarget === n.id || path.has(n.id) ? " pinned" : "");
-        b.dataset.nodeId = n.id;
-        const star = [...n.tags, ...n.synergyTags].some((tg) =>
-          BREAKTHROUGHS.some((br) => !s.breakthroughs.includes(br.id) && br.requires.includes(tg)));
-        b.textContent = `${st?.owned ? "✓ " : st?.available ? "● " : "🔒 "}${t(n.titleKey as EnKeys)}${star ? " ★" : ""}`;
-        b.addEventListener("click", () => {
-          this.techMapSel = n.id;
-          this.renderTechMap();
-        });
-        col.appendChild(b);
-      }
-      cols.appendChild(col);
-    }
-    body.appendChild(cols);
-    body.appendChild(svg);
-    const side = el("div", "techmap-side");
-    const sel = this.techMapSel !== "" ? byId.get(this.techMapSel) : undefined;
-    if (sel) {
-      const h = document.createElement("h3");
-      h.textContent = t(sel.titleKey as EnKeys);
-      side.appendChild(h);
-      const meta = document.createElement("div");
-      meta.className = "techmap-meta";
-      meta.textContent = `${t(`age.${sel.age}` as EnKeys)} · ${t(`domain.${sel.domain}` as EnKeys)} · ${t(`rarity.${sel.rarity}` as EnKeys)}`;
-      side.appendChild(meta);
-      const desc = document.createElement("div");
-      desc.textContent = t(sel.descriptionKey as EnKeys);
-      side.appendChild(desc);
-      const reqTitle = document.createElement("div");
-      reqTitle.className = "techmap-req-title";
-      reqTitle.textContent = `${t("ui.requires")}:`;
-      side.appendChild(reqTitle);
-      const req = document.createElement("div");
-      req.className = "techmap-req";
-      req.textContent = sel.prerequisites.length === 0 ? "—" : sel.prerequisites.map((p) => {
-        const pn = byId.get(p);
-        return `${s.owned.includes(p) ? "✓" : "○"} ${pn ? t(pn.titleKey as EnKeys) : p}`;
-      }).join(" · ");
-      side.appendChild(req);
-      const leadsTitle = document.createElement("div");
-      leadsTitle.className = "techmap-req-title";
-      leadsTitle.textContent = `${t("ui.leadsTo")}:`;
-      side.appendChild(leadsTitle);
-      const leads = document.createElement("div");
-      leads.className = "techmap-req";
-      leads.textContent = this.sim.techGraph()
-        .filter((n) => n.prerequisites.includes(sel.id))
-        .map((n) => t(n.titleKey as EnKeys)).join(" · ") || "—";
-      side.appendChild(leads);
-      const pinBtn = document.createElement("button");
-      pinBtn.className = "btn primary";
-      const isPinned = s.pinnedTarget === sel.id;
-      pinBtn.textContent = isPinned ? t("ui.unpin") : t("ui.pinPath");
-      pinBtn.addEventListener("click", () => {
-        this.handleEvents(this.sim.pinTarget(isPinned ? "" : sel.id));
-        this.renderTechMap();
-      });
-      side.appendChild(pinBtn);
-      void states;
-    }
-    const buildTitle = document.createElement("h3");
-    buildTitle.textContent = t("ui.ownedBuild");
-    side.appendChild(buildTitle);
-    const origin = ORIGINS.find((o) => o.id === s.originId);
-    const ob = document.createElement("div");
-    ob.className = "techmap-req";
-    const fams = activeFamilies(s.originId, s.expansionFamily).map((f) => t(`family.${f}` as EnKeys)).join("+");
-    ob.textContent = `${origin ? t(origin.nameKey) : s.originId} (${fams})` +
-      (s.expansionFamily !== "" ? ` +${t(`family.${s.expansionFamily}` as EnKeys)}` : "") +
-      ` · ★ ${s.breakthroughs.map((id) => {
-        const bb = BREAKTHROUGHS.find((x) => x.id === id);
-        return bb ? t(bb.titleKey) : id;
-      }).join(", ") || "—"}` +
-      (s.reservedTech !== "" ? ` · ${t("ui.reserve")}: ${this.planLabel(s.reservedTech)}` : "");
-    side.appendChild(ob);
-    const domains = ["warfare", "industry", "science", "culture"] as const;
-    for (const d of domains) {
-      const list = s.owned
-        .map((id) => byId.get(id))
-        .filter((n) => n && n.domain === d)
-        .map((n) => t((n as { titleKey: EnKeys }).titleKey));
-      if (list.length === 0) continue;
-      const row = document.createElement("div");
-      row.className = "techmap-req";
-      row.textContent = `${t(`domain.${d}` as EnKeys)}: ${list.join(" · ")}`;
-      side.appendChild(row);
-    }
-    body.appendChild(side);
-    wrap.appendChild(body);
-    screen.appendChild(wrap);
-    root.appendChild(screen);
-    this.drawTechLinks(svg, cols);
-  }
-
-  /** Prerequisite connector lines (best-effort presentation; chips carry meaning). */
-  private drawTechLinks(svg: SVGSVGElement, cols: HTMLElement): void {
-    try {
-      const host = cols.getBoundingClientRect();
-      const pos = new Map<string, { x: number; y: number }>();
-      for (const b of cols.querySelectorAll<HTMLButtonElement>("button.techmap-node")) {
-        const r = b.getBoundingClientRect();
-        if (b.dataset.nodeId) pos.set(b.dataset.nodeId, { x: r.left - host.left + r.width / 2, y: r.top - host.top + r.height / 2 });
-      }
-      svg.setAttribute("width", String(host.width));
-      svg.setAttribute("height", String(host.height));
-      const byId = new Map(this.sim.techGraph().map((n) => [n.id, n]));
-      for (const [id, p] of pos) {
-        const n = byId.get(id);
-        if (!n) continue;
-        for (const pre of n.prerequisites) {
-          const q = pos.get(pre);
-          if (!q) continue;
-          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          line.setAttribute("x1", String(q.x));
-          line.setAttribute("y1", String(q.y));
-          line.setAttribute("x2", String(p.x));
-          line.setAttribute("y2", String(p.y));
-          line.setAttribute("class", "techmap-link");
-          svg.appendChild(line);
-        }
-      }
-    } catch {
-      // Links are decorative; chips carry the prerequisite meaning.
-    }
+    this.techMapView = new TechMapView({
+      sim: this.sim,
+      selectedId: this.techMapSel,
+      onSelect: (id) => {
+        this.techMapSel = id;
+      },
+      onPin: (id) => {
+        this.handleEvents(this.sim.pinTarget(id));
+      },
+      onClose: () => {
+        this.toggleTechMap();
+      },
+    });
+    this.techMapView.mount(uiRoot());
   }
 
   /** Civilization map (M): large explored-world view + territory ledger. */
@@ -1424,6 +1358,8 @@ export class GameScene extends Phaser.Scene {
   private restartRun(): void {
     // P2-01: Restart = SAME master seed, clean simulation. (Play Again uses a
     // fresh random seed; Quit returns to title.) Origin choice is preserved.
+    this.techMapView?.destroy();
+    this.techMapView = null;
     this.modalQueue = [];
     this.closeBlocking();
     this.techMapOpen = false;
@@ -1802,6 +1738,7 @@ export class GameScene extends Phaser.Scene {
         case "territory_claimed":
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys));
           sfx.select();
+          this.spawnVfx("seed_claim_glow", s.px, s.py, 0.8, 0x53e0c8, 450);
           break;
         case "outpost_spec":
           toast(e.spec === "research" ? "ui.specResearch" : e.spec === "military" ? "ui.specMilitary" : "ui.specEconomy");
@@ -1824,6 +1761,7 @@ export class GameScene extends Phaser.Scene {
           const nm = terr ? t(`poi.${terr.poiType}.name` as EnKeys) : e.poiId;
           toast("ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
           sfx.boss();
+          this.spawnVfx("seed_raid_alert", s.px, s.py, 1.0, 0xff5533, 600);
           break;
         }
         case "raid_repelled":
@@ -1841,6 +1779,7 @@ export class GameScene extends Phaser.Scene {
         case "breakthrough": {
           this.showBreakthroughBeat(e.id);
           this.qa?.noteSimEvent("breakthrough", e.id);
+          this.spawnVfx("seed_breakthrough_spark", s.px, s.py, 1.2, 0xd884ff, 500);
           break;
         }
         case "age_reached":
@@ -1897,6 +1836,7 @@ export class GameScene extends Phaser.Scene {
           killsThisFrame++;
           this.bursts.push({ x: e.x, y: e.y, t: e.boss ? 0.5 : 0.3, max: e.boss ? 0.5 : 0.3, big: e.boss });
           if (this.bursts.length > 24) this.bursts.shift();
+          this.spawnVfx("seed_hit_impact", e.x, e.y, e.boss ? 0.7 : 0.35, 0xffe08a, 180);
           if (e.boss && save.settings.shake) this.cameras.main.shake(400, 0.012);
           break;
         case "player_died":

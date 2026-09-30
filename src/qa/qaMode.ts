@@ -17,7 +17,8 @@ export function isQAMode(search: string): boolean {
 /** True when the visual-language lab should boot instead of the game. */
 export function isVisualMode(search: string): boolean {
   try {
-    return new URLSearchParams(search).has("visual");
+    const params = new URLSearchParams(search);
+    return params.has("visual") || params.has("leverage");
   } catch {
     return false;
   }

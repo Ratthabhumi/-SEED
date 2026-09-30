@@ -23,6 +23,9 @@ import {
   type CompositeSpec, type CompositePlacement,
 } from "../render/LabSpec";
 import { loadSave, storeSave } from "../../core/save/save";
+import { SEED_ASSETS } from "../assets/seedAssets";
+import { TechMapView } from "../tech/TechMapView";
+import { RunSimulation } from "../../core/sim/RunSimulation";
 
 // Lab-local presentation state (module scope so a restart redraws the mode).
 let labContrast: LabContrastMode = "normal";
@@ -54,8 +57,27 @@ function fakeEnemy(family: EnemyFamily, affix: EliteAffix | "" = "", boss = fals
 }
 
 export class VisualLabScene extends Phaser.Scene {
+  private labSim: RunSimulation | null = null;
+  private labTechMap: TechMapView | null = null;
+
   constructor() {
     super("visual-lab");
+  }
+
+  preload(): void {
+    this.load.image("lab_hit_impact", SEED_ASSETS.vfx.hitImpact);
+    this.load.image("lab_claim_glow", SEED_ASSETS.vfx.claimGlow);
+    this.load.image("lab_breakthrough_spark", SEED_ASSETS.vfx.breakthroughSpark);
+    this.load.image("lab_raid_alert", SEED_ASSETS.vfx.raidAlert);
+    this.load.image("lab_outpost_research", SEED_ASSETS.structures.research);
+    this.load.image("lab_outpost_military", SEED_ASSETS.structures.military);
+    this.load.image("lab_outpost_economic", SEED_ASSETS.structures.economic);
+    this.load.image("lab_prompt_q", SEED_ASSETS.prompts.q);
+    this.load.image("lab_prompt_e", SEED_ASSETS.prompts.e);
+    this.load.image("lab_prompt_r", SEED_ASSETS.prompts.r);
+    this.load.image("lab_prompt_f", SEED_ASSETS.prompts.f);
+    this.load.image("lab_prompt_t", SEED_ASSETS.prompts.t);
+    this.load.image("lab_prompt_m", SEED_ASSETS.prompts.m);
   }
 
   create(): void {
@@ -172,6 +194,60 @@ export class VisualLabScene extends Phaser.Scene {
       { label: "orbit", draw: (gg, x, yy) => drawOrbit(gg, x, yy, 22, 3, time, 0xb48cff, 6) },
       { label: "summon", draw: (gg, x, yy) => drawSummon(gg, x, yy - 10, 7, 0x7fb8ff, x - 30, yy + 20) },
     ]);
+    y = this.specRow(g, "CIVILIZATION OUTPOSTS — normalized Kenney CC0 structures", y, W, time, [
+      {
+        label: "research",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_outpost_research").setScale(1.2);
+        },
+      },
+      {
+        label: "military",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_outpost_military").setScale(1.2);
+        },
+      },
+      {
+        label: "economic",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_outpost_economic").setScale(1.2);
+        },
+      },
+    ]);
+    y = this.specRow(g, "INPUT PROMPTS — normalized Kenney CC0 keyboard prompts", y, W, time, [
+      { label: "Q — Rally", draw: (_gg, x, yy) => { this.add.image(x, yy, "lab_prompt_q").setScale(1.4); } },
+      { label: "E — Focus", draw: (_gg, x, yy) => { this.add.image(x, yy, "lab_prompt_e").setScale(1.4); } },
+      { label: "R — Hold", draw: (_gg, x, yy) => { this.add.image(x, yy, "lab_prompt_r").setScale(1.4); } },
+      { label: "F — Ability", draw: (_gg, x, yy) => { this.add.image(x, yy, "lab_prompt_f").setScale(1.4); } },
+      { label: "T — Tech Map", draw: (_gg, x, yy) => { this.add.image(x, yy, "lab_prompt_t").setScale(1.4); } },
+      { label: "M — Civ Map", draw: (_gg, x, yy) => { this.add.image(x, yy, "lab_prompt_m").setScale(1.4); } },
+    ]);
+    y = this.specRow(g, "VFX PARTICLES — normalized Kenney CC0 particle foundation", y, W, time, [
+      {
+        label: "hit impact",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_hit_impact").setScale(0.8).setTint(0xffe08a);
+        },
+      },
+      {
+        label: "claim glow",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_claim_glow").setScale(0.8).setTint(0x53e0c8);
+        },
+      },
+      {
+        label: "breakthrough",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_breakthrough_spark").setScale(0.9).setTint(0xd884ff);
+        },
+      },
+      {
+        label: "raid alert",
+        draw: (_gg, x, yy) => {
+          this.add.image(x, yy, "lab_raid_alert").setScale(0.9).setTint(0xff5533);
+        },
+      },
+    ]);
     y = this.poiRow(g, y, W, time, hc);
     y = this.biomeRow(g, y, W);
     y = this.contrastMatrix(g, y, W, time, hc);
@@ -180,6 +256,11 @@ export class VisualLabScene extends Phaser.Scene {
     }
     void LAB_SECTIONS;
     this.buildStrings();
+    this.input.keyboard?.on("keydown-T", () => this.toggleLabTechMap());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.labTechMap?.destroy();
+      this.labTechMap = null;
+    });
   }
 
   /** Specimen row: title + labeled cells at responsive width. Returns next y. */
@@ -394,14 +475,37 @@ export class VisualLabScene extends Phaser.Scene {
       high.className = "btn";
       high.textContent = "High contrast";
       high.addEventListener("click", () => this.switchLabContrast("high"));
+      const techBtn = document.createElement("button");
+      techBtn.id = "lab-techmap-btn";
+      techBtn.className = "btn";
+      techBtn.textContent = "Tech Map [T]";
+      techBtn.addEventListener("click", () => this.toggleLabTechMap());
       bar.appendChild(h);
       bar.appendChild(en);
       bar.appendChild(th);
       bar.appendChild(normal);
       bar.appendChild(gray);
       bar.appendChild(high);
+      bar.appendChild(techBtn);
       document.body.appendChild(bar);
     }
+  }
+
+  private toggleLabTechMap(): void {
+    if (this.labTechMap) {
+      this.labTechMap.destroy();
+      this.labTechMap = null;
+      document.getElementById("techmap-screen")?.remove();
+      return;
+    }
+    if (!this.labSim) {
+      this.labSim = new RunSimulation({ masterSeed: "EPOCH-LAB-001" });
+    }
+    this.labTechMap = new TechMapView({
+      sim: this.labSim,
+      onClose: () => this.toggleLabTechMap(),
+    });
+    this.labTechMap.mount(document.body);
   }
 
   private switchLabContrast(mode: LabContrastMode): void {
