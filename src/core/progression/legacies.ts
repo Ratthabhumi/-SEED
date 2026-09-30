@@ -14,6 +14,12 @@ export interface LegacyDef {
   effects: TechEffect[];
   /** Breakthrough recorded as inherited (display + no re-trigger). */
   breakthroughId?: string;
+  /**
+   * P1-05: pure affinity legacies only function through this family.
+   * The Origin picker must restrict to Origins containing it — a chosen
+   * Legacy may never start dead.
+   */
+  requiredFamily?: WeaponFamily;
 }
 
 export const MAX_LEGACIES = 3;
@@ -59,6 +65,7 @@ function affinityDef(family: WeaponFamily): LegacyDef {
     nameKey: `legacy.affinity.${family}.name` as EnKeys,
     descKey: `legacy.affinity.${family}.description` as EnKeys,
     effects: effects[family],
+    requiredFamily: family,
   };
 }
 

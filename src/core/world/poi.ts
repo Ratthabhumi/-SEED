@@ -18,6 +18,14 @@ export interface POI {
 
 const POI_FAMILIES: POIType[] = ["ruin", "meteor", "vault", "signal"];
 
+/**
+ * Families the world generator can actually place (P2-02 truth).
+ * megasite/worldtree are authored, unit-tested and visualized but NOT
+ * worldgen-integrated in v0.2 — integrating them would change seeded POI
+ * type distribution (needs a deliberate versioning decision).
+ */
+export const WORLDGEN_POI_FAMILIES: POIType[] = [...POI_FAMILIES];
+
 export function poiTypeFor(type: POIType): { knowledge: number; note: string } {
   switch (type) {
     case "ruin": return { knowledge: 25, note: "ANCIENT_RUIN" };

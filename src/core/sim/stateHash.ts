@@ -77,9 +77,14 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     b: [r6(b.hp), r6(b.maxHp), r6(b.speed), r6(b.damageMul), r6(b.cooldownMul), r6(b.pickupR), r6(b.regen), r6(b.knowledgeMul),
       b.bonusProjectiles, b.bonusGuardians, b.bonusAura, b.bonusOrbit, b.bonusMines, b.beamUnlocked ? 1 : 0],
     lvl: [s.level, r6(s.xp), s.xpNext, r6(s.knowledgeTotal), s.pendingLevels, s.draftOpen ? 1 : 0,
-      s.draftChoices.map((n) => n.id).sort(), s.draftContext],
+      // P1-03: draft order is gameplay (chooseDraft(i) indexes it) — preserved.
+      s.draftChoices.map((n) => n.id)],
     o: [[...s.owned].sort(), [...s.ownedTags].sort(), [...s.breakthroughs].sort()],
-    origin: [s.originId, s.expansionFamily, [...s.legacies].sort(), [...s.poiFamiliesClaimed].sort()],
+    // P1-03: Legacy FIFO order decides future eviction — preserved.
+    origin: [s.originId, s.expansionFamily, [...s.legacies], [...s.poiFamiliesClaimed].sort()],
+    // P1-04: current-world evidence drives Legacy offers — covered.
+    worldev: [Object.keys(s.worldDamageBySource).sort().map((k) => `${k}:${r6(s.worldDamageBySource[k] as number)}`),
+      s.worldTopDamageSource, [...s.worldBreakthroughsEarned].sort()],
     ws: [s.weaponStage.kinetic, s.weaponStage.energy, s.weaponStage.defense, s.weaponStage.field],
     tm: [r6(s.spawnT), r6(s.eliteT), r6(s.mineT), r6(s.auraT),
       r6(s.weaponCd.kinetic), r6(s.weaponCd.energy), r6(s.weaponCd.defense), r6(s.weaponCd.field),

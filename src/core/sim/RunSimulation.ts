@@ -113,6 +113,7 @@ export class RunSimulation {
       bossSpawned: false, ascendReady: false, bossIndex: -1, over: false,
       stats: { kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0 },
       damageBySource: {}, topDamageSource: "", highestAge: "stone",
+      worldDamageBySource: {}, worldTopDamageSource: "", worldBreakthroughsEarned: [],
     };
   }
 
@@ -127,6 +128,11 @@ export class RunSimulation {
     const legacy = offers.find((d) => d.id === legacyId);
     const origin = ORIGINS.find((o) => o.id === originId);
     if (!legacy || !origin) return ev;
+    // P1-05: a pure affinity Legacy must function in the chosen Origin —
+    // the new World's origin pair (expansion comes later) must include it.
+    if (legacy.requiredFamily && !(origin.families as readonly string[]).includes(legacy.requiredFamily)) {
+      return ev;
+    }
     const keep = {
       stats: { ...s.stats, chunksTotal: s.stats.chunksTotal, poisTotal: s.stats.poisTotal },
       dmg: { ...s.damageBySource }, top: s.topDamageSource, high: s.highestAge,
@@ -167,10 +173,10 @@ export class RunSimulation {
     return ev;
   }
 
-  /** Deterministic Legacy candidates for the completed world (no RNG). */
+  /** Deterministic Legacy candidates from CURRENT-WORLD achievements (no RNG). */
   legacyOffers(): LegacyDef[] {
     const s = this.state;
-    return legacyCandidates({ breakthroughs: s.breakthroughs, topDamageSource: s.topDamageSource, ascension: s.ascension });
+    return legacyCandidates({ breakthroughs: s.worldBreakthroughsEarned, topDamageSource: s.worldTopDamageSource, ascension: s.ascension });
   }
 
   hash(): string {
@@ -297,6 +303,8 @@ export class RunSimulation {
     const unlocked = new Set(s.breakthroughs);
     for (const b of checkBreakthroughs(ownedTags, unlocked)) {
       s.breakthroughs.push(b.id);
+      // Earned-in-this-world evidence (P1-04); inherited heirs never land here.
+      if (!s.worldBreakthroughsEarned.includes(b.id)) s.worldBreakthroughsEarned.push(b.id);
       for (const e of b.effects) applyTechEffect(s.build, e);
       ev.push({ type: "breakthrough", id: b.id });
     }
@@ -366,9 +374,15 @@ export class RunSimulation {
 
   private addDamage(src: string, v: number): void {
     const s = this.state;
+    // Run-total Chronicle evidence (preserved across Ascension).
     s.damageBySource[src] = (s.damageBySource[src] ?? 0) + v;
     if ((s.damageBySource[src] as number) > (s.damageBySource[s.topDamageSource] ?? -1)) {
       s.topDamageSource = src;
+    }
+    // Current-world evidence for Legacy offers (reset on Ascension).
+    s.worldDamageBySource[src] = (s.worldDamageBySource[src] ?? 0) + v;
+    if ((s.worldDamageBySource[src] as number) > (s.worldDamageBySource[s.worldTopDamageSource] ?? -1)) {
+      s.worldTopDamageSource = src;
     }
   }
 

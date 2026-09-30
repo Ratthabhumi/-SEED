@@ -88,6 +88,11 @@ export interface RunState {
   damageBySource: Record<string, number>;
   topDamageSource: string;
   highestAge: AgeId;
+  // Current-world evidence for Legacy offers (P1-04): reset on Ascension,
+  // unlike the run-total Chronicle fields above.
+  worldDamageBySource: Record<string, number>;
+  worldTopDamageSource: string;
+  worldBreakthroughsEarned: string[];
 }
 
 export const MAX_ENEMIES = 650;

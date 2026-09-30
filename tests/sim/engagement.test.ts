@@ -245,7 +245,9 @@ describe("ascension legacy prestige", () => {
     sim.state.stats.kills = 100;
     sim.state.runKills = 100;
     sim.state.runElapsed = 700;
-    const ev = sim.ascend("affinity-kinetic", "sentinels");
+    // Energy affinity pairs with the Sentinels origin (P1-05 compatibility).
+    sim.state.worldTopDamageSource = "energy";
+    const ev = sim.ascend("affinity-energy", "sentinels");
     expect(ev.some((e) => e.type === "legacy_granted")).toBe(true);
     expect(ev.some((e) => e.type === "ascended")).toBe(true);
     const s = sim.state;
@@ -254,16 +256,15 @@ describe("ascension legacy prestige", () => {
     expect(s.xp).toBe(0);
     expect(s.knowledgeTotal).toBe(0);
     expect(s.ageIndex).toBe(0);
-    // Fresh child worlds start from the granted stone spine, like fresh runs.
     expect(s.owned).toEqual(["spine-tools"]);
     expect(s.weaponStage).toEqual({ kinetic: 0, energy: 0, defense: 0, field: 0 });
     expect(s.originId).toBe("sentinels");
-    expect(s.legacies).toEqual(["affinity-kinetic"]);
+    expect(s.legacies).toEqual(["affinity-energy"]);
     expect(s.stats.kills).toBe(100);
     expect(s.runKills).toBe(100);
     expect(s.runElapsed).toBe(700);
-    // Legacy effect applied: +1 projectile bonus from kinetic affinity.
-    expect(s.build.bonusProjectiles).toBe(1);
+    // Legacy effect applied: beam weapons unlocked from world start.
+    expect(s.build.beamUnlocked).toBe(true);
   });
 
   it("legacy slots cap at 3 across ascensions", () => {
