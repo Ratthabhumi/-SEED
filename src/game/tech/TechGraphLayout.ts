@@ -43,6 +43,18 @@ export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 68;
 
 /**
+ * Effective node footprint for a UI scale — THE box Dagre lays out AND the
+ * box nodes render in (inline px + border-box + hidden overflow). One function
+ * owns both sides, so layout can never disagree with rendering (§15).
+ * Monotonic in scale; deterministic; LANG-independent (labels wrap/ellipsize
+ * inside the box, full prose lives in the sidebar).
+ */
+export function techNodeBox(uiScale: number): { w: number; h: number } {
+  const s = uiScale >= 2 ? 1.4 : uiScale >= 1.5 ? 1.2 : uiScale >= 1.25 ? 1.1 : 1;
+  return { w: Math.round(NODE_WIDTH * s), h: Math.round(NODE_HEIGHT * s) };
+}
+
+/**
  * Compute deterministic 2D presentation coordinates for the Tech DAG.
  * Left-to-Right layout matches civilization progression (Stone → Space).
  */

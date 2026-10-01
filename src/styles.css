@@ -390,7 +390,14 @@ button, input { font-family: inherit; }
 .techmap-pin-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .techmap-pin { font-size: var(--font-body); color: #7fd4ff; font-weight: 600; }
 .techmap-btn-close { margin-left: 10px; font-size: var(--font-caption); padding: 6px 14px; min-height: 36px; }
-.techmap-body { display: flex; gap: 16px; min-height: 0; flex: 1; }
+.techmap-body { display: flex; gap: 16px; min-height: 0; flex: 1; container-type: inline-size; container-name: techmap; }
+@container techmap (max-width: 780px) {
+  .techmap-body { flex-direction: column; }
+  .techmap-side { width: auto; min-width: 0; max-height: 30vh; }
+}
+/* High text scale stacks the sidebar instead of squeezing the graph. */
+#ui[data-density="compact"] .techmap-body { flex-direction: column; }
+#ui[data-density="compact"] .techmap-side { width: auto; min-width: 0; max-height: 30vh; }
 .techmap-viewport {
   position: relative; flex: 1; min-height: 520px; max-height: 76vh; overflow: hidden;
   background: #070d17; border-radius: 10px; border: 1px solid #1f2f47; cursor: grab;
@@ -412,14 +419,16 @@ button, input { font-family: inherit; }
 
 .techmap-node {
   position: absolute; pointer-events: auto; box-sizing: border-box;
+  overflow: hidden;
   font-size: var(--font-caption); line-height: 1.4; padding: 8px 12px; border-radius: 8px; text-align: left;
   background: #111a2a; border: 1.5px solid #2a3d58; color: var(--text); cursor: pointer;
   display: flex; align-items: center; gap: 8px; transition: border-color 0.15s, box-shadow 0.15s;
 }
 .techmap-node:hover { border-color: #53e0c8; background: #162338; }
-.techmap-node.selected { border-color: #ffffff; box-shadow: 0 0 14px rgba(255, 255, 255, 0.5); }
+/* Priority: selected > available/frontier = pinned > owned > locked. */
+.techmap-node.selected { border-color: #ffffff; border-width: 2.5px; box-shadow: 0 0 16px rgba(255, 255, 255, 0.6); }
 .techmap-node.available { border-color: #53e0c8; color: #e2fbf6; }
-.techmap-node.owned { border-color: var(--accent); color: #ffd987; background: #1a2318; }
+.techmap-node.owned { border-color: #5a4a2a; color: #b09a6a; background: #141a12; }
 .techmap-node.pinned { border-color: #7fd4ff; box-shadow: 0 0 12px rgba(127, 212, 255, 0.7); }
 .techmap-node.breakthrough { border-style: dashed; }
 .techmap-node.breakthrough.available { border-color: #c77dff; color: #f3e5ff; }

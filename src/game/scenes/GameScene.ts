@@ -594,6 +594,8 @@ export class GameScene extends Phaser.Scene {
     document.getElementById("pause-screen")?.remove();
     this.buildHUD();
     if (this.paused) this.showPause();
+    // New prose lengths change node footprints: re-layout the open map.
+    if (this.techMapOpen && this.techMapView) this.techMapView.relayout();
     if (this.qa && qaBefore) this.qa.afterLangSwitch(qaBefore, from, code);
   }
 

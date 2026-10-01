@@ -14,8 +14,9 @@ import { BREAKTHROUGHS } from "../../core/tech/synergy";
 import { ORIGINS, activeFamilies, originById } from "../../core/progression/origins";
 import { t } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
-import { layoutTechGraph, type TechGraphLayoutResult, type LayoutNode, type LayoutEdge } from "./TechGraphLayout";
+import { layoutTechGraph, techNodeBox, type TechGraphLayoutResult, type LayoutNode, type LayoutEdge } from "./TechGraphLayout";
 import { SEED_ASSETS } from "../assets/seedAssets";
+import { loadSave } from "../../core/save/save";
 
 export interface TechMapViewOptions {
   sim: RunSimulation;
@@ -34,6 +35,9 @@ export class TechMapView {
 
   private layoutResult!: TechGraphLayoutResult;
   private panzoom: PanzoomObject | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  /** Last deliberate view: re-applied on container resize (free = user owns it). */
+  private viewMode: "current" | "overview" | "free" = "current";
   private screenEl: HTMLElement | null = null;
   private viewportEl: HTMLElement | null = null;
   private canvasEl: HTMLElement | null = null;
@@ -53,12 +57,21 @@ export class TechMapView {
 
   /**
    * Mounts the Tech Map DOM into the provided root container.
+   * Layout uses the effective node box for the CURRENT uiScale, so Dagre
+   * coordinates always match rendered footprints (§15).
    */
   mount(root: HTMLElement): HTMLElement {
     this.destroy();
 
     const s = this.sim.state;
-    this.layoutResult = layoutTechGraph(this.sim.techGraph());
+    let uiScale = 1;
+    try {
+      uiScale = loadSave(localStorage).settings.uiScale ?? 1;
+    } catch {
+      uiScale = 1;
+    }
+    const box = techNodeBox(uiScale);
+    this.layoutResult = layoutTechGraph(this.sim.techGraph(), { nodeWidth: box.w, nodeHeight: box.h });
 
     const screen = document.createElement("div");
     screen.id = "techmap-screen";
@@ -125,8 +138,31 @@ export class TechMapView {
 
     // Initialize Panzoom with defensive fallback boundary
     this.initPanzoom();
+    // Container resize re-applies the deliberate view (never per-frame).
+    try {
+      const ro = new ResizeObserver(() => {
+        if (this.viewMode === "overview") this.fit();
+        else if (this.viewMode === "current") this.focusCurrent();
+      });
+      if (this.viewportEl) ro.observe(this.viewportEl);
+      this.resizeObserver = ro;
+    } catch {
+      // ResizeObserver unavailable: views still work, just not auto-refit.
+    }
 
     return screen;
+  }
+
+  /** Full re-layout (language/scale change): same box strategy, fresh mount. */
+  relayout(): void {
+    const root = this.screenEl?.parentElement ?? document.body;
+    const mode = this.viewMode;
+    const sel = this.selectedId;
+    this.mount(root);
+    this.selectedId = sel;
+    if (mode === "overview") this.fit();
+    else this.focusCurrent();
+    if (sel !== "") this.selectNode(sel);
   }
 
   private createHeader(): HTMLElement {
@@ -385,9 +421,13 @@ export class TechMapView {
       // Mouse wheel zoom on viewport
       this.wheelListener = (e: WheelEvent) => {
         e.preventDefault();
+        this.viewMode = "free";
         this.panzoom?.zoomWithWheel(e);
       };
       this.viewportEl.addEventListener("wheel", this.wheelListener);
+      this.viewportEl.addEventListener("pointerdown", () => {
+        this.viewMode = "free";
+      });
 
       // Initial view: focus current civilization frontier at readable 1.0 scale
       requestAnimationFrame(() => {
@@ -405,6 +445,7 @@ export class TechMapView {
   /** Focus the player's active civilization frontier at readable 1.0 scale. */
   public focusCurrent(): void {
     if (!this.panzoom || !this.viewportEl) return;
+    this.viewMode = "current";
     const vw = this.viewportEl.clientWidth || 800;
     const vh = this.viewportEl.clientHeight || 500;
     const s = this.sim.state;
@@ -448,6 +489,7 @@ export class TechMapView {
 
   public fit(): void {
     if (!this.panzoom || !this.viewportEl) return;
+    this.viewMode = "overview";
     const vw = this.viewportEl.clientWidth || 800;
     const vh = this.viewportEl.clientHeight || 500;
     const bw = this.layoutResult.width;
@@ -478,11 +520,13 @@ export class TechMapView {
 
   public zoomIn(): void {
     if (!this.panzoom) return;
+    this.viewMode = "free";
     this.panzoom.zoomIn({ animate: true });
   }
 
   public zoomOut(): void {
     if (!this.panzoom) return;
+    this.viewMode = "free";
     this.panzoom.zoomOut({ animate: true });
   }
 
@@ -637,6 +681,14 @@ export class TechMapView {
    * Destroys Panzoom listeners and removes the Tech Map screen.
    */
   destroy(): void {
+    if (this.resizeObserver) {
+      try {
+        this.resizeObserver.disconnect();
+      } catch {
+        // Safe disconnect
+      }
+      this.resizeObserver = null;
+    }
     if (this.viewportEl && this.wheelListener) {
       this.viewportEl.removeEventListener("wheel", this.wheelListener);
       this.wheelListener = null;
