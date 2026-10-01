@@ -2,6 +2,34 @@
 
 ## Timestamp
 
+2026-10-01 ~07:53 Asia/Bangkok. v0.22.1 First-Run Clarity & Presentation Corrective — MILESTONE COMPLETE.
+
+**Status: AUTOMATED VERIFIED — HUMAN AUDIT PENDING**
+- Branch: `fix/v0221-first-run-clarity-20261001`
+- Commit: `1ffc625` — pushed to origin
+- E2E clarityAuditV0221.spec.ts: **4/4 PASS** (QA telemetry, readability, UI scale, visual capture)
+- Unit tests: **295/295 PASS** (35 test files)
+- TypeScript: **0 errors**
+- Third-party verify: **ALL CHECKS PASSED**
+- Production build: **PASS** (8.22s)
+
+Changes in this milestone:
+- **CSS typography tokens**: `--font-body: 18px` base, calc-scaled by `--ui-scale`
+- **`.draft-stays` fix**: corrected from `--font-caption` (16px) to `--font-body` (18px)
+- **Semantic modal sizes**: `.panel-sm/.panel-md/.panel-lg/.panel-xl/.panel-full`
+- **5-zone HUD IA**: top-left objective, top-right age card, bottom-left status, bottom-center knowledge, bottom-right minimap
+- **UI Scale picker** (100%/125%/150%/200%) in Settings with `UiScale` type in `Settings`
+- **TechMapView R2**: CURRENT/OVERVIEW/100%/-/+ controls, `focusCurrent()` on open
+- **TutorialDirector** (`src/game/onboarding/TutorialDirector.ts`): 2-part intro modal, progressive steps, skip/reset
+  - CRITICAL FIX: `this.tutorial.start()` moved AFTER `buildHUD()` so `clearUI()` cannot wipe `#tutorial-intro-screen`
+- **VFX cleanup**: ADD blend mode on all pool images; geometric sparks for ordinary deaths; raster reserved for boss/elite
+- **QA telemetry**: `sessionId`, `reportSequence`, `#qa-rec-indicator`, F10 toggle, `onPlayerDied()` terminal emit
+- **Visual evidence**: 13 screenshots captured to `docs/visual_audit_v0221/`
+
+Next recommended step: Human plays the game and provides audit verdict.
+
+---
+
 2026-10-01 ~06:35 Asia/Bangkok. v0.22 Integrated Human Revalidation completed.
 Status:
 - **v0.22**: `AUTOMATED VERIFIED` | `HUMAN REVALIDATION EVIDENCE CAPTURED` | `AUDITOR VERDICT PENDING`
