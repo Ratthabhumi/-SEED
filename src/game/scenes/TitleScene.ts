@@ -45,6 +45,10 @@ export class TitleScene extends Phaser.Scene {
     let pickedOrigin: OriginId = DEFAULT_ORIGIN;
     // QA gate (?qa=1 only): small testing banner + one-click golden-seed start.
     if (isQAMode(window.location.search)) {
+      // Optional explicit QA seed: ?qa=1&seed=EPOCH-AET4-3SFC (recorder stores
+      // the actual seed; golden regression tests keep EPOCH-GOLDEN-001).
+      const qaSeedParam = new URLSearchParams(window.location.search).get("seed");
+      const qaSeed = qaSeedParam && qaSeedParam.trim() !== "" ? qaSeedParam.trim() : GOLDEN_QA_SEED;
       const gate = el("div", "qa-gate");
       gate.id = "qa-gate";
       const gh = document.createElement("div");
@@ -55,13 +59,17 @@ export class TitleScene extends Phaser.Scene {
       gn.className = "qa-gate-sub";
       gn.textContent = t("qa.recorded");
       gate.appendChild(gn);
+      const gs = document.createElement("div");
+      gs.className = "qa-gate-sub";
+      gs.textContent = `seed: ${qaSeed}`;
+      gate.appendChild(gs);
       const startQa = document.createElement("button");
       startQa.id = "qa-start-playtest";
       startQa.className = "btn primary";
       startQa.textContent = "START PLAYTEST";
       startQa.addEventListener("click", () => {
         sfx.unlock(); sfx.select();
-        sessionStorage.setItem(TITLE_SEED_KEY, GOLDEN_QA_SEED);
+        sessionStorage.setItem(TITLE_SEED_KEY, qaSeed);
         sessionStorage.setItem(TITLE_ORIGIN_KEY, pickedOrigin);
         this.scene.start("game");
       });

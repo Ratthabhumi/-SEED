@@ -85,6 +85,11 @@ export class GameScene extends Phaser.Scene {
   private frontierSites: FrontierSite[] = [];
   private frontierFocus: FrontierObjective | null = null;
   private siteScratch: SimEnemy[] = [];
+  /** Telemetry-only seen sets (presentation-side, never canonical). */
+  private claimPromptsSeen = new Set<string>();
+  private firstClaimLogged = false;
+  private prevFocusId = "";
+  private prevDominion = -1;
   /** Transient impact presentation (never canonical): death rings + damage numbers. */
   private bursts: Array<{ x: number; y: number; t: number; max: number; big: boolean }> = [];
   private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
@@ -200,6 +205,12 @@ export class GameScene extends Phaser.Scene {
     this.playerFacing = -Math.PI / 2;
     this.lastHurtT = -10;
     this.onboard = { done: new Set(), active: "", until: 0 };
+    this.frontierSites = [];
+    this.frontierFocus = null;
+    this.claimPromptsSeen = new Set<string>();
+    this.firstClaimLogged = false;
+    this.prevFocusId = "";
+    this.prevDominion = -1;
 
     this.tutorial?.dispose();
     const save = loadSave(localStorage);
@@ -1070,6 +1081,31 @@ export class GameScene extends Phaser.Scene {
       dominionHave: ds.active,
       dominionNeed: req?.outposts ?? 0,
     });
+    // Telemetry (§36): site states, focus changes, claim prompts, first claim,
+    // and dominion progression. Read-only observation, never gameplay.
+    const qa = this.qa;
+    if (!qa) return;
+    for (const site of this.frontierSites) {
+      if (site.state === "CONTESTED" || site.state === "CLAIMABLE") {
+        if (!this.claimPromptsSeen.has(site.poiId)) {
+          this.claimPromptsSeen.add(site.poiId);
+          qa.noteSimEvent("site_prompt", `${site.state}:${site.poiType}`);
+        }
+      }
+    }
+    const focusId = this.frontierFocus?.site?.poiId ?? this.frontierFocus?.kind ?? "";
+    if (focusId !== this.prevFocusId) {
+      this.prevFocusId = focusId;
+      if (focusId) qa.noteSimEvent("focus", focusId);
+    }
+    if (!this.firstClaimLogged && s.territories.length > 0) {
+      this.firstClaimLogged = true;
+      qa.noteSimEvent("first_claim", `${s.elapsed.toFixed(1)}s`);
+    }
+    if (ds.active !== this.prevDominion) {
+      this.prevDominion = ds.active;
+      qa.noteSimEvent("dominion", `${ds.active}/${req?.outposts ?? 0}`);
+    }
   }
 
   /** [C] claims the nearest valid, clear, in-reach, unclaimed site. */
@@ -1196,6 +1232,13 @@ export class GameScene extends Phaser.Scene {
         `${specKey ? t(specKey) : "—"} · T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}${terr.disabled ? " · ✗" : ""}${raidMark}`;
       list.appendChild(d);
     }
+    if (s.stronghold?.revealed) {
+      const d = document.createElement("div");
+      const dx = s.stronghold.x - s.px;
+      const dy = s.stronghold.y - s.py;
+      d.textContent = `👑 ${t("ui.stronghold")} · ${Math.hypot(dx, dy).toFixed(0)}u`;
+      list.appendChild(d);
+    }
     panel.appendChild(list);
     panel.appendChild(button("ui.back", () => this.toggleCivMap(), "btn primary"));
     screen.appendChild(panel);
@@ -1230,13 +1273,48 @@ export class GameScene extends Phaser.Scene {
       ctx.fill();
     };
     for (const terr of s.territories) dot(terr.x, terr.y, terr.disabled ? "#555555" : "#53e0c8", 4);
+    // Frontier network (derived, never persisted): each active territory
+    // links to its two nearest open frontier sites (§21).
+    const open: Array<{ x: number; y: number }> = [];
     for (let ox = -RANGE; ox <= RANGE; ox++) {
       for (let oy = -RANGE; oy <= RANGE; oy++) {
         const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
         for (const poi of desc.poi) {
           if (s.poisWorld.includes(poi.id)) continue;
           dot(poi.wx, poi.wy, "#ffd166", 2);
+          open.push({ x: poi.wx, y: poi.wy });
         }
+      }
+    }
+    const toXY = (wx: number, wy: number): { x: number; y: number } => ({
+      x: W / 2 + ((wx - s.px) / 512) * cellX,
+      y: H / 2 + ((wy - s.py) / 512) * cellY,
+    });
+    ctx.strokeStyle = "rgba(83,224,200,0.4)";
+    ctx.lineWidth = 1;
+    for (const terr of s.territories) {
+      if (terr.disabled) continue;
+      const near = open
+        .map((p) => ({ p, d: Math.hypot(p.x - terr.x, p.y - terr.y) }))
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 2);
+      const a = toXY(terr.x, terr.y);
+      for (const { p } of near) {
+        const b = toXY(p.x, p.y);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      // Raid front marker on the raided node.
+      if (s.raid && s.raid.poiId === terr.poiId) {
+        ctx.strokeStyle = "#ff2222";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(83,224,200,0.4)";
+        ctx.lineWidth = 1;
       }
     }
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
@@ -2117,14 +2195,17 @@ export class GameScene extends Phaser.Scene {
         case "boss_warning":
           sfx.boss();
           toast("ui.bossWarning");
+          this.qa?.noteSimEvent("boss_spawn", "");
           if (save.settings.shake) this.cameras.main.shake(400, 0.01);
           break;
         case "stronghold_revealed":
           sfx.boss();
           toast("ui.stronghold");
+          this.qa?.noteSimEvent("stronghold", `${e.x},${e.y}`);
           break;
         case "boss_killed":
           sfx.ascend();
+          this.qa?.noteSimEvent("boss_killed", "");
           break;
         case "ascension_ready":
           this.offerAscend();
