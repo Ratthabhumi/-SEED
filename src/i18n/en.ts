@@ -362,6 +362,10 @@ export const en = {
   "ui.specPurpose": "One choice, permanent. Each specialization powers your build differently.",
   "ui.upgradeCost": "Upgrade cost",
   "ui.upgradeNeedKnowledge": "Need more Knowledge to upgrade",
+  "tech.state.now": "AVAILABLE NOW",
+  "tech.state.future": "FUTURE",
+  "tech.state.locked": "LOCKED",
+  "tech.state.owned": "OWNED",
 } as const;
 
 export type EnKeys = keyof typeof en;

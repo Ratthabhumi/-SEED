@@ -426,9 +426,17 @@ button, input { font-family: inherit; }
 }
 .techmap-node:hover { border-color: #53e0c8; background: #162338; }
 /* Priority: selected > available/frontier = pinned > owned > locked. */
+/* Node semantics (v0.23.1): AVAILABLE NOW dominates; FUTURE is visible but
+ * quiet; LOCKED is faintest. State word in aria-label — never color alone. */
 .techmap-node.selected { border-color: #ffffff; border-width: 2.5px; box-shadow: 0 0 16px rgba(255, 255, 255, 0.6); }
-.techmap-node.available { border-color: #53e0c8; color: #e2fbf6; }
+.techmap-node.available {
+  border-color: #53e0c8; border-width: 2.5px; color: #e2fbf6;
+  box-shadow: 0 0 14px rgba(83, 224, 200, 0.55); background: #14261f;
+}
 .techmap-node.owned { border-color: #5a4a2a; color: #b09a6a; background: #141a12; }
+.techmap-node.future { border-color: #3d4c63; color: #8d9cae; background: #0e1622; border-style: dashed; }
+.techmap-node.locked { border-color: #232f42; color: #5c6b7e; background: #0a0f18; opacity: 0.75; }
+.techmap-node.current-dim { opacity: 0.35; }
 .techmap-node.pinned { border-color: #7fd4ff; box-shadow: 0 0 12px rgba(127, 212, 255, 0.7); }
 .techmap-node.breakthrough { border-style: dashed; }
 .techmap-node.breakthrough.available { border-color: #c77dff; color: #f3e5ff; }

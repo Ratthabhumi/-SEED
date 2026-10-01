@@ -43,6 +43,8 @@ export class TechMapView {
   private canvasEl: HTMLElement | null = null;
   private sideEl: HTMLElement | null = null;
   private nodeButtons = new Map<string, HTMLButtonElement>();
+  /** CURRENT-mode focus: available frontier + one prerequisite layer + one future layer. */
+  private currentFocusIds = new Set<string>();
   private edgePaths: Array<{ el: SVGPathElement; edge: LayoutEdge }> = [];
   private wheelListener: ((e: WheelEvent) => void) | null = null;
   private isFallbackMode = false;
@@ -354,7 +356,14 @@ export class TechMapView {
       const st = states.get(n.id);
       const isOwned = st?.owned ?? false;
       const isAvailable = st?.available ?? false;
-      const isLocked = !isOwned && !isAvailable;
+      // FUTURE = inside the visible window but prerequisites unmet; LOCKED =
+      // beyond the window (or family-gated). Never symbol/color alone: every
+      // node carries an explicit localized state word in its accessible name.
+      const inWindow = AGES.indexOf(n.age) <= s.ageIndex + 1;
+      const stateKey = (isOwned ? "tech.state.owned"
+        : isAvailable ? "tech.state.now"
+        : inWindow ? "tech.state.future" : "tech.state.locked") as EnKeys;
+      const stateCls = isOwned ? "owned" : isAvailable ? "available" : inWindow ? "future" : "locked";
       const isPinned = s.pinnedTarget === n.id || pinnedPath.has(n.id);
       const isSelected = this.selectedId === n.id;
 
@@ -365,11 +374,12 @@ export class TechMapView {
       btn.className = [
         "techmap-node",
         "techmap-no-pan",
-        isOwned ? "owned" : isAvailable ? "available" : "locked",
+        stateCls,
         isPinned ? "pinned" : "",
         star ? "breakthrough" : "",
         isSelected ? "selected" : "",
       ].filter(Boolean).join(" ");
+      btn.setAttribute("aria-label", `${t(n.titleKey as EnKeys)} — ${t(stateKey)}`);
 
       btn.dataset.nodeId = n.id;
       btn.style.left = `${Math.round(ln.x)}px`;
@@ -377,10 +387,10 @@ export class TechMapView {
       btn.style.width = `${Math.round(ln.width)}px`;
       btn.style.height = `${Math.round(ln.height)}px`;
 
-      // Status indicator mark
+      // Status indicator mark: symbol AND state word (aria) — never color alone.
       const mark = document.createElement("span");
       mark.className = "techmap-node-mark";
-      mark.textContent = isOwned ? "✓" : isAvailable ? "●" : "🔒";
+      mark.textContent = isOwned ? "✓" : isAvailable ? "●" : inWindow ? "○" : "🔒";
       btn.appendChild(mark);
 
       // Node title
@@ -405,7 +415,36 @@ export class TechMapView {
       this.nodeButtons.set(n.id, btn);
     }
 
+    // CURRENT-mode neighborhood: available frontier + prerequisite layer +
+    // future (children) layer. Everything else dims — never hidden, so the
+    // graph shape stays legible while the frontier dominates.
+    this.currentFocusIds = new Set<string>();
+    const byId = new Map(this.layoutResult.nodes.map((x) => [x.node.id, x.node]));
+    const children = new Map<string, string[]>();
+    for (const x of byId.values()) {
+      for (const p of x.prerequisites) {
+        const arr = children.get(p) ?? [];
+        arr.push(x.id);
+        children.set(p, arr);
+      }
+    }
+    for (const [id, x] of states) {
+      if (!x.available) continue;
+      this.currentFocusIds.add(id);
+      for (const p of byId.get(id)?.prerequisites ?? []) this.currentFocusIds.add(p);
+      for (const c of children.get(id) ?? []) this.currentFocusIds.add(c);
+    }
+    this.applyModeDim();
+
     return container;
+  }
+
+  /** CURRENT dims off-frontier nodes; OVERVIEW shows the complete graph. */
+  private applyModeDim(): void {
+    const dim = this.viewMode === "current";
+    for (const [id, btn] of this.nodeButtons) {
+      btn.classList.toggle("current-dim", dim && !this.currentFocusIds.has(id));
+    }
   }
 
   private initPanzoom(): void {
@@ -446,6 +485,7 @@ export class TechMapView {
   public focusCurrent(): void {
     if (!this.panzoom || !this.viewportEl) return;
     this.viewMode = "current";
+    this.applyModeDim();
     const vw = this.viewportEl.clientWidth || 800;
     const vh = this.viewportEl.clientHeight || 500;
     const s = this.sim.state;
@@ -490,6 +530,7 @@ export class TechMapView {
   public fit(): void {
     if (!this.panzoom || !this.viewportEl) return;
     this.viewMode = "overview";
+    this.applyModeDim();
     const vw = this.viewportEl.clientWidth || 800;
     const vh = this.viewportEl.clientHeight || 500;
     const bw = this.layoutResult.width;

@@ -364,4 +364,8 @@ export const th: Record<EnKeys, string> = {
   "ui.specPurpose": "เลือกได้ครั้งเดียวถาวร แต่ละสายเสริมแกร่งต่างกัน",
   "ui.upgradeCost": "ค่าอัปเกรด",
   "ui.upgradeNeedKnowledge": "ความรู้ยังไม่พอสำหรับอัปเกรด",
+  "tech.state.now": "พร้อมวิจัย",
+  "tech.state.future": "อนาคต",
+  "tech.state.locked": "ล็อก",
+  "tech.state.owned": "มีแล้ว",
 };

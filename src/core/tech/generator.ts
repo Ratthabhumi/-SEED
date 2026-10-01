@@ -90,9 +90,13 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     prevSpine = s.id;
   }
 
-  // 2. Seeded side branches: pick 3-4 templates per age.
-  // Wide frontier: EVERY side node hangs directly off its age's spine node,
-  // so owning the spine opens the whole age at once (no narrow chains).
+  // 2. Seeded side branches: pick 3-4 templates per age, wired as TWO
+  // deterministic mini-paths (v0.23.1 progressive frontier):
+  //   SPINE -> FOUNDATION A -> SPECIALIZATION A (+CAPSTONE when 4 nodes)
+  //         -> FOUNDATION B (-> SPECIALIZATION B when 4 nodes)
+  // Owning the spine opens only the two foundations — never the whole age.
+  // Node ids, counts, and weights match the old wide frontier exactly; only
+  // the prerequisite EDGES changed (CONTENT_VERSION 5 -> 6).
   const ages: AgeId[] = ["stone", "bronze", "iron", "industrial", "atomic", "space"];
   for (const age of ages) {
     const pool = [...SIDE_TEMPLATES[age]];
@@ -100,8 +104,13 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     const count = age === "space" ? 3 : 3 + (rng.nextFloat() < 0.5 ? 1 : 0);
     const chosen = pool.slice(0, Math.min(count, pool.length));
     const spineForAge = CRITICAL_SPINE.find((c) => c.age === age)?.id ?? "spine-tools";
-    for (const t of chosen) {
+    // Positional split (no extra RNG): first half is chain A, rest chain B.
+    const aCount = Math.ceil(chosen.length / 2);
+    for (let i = 0; i < chosen.length; i++) {
+      const t = chosen[i] as SideTemplate;
       const id = `${age}-${t.suffix}`;
+      const chainHead = i === 0 || i === aCount;
+      const prevId = chainHead ? spineForAge : `${age}-${(chosen[i - 1] as SideTemplate).suffix}`;
       nodes.push({
         id,
         titleKey: t.titleKey,
@@ -109,7 +118,7 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
         age,
         domain: t.domain,
         tags: [...t.tags],
-        prerequisites: [spineForAge],
+        prerequisites: [prevId],
         exclusions: [],
         rarity: t.rarity,
         weight: 40 + rng.nextInt(0, 60),
