@@ -159,14 +159,18 @@ export class QaSession {
   private onWinError: ((e: ErrorEvent) => void) | null = null;
   private onUnhandled: ((e: PromiseRejectionEvent) => void) | null = null;
   private refreshSamples: number[] = [];
+  readonly sessionId: string;
+  private reportSequence = 0;
 
-  constructor(private readonly adapter: QaAdapter) {
+  constructor(private readonly adapter: QaAdapter, sessionId?: string) {
     this.wallStart = performance.now();
+    this.sessionId = sessionId || `qa-${Math.floor(this.wallStart)}-${Math.random().toString(36).slice(2, 8)}`;
     this.recorder = new PlaytestRecorder(
       GOLDEN_QA_SEED,
       adapter.versions(),
       this.wallStart,
       adapter.ageOrder(),
+      this.sessionId,
     );
   }
 
@@ -195,8 +199,7 @@ export class QaSession {
 
   /** Adapter hook: record ordered sim decisions (tech picks, beats, ...). */
   noteSimEvent(type: string, detail: string): void {
-    const f = this.lastFrame;
-    if (!f) return;
+    const f = this.lastFrame ?? this.adapter.frame();
     this.recorder.simMark(type, detail, this.ctx(f));
   }
 
@@ -556,11 +559,26 @@ export class QaSession {
   private buildPanel(): void {
     const root = document.getElementById("ui") ?? document.body;
     root.classList.add("has-qa");
+
+    // Unobtrusive minimal indicator pill
+    const indicator = document.createElement("div");
+    indicator.id = "qa-rec-indicator";
+    indicator.title = "QA Session Active — Click or press F10 to toggle Inspector";
+    indicator.innerHTML = '<span class="qa-rec-dot"></span><span>REC ●</span>';
+    indicator.addEventListener("click", () => this.toggleInspector());
+    root.appendChild(indicator);
+
     const panel = document.createElement("div");
     panel.id = "qa-panel";
+    panel.className = "qa-hidden"; // Default HIDDEN to avoid UX contamination
     root.appendChild(panel);
     this.panel = panel;
     this.refreshPanel();
+  }
+
+  public toggleInspector(): void {
+    if (!this.panel) return;
+    this.panel.classList.toggle("qa-hidden");
   }
 
   private routeRows(): string {
@@ -749,6 +767,17 @@ export class QaSession {
     }
   }
 
+  onPlayerDied(): void {
+    if (this.disposed || this.ended) return;
+    const f = this.lastFrame ?? this.adapter.frame();
+    const ctx = this.ctx(f);
+    this.recorder.checkpoint("PLAYER_DIED", ctx);
+    this.recorder.checkpoint("RUN_END", ctx);
+    this.recordEngagement(f, ctx);
+    this.recorder.perfSnapshot("run-end", ctx);
+    this.end("player-died");
+  }
+
   /** Finalize + reveal report downloads. Safe to call twice. */
   end(reason: string): void {
     if (this.ended) {
@@ -783,6 +812,9 @@ export class QaSession {
       const snap = this.recorder.snapshot();
       const payload = {
         kind: "qa-report",
+        sessionId: snap.sessionId,
+        reportSequence: this.reportSequence++,
+        wallStart: snap.wallStart,
         seed: snap.seed,
         reason,
         terminal,

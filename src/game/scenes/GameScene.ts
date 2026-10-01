@@ -27,7 +27,7 @@ import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
-import { uiRoot, clearUI, el, button, toast } from "../ui";
+import { uiRoot, clearUI, el, button, toast, applyUiScale } from "../ui";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
@@ -40,6 +40,7 @@ import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRende
 import { nearestInterest, drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
 import { TechMapView } from "../tech/TechMapView";
 import { SEED_ASSETS } from "../assets/seedAssets";
+import { TutorialDirector } from "../onboarding/TutorialDirector";
 import pkg from "../../../package.json";
 
 function percentile(sorted: number[], p: number): number {
@@ -82,6 +83,7 @@ export class GameScene extends Phaser.Scene {
   private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
   private floatText: Phaser.GameObjects.Text[] = [];
   private onboard: { done: Set<string>; active: string; until: number } = { done: new Set(), active: "", until: 0 };
+  private tutorial: TutorialDirector | null = null;
 
   // QA harness (read-only observer, ?qa=1 only — null in normal play).
   private qa: QaSession | null = null;
@@ -117,7 +119,15 @@ export class GameScene extends Phaser.Scene {
     this.load.image("seed_outpost_economic", SEED_ASSETS.structures.economic);
   }
 
-  private spawnVfx(key: string, x: number, y: number, scale = 1, tint = 0xffffff, duration = 300): void {
+  private spawnVfx(
+    key: string,
+    x: number,
+    y: number,
+    scale = 1,
+    tint = 0xffffff,
+    duration = 300,
+    blendMode = Phaser.BlendModes.ADD,
+  ): void {
     let img = this.vfxPool.find((item) => !item.visible);
     if (!img) {
       if (this.vfxPool.length >= 16) return;
@@ -130,6 +140,7 @@ export class GameScene extends Phaser.Scene {
     img.setScale(scale);
     img.setAlpha(1);
     img.setTint(tint);
+    img.setBlendMode(blendMode);
     img.setVisible(true);
     this.tweens.add({
       targets: img,
@@ -146,6 +157,7 @@ export class GameScene extends Phaser.Scene {
     const save = loadSave(localStorage);
     setLang(save.settings.lang);
     sfx.setVolume(save.settings.volume);
+    applyUiScale(save.settings.uiScale ?? 1);
 
     const pending = sessionStorage.getItem(TITLE_SEED_KEY);
     this.masterSeed = normalizeSeedString(pending || generateRandomSeed()) || generateRandomSeed();
@@ -182,6 +194,10 @@ export class GameScene extends Phaser.Scene {
     this.lastHurtT = -10;
     this.onboard = { done: new Set(), active: "", until: 0 };
 
+    this.tutorial?.dispose();
+    const save = loadSave(localStorage);
+    this.tutorial = new TutorialDirector(save.settings.tutorialCompleted ?? false);
+
     const kb = this.input.keyboard;
     if (kb) {
       this.keys = {
@@ -206,6 +222,9 @@ export class GameScene extends Phaser.Scene {
       on("keydown-F3", () => {
         this.showDebug = !this.showDebug;
         this.debugText.setVisible(this.showDebug);
+      });
+      on("keydown-F10", () => {
+        this.qa?.toggleInspector();
       });
       on("keydown-ESC", () => {
         if (this.techMapOpen) {
@@ -246,6 +265,7 @@ export class GameScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
 
     this.buildHUD();
+    this.tutorial.start();
     this.refreshGround(true);
     toast("ui.ageReached", t("age.stone"), t("objective.stone"));
 
@@ -581,6 +601,8 @@ export class GameScene extends Phaser.Scene {
   private onShutdown(): void {
     this.techMapView?.destroy();
     this.techMapView = null;
+    this.tutorial?.dispose();
+    this.tutorial = null;
     this.qa?.dispose();
     this.qa = null;
     this.qaGfx = null;
@@ -935,7 +957,7 @@ export class GameScene extends Phaser.Scene {
       { id: "economy", name: "ui.specEconomy", desc: "ui.specEconomyDesc" },
     ];
     this.showBlocking("spec-screen", 0, (screen) => {
-      const panel = el("div", "panel");
+      const panel = el("div", "panel panel-md");
       panel.appendChild(el("h2", "", "ui.outpostSpec"));
       const row = el("div", "btn-row");
       for (const sp of specs) {
@@ -976,6 +998,7 @@ export class GameScene extends Phaser.Scene {
     this.techMapOpen = true;
     this.techMapSel = "";
     this.qa?.noteSimEvent("techmap_open", "open");
+    this.tutorial?.onTechMapOpened();
     this.renderTechMap();
   }
 
@@ -1014,10 +1037,11 @@ export class GameScene extends Phaser.Scene {
     if (s.draftOpen || this.blockingModal) return;
     this.civMapOpen = true;
     this.qa?.noteSimEvent("civmap_open", "open");
+    this.tutorial?.onCivMapOpened();
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "civmap-screen";
-    const panel = el("div", "panel civmap-panel");
+    const panel = el("div", "panel panel-lg civmap-panel");
     panel.appendChild(el("h2", "", "ui.civilizationMap"));
     const cv = document.createElement("canvas");
     cv.width = 420;
@@ -1231,6 +1255,7 @@ export class GameScene extends Phaser.Scene {
   private openDraft(): void {
     const s = this.sim.state;
     if (document.getElementById("draft-screen")) return; // exactly-one guard
+    this.tutorial?.onDraftOpened();
     // Drafts take precedence over informational map overlays.
     if (this.techMapOpen) this.toggleTechMap();
     if (this.civMapOpen) this.toggleCivMap();
@@ -1337,13 +1362,41 @@ export class GameScene extends Phaser.Scene {
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "pause-screen";
-    const panel = el("div", "panel");
+    const panel = el("div", "panel panel-md");
     panel.appendChild(el("h2", "", "ui.pause"));
+
+    const save = loadSave(localStorage);
+
+    // UI Scale selector
+    const scaleRow = el("div", "settings-row");
+    scaleRow.appendChild(el("span", "", "ui.uiScale"));
+    const scales = el("div", "lang-row");
+    const scaleOpts: Array<{ label: string; scale: import("../../core/save/save").UiScale }> = [
+      { label: "100%", scale: 1 },
+      { label: "125%", scale: 1.25 },
+      { label: "150%", scale: 1.5 },
+      { label: "200%", scale: 2 },
+    ];
+    for (const opt of scaleOpts) {
+      const b = document.createElement("button");
+      b.className = "btn" + (save.settings.uiScale === opt.scale ? " active" : "");
+      b.textContent = opt.label;
+      b.addEventListener("click", () => {
+        save.settings.uiScale = opt.scale;
+        storeSave(localStorage, save);
+        applyUiScale(opt.scale);
+        scales.querySelectorAll("button").forEach((btn) => btn.classList.remove("active"));
+        b.classList.add("active");
+      });
+      scales.appendChild(b);
+    }
+    scaleRow.appendChild(scales);
+    panel.appendChild(scaleRow);
+
     // Language switch mid-run: rebuilds UI only, simulation untouched.
     const langRow = el("div", "settings-row");
     langRow.appendChild(el("span", "", "ui.language"));
     const langs = el("div", "lang-row");
-    const save = loadSave(localStorage);
     for (const [code, label] of [["en", "English"], ["th", "ไทย"]] as const) {
       const b = document.createElement("button");
       b.className = "btn" + (save.settings.lang === code ? " active" : "");
@@ -1356,6 +1409,11 @@ export class GameScene extends Phaser.Scene {
 
     const col = el("div", "btn-row");
     col.appendChild(button("ui.resume", () => this.togglePause(), "btn primary"));
+    col.appendChild(button("ui.guide", () => this.showGuide()));
+    col.appendChild(button("ui.resetTutorial", () => {
+      this.tutorial?.reset();
+      toast("ui.tutorialResetDone");
+    }));
     col.appendChild(button("ui.restart", () => this.restartRun()));
     col.appendChild(button("ui.quitToTitle", () => this.scene.start("title")));
     col.appendChild(button("ui.resetSave", () => {
@@ -1365,6 +1423,34 @@ export class GameScene extends Phaser.Scene {
       }
     }, "btn danger"));
     panel.appendChild(col);
+    screen.appendChild(panel);
+    root.appendChild(screen);
+  }
+
+  private showGuide(): void {
+    const root = uiRoot();
+    const screen = el("div", "screen");
+    screen.id = "guide-screen";
+    const panel = el("div", "panel panel-lg");
+    panel.appendChild(el("h2", "", "guide.title"));
+    const content = el("div", "guide-content");
+
+    const addSection = (titleKey: EnKeys, textKey: EnKeys): void => {
+      const sec = el("div", "guide-section");
+      sec.appendChild(el("h3", "", titleKey));
+      const p = document.createElement("p");
+      p.textContent = t(textKey);
+      sec.appendChild(p);
+      content.appendChild(sec);
+    };
+
+    addSection("ui.nextAge", "guide.advancement");
+    addSection("ui.squad", "guide.controls");
+    addSection("ui.techMap", "guide.techStacking");
+    addSection("ui.outpostSpec", "guide.territory");
+
+    panel.appendChild(content);
+    panel.appendChild(button("ui.back", () => screen.remove(), "btn primary"));
     screen.appendChild(panel);
     root.appendChild(screen);
   }
@@ -1415,7 +1501,7 @@ export class GameScene extends Phaser.Scene {
     document.getElementById("draft-screen")?.remove();
     const root = uiRoot();
     const screen = el("div", "screen");
-    const panel = el("div", "panel");
+    const panel = el("div", "panel panel-lg");
     panel.appendChild(el("h2", "", "ui.died"));
     panel.appendChild(el("div", "", "ui.runChronicle"));
     const dl = document.createElement("dl");
@@ -1554,7 +1640,7 @@ export class GameScene extends Phaser.Scene {
     const b = BREAKTHROUGHS.find((x) => x.id === id);
     if (!b) return;
     this.showBlocking("beat-screen", 1.1, (screen) => {
-      const panel = el("div", "panel");
+      const panel = el("div", "panel panel-md");
       panel.appendChild(el("h2", "", b.titleKey as EnKeys));
       const d = document.createElement("p");
       d.textContent = t(b.descriptionKey as EnKeys);
@@ -1569,7 +1655,7 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     const idx = AGES.indexOf(age);
     this.showBlocking("age-screen", 1.1, (screen) => {
-      const panel = el("div", "panel");
+      const panel = el("div", "panel panel-md");
       panel.appendChild(el("h1", "logo", `age.${age}` as EnKeys));
       const spine = CRITICAL_SPINE.find((c) => c.age === age);
       if (spine) {
@@ -1597,7 +1683,7 @@ export class GameScene extends Phaser.Scene {
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "ascend-screen";
-    const panel = el("div", "panel");
+    const panel = el("div", "panel panel-md");
     panel.appendChild(el("h1", "logo", "ui.ascendTitle"));
     panel.appendChild(el("div", "", undefined, `#${s.ascension + 1} → #${s.ascension + 2}`));
     const row = el("div", "btn-row");
@@ -1615,7 +1701,7 @@ export class GameScene extends Phaser.Scene {
     const offers = this.sim.legacyOffers();
     if (offers.length === 0) return;
     this.showBlocking("legacy-screen", 0, (screen) => {
-      const panel = el("div", "panel");
+      const panel = el("div", "panel panel-lg");
       panel.appendChild(el("h2", "", "ui.legacyTitle"));
       panel.appendChild(el("div", "logo-sub", "ui.legacySub"));
       const cards = el("div", "cards");
@@ -1653,7 +1739,7 @@ export class GameScene extends Phaser.Scene {
       : [...ORIGINS];
     if (choices.length === 0) return;
     this.showBlocking("origin-screen", 0, (screen) => {
-      const panel = el("div", "panel");
+      const panel = el("div", "panel panel-lg");
       panel.appendChild(el("h2", "", "ui.chooseOrigin"));
       if (req) {
         const note = document.createElement("div");
@@ -1683,7 +1769,7 @@ export class GameScene extends Phaser.Scene {
   private showExpansionPick(families: [WeaponFamily, WeaponFamily]): void {
     const s = this.sim.state;
     this.showBlocking("expansion-screen", 0, (screen) => {
-      const panel = el("div", "panel");
+      const panel = el("div", "panel panel-lg");
       panel.appendChild(el("h2", "", "ui.expansionTitle"));
       panel.appendChild(el("div", "logo-sub", "ui.expansionSub"));
       const cards = el("div", "cards");
@@ -1723,6 +1809,7 @@ export class GameScene extends Phaser.Scene {
   // ------------------------------------------------------------- events→fx
   private handleEvents(ev: SimEvent[]): void {
     const s = this.sim.state;
+    this.tutorial?.onSimEvents(ev);
     let killsThisFrame = 0;
     const save = loadSave(localStorage);
     for (const e of ev) {
@@ -1759,7 +1846,7 @@ export class GameScene extends Phaser.Scene {
         case "territory_claimed":
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys));
           sfx.select();
-          this.spawnVfx("seed_claim_glow", s.px, s.py, 0.8, 0x53e0c8, 450);
+          this.spawnVfx("seed_claim_glow", s.px, s.py, 1.0, 0x53e0c8, 450, Phaser.BlendModes.ADD);
           this.qa?.noteSimEvent("territory_claimed", `${e.poiId}:${e.poiType}`);
           break;
         case "outpost_spec":
@@ -1787,7 +1874,7 @@ export class GameScene extends Phaser.Scene {
           const nm = terr ? t(`poi.${terr.poiType}.name` as EnKeys) : e.poiId;
           toast("ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
           sfx.boss();
-          this.spawnVfx("seed_raid_alert", s.px, s.py, 1.0, 0xff5533, 600);
+          this.spawnVfx("seed_raid_alert", s.px, s.py, 1.1, 0xff5533, 600, Phaser.BlendModes.ADD);
           this.qa?.noteSimEvent("raid_incoming", `${e.poiId}:${Math.ceil(e.seconds)}s`);
           break;
         }
@@ -1809,7 +1896,7 @@ export class GameScene extends Phaser.Scene {
         case "breakthrough": {
           this.showBreakthroughBeat(e.id);
           this.qa?.noteSimEvent("breakthrough", e.id);
-          this.spawnVfx("seed_breakthrough_spark", s.px, s.py, 1.2, 0xd884ff, 500);
+          this.spawnVfx("seed_breakthrough_spark", s.px, s.py, 1.2, 0xd884ff, 500, Phaser.BlendModes.ADD);
           break;
         }
         case "age_reached":
@@ -1868,10 +1955,14 @@ export class GameScene extends Phaser.Scene {
           killsThisFrame++;
           this.bursts.push({ x: e.x, y: e.y, t: e.boss ? 0.5 : 0.3, max: e.boss ? 0.5 : 0.3, big: e.boss });
           if (this.bursts.length > 24) this.bursts.shift();
-          this.spawnVfx("seed_hit_impact", e.x, e.y, e.boss ? 0.7 : 0.35, 0xffe08a, 180);
+          // Section 15: ordinary death uses procedural ring + sparks; reserve raster flash for boss/elite
+          if (e.boss || e.elite) {
+            this.spawnVfx("seed_hit_impact", e.x, e.y, e.boss ? 0.8 : 0.45, 0xffe08a, 220, Phaser.BlendModes.ADD);
+          }
           if (e.boss && save.settings.shake) this.cameras.main.shake(400, 0.012);
           break;
         case "player_died":
+          this.qa?.onPlayerDied();
           this.persistRunEnd();
           this.showChronicle();
           break;
@@ -1932,6 +2023,7 @@ export class GameScene extends Phaser.Scene {
     // P1-01: draft UI is a pure function of canonical sim state — exactly one
     // surface while draftOpen, zero otherwise. Never recursive ownership.
     this.syncDraftUI();
+    this.tutorial?.update(dt, this.sim.state);
     // Timed beats auto-dismiss; choice modals wait for a decision.
     if (this.modalT > 0) {
       this.modalT -= dt;

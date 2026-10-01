@@ -154,16 +154,23 @@ export class TechMapView {
     const controls = document.createElement("div");
     controls.className = "techmap-controls";
 
-    const btnFit = document.createElement("button");
-    btnFit.className = "btn techmap-btn-fit techmap-no-pan";
-    btnFit.textContent = t("ui.fit");
-    btnFit.title = "Fit graph to viewport";
-    btnFit.addEventListener("click", () => this.fit());
-    controls.appendChild(btnFit);
+    const btnCurrent = document.createElement("button");
+    btnCurrent.className = "btn techmap-btn-current techmap-no-pan";
+    btnCurrent.textContent = t("ui.current");
+    btnCurrent.title = "Focus current civilization frontier";
+    btnCurrent.addEventListener("click", () => this.focusCurrent());
+    controls.appendChild(btnCurrent);
+
+    const btnOverview = document.createElement("button");
+    btnOverview.className = "btn techmap-btn-overview techmap-btn-fit techmap-no-pan";
+    btnOverview.textContent = t("ui.overview");
+    btnOverview.title = "Macro overview of all Age lanes";
+    btnOverview.addEventListener("click", () => this.fit());
+    controls.appendChild(btnOverview);
 
     const btnReset = document.createElement("button");
     btnReset.className = "btn techmap-btn-reset techmap-no-pan";
-    btnReset.textContent = "1:1";
+    btnReset.textContent = "100%";
     btnReset.title = "Reset zoom to 100%";
     btnReset.addEventListener("click", () => this.reset());
     controls.appendChild(btnReset);
@@ -382,9 +389,9 @@ export class TechMapView {
       };
       this.viewportEl.addEventListener("wheel", this.wheelListener);
 
-      // Initial view: fit into viewport
+      // Initial view: focus current civilization frontier at readable 1.0 scale
       requestAnimationFrame(() => {
-        this.fit();
+        this.focusCurrent();
       });
     } catch (err) {
       console.warn("TechMapView: Panzoom initialization failed, degrading to static scrollable view", err);
@@ -393,6 +400,50 @@ export class TechMapView {
         this.viewportEl.style.overflow = "auto";
       }
     }
+  }
+
+  /** Focus the player's active civilization frontier at readable 1.0 scale. */
+  public focusCurrent(): void {
+    if (!this.panzoom || !this.viewportEl) return;
+    const vw = this.viewportEl.clientWidth || 800;
+    const vh = this.viewportEl.clientHeight || 500;
+    const s = this.sim.state;
+
+    // Find frontier nodes: available to draft, recently owned, or starting stone node
+    const frontierNodes: LayoutNode[] = [];
+    for (const node of this.layoutResult.nodes) {
+      if (s.owned.includes(node.id) || s.draftChoices.some((c) => c.id === node.id)) {
+        frontierNodes.push(node);
+      }
+    }
+
+    let targetCenterX = 0;
+    let targetCenterY = 0;
+
+    if (frontierNodes.length === 0) {
+      const firstLane = this.layoutResult.lanes[0];
+      targetCenterX = firstLane ? (firstLane.minX + firstLane.maxX) / 2 : 150;
+      targetCenterY = this.layoutResult.height / 2;
+    } else {
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (const n of frontierNodes) {
+        minX = Math.min(minX, n.x);
+        maxX = Math.max(maxX, n.x + n.width);
+        minY = Math.min(minY, n.y);
+        maxY = Math.max(maxY, n.y + n.height);
+      }
+      targetCenterX = (minX + maxX) / 2;
+      targetCenterY = (minY + maxY) / 2;
+    }
+
+    const scale = 1.0;
+    const panX = (vw / 2) - targetCenterX;
+    const panY = (vh / 2) - targetCenterY;
+    this.panzoom.zoom(scale, { animate: true });
+    this.panzoom.pan(panX, panY, { animate: true });
   }
 
   public fit(): void {

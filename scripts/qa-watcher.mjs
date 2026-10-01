@@ -16,7 +16,7 @@ export const TERMINAL_REASONS = new Set(["target-complete", "player-died", "huma
  */
 export function reportIdentity(snap) {
   if (!snap || typeof snap !== "object") return "";
-  return `${snap.seed ?? ""}::${snap.wallStart ?? ""}::${snap.wallEnd ?? ""}::${snap.endReason ?? ""}`;
+  return `${snap.sessionId ?? ""}::${snap.seed ?? ""}::${snap.wallStart ?? ""}::${snap.wallEnd ?? ""}::${snap.endReason ?? ""}`;
 }
 
 /**
@@ -81,7 +81,7 @@ export function finalizeReport(
   exists = (p) => existsSync(p),
 ) {
   const md = buildSanitizedMarkdown(snap);
-  const outPath = join(rootDir, "docs", "playtests", "latest-v022-human-revalidation.md");
+  const outPath = join(rootDir, "docs", "playtests", "latest-v0221-human-revalidation.md");
   mkdir(dirname(outPath));
   write(outPath, md);
 
@@ -97,7 +97,7 @@ export function finalizeReport(
   console.log("");
   console.log("-SEED PLAYTEST EVIDENCE FINALIZED");
   console.log("");
-  console.log("docs/playtests/latest-v022-human-revalidation.md");
+  console.log("docs/playtests/latest-v0221-human-revalidation.md");
   console.log("SESSION_HANDOFF.md updated");
   console.log("");
 

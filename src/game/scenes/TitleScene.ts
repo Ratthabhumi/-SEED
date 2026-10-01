@@ -1,7 +1,7 @@
 // Title screen: seed input + language + animated backdrop. DOM for text (Thai-safe).
 import Phaser from "phaser";
 import { t, setLang, getLang } from "../../i18n/i18n";
-import { uiRoot, clearUI, el, button } from "../ui";
+import { uiRoot, clearUI, el, button, applyUiScale } from "../ui";
 import { loadSave, storeSave } from "../../core/save/save";
 import { generateRandomSeed } from "../../core/seed/hash";
 import { sfx } from "../audio/sfx";
@@ -22,6 +22,7 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     const save = loadSave(localStorage);
     setLang(save.settings.lang);
+    applyUiScale(save.settings.uiScale);
     sfx.setVolume(save.settings.volume);
 
     // COSMETIC-ONLY Math.random: title starfield never touches sim/worldgen state.
@@ -116,6 +117,7 @@ export class TitleScene extends Phaser.Scene {
       sessionStorage.setItem(TITLE_ORIGIN_KEY, pickedOrigin);
       this.scene.start("game");
     }, "btn primary");
+    start.id = "start-btn";
     start.style.width = "100%";
     panel.appendChild(start);
 
@@ -230,6 +232,41 @@ export class TitleScene extends Phaser.Scene {
     langs.appendChild(bEn); langs.appendChild(bTh);
     langRow.appendChild(langs);
     panel.appendChild(langRow);
+
+    const scaleRow = el("div", "settings-row");
+    scaleRow.appendChild(el("span", "", "ui.uiScale"));
+    const scales = el("div", "scale-row");
+    for (const sVal of [1, 1.25, 1.5, 2] as const) {
+      const b = document.createElement("button");
+      b.className = "btn" + (save.settings.uiScale === sVal ? " active" : "");
+      b.textContent = `${Math.round(sVal * 100)}%`;
+      b.addEventListener("click", () => {
+        save.settings.uiScale = sVal;
+        storeSave(localStorage, save);
+        applyUiScale(sVal);
+        for (const child of Array.from(scales.children)) {
+          child.classList.remove("active");
+        }
+        b.classList.add("active");
+      });
+      scales.appendChild(b);
+    }
+    scaleRow.appendChild(scales);
+    panel.appendChild(scaleRow);
+
+    const tutRow = el("div", "settings-row");
+    tutRow.appendChild(el("span", "", "ui.resetTutorial"));
+    const tutBtn = document.createElement("button");
+    tutBtn.className = "btn";
+    tutBtn.textContent = t("ui.resetTutorial");
+    tutBtn.addEventListener("click", () => {
+      save.settings.tutorialCompleted = false;
+      storeSave(localStorage, save);
+      tutBtn.textContent = "✓ " + t("ui.tutorialResetDone");
+      tutBtn.disabled = true;
+    });
+    tutRow.appendChild(tutBtn);
+    panel.appendChild(tutRow);
 
     panel.appendChild(button("ui.back", () => this.scene.restart()));
     screen.appendChild(panel);

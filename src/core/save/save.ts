@@ -8,9 +8,18 @@ export type Lang = "en" | "th";
 
 export type Contrast = "normal" | "high";
 
+export type UiScale = 1 | 1.25 | 1.5 | 2;
+
 // Additive presentation preference only (defaults safe for old saves — no
 // schema bump, no gameplay effect, never part of canonical snapshots).
-export interface Settings { lang: Lang; shake: boolean; volume: number; contrast: Contrast; }
+export interface Settings {
+  lang: Lang;
+  shake: boolean;
+  volume: number;
+  contrast: Contrast;
+  uiScale: UiScale;
+  tutorialCompleted: boolean;
+}
 
 export interface BestStats {
   bestTimeSec: number; bestKills: number; bestAge: string; bestAscension: number; runs: number;
@@ -29,7 +38,14 @@ export const SAVE_KEY = "seed-game-save-v1";
 export function defaultSave(): SaveData {
   return {
     schema: SAVE_SCHEMA_VERSION,
-    settings: { lang: "en", shake: true, volume: 0.6, contrast: "normal" },
+    settings: {
+      lang: "en",
+      shake: true,
+      volume: 0.6,
+      contrast: "normal",
+      uiScale: 1,
+      tutorialCompleted: false,
+    },
     archive: [],
     best: { bestTimeSec: 0, bestKills: 0, bestAge: "stone", bestAscension: 0, runs: 0 },
     history: [],
@@ -46,7 +62,10 @@ function cleanSettings(raw: unknown): Settings {
     : d.volume;
   const shake = typeof r.shake === "boolean" ? r.shake : d.shake;
   const contrast = r.contrast === "high" ? "high" : "normal";
-  return { lang, volume, shake, contrast };
+  const uiScale: UiScale =
+    r.uiScale === 1.25 || r.uiScale === 1.5 || r.uiScale === 2 ? (r.uiScale as UiScale) : 1;
+  const tutorialCompleted = typeof r.tutorialCompleted === "boolean" ? r.tutorialCompleted : false;
+  return { lang, volume, shake, contrast, uiScale, tutorialCompleted };
 }
 
 function cleanBest(raw: unknown): BestStats {

@@ -226,25 +226,25 @@ export class VisualLabScene extends Phaser.Scene {
       {
         label: "hit impact",
         draw: (_gg, x, yy) => {
-          this.add.image(x, yy, "lab_hit_impact").setScale(0.8).setTint(0xffe08a);
+          this.add.image(x, yy, "lab_hit_impact").setScale(0.8).setTint(0xffe08a).setBlendMode(Phaser.BlendModes.ADD);
         },
       },
       {
         label: "claim glow",
         draw: (_gg, x, yy) => {
-          this.add.image(x, yy, "lab_claim_glow").setScale(0.8).setTint(0x53e0c8);
+          this.add.image(x, yy, "lab_claim_glow").setScale(0.8).setTint(0x53e0c8).setBlendMode(Phaser.BlendModes.ADD);
         },
       },
       {
         label: "breakthrough",
         draw: (_gg, x, yy) => {
-          this.add.image(x, yy, "lab_breakthrough_spark").setScale(0.9).setTint(0xd884ff);
+          this.add.image(x, yy, "lab_breakthrough_spark").setScale(0.9).setTint(0xd884ff).setBlendMode(Phaser.BlendModes.ADD);
         },
       },
       {
         label: "raid alert",
         draw: (_gg, x, yy) => {
-          this.add.image(x, yy, "lab_raid_alert").setScale(0.9).setTint(0xff5533);
+          this.add.image(x, yy, "lab_raid_alert").setScale(0.9).setTint(0xff5533).setBlendMode(Phaser.BlendModes.ADD);
         },
       },
     ]);

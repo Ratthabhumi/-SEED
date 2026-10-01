@@ -63,7 +63,10 @@ export function storeQaReport(
   const dir = join(rootDir, QA_REPORT_DIR);
   mkdir(dir);
   const names = qaFileNames(now, body.seed);
-  const jsonText = JSON.stringify(body.data, null, 2);
+  const data = { ...body.data };
+  if (body.sessionId && !data.sessionId) data.sessionId = body.sessionId;
+  if (typeof body.reportSequence === "number") data.reportSequence = body.reportSequence;
+  const jsonText = JSON.stringify(data, null, 2);
   const files = [names.json, names.md, names.sJson, names.sMd];
   write(join(dir, names.json), jsonText);
   write(join(dir, names.md), body.markdown);

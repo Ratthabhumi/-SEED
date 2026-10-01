@@ -52,3 +52,10 @@ export function toast(titleKey: EnKeys, titleParam?: string, sub?: string, ms = 
   setTimeout(() => d.classList.add("show"));
   setTimeout(() => { d.classList.remove("show"); setTimeout(() => d.remove(), 400); }, ms);
 }
+
+/** Apply player-selected UI scale via CSS variable. */
+export function applyUiScale(scale: number): void {
+  if (typeof document !== "undefined") {
+    document.documentElement.style.setProperty("--ui-scale", String(scale));
+  }
+}

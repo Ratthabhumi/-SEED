@@ -119,6 +119,7 @@ export interface QaVersions {
 }
 
 export interface RecorderSnapshot {
+  sessionId: string;
   seed: string;
   versions: QaVersions;
   environment: QaEnvironment | null;
@@ -151,6 +152,7 @@ const MAX_ENGAGEMENT = 60;
 const MAX_SIMMARKS = 1200;
 
 export class PlaytestRecorder {
+  readonly sessionId: string;
   private checkpoints: QaCheckpoint[] = [];
   private seenCheckpoints = new Set<string>();
   private assertions: QaAssertion[] = [];
@@ -181,7 +183,10 @@ export class PlaytestRecorder {
     readonly versions: QaVersions,
     readonly wallStart: number,
     readonly ageOrder: readonly string[],
-  ) {}
+    sessionId?: string,
+  ) {
+    this.sessionId = sessionId || `qa-${Math.floor(wallStart)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
 
   setEnvironment(env: QaEnvironment): void {
     this.environment = env;
@@ -334,6 +339,7 @@ export class PlaytestRecorder {
 
   snapshot(): RecorderSnapshot {
     return {
+      sessionId: this.sessionId,
       seed: this.seed,
       versions: this.versions,
       environment: this.environment,

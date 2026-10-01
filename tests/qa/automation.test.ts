@@ -111,7 +111,7 @@ describe("zero-friction QA watcher and auto-finalization", () => {
 
   it("12. sanitized summary is generated", () => {
     const md = buildSanitizedMarkdown(snap() as never);
-    expect(md).toContain("# -SEED v0.22 Human Revalidation — Sanitized Evidence");
+    expect(md).toContain("# -SEED v0.22.1 Human Revalidation — Sanitized Evidence");
     expect(md).toContain("## Route");
     expect(md).toContain("## Civilization Command Loop Usage");
     expect(md).toContain("## Performance Summary");
@@ -185,12 +185,12 @@ describe("zero-friction QA watcher and auto-finalization", () => {
       (snapItem: unknown, r: string) => finalizeReport(snapItem, r, mem.write, mem.read, mem.mkdir, mem.exists),
     );
     expect(result).not.toBeNull();
-    const outSummary = files.get(`${root}/docs/playtests/latest-v022-human-revalidation.md`);
+    const outSummary = files.get(`${root}/docs/playtests/latest-v0221-human-revalidation.md`);
     expect(outSummary).toBeDefined();
-    expect(outSummary).toContain("# -SEED v0.22 Human Revalidation — Sanitized Evidence");
+    expect(outSummary).toContain("# -SEED v0.22.1 Human Revalidation — Sanitized Evidence");
 
     const updatedHandoff = files.get(handoffPath);
-    expect(updatedHandoff).toContain("# -SEED v0.22 Human Revalidation — Sanitized Evidence");
+    expect(updatedHandoff).toContain("# -SEED v0.22.1 Human Revalidation — Sanitized Evidence");
     expect(updatedHandoff).toContain("Tail.");
 
     // 3. Duplicate check does not re-finalize (exactly once)

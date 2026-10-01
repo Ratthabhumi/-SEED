@@ -33,11 +33,28 @@ describe("save data", () => {
     expect(loadSave(memStorage({ [SAVE_KEY]: bad }))).toEqual(defaultSave());
   });
 
-  it("round-trips settings", () => {
+  it("round-trips settings and sanitizes uiScale and tutorialCompleted", () => {
     const st = memStorage();
     const d = defaultSave();
     d.settings.lang = "th";
+    d.settings.uiScale = 1.25;
+    d.settings.tutorialCompleted = true;
     storeSave(st, d);
-    expect(loadSave(st).settings.lang).toBe("th");
+    const loaded = loadSave(st);
+    expect(loaded.settings.lang).toBe("th");
+    expect(loaded.settings.uiScale).toBe(1.25);
+    expect(loaded.settings.tutorialCompleted).toBe(true);
+
+    // Old save without uiScale defaults safely to 1
+    const oldSave = JSON.stringify({
+      schema: SAVE_SCHEMA_VERSION,
+      settings: { lang: "en", shake: true, volume: 0.5, contrast: "normal" },
+      archive: [],
+      best: { bestTimeSec: 0, bestKills: 0, bestAge: "stone", bestAscension: 0, runs: 0 },
+      history: [],
+    });
+    const loadedOld = loadSave(memStorage({ [SAVE_KEY]: oldSave }));
+    expect(loadedOld.settings.uiScale).toBe(1);
+    expect(loadedOld.settings.tutorialCompleted).toBe(false);
   });
 });
