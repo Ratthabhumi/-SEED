@@ -30,6 +30,7 @@ export type SimEvent =
   | { type: "expansion_offered"; families: [WeaponFamily, WeaponFamily] }
   | { type: "expansion_unlocked"; family: WeaponFamily }
   | { type: "boss_warning" }
+  | { type: "stronghold_revealed"; x: number; y: number }
   | { type: "boss_killed" }
   | { type: "ascension_ready" }
   | { type: "legacy_granted"; id: string }

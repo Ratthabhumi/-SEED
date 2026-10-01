@@ -22,8 +22,15 @@
 //   age missions, draft agency (pin/reserve/reroll/skip), territory/outpost/
 //   raid systems, command squads + origin abilities. Same seed + same player
 //   decisions still replay identically; old decision traces diverge by design.
+//
+// v0.23 frontier purpose:
+// - WORLDGEN_VERSION stays 2: chunk/POI placement unchanged (stronghold is a
+//   derived site over existing worldgen, never new generation).
+// - CONTENT_VERSION 4 -> 5: stabilization timer replaced by the Dominion
+//   territorial-control gate, boss spawns as the consequence of approaching
+//   the revealed Stronghold. Same seed + same decisions replay identically.
 export const WORLDGEN_VERSION = 2;
-export const CONTENT_VERSION = 4;
+export const CONTENT_VERSION = 5;
 export const SAVE_SCHEMA_VERSION = 1;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;

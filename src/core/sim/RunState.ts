@@ -110,6 +110,8 @@ export interface RunState {
   bossSpawned: boolean;
   ascendReady: boolean;
   bossIndex: number; // -1 = none
+  /** Derived endgame site (world-scoped): set on Space entry, never by hand. */
+  stronghold: { x: number; y: number; revealed: boolean } | null;
   over: boolean;
   stats: RunStats;
   damageBySource: Record<string, number>;

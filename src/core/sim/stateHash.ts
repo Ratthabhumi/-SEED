@@ -105,6 +105,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
       ...s.squad.map((a) => [a.active ? 1 : 0, r6(a.x), r6(a.y), r6(a.hp), r6(a.cd), r6(a.inv)].join(","))],
     hist: s.history.map((h) => `${r6(h.t)}:${h.kind}:${h.label}`),
     boss: [s.bossSpawned ? 1 : 0, s.ascendReady ? 1 : 0, s.bossIndex, s.over ? 1 : 0],
+    stronghold: s.stronghold ? [r6(s.stronghold.x), r6(s.stronghold.y), s.stronghold.revealed ? 1 : 0] : [],
     st: [s.stats.kills, s.stats.elites, s.stats.bosses, s.stats.techsTaken, s.stats.chunksTotal, s.stats.poisTotal, r6(s.stats.knowledgeEarned)],
     dmg: dmgSrc,
     e: enemies, pr: projs, k: picks, mn: mines,

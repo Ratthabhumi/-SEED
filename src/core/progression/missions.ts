@@ -5,7 +5,7 @@
 import type { AgeId } from "../tech/graph";
 import type { EnKeys } from "../../i18n/en";
 
-export type MissionKind = "cull" | "claim" | "slayElite" | "hold" | "upgrade" | "raid" | "signal" | "guardian";
+export type MissionKind = "cull" | "claim" | "slayElite" | "hold" | "upgrade" | "raid" | "signal" | "guardian" | "breakthrough";
 
 export interface MissionStep {
   kind: MissionKind;
@@ -18,7 +18,9 @@ export interface AgeMission {
   steps: MissionStep[];
 }
 
-/** One mission per age transition (stone has none — it IS the tutorial). */
+/** One mission per age transition (stone has none — it IS the tutorial).
+ * Missions are combat/exploration/mastery actions; territory COUNTS live in
+ * the Dominion gate, never here (no exact-requirement duplication). */
 export const AGE_MISSIONS: Record<Exclude<AgeId, "stone">, AgeMission> = {
   bronze: {
     targetAge: "bronze",
@@ -26,20 +28,20 @@ export const AGE_MISSIONS: Record<Exclude<AgeId, "stone">, AgeMission> = {
   },
   iron: {
     targetAge: "iron",
-    steps: [{ kind: "claim", need: 1, labelKey: "mission.iron" }],
+    steps: [{ kind: "cull", need: 40, labelKey: "mission.iron.cull" }],
   },
   industrial: {
     targetAge: "industrial",
     steps: [
       { kind: "slayElite", need: 1, labelKey: "mission.industrial.elite" },
-      { kind: "hold", need: 1, labelKey: "mission.industrial.hold" },
+      { kind: "breakthrough", need: 1, labelKey: "mission.industrial.build" },
     ],
   },
   atomic: {
     targetAge: "atomic",
     steps: [
       { kind: "upgrade", need: 1, labelKey: "mission.atomic.upgrade" },
-      { kind: "raid", need: 1, labelKey: "mission.atomic.raid" },
+      { kind: "slayElite", need: 2, labelKey: "mission.atomic.elite" },
     ],
   },
   space: {
@@ -59,6 +61,7 @@ export interface MissionState {
   outpostsTier2: number;
   raidsSurvived: number;
   signalSecured: boolean;
+  breakthroughs: number;
 }
 
 export interface MissionStepProgress {
@@ -79,6 +82,7 @@ export function stepHave(kind: MissionKind, ms: MissionState): number {
     case "raid": return ms.raidsSurvived;
     case "signal": return ms.signalSecured ? 1 : 0;
     case "guardian": return ms.elitesAge;
+    case "breakthrough": return ms.breakthroughs;
   }
 }
 

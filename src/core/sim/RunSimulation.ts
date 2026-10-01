@@ -21,7 +21,7 @@ import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from
 import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
-import { canAdvanceAge } from "../progression/ages";
+import { canAdvanceAge, type DominionState } from "../progression/ages";
 import { missionDone, type MissionState } from "../progression/missions";
 import {
   CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS, OUTPOST_MAXHP, RAID_INTERVAL, RAID_WARN_SEC,
@@ -136,7 +136,7 @@ export class RunSimulation {
       pickups: Array.from({ length: MAX_PICKUP }, () => ({ active: false, x: 0, y: 0, value: 1 })),
       mines: Array.from({ length: MAX_MINES }, () => ({ active: false, x: 0, y: 0, dmg: 10, radius: 60, life: 0 })),
       chunksWorld: [], poisWorld: [],
-      bossSpawned: false, ascendReady: false, bossIndex: -1, over: false,
+      bossSpawned: false, ascendReady: false, bossIndex: -1, stronghold: null, over: false,
       stats: { kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0 },
       damageBySource: {}, topDamageSource: "", highestAge: "stone",
       worldDamageBySource: {}, worldTopDamageSource: "", worldBreakthroughsEarned: [],
@@ -506,6 +506,43 @@ export class RunSimulation {
     return ev;
   }
 
+  // ------------------------------------------ stronghold (derived endgame)
+  /**
+   * Deterministic ENEMY STRONGHOLD site (§23): a seed-derived bearing at
+   * fixed range, snapped to the nearest major POI (megasite/worldtree/
+   * signal) when one exists nearby, else the raw point. Pure function of
+   * worldSeed + static worldgen — chunk/POI generation is untouched.
+   */
+  private revealStronghold(ev: SimEvent[]): void {
+    const s = this.state;
+    if (s.stronghold?.revealed) return;
+    const h = fnv1a32(`${s.worldSeed}::stronghold`);
+    const ang = (h % 360) * (Math.PI / 180);
+    const rawX = Math.cos(ang) * 6000;
+    const rawY = Math.sin(ang) * 6000;
+    let bx = rawX;
+    let by = rawY;
+    let bd = 1600;
+    const { cx, cy } = worldToChunk(rawX, rawY);
+    for (let ox = -3; ox <= 3; ox++) {
+      for (let oy = -3; oy <= 3; oy++) {
+        const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (poi.type !== "megasite" && poi.type !== "worldtree" && poi.type !== "signal") continue;
+          const d = Math.hypot(poi.wx - rawX, poi.wy - rawY);
+          if (d < bd) {
+            bd = d;
+            bx = poi.wx;
+            by = poi.wy;
+          }
+        }
+      }
+    }
+    s.stronghold = { x: Math.round(bx), y: Math.round(by), revealed: true };
+    this.logHistory("stronghold", "revealed");
+    ev.push({ type: "stronghold_revealed", x: s.stronghold.x, y: s.stronghold.y });
+  }
+
   // ------------------------------------------------- territory & outposts
   /**
    * POIs the player could claim RIGHT NOW (UI CLAIM buttons poll this).
@@ -840,6 +877,19 @@ export class RunSimulation {
       outpostsTier2: active.filter((t) => t.tier >= 2).length,
       raidsSurvived: s.raidsSurvived,
       signalSecured: s.signalSecured,
+      breakthroughs: s.breakthroughs.length,
+    };
+  }
+
+  /** Dominion-readable control state (disabled outposts never count). */
+  private dominionState(): DominionState {
+    const s = this.state;
+    const active = activeTerritories(s.territories);
+    return {
+      active: active.length,
+      specialized: active.filter((t) => t.spec !== "").length,
+      tier2: active.filter((t) => t.tier >= 2).length,
+      raidsSurvived: s.raidsSurvived,
     };
   }
 
@@ -1105,11 +1155,19 @@ export class RunSimulation {
         this.spawnEnemy(fams[this.streams.enemy.nextInt(0, fams.length)] as EnemyFamily, true, false, this.streams.enemy.nextFloat() * Math.PI * 2, 750, ev);
       }
     }
-    if ((AGES[s.ageIndex] as AgeId) === "space" && !s.bossSpawned && s.ageElapsed > 15) {
-      // Transactional: bossSpawned reflects actual boss existence (P1-03).
-      const affix = ELITE_AFFIXES[this.streams.boss.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix;
-      const boss = this.spawnEnemy("tank", true, true, Math.PI / 4, 800, ev, affix);
-      if (boss) s.bossSpawned = true;
+    if ((AGES[s.ageIndex] as AgeId) === "space" && !s.bossSpawned && s.stronghold?.revealed) {
+      // Boss is the consequence of world control, not a timer: it answers
+      // the player's approach to the revealed Stronghold (CONTENT_VERSION 5).
+      const sh = s.stronghold;
+      const dx = sh.x - s.px;
+      const dy = sh.y - s.py;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1500) {
+        // Transactional: bossSpawned reflects actual boss existence (P1-03).
+        const affix = ELITE_AFFIXES[this.streams.boss.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix;
+        const boss = this.spawnEnemy("tank", true, true, Math.atan2(dy, dx), Math.max(1, dist), ev, affix);
+        if (boss) s.bossSpawned = true;
+      }
     }
   }
 
@@ -1366,17 +1424,18 @@ export class RunSimulation {
     }
     if (b.regen > 0) b.hp = Math.min(b.maxHp, b.hp + b.regen * dt);
 
-    // 3. Age progression (v021 three-gate contract: knowledge + mission +
-    // stabilization; design A transition still auto-grants the age spine).
+    // 3. Age progression (v023 frontier contract: knowledge + mission +
+    // dominion; design A transition still auto-grants the age spine).
     const next = s.ageIndex + 1;
     if (next < AGES.length) {
       const ms = this.missionState();
+      const ds = this.dominionState();
       const targetAge = AGES[next] as AgeId;
       if (next > 0 && missionDone(targetAge as Exclude<AgeId, "stone">, ms) && !s.missionDoneCache) {
         s.missionDoneCache = true;
         ev.push({ type: "mission_complete", age: targetAge });
       }
-      if (canAdvanceAge(next, s.ageElapsed, s.knowledgeTotal, ms)) {
+      if (canAdvanceAge(next, s.knowledgeTotal, ms, ds)) {
         s.ageIndex = next;
         s.ageElapsed = 0;
         s.ageKills = 0;
@@ -1404,6 +1463,8 @@ export class RunSimulation {
         b.hp = Math.min(b.maxHp, b.hp + b.maxHp * 0.3);
         this.logHistory("age", ageId);
         ev.push({ type: "age_reached", age: ageId });
+        // Space entry reveals the ENEMY STRONGHOLD (derived site, §23).
+        if (ageId === "space") this.revealStronghold(ev);
         // WORLD EXPANSION decision at Industrial (ADR-0006 Decision 1).
         if (next === 3 && s.expansionFamily === "") {
           const locked = lockedFamilies(s.originId, "");

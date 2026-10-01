@@ -109,13 +109,21 @@ describe("origins and active families", () => {
       let spaceAt = -1;
       while (sim.state.ageIndex < 5 && !sim.state.over && steps < 90000) {
         const s = sim.state;
-        // Steering: defend an active raid, else head for the nearest
-        // undiscovered POI, else breathe in place and fight.
+        // Steering: defend an active raid, repair a disabled outpost,
+        // else head for the nearest undiscovered POI, else breathe and fight.
         let tx: number | null = null;
         let ty: number | null = null;
         if (s.raid) {
           const t = s.territories.find((x) => x.poiId === s.raid?.poiId);
           if (t) { tx = t.x; ty = t.y; }
+        }
+        if (tx === null) {
+          let bd = 1e9;
+          for (const t of s.territories) {
+            if (!t.disabled) continue;
+            const d = Math.hypot(t.x - s.px, t.y - s.py);
+            if (d < bd) { bd = d; tx = t.x; ty = t.y; }
+          }
         }
         if (tx === null) {
           const { cx, cy } = worldToChunk(s.px, s.py);
@@ -147,6 +155,9 @@ describe("origins and active families", () => {
           if (e.type === "draft_opened") sim.chooseDraft(0);
           else if (e.type === "expansion_offered") sim.chooseExpansion(e.families[0] as "kinetic");
         }
+        // Drain any open draft every step (an already-open draft emits no event).
+        let guard = 0;
+        while (sim.state.draftOpen && guard++ < 8) sim.chooseDraft(0);
         // Engaged decisions every step (all idempotent when ineligible).
         for (const c of sim.claimablePOIs()) {
           if (!c.clear) continue;

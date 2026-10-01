@@ -3,7 +3,7 @@
 // determinism, replay/restart equality, minimap fog, HP-bar purity.
 import { describe, it, expect } from "vitest";
 import { RunSimulation } from "../../src/core/sim/RunSimulation";
-import { canAdvanceAge, ageGates, AGE_DEFS } from "../../src/core/progression/ages";
+import { canAdvanceAge, ageGates, AGE_DEFS, dominionProgress } from "../../src/core/progression/ages";
 import { missionDone, type MissionState } from "../../src/core/progression/missions";
 import { AGES } from "../../src/core/tech/graph";
 import { BREAKTHROUGHS } from "../../src/core/tech/synergy";
@@ -183,8 +183,10 @@ describe("draft agency", () => {
 });
 
 describe("missions == advancement predicate", () => {
-  const poor: MissionState = { ageKills: 0, territoriesClaimed: 0, elitesAge: 0, outpostsTier2: 0, raidsSurvived: 0, signalSecured: false };
-  const rich: MissionState = { ageKills: 99, territoriesClaimed: 3, elitesAge: 5, outpostsTier2: 2, raidsSurvived: 2, signalSecured: true };
+  const poor: MissionState = { ageKills: 0, territoriesClaimed: 0, elitesAge: 0, outpostsTier2: 0, raidsSurvived: 0, signalSecured: false, breakthroughs: 0 };
+  const rich: MissionState = { ageKills: 99, territoriesClaimed: 3, elitesAge: 5, outpostsTier2: 2, raidsSurvived: 2, signalSecured: true, breakthroughs: 2 };
+  const domRich = { active: 5, specialized: 3, tier2: 2, raidsSurvived: 2 };
+  const domPoor = { active: 0, specialized: 0, tier2: 0, raidsSurvived: 0 };
 
   it("checklist display and predicate agree on fuzzed states", () => {
     let seed = 12345;
@@ -194,34 +196,54 @@ describe("missions == advancement predicate", () => {
     };
     for (let i = 0; i < 300; i++) {
       const ms: MissionState = {
-        ageKills: Math.floor(rnd() * 30),
+        ageKills: Math.floor(rnd() * 60),
         territoriesClaimed: Math.floor(rnd() * 4),
         elitesAge: Math.floor(rnd() * 4),
         outpostsTier2: Math.floor(rnd() * 3),
         raidsSurvived: Math.floor(rnd() * 3),
         signalSecured: rnd() > 0.5,
+        breakthroughs: Math.floor(rnd() * 3),
+      };
+      const ds = {
+        active: Math.floor(rnd() * 6),
+        specialized: Math.floor(rnd() * 4),
+        tier2: Math.floor(rnd() * 3),
+        raidsSurvived: ms.raidsSurvived,
       };
       for (let age = 1; age < AGES.length; age++) {
-        const gates = ageGates(age, Math.floor(rnd() * 200), Math.floor(rnd() * 9000), ms);
+        const gates = ageGates(age, Math.floor(rnd() * 9000), ms, ds);
         const target = AGE_DEFS[age]?.id;
         expect(gates).toHaveLength(3);
         if (target && target !== "stone") {
           const shown = gates.find((g) => g.id === "mission");
           expect(shown?.done).toBe(missionDone(target, ms));
         }
-        expect(canAdvanceAge(age, 150, 9000, rich)).toBe(
-          ageGates(age, 150, 9000, rich).every((g) => g.done),
+        expect(canAdvanceAge(age, 9000, rich, domRich)).toBe(
+          ageGates(age, 9000, rich, domRich).every((g) => g.done),
         );
-        expect(canAdvanceAge(age, 150, 9000, poor)).toBe(
-          ageGates(age, 150, 9000, poor).every((g) => g.done),
+        expect(canAdvanceAge(age, 9000, poor, domPoor)).toBe(
+          ageGates(age, 9000, poor, domPoor).every((g) => g.done),
         );
       }
     }
   });
 
-  it("three gates only: knowledge, mission, stabilization", () => {
-    const gates = ageGates(1, 0, 0, poor);
-    expect(gates.map((g) => g.id)).toEqual(["knowledge", "mission", "stabilization"]);
+  it("three gates only: knowledge, mission, dominion (no timer)", () => {
+    const gates = ageGates(1, 0, poor, domPoor);
+    expect(gates.map((g) => g.id)).toEqual(["knowledge", "mission", "dominion"]);
+  });
+
+  it("dominion requirements grow per age and ignore disabled posts", () => {
+    // Bronze auto-satisfied; iron needs 1; industrial 2+1spec; atomic 3+raid; space 4+tier2+raid.
+    expect(dominionProgress(1, domPoor).every((d) => d.done)).toBe(true);
+    expect(dominionProgress(2, domPoor).every((d) => d.done)).toBe(false);
+    expect(dominionProgress(2, { ...domPoor, active: 1 }).every((d) => d.done)).toBe(true);
+    expect(dominionProgress(3, { ...domPoor, active: 2 }).every((d) => d.done)).toBe(false);
+    expect(dominionProgress(3, { ...domPoor, active: 2, specialized: 1 }).every((d) => d.done)).toBe(true);
+    expect(dominionProgress(4, { ...domPoor, active: 3 }).every((d) => d.done)).toBe(false);
+    expect(dominionProgress(4, { ...domPoor, active: 3, raidsSurvived: 1 }).every((d) => d.done)).toBe(true);
+    expect(dominionProgress(5, { ...domPoor, active: 4, tier2: 1, raidsSurvived: 1 }).every((d) => d.done)).toBe(true);
+    expect(dominionProgress(5, { ...domPoor, active: 4, raidsSurvived: 1 }).every((d) => d.done)).toBe(false);
   });
 });
 
