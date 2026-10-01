@@ -3,22 +3,19 @@
 ## CURRENT CANONICAL STATE — READ THIS FIRST
 
 - Active branch: `feat/v023-frontier-purpose-20261001`
-- Current HEAD: `bbc6df3775176e4e095677b651ce926f17905385`
-- Current code SHA: `bbc6df3775176e4e095677b651ce926f17905385` (Phase A landed:
+- Current HEAD: `00960ed` (pushed; exact-SHA CI below refers to this tip)
+- Current code SHA: `00960ed` (Phase A landed:
   `4382fef` modal/seed-truth fixes, `530ce79` ordered-state + engagement
-  contracts, `bbc6df3` QA pipeline retarget to v023)
-- Local verification (2026-10-01 evening): typecheck CLEAN, unit 310/310 (39
-  files), targeted E2E 6/6 green (industrial payoff via MutationObserver
-  sequencing proof, frontier x2, qa x3 incl. custom-seed truth). Full E2E
-  35/35 was green on the same code before the test/script split commits
-  (no src changes since). Awaiting exact-SHA CI on the pushed tip.
+  contracts, `bbc6df3` QA pipeline retarget to v023, `00960ed` docs reconcile)
+- Exact-SHA CI: run 36875075100 — 3/3 GREEN (verify Node 22 SUCCESS, verify
+  Node 24 SUCCESS, e2e SUCCESS). v0.23 TECHNICAL BASELINE frozen at `00960ed`.
 - Current milestone: v0.23 TECHNICAL CLOSURE (no new gameplay; auditor HOLD on
   human testing until exact-SHA CI is 3/3 green)
 - Current blockers: none locally — (1) industrial modal test FIXED +
   race-proofed, (2) QA seed truth FIXED (custom-seed E2E asserts snapshot +
   report carry `EPOCH-CUSTOM-42`), (3) qa-report emits v023 path/title FIXED
-- Next exact action: push tip → exact-SHA CI green → freeze as
-  v0.23 TECHNICAL BASELINE, then create `fix/v0231-interaction-clarity-20261001`
+- Next exact action: v0.23 TECHNICAL BASELINE frozen — create
+  `fix/v0231-interaction-clarity-20261001` for the next milestone
 - Everything below the `HISTORICAL ARCHIVE` marker is prior-milestone evidence.
   Do NOT use old resume instructions for current work.
 
