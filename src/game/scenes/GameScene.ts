@@ -305,10 +305,11 @@ export class GameScene extends Phaser.Scene {
           this.refreshHUD();
         },
         readyExpansion: () => {
-          // Test-only staging for the Industrial transition: sets genuine
-          // preconditions; the age-up, events, and modal queue run real code.
-          // v021: the industrial mission (1 elite + 1 held territory) is part
-          // of the contract, so the hook stages a real claim too.
+          // Test-only staging for the Industrial transition: satisfies the
+          // CURRENT canonical gates (knowledge + mission + dominion) through
+          // real paths — two genuine distinct claims + specializations plus
+          // coherent breakthrough evidence — then the age-up, events, and
+          // modal queue run real code. Returns self-diagnostics (Phase A A1).
           const s = this.sim.state;
           s.ageIndex = 2;
           s.elapsed = 400;
@@ -317,10 +318,13 @@ export class GameScene extends Phaser.Scene {
           s.ageKills = 120;
           s.elitesAge = 1;
           for (const e of s.enemies) e.active = false;
+          for (const t of ["fire", "tools"]) if (!s.ownedTags.includes(t)) s.ownedTags.push(t);
+          if (!s.breakthroughs.includes("metallurgy")) s.breakthroughs.push("metallurgy");
           const { cx, cy } = worldToChunk(s.px, s.py);
-          outer: for (let r = 0; r < 4; r++) {
-            for (let ox = -r; ox <= r; ox++) {
-              for (let oy = -r; oy <= r; oy++) {
+          const claimed: string[] = [];
+          outer: for (let r = 0; r < 6 && claimed.length < 2; r++) {
+            for (let ox = -r; ox <= r && claimed.length < 2; ox++) {
+              for (let oy = -r; oy <= r && claimed.length < 2; oy++) {
                 const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
                 for (const poi of desc.poi) {
                   if (s.poisWorld.includes(poi.id)) continue;
@@ -330,12 +334,22 @@ export class GameScene extends Phaser.Scene {
                   s.stats.poisTotal++;
                   this.handleEvents(this.sim.claimTerritory(poi.id));
                   this.handleEvents(this.sim.setOutpostSpec(poi.id, "research"));
-                  break outer;
+                  claimed.push(poi.id);
+                  if (claimed.length >= 2) break outer;
                 }
               }
             }
           }
           this.refreshHUD();
+          const gates = ageGates(3, s.knowledgeTotal, this.missionStateOf(s), this.dominionStateOf(s));
+          const ds = this.dominionStateOf(s);
+          return {
+            ready: gates.every((g) => g.done),
+            gates: gates.map((g) => ({ id: g.id, have: g.have, need: g.need, done: g.done })),
+            activeOutposts: ds.active,
+            specialized: ds.specialized,
+            breakthroughs: s.breakthroughs.length,
+          };
         },
         advance: (seconds: number) => {
           // Test-only deterministic fast-forward (E2E time travel): godmode
@@ -386,6 +400,16 @@ export class GameScene extends Phaser.Scene {
           }
           this.refreshHUD();
           return best !== null;
+        },
+        tryClaim: () => {
+          // Mirrors the contextual CLAIM button exactly: nearest claimable
+          // POI, real claimTerritory preconditions, zero staging/clearing.
+          const list = this.sim.claimablePOIs();
+          if (list.length === 0) return "";
+          const c = list[0] as { poiId: string };
+          const before = this.sim.state.territories.length;
+          this.handleEvents(this.sim.claimTerritory(c.poiId));
+          return this.sim.state.territories.length > before ? c.poiId : "";
         },
         claimFirst: () => {
           // Test-only staging: clear the field, then run the real

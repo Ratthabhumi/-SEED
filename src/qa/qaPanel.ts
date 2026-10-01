@@ -10,6 +10,8 @@ import {
 import { renderMarkdown, renderJSON } from "./PlaytestReport";
 import { collectRects, analyzeRects, OVERFLOW_SELECTORS } from "./VisualChecks";
 import { GOLDEN_QA_SEED } from "./qaMode";
+// Note: GOLDEN_QA_SEED is only the DEFAULT session seed (?qa=1 with no
+// &seed=). The recorder is retargeted to the actual session seed in start().
 import { t } from "../i18n/i18n";
 import type { EnKeys } from "../i18n/en";
 
@@ -125,7 +127,7 @@ function download(filename: string, text: string, mime: string): void {
 }
 
 export class QaSession {
-  readonly recorder: PlaytestRecorder;
+  recorder: PlaytestRecorder;
   lastFrame: QaFrameData | null = null;
   private wallStart = 0;
   private tickCount = 0;
@@ -165,6 +167,8 @@ export class QaSession {
   constructor(private readonly adapter: QaAdapter, sessionId?: string) {
     this.wallStart = performance.now();
     this.sessionId = sessionId || `qa-${Math.floor(this.wallStart)}-${Math.random().toString(36).slice(2, 8)}`;
+    // Placeholder seed: ?qa=1 defaults to the golden seed, but start()
+    // retargets the recorder to the ACTUAL session seed (?qa=1&seed=X truth).
     this.recorder = new PlaytestRecorder(
       GOLDEN_QA_SEED,
       adapter.versions(),
@@ -215,6 +219,16 @@ export class QaSession {
   start(): void {
     const f = this.adapter.frame();
     this.lastFrame = f;
+    // A2: retarget to the ACTUAL session seed (?qa=1&seed=X truth).
+    // ?qa=1 alone defaults to EPOCH-GOLDEN-001 via the title gate.
+    this.wallStart = performance.now();
+    this.recorder = new PlaytestRecorder(
+      f.masterSeed,
+      this.adapter.versions(),
+      this.wallStart,
+      this.adapter.ageOrder(),
+      this.sessionId,
+    );
     this.prevAgeIndex = f.ageIndex;
     this.prevAscension = f.ascension;
     this.prevBossKills = f.bossKills;
@@ -223,9 +237,12 @@ export class QaSession {
     this.recorder.checkpoint("STONE_START", ctx);
     this.recordEngagement(f, ctx);
     this.recorder.perfSnapshot("run-start", ctx);
-    this.recorder.assert("seed", "Seed invariant", f.masterSeed === GOLDEN_QA_SEED,
-      f.masterSeed === GOLDEN_QA_SEED ? `masterSeed=${f.masterSeed}` : `expected ${GOLDEN_QA_SEED}, got ${f.masterSeed}`, ctx);
-    if (f.masterSeed !== GOLDEN_QA_SEED) this.seedFailLogged = true;
+    // Session invariant: the seed must remain the SESSION seed (whatever it
+    // was at start — golden by default, custom via ?qa=1&seed=X).
+    const sessionSeed = this.recorder.seed;
+    this.recorder.assert("seed", "Seed invariant", f.masterSeed === sessionSeed,
+      f.masterSeed === sessionSeed ? `masterSeed=${f.masterSeed}` : `masterSeed changed to ${f.masterSeed} (session ${sessionSeed})`, ctx);
+    if (f.masterSeed !== sessionSeed) this.seedFailLogged = true;
     this.captureEnvironment();
     this.attachConsole();
     this.buildPanel();
@@ -255,10 +272,10 @@ export class QaSession {
 
   private checkTransitions(f: QaFrameData, prev: QaFrameData | null): void {
     const ctx = this.ctx(f);
-    // Seed invariant (FAIL once).
-    if (!this.seedFailLogged && f.masterSeed !== GOLDEN_QA_SEED) {
+    // Seed invariant (FAIL once): stability of the SESSION seed.
+    if (!this.seedFailLogged && f.masterSeed !== this.recorder.seed) {
       this.seedFailLogged = true;
-      this.recorder.assert("seed", "Seed invariant", false, `masterSeed changed to ${f.masterSeed}`, ctx);
+      this.recorder.assert("seed", "Seed invariant", false, `masterSeed changed to ${f.masterSeed} (session ${this.recorder.seed})`, ctx);
     }
     // Draft lifecycle invariant (FAIL once per stuck-open episode).
     const surfaces = document.querySelectorAll("#draft-screen").length;
@@ -300,7 +317,7 @@ export class QaSession {
         // Ascension: child-world contract.
         const base = prev;
         const orderIdx = (a: string): number => Math.max(0, order.indexOf(a));
-        const okSeed = f.masterSeed === GOLDEN_QA_SEED;
+        const okSeed = f.masterSeed === this.recorder.seed;
         const okWorld = base !== null && f.worldSeed !== base.worldSeed;
         const okTime = base !== null && f.runElapsed >= base.runElapsed;
         const okKills = base !== null && f.runKills >= base.runKills;
@@ -585,7 +602,7 @@ export class QaSession {
     const r = this.recorder;
     const has = (n: Parameters<PlaytestRecorder["hasCheckpoint"]>[0]): boolean => r.hasCheckpoint(n);
     const rows: Array<[string, boolean]> = [
-      ["Seed verified (EPOCH-GOLDEN-001)", has("RUN_START")],
+      [`Seed ${this.recorder.seed}`, has("RUN_START")],
       ["Stone", has("STONE_START")],
       ["Bronze", has("BRONZE_REACHED")],
       ["Iron", has("IRON_REACHED")],
