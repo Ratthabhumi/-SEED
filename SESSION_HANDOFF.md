@@ -2,6 +2,17 @@
 
 ## Timestamp
 
+2026-10-01 office session. v0.23 Frontier Purpose & Late-Game Performance — ACTIVE on `feat/v023-frontier-purpose-20261001` (branched from exact green `f2cd458`).
+
+**v0.22.1 truth correction (auditor-verified):**
+- Technical gate: ✅ GREEN at `f2cd458` — GitHub Actions run 36815319757 (verify Node 22 SUCCESS, verify Node 24 SUCCESS, e2e SUCCESS). The earlier `1ffc625` claim of AUTOMATED VERIFIED was false (its run 36798489922 had E2E FAILURE, 23/6); that report must not be cited as a closed milestone.
+- Human usability gate: NOT ACCEPTED — HUD overlap, UI-scale breakage at 150–200%, unclear territory purpose, Tech Map overflow, late-Space FPS drops all still observed.
+- Therefore: v0.22.1 = 🟠 CORRECTIVE / TECHNICAL PASS, superseded into v0.23 corrective work. v0.22.1 branch stays frozen; no more docs-only tips on it.
+
+**v0.23 direction (auditor-owned design, implementation here):** frontier purpose loop EXPLORE→…→ASCEND on existing Strategic Sites (no free placement), Dominion age gate replacing the abstract stabilization timer, scale-aware adaptive HUD + Tech Map, deterministic spatial nearest-neighbor, CONTENT 4→5, no new dependencies.
+
+---
+
 2026-10-01 ~07:53 Asia/Bangkok. v0.22.1 First-Run Clarity & Presentation Corrective — MILESTONE COMPLETE.
 
 **Status: AUTOMATED VERIFIED — HUMAN AUDIT PENDING**

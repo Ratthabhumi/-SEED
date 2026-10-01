@@ -51,13 +51,15 @@
 ## 5. Current Development Dashboard
 - **v0.1 Vertical Slice**: ✅ COMPLETE
 - **v0.1.1 Stabilization / Readability**: ✅ COMPLETE
-- **v0.2 Engagement Loop**: ✅ COMPLETE as historical technical milestone
+- **v0.2 Engagement Loop**: ✅ HISTORICAL TECHNICAL FOUNDATION
 - **v0.21 Civilization Command Loop**: 🟠 CORRECTIVE
-  - *Reason*: Integrated human validation did not exercise the full system and revealed first-run clarity problems.
-- **v0.22 Open-Source Leverage**: 🟠 CORRECTIVE
-  - *Reason*: Technical/provenance foundation complete, human UX validation exposed readability/onboarding/VFX issues.
-- **v0.22.1 First-Run Clarity & Presentation**: 🟢 ACTIVE
-- **v0.23 Game Feel & Audio**: 🔵 RESEARCH READY / BLOCKED ON v0.22.1 HUMAN GATE
+  - *Reason*: Systems exist but macro purpose remains unclear in human play.
+- **v0.22 Open-Source Leverage**: ✅ TECHNICAL FOUNDATION
+  - 🟠 HUMAN INTEGRATION STILL EVOLVING
+- **v0.22.1 First-Run Clarity**: ✅ TECHNICAL GATE (exact-SHA CI green)
+  - 🟠 HUMAN UX CORRECTIVE (HUD overlap, UI-scale breakage, territory purpose, Tech Map overflow, Space FPS)
+- **v0.23 Frontier Purpose & Late-Game Performance**: 🟢 ACTIVE
+- **v0.24 Game Feel & Audio**: 🔵 RESEARCH READY (entry gate: v0.23 human macro loop accepted)
 - **v0.3+**: ⚪ PLANNED
 
 ---
@@ -84,7 +86,8 @@
   - RexUI migration — Vanilla DOM modals offer cleaner control and lower overhead.
   - Runtime LLM systems — Conflicts with deterministic offline simulation and latency targets.
 - 📖 **REFERENCE ONLY (No code integration)**:
-  - Mindustry, OpenRA, shapez, Unciv, World of ClaudeCraft, awesome-ai-game, awesome-ai-built-games, AI Game Central, itch AI-generated catalog.
+  - Mindustry, The Riftbreaker, OpenRA, shapez, Unciv, World of ClaudeCraft (design references for territory/expansion/defense; GPL sources never copied)
+  - awesome-ai-game, awesome-ai-built-games, AI Game Central, itch AI-game catalog (landscape awareness only).
 
 ---
 
@@ -103,21 +106,32 @@
   - 🟠 Human first-run clarity (unclear objectives, mechanics, age progression)
 
 ### v0.22.1 — First-Run Clarity & Presentation Corrective
-- **Status**: 🟢 ACTIVE
+- **Status**: ✅ TECHNICAL GATE (exact-SHA CI green) / 🟠 HUMAN UX CORRECTIVE
+  (superseded into v0.23 corrective work; branch frozen)
 - **Deliverables**:
-  - 🟢 UI typography scale (Xbox Accessibility target: >= 18px core text)
-  - 🟢 UI scale setting (100%, 125%, 150%, 200% with calc-based variables)
-  - 🟢 Semantic modal sizing system (`.panel-sm` to `.panel-xl`, 94vw/90vh for Tech Map)
-  - 🟢 Tech Map readability & frontier-focus default (current frontier focus, readable nodes, CURRENT / OVERVIEW controls)
-  - 🟢 HUD information architecture R2 (5 distinct zones: Top-Left objective, Top-Right Age card, Bottom-Left status, Bottom-Center knowledge, Bottom-Right minimap)
-  - 🟢 VFX black-box cleanup & blend policy (ADD blend mode on luminance textures, state reset in pool, procedural ordinary enemy deaths)
-  - 🟢 Contextual first-run guidance & onboarding (`TutorialDirector`, 2-part intro, contextual progressive prompts, skip/replay/guide)
-  - 🟢 QA telemetry truth & session binding (unobtrusive QA UI, F10 toggle, sessionId correlation, Tech Map telemetry contract)
-  - 🟡 Human revalidation after implementation
+  - ✅ UI typography scale (Xbox Accessibility target: >= 18px core text)
+  - ✅ Tutorial foundation & contextual guidance
+  - ✅ VFX blend correction (ADD policy)
+  - 🟠 Adaptive UI scaling (breaks/overflows at 150–200%)
+  - 🟠 HUD overlap (permanent cards collide)
+  - 🟠 Tech Map high-scale layout (node overflow, sidebar squeeze)
+  - 🔴 Exact-SHA full CI (was red at 4a2c7db; repaired at f2cd458, run 36815319757 green)
 
-### v0.23 — Game Feel & Audio
-- **Status**: 🔵 RESEARCH READY / BLOCKED ON v0.22.1 HUMAN GATE
-- **Entry Gate**: v0.22.1 human gate accepted.
+### v0.23 — Frontier Purpose & Late-Game Performance
+- **Status**: 🟢 ACTIVE
+- **Scope**:
+  - 🟢 Strategic Site UX (UNSEEN → CLAIMED states, [C] claim action)
+  - 🟢 Multi-Outpost Frontier (multiple sites, exact spec benefits)
+  - 🟢 Dominion age gate (replaces abstract stabilization timer)
+  - 🟢 Civ Map frontier graph (derived links, stronghold reveal)
+  - 🟢 Stronghold endgame → boss as consequence of control
+  - 🟢 Adaptive HUD dock + scale-aware Tech Map (reflow, not font multiply)
+  - 🟢 Space performance profiling + deterministic spatial nearest
+  - 🟡 Human validation (EPOCH-AET4-3SFC)
+
+### v0.24 — Game Feel & Audio
+- **Status**: 🔵 RESEARCH READY
+- **Entry Gate**: v0.23 human macro loop accepted.
 - **Scope**:
   - Combat impact (hit stop, directional knockback feel, projectile trails).
   - Coherent SFX language across ages (Stone percussion → Bronze resonance → Industrial steam → Atomic hum → Space pulse).
