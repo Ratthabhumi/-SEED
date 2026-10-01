@@ -3,7 +3,8 @@
 ## CURRENT CANONICAL STATE — READ THIS FIRST
 
 - Active branch: `feat/v023-frontier-purpose-20261001`
-- Current HEAD: `00960ed` (pushed; exact-SHA CI below refers to this tip)
+- Current HEAD: tip of `feat/v023-frontier-purpose-20261001` (docs-only delta
+  over the CI-verified code SHA below; code identical)
 - Current code SHA: `00960ed` (Phase A landed:
   `4382fef` modal/seed-truth fixes, `530ce79` ordered-state + engagement
   contracts, `bbc6df3` QA pipeline retarget to v023, `00960ed` docs reconcile)
