@@ -16,6 +16,7 @@ import { xpForLevel } from "./fixedStep";
 import { applyTechEffect, defaultEffectTarget, scaleKnowledge } from "./progression";
 import { worldToChunk } from "../world/chunks";
 import { ChunkCache } from "./chunkCache";
+import { nearestEnemySpatial, cellKey } from "./spatial";
 import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from "./stateHash";
 import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
@@ -1123,7 +1124,7 @@ export class RunSimulation {
     for (let i = 0; i < es.length; i++) {
       const e = es[i] as SimEnemy;
       if (!e.active) continue;
-      const k = Math.floor(e.x / SPATIAL_CELL) * 73856093 ^ Math.floor(e.y / SPATIAL_CELL) * 19349663;
+      const k = cellKey(Math.floor(e.x / SPATIAL_CELL), Math.floor(e.y / SPATIAL_CELL));
       let b = this.buckets.get(k);
       if (!b) {
         b = this.bucketPool.pop() ?? [];
@@ -1143,7 +1144,7 @@ export class RunSimulation {
     const es = this.state.enemies;
     for (let cx = x0; cx <= x1; cx++) {
       for (let cy = y0; cy <= y1; cy++) {
-        const bucket = this.buckets.get(cx * 73856093 ^ cy * 19349663);
+        const bucket = this.buckets.get(cellKey(cx, cy));
         if (!bucket) continue;
         this.queryCount++;
         for (let bi = 0; bi < bucket.length; bi++) {
@@ -1156,18 +1157,11 @@ export class RunSimulation {
   }
 
   private nearestEnemy(x: number, y: number, maxD: number): SimEnemy | null {
-    // Linear scan (R3.4: spatial nearest-query upgrade deferred until profiling).
-    let best: SimEnemy | null = null;
-    let bd = maxD;
-    for (const e of this.state.enemies) {
-      if (!e.active) continue;
-      const dx = e.x - x;
-      const dy = e.y - y;
-      if (Math.abs(dx) > bd || Math.abs(dy) > bd) continue;
-      const d = Math.hypot(dx, dy);
-      if (d < bd) { bd = d; best = e; }
-    }
-    return best;
+    // Deterministic spatial lookup; selection semantics identical to the
+    // legacy brute-force scan (min hypot distance, strict `<`, lowest pool
+    // index wins ties) — proven by tests/sim/spatialNearest.test.ts.
+    const idx = nearestEnemySpatial(this.state.enemies, this.buckets, SPATIAL_CELL, x, y, maxD);
+    return idx === -1 ? null : (this.state.enemies[idx] as SimEnemy);
   }
 
   private fireProjectile(x: number, y: number, tx: number, ty: number, speed: number, dmg: number, color: number, src: string, friendly: boolean, radius = 6): void {
