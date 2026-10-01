@@ -34,30 +34,90 @@
 
 ---
 
-## 4. Current Verified Baseline
-- **v0.1 Vertical Slice**: Stone Age survivor vertical slice, basic tech drafting, golden seed harness — `VERIFIED`.
-- **v0.1.1 Stabilization & Readability**: Entity pooling (650 enemies, 600 proj), visual lab, Thai typography rules (`line-height >= 1.7`) — `VERIFIED`.
-- **v0.2 Engagement Loop**: Stone → Space progression, Origins, Legacies, Ascension child-world reset, zero-friction playtest automation sink — `VERIFIED`.
-- **v0.21 Civilization Command Loop**: Squad commands (Rally/Focus/Hold), active abilities, Outpost expansion (Research/Military/Economic), territory control, raid threats, minimap/civ map, build history — `AUTOMATED VERIFIED — HUMAN REVALIDATION EVIDENCE CAPTURED — AUDITOR VERDICT PENDING`.
+---
+
+## 4. Status Legend
+- ✅ **COMPLETE** = implementation + required human gate accepted
+- 🟢 **ACTIVE** = current implementation focus
+- 🟡 **VALIDATION** = implementation finished; evidence/human validation pending
+- 🟠 **CORRECTIVE** = human/evidence found blockers that require correction
+- 🔴 **BLOCKED** = cannot proceed because of a hard dependency/defect
+- 🔵 **RESEARCH READY** = researched/approved but intentionally not implemented
+- ⚪ **PLANNED** = scheduled but not started
+- ⏸ **DEFERRED** = deliberately postponed pending evidence
 
 ---
 
-## 5. Release Train
+## 5. Current Development Dashboard
+- **v0.1 Vertical Slice**: ✅ COMPLETE
+- **v0.1.1 Stabilization / Readability**: ✅ COMPLETE
+- **v0.2 Engagement Loop**: ✅ COMPLETE as historical technical milestone
+- **v0.21 Civilization Command Loop**: 🟠 CORRECTIVE
+  - *Reason*: Integrated human validation did not exercise the full system and revealed first-run clarity problems.
+- **v0.22 Open-Source Leverage**: 🟠 CORRECTIVE
+  - *Reason*: Technical/provenance foundation complete, human UX validation exposed readability/onboarding/VFX issues.
+- **v0.22.1 First-Run Clarity & Presentation**: 🟢 ACTIVE
+- **v0.23 Game Feel & Audio**: 🔵 RESEARCH READY / BLOCKED ON v0.22.1 HUMAN GATE
+- **v0.3+**: ⚪ PLANNED
+
+---
+
+## 6. Open-Source & Research Leverage Ledger
+- ✅ **IMPLEMENTED**:
+  - `@dagrejs/dagre` (3.1.1, MIT) — Tech DAG hierarchical layout in presentation layer
+  - `@panzoom/panzoom` (4.6.2, MIT) — Tech Map pan/zoom canvas interaction
+  - Kenney Sci-Fi RTS (CC0) — Outpost structures (Research, Military, Economic)
+  - Kenney Input Prompts (CC0) — Keyboard glyphs (Q/E/R/F/T/M)
+  - Kenney Board Game Icons (CC0) — UI category emblems
+  - Kenney UI Pack - Sci-Fi (CC0) — Window frames & bevels
+  - Approved agent skills (`.agents/skills/`) — Curated implementation references
+- 🟠 **IMPLEMENTED BUT CORRECTIVE**:
+  - Kenney Particle Pack (CC0) — Solid black background textures rendered with NORMAL blend mode; corrective pass fixes blend mode to ADD/SCREEN and pools cleanly.
+- 🔵 **RESEARCH READY**:
+  - ZzFX — Procedural audio candidate for v0.23 sound language.
+- ⏸ **EVIDENCE-GATED**:
+  - EasyStar.js / navmesh — Routing only if unit obstacle navigation proves deficient in gameplay evidence.
+- ⏸ **FUTURE WORLD REVIEW**:
+  - `simplex-noise` — Terrain variation requiring deliberate `WORLDGEN_VERSION` review.
+- ⏸ **NOT CURRENTLY JUSTIFIED**:
+  - Miniplex ECS migration — Custom pooled simulation already outperforms budget.
+  - RexUI migration — Vanilla DOM modals offer cleaner control and lower overhead.
+  - Runtime LLM systems — Conflicts with deterministic offline simulation and latency targets.
+- 📖 **REFERENCE ONLY (No code integration)**:
+  - Mindustry, OpenRA, shapez, Unciv, World of ClaudeCraft, awesome-ai-game, awesome-ai-built-games, AI Game Central, itch AI-generated catalog.
+
+---
+
+## 7. Release Train
 
 ### v0.22 — Open-Source Leverage Foundation
-- **Status**: `AUTOMATED VERIFIED — HUMAN REVALIDATION EVIDENCE CAPTURED — AUDITOR VERDICT PENDING`
-- **Goal**: Stop rebuilding commodity tooling/assets; integrate proven open-source components for presentation while hardening governance.
-- **Key Deliverables**:
-  - Dagre-powered procedural Tech DAG presentation layout (`@dagrejs/dagre: 3.1.1`).
-  - Panzoom touch/mouse navigation for the Tech Map (`@panzoom/panzoom: 4.6.2`).
-  - Third-party CC0 visual foundation (Kenney Input Prompts, Sci-Fi RTS outposts, UI Pack chrome, Particle Pack VFX, Board Game Icons).
-  - Project-local agent skills (`.agents/skills/`) for curated implementation cheatsheets.
-  - Formal asset manifest (`assets/ASSET_MANIFEST.json`) & automated license verification (`scripts/verify-third-party.mjs`).
-  - Canonical Art Bible (`docs/ART_BIBLE.md`) & Dependency Policy (`docs/DEPENDENCY_POLICY.md`).
-- **Exit Gate**: CI green, third-party verify script passes, bundle budget verified, human Tech Map usability audit.
+- **Status**: 🟠 CORRECTIVE (Technical foundation passed; human UX revalidation discovered P1 clarity, scaling, VFX blending, and QA evidence defects)
+- **Deliverables**:
+  - ✅ Dagre 3.1.1 integration for procedural Tech DAG layout
+  - ✅ Panzoom 4.6.2 integration for Tech Map navigation
+  - ✅ CC0 asset provenance, manifests, and automated verification (`npm run verify:third-party`)
+  - ✅ Kenney input prompts (Q/E/R/F/T/M) & Outpost foundation assets
+  - ✅ UI category icons (Kenney Board Game Icons)
+  - 🟠 Kenney VFX presentation (particle pack solid black background blend defect)
+  - 🟠 Integrated HUD readability (font sizes 11–14px too small)
+  - 🟠 Human first-run clarity (unclear objectives, mechanics, age progression)
+
+### v0.22.1 — First-Run Clarity & Presentation Corrective
+- **Status**: 🟢 ACTIVE
+- **Deliverables**:
+  - 🟢 UI typography scale (Xbox Accessibility target: >= 18px core text)
+  - 🟢 UI scale setting (100%, 125%, 150%, 200% with calc-based variables)
+  - 🟢 Semantic modal sizing system (`.panel-sm` to `.panel-xl`, 94vw/90vh for Tech Map)
+  - 🟢 Tech Map readability & frontier-focus default (current frontier focus, readable nodes, CURRENT / OVERVIEW controls)
+  - 🟢 HUD information architecture R2 (5 distinct zones: Top-Left objective, Top-Right Age card, Bottom-Left status, Bottom-Center knowledge, Bottom-Right minimap)
+  - 🟢 VFX black-box cleanup & blend policy (ADD blend mode on luminance textures, state reset in pool, procedural ordinary enemy deaths)
+  - 🟢 Contextual first-run guidance & onboarding (`TutorialDirector`, 2-part intro, contextual progressive prompts, skip/replay/guide)
+  - 🟢 QA telemetry truth & session binding (unobtrusive QA UI, F10 toggle, sessionId correlation, Tech Map telemetry contract)
+  - 🟡 Human revalidation after implementation
 
 ### v0.23 — Game Feel & Audio
-- **Entry Gate**: v0.22 successfully audited and merged.
+- **Status**: 🔵 RESEARCH READY / BLOCKED ON v0.22.1 HUMAN GATE
+- **Entry Gate**: v0.22.1 human gate accepted.
 - **Scope**:
   - Combat impact (hit stop, directional knockback feel, projectile trails).
   - Coherent SFX language across ages (Stone percussion → Bronze resonance → Industrial steam → Atomic hum → Space pulse).
@@ -122,7 +182,7 @@
 
 ---
 
-## 6. Human Evidence Gates
+## 8. Human Evidence Gates
 Every milestone enforces three sequential acceptance gates:
 1. **Technical Gate**: `npm run check` (typecheck + unit tests + production build) + Playwright E2E green.
 2. **Visual Gate**: Visual Lab audit across normal, grayscale, high-contrast, English, and Thai.
@@ -130,7 +190,7 @@ Every milestone enforces three sequential acceptance gates:
 
 ---
 
-## 7. Open-Source Leverage Gates
+## 9. Open-Source Leverage Gates
 An external library or asset pack is admitted if and only if:
 1. It solves an identified, concrete engineering bottleneck.
 2. Its license is permissive (MIT, BSD, Apache 2.0, CC0) with zero viral/GPL copyleft risk.
@@ -142,19 +202,33 @@ An external library or asset pack is admitted if and only if:
 
 ---
 
-## 8. Explicitly Deferred / Out of Scope
-The following concepts are strictly prohibited during the v0.x lifecycle:
-- Multiplayer, PvP, or client-server netcode.
-- Online leaderboards and cloud backends.
-- Runtime LLM / Generative AI NPC dialogue.
-- Microtransactions, monetization SDKs, or analytics trackers.
-- Full real-time worker-placement city simulation (e.g. SimCity/Banished).
-- Inventory Tetris or complex item crafting grids.
-- Engine migration away from Phaser.
+## 10. Deferred / Not Currently Justified Systems
+Features and systems are classified as **DEFERRED / NOT CURRENTLY JUSTIFIED** rather than permanently forbidden. They may be reconsidered when:
+- Direct human evidence demonstrates an undeniable gameplay or accessibility need
+- Clean architecture accommodates the feature without compromising boundaries
+- An Architecture Decision Record (ADR) documents the engineering tradeoffs
+- The return on investment (ROI) justifies the complexity
+
+We do not treat genre definitions as dogma. The project evolves as evidence points to a superior player experience. What remains sacred:
+- Deterministic simulation contract where promised
+- Data, version, and telemetry honesty
+- Player agency and causal transparency
+- Readability, accessibility, and Thai/English parity
+- Source and license provenance
+- Rigorous evidence over assumption
+
+Currently deferred systems:
+- Multiplayer, PvP, or client-server netcode (massive scope inflation)
+- Online leaderboards and cloud backends (maintenance overhead)
+- Runtime LLM / Generative AI NPC dialogue (slow, non-deterministic, cost-heavy)
+- Microtransactions, monetization SDKs, or analytics trackers (unethical/hostile to player trust)
+- Full real-time worker-placement city simulation (distracts from survivor/macro hybrid loop)
+- Inventory Tetris or complex item crafting grids (adds micro-fiddling without tactical depth)
+- Engine migration away from Phaser (no ROI, current tech stack is robust)
 
 ---
 
-## 9. Definition of Done (Per Milestone)
+## 11. Definition of Done (Per Milestone)
 A milestone is declared complete when:
 - All planned deliverables are implemented with zero architectural leakage.
 - Unit test suite (`npm test`) passes with 100% green coverage on new subsystems.
@@ -167,8 +241,9 @@ A milestone is declared complete when:
 
 ---
 
-## 10. Architectural References & Decision Log
+## 12. Architectural References & Decision Log
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): System boundaries, simulation engine, and rendering adapters.
+- [docs/VERIFICATION_MATRIX.md](docs/VERIFICATION_MATRIX.md): Testing tiers and verification workflows.
 - [docs/OPEN_SOURCE_LEVERAGE.md](docs/OPEN_SOURCE_LEVERAGE.md): Category A/B/C/D evaluation ledger.
 - [docs/ART_BIBLE.md](docs/ART_BIBLE.md): Visual thesis, silhouette tiers, color tokens, and normalization rules.
 - [docs/DEPENDENCY_POLICY.md](docs/DEPENDENCY_POLICY.md): External package checklist and invariants.
