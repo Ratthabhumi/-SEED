@@ -628,16 +628,20 @@ export class GameScene extends Phaser.Scene {
     clearUI();
     const root = uiRoot();
     const hud = el("div", "hud");
-    // Top strip (secondary info; classes kept for QA structural checks).
+    // Top-left: ONE actionable macro objective + compass (§11/20).
+    const topLeft = el("div", "hud-top-left");
+    const age = el("div", "hud-objective");
+    topLeft.appendChild(age);
+    const compass = el("div", "nav-compass");
+    topLeft.appendChild(compass);
+    hud.appendChild(topLeft);
+    // Top strip secondary info (level/time/kills/seed; collapses at density).
     const top = el("div", "hud-top");
     const stats = el("div", "hud-stats");
     top.appendChild(stats);
-    const age = el("div", "hud-objective");
-    top.appendChild(age);
-    const compass = el("div", "nav-compass");
-    top.appendChild(compass);
     hud.appendChild(top);
-    // Bottom-left player status card (PRIMARY).
+    // Bottom-left: ONE player command dock (HP/origin/squad/ability/techmap).
+    const dock = el("div", "hud-dock-bl");
     const status = el("div", "status-card");
     const hpLine = el("div", "status-hp");
     const hpBar = el("div", "mini-bar");
@@ -650,7 +654,7 @@ export class GameScene extends Phaser.Scene {
     status.appendChild(identLine);
     const squadLine = el("div", "status-squad");
     status.appendChild(squadLine);
-    hud.appendChild(status);
+    dock.appendChild(status);
     // Bottom-center knowledge progress (SECONDARY).
     const know = el("div", "knowledge-card");
     const knowLabel = el("div", "knowledge-label", "ui.knowledge");
@@ -664,17 +668,19 @@ export class GameScene extends Phaser.Scene {
     know.appendChild(knowBar);
     hud.appendChild(know);
     // Top-right next-age checklist card (PRIMARY objective).
+    const topRight = el("div", "hud-top-right");
     const ageCard = el("div", "age-card");
-    hud.appendChild(ageCard);
+    topRight.appendChild(ageCard);
     // Build plan line (kept class for e2e; shows pinned target + goals).
     const goals = el("div", "hud-goals");
-    hud.appendChild(goals);
+    topRight.appendChild(goals);
     // Persistent action container OUTSIDE wiped blocks (P1-01 class).
     const ascendWrap = el("div", "hud-ascend");
-    hud.appendChild(ascendWrap);
-    // Territory / claim action bar.
+    topRight.appendChild(ascendWrap);
+    hud.appendChild(topRight);
+    // Territory / claim action bar (inside the bottom-left dock).
     const terrBar = el("div", "territory-bar");
-    hud.appendChild(terrBar);
+    dock.appendChild(terrBar);
     // Tech map button (T also works).
     const techBtn = document.createElement("button");
     techBtn.id = "techmap-btn";
@@ -688,13 +694,16 @@ export class GameScene extends Phaser.Scene {
     tText.textContent = ` ${t("ui.techMap")} [T]`;
     techBtn.appendChild(tText);
     techBtn.addEventListener("click", () => this.toggleTechMap());
-    hud.appendChild(techBtn);
-    // Tactical minimap (bottom-right canvas).
+    dock.appendChild(techBtn);
+    hud.appendChild(dock);
+    // Tactical minimap (bottom-right zone).
+    const mmZone = el("div", "hud-bottom-right");
     const mm = document.createElement("canvas");
     mm.id = "minimap";
     mm.width = 148;
     mm.height = 148;
-    hud.appendChild(mm);
+    mmZone.appendChild(mm);
+    hud.appendChild(mmZone);
     const bossBar = el("div", "boss-bar");
     bossBar.style.display = "none";
     const bossFill = document.createElement("div");
@@ -856,6 +865,7 @@ export class GameScene extends Phaser.Scene {
     this.navT -= 0.15;
     if (this.navT <= 0) {
       this.navT = 1;
+      this.applyHudDensity();
       this.updateFrontier();
       this.updateCompass();
       this.updateTerritoryBar();
@@ -2163,6 +2173,21 @@ export class GameScene extends Phaser.Scene {
     if (this.keys.S?.isDown || this.keys.DOWN?.isDown) iy += 1;
     if (ix !== 0 || iy !== 0) this.playerFacing = Math.atan2(iy, ix);
     this.latch.setMove(ix, iy);
+  }
+
+  /** Density mode from UI scale + viewport (compact collapses secondary). */
+  private applyHudDensity(): void {
+    const root = document.getElementById("ui");
+    if (!root) return;
+    let scale = 1;
+    try {
+      scale = loadSave(localStorage).settings.uiScale ?? 1;
+    } catch {
+      scale = 1;
+    }
+    const narrow = window.innerWidth < 1400;
+    const mode = scale >= 1.5 || narrow ? "compact" : "full";
+    if (root.dataset.density !== mode) root.dataset.density = mode;
   }
 
   /** Presentation-only contrast preference (settings, never gameplay). */

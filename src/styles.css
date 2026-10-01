@@ -75,10 +75,10 @@ button, input { font-family: inherit; }
   text-shadow: 0 1px 3px #000;
 }
 .onboard-hint {
-  position: absolute; bottom: 88px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
   background: rgba(10,18,14,0.92); border: 1px solid #53e0c8; border-radius: 10px;
   color: var(--text); font-size: var(--font-body); line-height: 1.7; padding: 12px 22px;
-  max-width: 92vw; text-align: center; pointer-events: none;
+  max-width: min(640px, 90vw); text-align: center; pointer-events: none;
 }
 
 /* Visual language lab (?visual=1) */
@@ -113,21 +113,51 @@ button, input { font-family: inherit; }
 .btn.sm { font-size: var(--font-caption); min-height: 38px; padding: 6px 14px; }
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 
-/* HUD — Fixed Information Zones (R2) */
-.hud { position: absolute; inset: 0; pointer-events: none; font-size: var(--font-body); }
+/* HUD — semantic dock zones (v023): reflow, not font-multiply.
+ * .hud is a size container: cards size in cqw (container width), so text
+ * growth reflows geometry instead of overflowing fixed boxes. */
+.hud { position: absolute; inset: 0; pointer-events: none; font-size: var(--font-body); container-type: size; container-name: hud; }
 .hud-top-left {
   position: absolute; top: 12px; left: 14px;
   display: flex; flex-direction: column; gap: 8px;
-  pointer-events: none; max-width: min(440px, 46vw);
+  pointer-events: none; max-width: min(460px, 44cqw);
 }
 .hud-top-right {
   position: absolute; top: 12px; right: 14px;
   display: flex; flex-direction: column; gap: 8px;
-  pointer-events: none; max-width: min(380px, 42vw);
+  pointer-events: none; max-width: min(400px, 40cqw);
+  max-height: 70cqh; overflow-y: auto;
 }
 .hud-top {
-  position: absolute; top: 10px; left: 12px; right: 12px;
-  display: flex; flex-direction: column; gap: 6px;
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 6px; align-items: center;
+  pointer-events: none; max-width: 30cqw;
+}
+/* Bottom-left: ONE command dock (status + techmap + territory actions). */
+.hud-dock-bl {
+  position: absolute; left: 14px; bottom: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: min(360px, 38cqw); max-height: 62cqh; overflow-y: auto;
+  pointer-events: none;
+}
+.hud-dock-bl .btn { pointer-events: auto; }
+.hud-bottom-right {
+  position: absolute; right: 14px; bottom: 14px;
+  pointer-events: none;
+}
+/* Compact density (uiScale >= 150% or narrow viewport): critical info stays,
+ * secondary metadata collapses. Gameplay-critical elements never hide. */
+#ui[data-density="compact"] .hud-seed,
+#ui[data-density="compact"] .hud-goals { display: none; }
+#ui[data-density="compact"] .knowledge-label { display: none; }
+#ui[data-density="compact"] .gate-sub { display: none; }
+#ui[data-density="compact"] .status-card,
+#ui[data-density="compact"] .knowledge-card,
+#ui[data-density="compact"] .age-card { padding: 6px 10px; }
+/* Narrow-container reflow: keep zones inside the viewport. */
+@container hud (max-width: 1150px) {
+  .hud-top { display: none; }
+  .knowledge-card { width: min(340px, 40cqw); }
 }
 .bar { height: 16px; background: #141c2a; border: 1px solid #2c3a52; border-radius: 8px; overflow: hidden; }
 .bar > div { height: 100%; transition: width 0.15s; }
@@ -143,7 +173,7 @@ button, input { font-family: inherit; }
   color: var(--accent); font-size: var(--font-body-strong); font-weight: 700;
   background: rgba(8,12,18,0.65); border-radius: 8px; padding: 6px 12px; width: fit-content; max-width: 100%; line-height: 1.7;
 }
-.hud-ascend { position: absolute; top: 156px; right: 14px; pointer-events: none; z-index: 25; }
+.hud-ascend { pointer-events: none; z-index: 25; align-self: flex-end; }
 .hud-ascend .btn { pointer-events: auto; }
 
 /* Draft cards */
@@ -274,11 +304,12 @@ button, input { font-family: inherit; }
 }
 .qa-comment-btn { padding: 6px 14px; font-size: var(--font-caption); min-height: 36px; }
 
-/* Status card (Bottom-Left) */
+/* Status card (in bottom-left dock flow) */
 .status-card {
-  position: absolute; left: 14px; bottom: 14px; min-width: 240px; max-width: 340px;
+  min-width: 0; max-width: 100%;
   background: rgba(8,12,18,0.85); border: 1px solid #2c3a52; border-radius: 12px;
   padding: 10px 14px; line-height: 1.7; pointer-events: none;
+  overflow-wrap: break-word;
 }
 .status-hp { font-size: var(--font-heading); font-weight: 800; color: #ff8a8a; }
 .status-ident { font-size: var(--font-body); color: var(--text); font-weight: 600; }
@@ -291,17 +322,19 @@ button, input { font-family: inherit; }
 /* Knowledge card (Bottom-Center) */
 .knowledge-card {
   position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
-  width: min(460px, 46vw); background: rgba(8,12,18,0.85); border: 1px solid #2c3a52;
+  width: min(460px, 46cqw); background: rgba(8,12,18,0.85); border: 1px solid #2c3a52;
   border-radius: 12px; padding: 8px 16px; line-height: 1.7; pointer-events: none; text-align: center;
+  overflow-wrap: break-word;
 }
 .knowledge-label { font-size: var(--font-caption); letter-spacing: 2px; color: #53e0c8; font-weight: 700; text-transform: uppercase; }
 .knowledge-nums { font-size: var(--font-body-strong); font-weight: 700; }
 
-/* Next Age card (Top-Right) */
+/* Next Age card (in top-right zone flow) */
 .age-card {
-  position: absolute; top: 12px; right: 14px; width: 300px; max-width: 44vw;
+  max-width: 100%;
   background: rgba(8,12,18,0.88); border: 1px solid #2c3a52; border-radius: 12px;
   padding: 10px 16px; line-height: 1.7; pointer-events: none;
+  overflow-wrap: break-word;
 }
 .age-card-title { font-size: var(--font-body-strong); font-weight: 800; color: var(--accent); }
 .gate-row { display: flex; align-items: center; gap: 8px; font-size: var(--font-body); margin-top: 6px; }
@@ -314,20 +347,22 @@ button, input { font-family: inherit; }
 .gate-sub { font-size: var(--font-caption); color: var(--muted); padding-left: 26px; }
 .gate-sub.done { color: #53e0c8; }
 
-/* Territory action bar & Tech map button */
+/* Territory action bar & Tech map button (in bottom-left dock flow) */
 .territory-bar {
-  position: absolute; left: 14px; bottom: 156px; display: flex; flex-direction: column;
-  gap: 8px; max-width: 360px;
+  display: flex; flex-direction: column;
+  gap: 8px; max-width: 100%;
 }
 .territory-bar:empty { display: none; }
-.territory-bar .btn { pointer-events: auto; font-size: var(--font-body); padding: 10px 14px; min-height: 44px; text-align: left; }
+.territory-bar .btn { pointer-events: auto; font-size: var(--font-body); padding: 10px 14px; min-height: 44px; text-align: left; max-width: 100%; overflow-wrap: break-word; }
 #techmap-btn {
-  position: absolute; left: 14px; bottom: 108px; pointer-events: auto;
+  pointer-events: auto; align-self: flex-start;
   font-size: var(--font-body); padding: 8px 16px; min-height: 44px;
+  max-width: 100%;
 }
 #minimap {
-  position: absolute; right: 14px; bottom: 14px; width: 160px; height: 160px;
+  width: min(160px, 16cqw); height: min(160px, 16cqw);
   border: 1px solid #2c3a52; border-radius: 12px; pointer-events: none;
+  display: block;
 }
 .draft-agency { display: flex; gap: 12px; justify-content: center; margin-top: 14px; }
 .draft-stays { color: var(--muted); font-size: var(--font-body); line-height: 1.7; margin-top: 12px; text-align: center; max-width: 680px; }
