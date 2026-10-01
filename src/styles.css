@@ -472,3 +472,61 @@ button, input { font-family: inherit; }
   border-radius: 6px; padding: 4px 10px; font-size: var(--font-caption); cursor: pointer;
 }
 .tutorial-skip-btn:hover { color: #fff; border-color: #53e0c8; }
+
+/* v0.23.1 interaction clarity: explanatory prose is LEFT-aligned.
+ * Short headings/labels/numbers may stay centered. */
+.panel p, .guide-content p, .tutorial-intro-modal p, .toast-sub,
+.draft-stays, .civmap-list, .techmap-desc, .context-purpose,
+.draft-hint, .confirm-nested p { text-align: left; }
+
+/* Context stack: ONE stacked lane (left-center) for contextual surfaces —
+ * claim prompt, coachmark banner, interaction hints. Clear of the Knowledge
+ * bar, command dock, minimap, and Next Age card by construction. */
+#context-stack {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: min(340px, 90vw); max-height: 70vh; overflow-y: auto;
+  pointer-events: none; z-index: 30;
+}
+#context-stack > * { pointer-events: auto; }
+#context-stack .tutorial-step-banner,
+#context-stack .onboard-hint {
+  position: static; transform: none; max-width: 100%;
+}
+.context-purpose {
+  color: var(--muted); font-size: var(--font-caption); line-height: 1.7;
+  margin-top: 6px; max-width: 100%; overflow-wrap: break-word;
+}
+.draft-hints { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; max-width: 680px; }
+.draft-hint { color: var(--muted); font-size: var(--font-caption); line-height: 1.7; }
+.card-new {
+  color: var(--accent); font-weight: 800; font-size: var(--font-caption);
+  letter-spacing: 1px; margin-top: 4px;
+}
+
+/* Pause information architecture: labeled sections, full-width buttons,
+ * danger zone visually separated from Resume. */
+.pause-panel { max-height: 92vh; overflow-y: auto; }
+.pause-sec { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.pause-sec h3 {
+  margin: 4px 0 2px; font-size: var(--font-caption); letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted); text-align: left;
+}
+.pause-sec .btn { width: 100%; }
+.pause-sec.danger-zone {
+  border: 1px solid #7a2e2e; border-radius: 10px; padding: 10px 12px;
+  margin-top: 14px;
+}
+.pause-sec.danger-zone h3 { color: #ff8a8a; }
+.confirm-nested {
+  border: 1px solid var(--accent); border-radius: 10px; padding: 12px 14px;
+  margin-top: 10px; background: rgba(8, 12, 18, 0.6);
+}
+.confirm-nested h3 { margin: 0 0 6px; font-size: var(--font-body-strong); text-align: left; }
+.confirm-nested p { margin: 0 0 10px; color: var(--muted); font-size: var(--font-body); line-height: 1.7; }
+
+#civmap-btn {
+  pointer-events: auto; align-self: flex-start;
+  font-size: var(--font-body); padding: 8px 16px; min-height: 44px;
+  max-width: 100%;
+}

@@ -259,7 +259,9 @@ export class TutorialDirector {
   private showBanner(message: string, durationSeconds: number): void {
     this.hideBanner();
 
-    const root = uiRoot();
+    // Contextual coachmarks live in the shared #context-stack lane (left of
+    // play, clear of HUD safe zones) — never floating over the Knowledge bar.
+    const root = document.getElementById("context-stack") ?? uiRoot();
     const banner = el("div", "tutorial-step-banner");
     banner.id = "tutorial-banner";
 

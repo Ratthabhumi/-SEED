@@ -23,7 +23,8 @@ import type { WeaponFamily } from "../../core/combat/weapons";
 import { CRITICAL_SPINE } from "../../core/tech/graph";
 import { AGE_DEFS, ageGates } from "../../core/progression/ages";
 import { ORIGIN_SQUAD_NAME, ORIGIN_ABILITY, squadCap } from "../../core/combat/squad";
-import { militaryBonusSlots, activeTerritories, type OutpostSpec } from "../../core/world/territory";
+import { militaryBonusSlots, territoryKnowledgeBonus, activeTerritories, TIER2_HOLD_SEC, type OutpostSpec } from "../../core/world/territory";
+import { scaleKnowledge } from "../../core/sim/progression";
 import { threatBudget } from "../../core/director/director";
 import { getWeaponStage } from "../../core/combat/weapons";
 import { t, setLang, getLang } from "../../i18n/i18n";
@@ -31,6 +32,7 @@ import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
 import { uiRoot, clearUI, el, button, toast, applyUiScale } from "../ui";
+import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
@@ -74,8 +76,8 @@ export class GameScene extends Phaser.Scene {
   // stepping until decided; timed beats (breakthrough/age) pause briefly.
   private blockingModal: HTMLElement | null = null;
   private modalT = 0;
-  /** FIFO builders for modals requested while another is visible (P1-02). */
-  private modalQueue: Array<() => void> = [];
+  /** UI surface policy: exactly-one BLOCKING (FIFO), suspendable CONTEXT. */
+  private surfaces = new SurfaceCoordinator();
   // Presentation state (never canonical): facing, hurt flash, contrast, hints.
   private playerFacing = -Math.PI / 2;
   private lastHurtT = -10;
@@ -95,6 +97,8 @@ export class GameScene extends Phaser.Scene {
   private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
   private floatText: Phaser.GameObjects.Text[] = [];
   private onboard: { done: Set<string>; active: string; until: number } = { done: new Set(), active: "", until: 0 };
+  /** Transient NEW markers for the last reroll (presentation-only). */
+  private rerollNewIds = new Set<string>();
   private tutorial: TutorialDirector | null = null;
 
   // QA harness (read-only observer, ?qa=1 only — null in normal play).
@@ -183,8 +187,9 @@ export class GameScene extends Phaser.Scene {
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw });
-    this.modalQueue = [];
-    this.closeBlocking();
+    this.surfaces.reset();
+    this.blockingModal = null;
+    this.modalT = 0;
     this.acc = new FixedAccumulator();
     this.latch = new InputLatch();
     this.paused = false;
@@ -245,6 +250,11 @@ export class GameScene extends Phaser.Scene {
         this.qa?.toggleInspector();
       });
       on("keydown-ESC", () => {
+        // Nested confirm dialogs dismiss before anything else toggles.
+        if (document.getElementById("tutorial-replay-confirm")) {
+          document.getElementById("tutorial-replay-confirm")?.remove();
+          return;
+        }
         if (this.techMapOpen) {
           this.toggleTechMap();
           return;
@@ -715,9 +725,6 @@ export class GameScene extends Phaser.Scene {
     const ascendWrap = el("div", "hud-ascend");
     topRight.appendChild(ascendWrap);
     hud.appendChild(topRight);
-    // Territory / claim action bar (inside the bottom-left dock).
-    const terrBar = el("div", "territory-bar");
-    dock.appendChild(terrBar);
     // Tech map button (T also works).
     const techBtn = document.createElement("button");
     techBtn.id = "techmap-btn";
@@ -732,6 +739,22 @@ export class GameScene extends Phaser.Scene {
     techBtn.appendChild(tText);
     techBtn.addEventListener("click", () => this.toggleTechMap());
     dock.appendChild(techBtn);
+    // Civilization map button (M also works): disclosed only once territory
+    // management is relevant (first outpost claimed).
+    const civBtn = document.createElement("button");
+    civBtn.id = "civmap-btn";
+    civBtn.className = "btn prompt-badge";
+    civBtn.style.display = "none";
+    const mIcon = document.createElement("img");
+    mIcon.src = SEED_ASSETS.prompts.m;
+    mIcon.className = "prompt-key-icon";
+    mIcon.alt = "M";
+    civBtn.appendChild(mIcon);
+    const mText = document.createElement("span");
+    mText.textContent = ` ${t("ui.civilizationMap")} [M]`;
+    civBtn.appendChild(mText);
+    civBtn.addEventListener("click", () => this.toggleCivMap());
+    dock.appendChild(civBtn);
     hud.appendChild(dock);
     // Tactical minimap (bottom-right zone).
     const mmZone = el("div", "hud-bottom-right");
@@ -750,13 +773,23 @@ export class GameScene extends Phaser.Scene {
     bossBar.appendChild(bossLabel);
     hud.appendChild(bossBar);
     root.appendChild(hud);
+    // Context stack (v0.23.1): ONE stacked container for contextual surfaces
+    // (claim prompt, coachmark banner, interaction hints) in the left-center
+    // lane — clear of the Knowledge bar, command dock, minimap, and Next Age
+    // card. Bottom-left dock holds player commands ONLY.
+    const stack = el("div", "");
+    stack.id = "context-stack";
+    const terrBar = el("div", "territory-bar");
+    stack.appendChild(terrBar);
     const hint = el("div", "onboard-hint");
     hint.style.display = "none";
-    root.appendChild(hint);
+    stack.appendChild(hint);
+    root.appendChild(stack);
+    this.surfaces.bindContext(stack, () => this.updateTerritoryBar());
     this.hud = {
       stats, age, compass, status, hpLine, hpFill, identLine, squadLine,
       know, knowNums, knowFill, ageCard, goals, ascendWrap, terrBar, techBtn,
-      minimap: mm, bossBar, bossFill, hint,
+      civBtn, minimap: mm, bossBar, bossFill, hint,
     };
     this.refreshHUD();
   }
@@ -797,6 +830,9 @@ export class GameScene extends Phaser.Scene {
 
     const modeBadge = document.createElement("span");
     modeBadge.className = "prompt-badge";
+    // Progressive disclosure: squad command keys (Q/E/R) appear only once
+    // squad orders are actually relevant (first outpost claimed).
+    if (s.territories.length === 0) modeBadge.style.display = "none";
     const modeIcon = document.createElement("img");
     modeIcon.className = "prompt-key-icon";
     const modeKey = s.squadMode === "focus" ? "e" : s.squadMode === "hold" ? "r" : "q";
@@ -819,6 +855,9 @@ export class GameScene extends Phaser.Scene {
     abilSpan.textContent = ` ${abilTxt}`;
     abilBadge.appendChild(abilSpan);
     squadLine.appendChild(abilBadge);
+    // Civilization Map button: disclosed once territory management matters.
+    const civBtn = this.hud.civBtn as HTMLElement | undefined;
+    if (civBtn) civBtn.style.display = s.territories.length > 0 ? "" : "none";
     // Knowledge card: progress toward the next age's threshold.
     const next = s.ageIndex + 1;
     const nextNeed = next < AGES.length ? (AGE_DEFS[next]?.knowledgeThreshold ?? 1) : 1;
@@ -1004,45 +1043,57 @@ export class GameScene extends Phaser.Scene {
     this.handleEvents(this.sim.tryAbility());
   }
 
-  /** Territory action bar: CLAIM buttons + spec/upgrade for owned posts. */
+  /**
+   * Contextual territory prompt (ONE action at a time, in #context-stack):
+   * specialize the undecided claim, claim the nearest clear site, or upgrade
+   * the eligible post. Never a permanent button wall in the command dock.
+   */
   private updateTerritoryBar(): void {
     const bar = this.hud.terrBar;
     if (!bar) return;
     const s = this.sim.state;
     bar.innerHTML = "";
-    for (const terr of s.territories) {
-      if (terr.spec !== "" || terr.disabled) continue;
+    const purpose = (key: "ui.specPurpose" | "ui.claimPurpose"): void => {
+      const p = document.createElement("div");
+      p.className = "context-purpose";
+      p.textContent = t(key);
+      bar.appendChild(p);
+    };
+    const unspecced = s.territories.find((x) => x.spec === "" && !x.disabled);
+    if (unspecced) {
       const b = document.createElement("button");
       b.className = "btn terr-spec-btn";
-      b.textContent = `${t("ui.outpostSpec")} (${t(`poi.${terr.poiType}.name` as EnKeys)})`;
-      b.addEventListener("click", () => this.showSpecPicker(terr.poiId));
+      b.textContent = `${t("ui.outpostSpec")} (${t(`poi.${unspecced.poiType}.name` as EnKeys)})`;
+      b.addEventListener("click", () => this.showSpecPicker(unspecced.poiId));
       bar.appendChild(b);
+      purpose("ui.specPurpose");
+      return;
     }
-    for (const terr of s.territories) {
-      if (terr.disabled || terr.spec === "" || terr.tier !== 1) continue;
-      const ready = s.elapsed - terr.heldSince >= 90;
-      const b = document.createElement("button");
-      b.className = "btn terr-up-btn";
-      b.disabled = !ready;
-      b.textContent = ready
-        ? `${t("ui.upgrade")} (${t(`poi.${terr.poiType}.name` as EnKeys)})`
-        : t("ui.upgradeNeedHold");
-      if (ready) b.addEventListener("click", () => this.handleEvents(this.sim.upgradeOutpost(terr.poiId)));
-      bar.appendChild(b);
-    }
-    for (const c of this.sim.claimablePOIs()) {
+    const c = this.sim.claimablePOIs().find((x) => x.clear);
+    if (c) {
       // No claim button while hostiles remain: the objective line + C key
       // carry the clear state instead (§9).
-      if (!c.clear) continue;
       const b = document.createElement("button");
       b.className = "btn terr-claim-btn";
-      b.textContent = `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)}`;
+      b.textContent = `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)} [C]`;
       b.addEventListener("click", () => {
         const ev = this.sim.claimTerritory(c.poiId);
         this.handleEvents(ev);
         const terr = s.territories.find((x) => x.poiId === c.poiId);
         if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
       });
+      bar.appendChild(b);
+      purpose("ui.claimPurpose");
+      return;
+    }
+    const up = s.territories.find(
+      (x) => !x.disabled && x.spec !== "" && x.tier === 1 && s.elapsed - x.heldSince >= TIER2_HOLD_SEC,
+    );
+    if (up) {
+      const b = document.createElement("button");
+      b.className = "btn terr-up-btn";
+      b.textContent = `${t("ui.upgrade")} (${t(`poi.${up.poiType}.name` as EnKeys)})`;
+      b.addEventListener("click", () => this.handleEvents(this.sim.upgradeOutpost(up.poiId)));
       bar.appendChild(b);
     }
   }
@@ -1187,10 +1238,12 @@ export class GameScene extends Phaser.Scene {
       this.techMapView = null;
       document.getElementById("techmap-screen")?.remove();
       this.techMapOpen = false;
+      this.surfaces.resumeContext();
       return;
     }
     if (s.draftOpen || this.blockingModal) return;
     this.techMapOpen = true;
+    this.surfaces.suspendContext();
     this.techMapSel = "";
     this.qa?.noteSimEvent("techmap_open", "open");
     this.tutorial?.onTechMapOpened();
@@ -1227,10 +1280,12 @@ export class GameScene extends Phaser.Scene {
     if (this.civMapOpen) {
       document.getElementById("civmap-screen")?.remove();
       this.civMapOpen = false;
+      this.surfaces.resumeContext();
       return;
     }
     if (s.draftOpen || this.blockingModal) return;
     this.civMapOpen = true;
+    this.surfaces.suspendContext();
     this.qa?.noteSimEvent("civmap_open", "open");
     this.tutorial?.onCivMapOpened();
     const root = uiRoot();
@@ -1539,8 +1594,15 @@ export class GameScene extends Phaser.Scene {
   private syncDraftUI(): void {
     const open = this.sim.state.draftOpen && !this.sim.state.over && !this.paused;
     const el = document.getElementById("draft-screen");
-    if (open && !el) this.openDraft();
-    else if (!open && el) el.remove();
+    if (open && !el) {
+      this.openDraft();
+      // Suspend AFTER open: drafts preempt map overlays (whose close path
+      // resumes context), so the draft must win the final suspended state.
+      this.surfaces.suspendContext();
+    } else if (!open && el) {
+      el.remove();
+      this.surfaces.resumeContext();
+    }
   }
 
   private openDraft(): void {
@@ -1591,6 +1653,13 @@ export class GameScene extends Phaser.Scene {
       c.appendChild(dom);
       if (syn.textContent !== "") c.appendChild(syn);
       c.appendChild(r);
+      // Reroll-changed marker: icon-adjacent text, never color-only.
+      if (this.rerollNewIds.has(n.id)) {
+        const badge = document.createElement("div");
+        badge.className = "card-new";
+        badge.textContent = `✦ ${t("draft.newBadge")}`;
+        c.appendChild(badge);
+      }
       c.addEventListener("click", () => this.pickCard(i));
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
@@ -1614,7 +1683,11 @@ export class GameScene extends Phaser.Scene {
     reroll.disabled = s.rerolls <= 0;
     reroll.textContent = `${t("ui.reroll")} (${s.rerolls})`;
     reroll.addEventListener("click", () => {
+      // Capture visible ids first: NEW markers are computed presentation-side
+      // from the before/after difference (never canonical state).
+      const prev = new Set(s.draftChoices.map((n) => n.id));
       this.handleEvents(this.sim.rerollDraft());
+      this.rerollNewIds = new Set(s.draftChoices.map((n) => n.id).filter((id) => !prev.has(id)));
       // Choices changed: drop the stale surface so syncDraftUI rebuilds.
       document.getElementById("draft-screen")?.remove();
     });
@@ -1628,6 +1701,25 @@ export class GameScene extends Phaser.Scene {
     agency.appendChild(reroll);
     agency.appendChild(skip);
     screen.appendChild(agency);
+    // Agency meaning, always visible (icon + text + one line, no hover-only).
+    const hints = el("div", "draft-hints");
+    const skipGain = Math.floor(scaleKnowledge(
+      10 + s.level * 2,
+      s.build.knowledgeMul * (1 + territoryKnowledgeBonus(activeTerritories(s.territories))),
+    ));
+    const hintLines: Array<[string, string]> = [
+      ["◈", `${t("ui.reserve")}: ${t("draft.reserveHint")}`],
+      ["⟳", `${t("ui.reroll")} (${s.rerolls}): ${t("draft.rerollHint")}`],
+      ["▷", `${t("ui.skip")}: ${t("draft.skipHint")} (+${skipGain} ${t("ui.knowledge")})`],
+    ];
+    for (const [mark, line] of hintLines) {
+      const h = document.createElement("div");
+      h.className = "draft-hint";
+      h.textContent = `${mark} ${line}`;
+      hints.appendChild(h);
+    }
+    screen.appendChild(hints);
+    this.rerollNewIds.clear();
     const stays = el("div", "draft-stays", "ui.ownedStays");
     screen.appendChild(stays);
     root.appendChild(screen);
@@ -1646,19 +1738,33 @@ export class GameScene extends Phaser.Scene {
   private togglePause(): void {
     this.paused = !this.paused;
     if (this.paused) this.showPause();
-    else document.getElementById("pause-screen")?.remove();
+    else {
+      document.getElementById("pause-screen")?.remove();
+      this.surfaces.resumeContext();
+    }
   }
 
   private showPause(): void {
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "pause-screen";
-    const panel = el("div", "panel panel-md");
+    const panel = el("div", "panel panel-md pause-panel");
     panel.appendChild(el("h2", "", "ui.pause"));
 
-    const save = loadSave(localStorage);
+    const section = (titleKey: EnKeys, cls = "pause-sec"): HTMLElement => {
+      const sec = el("div", cls);
+      sec.appendChild(el("h3", "", titleKey));
+      panel.appendChild(sec);
+      return sec;
+    };
 
-    // UI Scale selector
+    // PRIMARY — the only way back into the run.
+    const primary = section("ui.pausePrimary");
+    primary.appendChild(button("ui.resume", () => this.togglePause(), "btn primary"));
+
+    // DISPLAY — look and language, no gameplay effect.
+    const display = section("ui.pauseDisplay");
+    const save = loadSave(localStorage);
     const scaleRow = el("div", "settings-row");
     scaleRow.appendChild(el("span", "", "ui.uiScale"));
     const scales = el("div", "lang-row");
@@ -1682,7 +1788,7 @@ export class GameScene extends Phaser.Scene {
       scales.appendChild(b);
     }
     scaleRow.appendChild(scales);
-    panel.appendChild(scaleRow);
+    display.appendChild(scaleRow);
 
     // Language switch mid-run: rebuilds UI only, simulation untouched.
     const langRow = el("div", "settings-row");
@@ -1696,26 +1802,74 @@ export class GameScene extends Phaser.Scene {
       langs.appendChild(b);
     }
     langRow.appendChild(langs);
-    panel.appendChild(langRow);
+    display.appendChild(langRow);
 
-    const col = el("div", "btn-row");
-    col.appendChild(button("ui.resume", () => this.togglePause(), "btn primary"));
-    col.appendChild(button("ui.guide", () => this.showGuide()));
-    col.appendChild(button("ui.resetTutorial", () => {
-      this.tutorial?.reset();
-      toast("ui.tutorialResetDone");
-    }));
-    col.appendChild(button("ui.restart", () => this.restartRun()));
-    col.appendChild(button("ui.quitToTitle", () => this.scene.start("title")));
-    col.appendChild(button("ui.resetSave", () => {
+    // HELP — safe reference first, destructive replay behind confirmation.
+    const help = section("ui.pauseHelp");
+    help.appendChild(button("ui.guide", () => this.showGuide()));
+    help.appendChild(button("ui.resetTutorial", () => this.showReplayConfirm(screen)));
+
+    // RUN — run-scoped navigation, away from both Resume and Danger.
+    const run = section("ui.pauseRun");
+    run.appendChild(button("ui.restart", () => this.restartRun()));
+    run.appendChild(button("ui.quitToTitle", () => this.scene.start("title")));
+
+    // DANGER ZONE — visually separated; never beside Resume.
+    const danger = section("ui.pauseDanger", "pause-sec danger-zone");
+    danger.appendChild(button("ui.resetSave", () => {
       if (confirm(t("ui.confirmReset"))) {
         localStorage.removeItem("seed-game-save-v1");
         this.restartRun();
       }
     }, "btn danger"));
-    panel.appendChild(col);
     screen.appendChild(panel);
     root.appendChild(screen);
+    this.surfaces.suspendContext();
+  }
+
+  /**
+   * Replay-tutorial confirmation (nested inside the pause screen — one
+   * logical blocking surface, never a second simultaneous modal).
+   * Cancel: zero canonical run mutation. Confirm: same-seed fresh run with
+   * the tutorial starting immediately; language/settings/UI scale preserved.
+   */
+  private showReplayConfirm(pauseScreen: HTMLElement): void {
+    if (document.getElementById("tutorial-replay-confirm")) return;
+    const d = el("div", "confirm-nested");
+    d.id = "tutorial-replay-confirm";
+    d.appendChild(el("h3", "", "tutorial.replay.title"));
+    const p = document.createElement("p");
+    p.textContent = t("tutorial.replay.body");
+    d.appendChild(p);
+    const row = el("div", "btn-row");
+    const cancel = document.createElement("button");
+    cancel.className = "btn";
+    cancel.textContent = t("ui.cancel");
+    cancel.addEventListener("click", () => d.remove());
+    const go = document.createElement("button");
+    go.className = "btn primary";
+    go.textContent = t("tutorial.replay.confirm");
+    go.addEventListener("click", () => {
+      d.remove();
+      this.confirmReplayTutorial();
+    });
+    row.appendChild(cancel);
+    row.appendChild(go);
+    d.appendChild(row);
+    pauseScreen.appendChild(d);
+  }
+
+  private confirmReplayTutorial(): void {
+    const save = loadSave(localStorage);
+    save.settings.tutorialCompleted = false;
+    storeSave(localStorage, save);
+    this.tutorial?.resetTutorial();
+    document.getElementById("pause-screen")?.remove();
+    this.paused = false;
+    // restartRun resets surfaces and builds a fresh run on the SAME master
+    // seed; the new TutorialDirector reads tutorialCompleted=false and the
+    // intro begins immediately. Settings are never cleared here.
+    this.restartRun();
   }
 
   private showGuide(): void {
@@ -1751,8 +1905,9 @@ export class GameScene extends Phaser.Scene {
     // fresh random seed; Quit returns to title.) Origin choice is preserved.
     this.techMapView?.destroy();
     this.techMapView = null;
-    this.modalQueue = [];
-    this.closeBlocking();
+    this.surfaces.reset();
+    this.blockingModal = null;
+    this.modalT = 0;
     this.techMapOpen = false;
     this.civMapOpen = false;
     document.getElementById("pause-screen")?.remove();
@@ -1888,15 +2043,11 @@ export class GameScene extends Phaser.Scene {
 
   /**
    * Blocking modal shell (choice or timed beat). Pauses stepping while up.
-   * P1-02: a request arriving while another modal is visible is QUEUED as a
-   * build thunk and shown on drain — surfaces never overlap, never overwrite.
+   * Exactly-one invariant + FIFO drain live in the SurfaceCoordinator;
+   * context surfaces suspend while any BLOCKING is up and re-evaluate after.
    */
   private showBlocking(id: string, dur = 0, build?: (screen: HTMLElement) => void): void {
-    if (this.blockingModal) {
-      this.modalQueue.push(() => this.showBlockingFresh(id, dur, build));
-      return;
-    }
-    this.showBlockingFresh(id, dur, build);
+    this.surfaces.requestBlocking(id, () => this.showBlockingFresh(id, dur, build));
   }
 
   private showBlockingFresh(id: string, dur: number, build?: (screen: HTMLElement) => void): void {
@@ -1917,13 +2068,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   private closeBlocking(): void {
+    const id = this.blockingModal?.id;
     this.blockingModal?.remove();
     this.blockingModal = null;
     this.modalT = 0;
-    // Drain exactly one queued modal (FIFO). showBlockingFresh never drains,
-    // so no cascade: at most one new surface per close.
-    const next = this.modalQueue.shift();
-    if (next) next();
+    // Drain exactly one queued modal (FIFO) via the coordinator; context
+    // resumes only when nothing blocking remains. showBlockingFresh never
+    // drains, so no cascade: at most one new surface per close.
+    if (id) this.surfaces.releaseBlocking(id);
+    else this.surfaces.resumeContext();
   }
 
   /** Short reward beat: breakthrough title + effects, distinct sting. */

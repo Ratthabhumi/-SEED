@@ -31,7 +31,7 @@ test("restart preserves the master seed", async ({ page }) => {
   await page.waitForTimeout(600);
   await page.keyboard.up("d");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Restart" }).click();
+  await page.getByRole("button", { name: "Restart Current Run" }).click();
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
   await expect(page.locator(".hud-seed")).toContainText("EPOCH-RESTART-01");
   expect(errors).toEqual([]);
