@@ -5,9 +5,14 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const V22_SUMMARY = join(ROOT, "docs", "playtests", "latest-v022-human-revalidation.md");
-const V20_SUMMARY = join(ROOT, "docs", "playtests", "latest-v020-engagement.md");
-const SUMMARY = existsSync(V22_SUMMARY) ? V22_SUMMARY : V20_SUMMARY;
+// Current pipeline output first; older summaries kept as back-compat fallback.
+const CANDIDATES = [
+  "latest-v023-frontier-human.md",
+  "latest-v0221-human-revalidation.md",
+  "latest-v022-human-revalidation.md",
+  "latest-v020-engagement.md",
+].map((f) => join(ROOT, "docs", "playtests", f));
+const SUMMARY = CANDIDATES.find((p) => existsSync(p));
 const HANDOFF = join(ROOT, "SESSION_HANDOFF.md");
 
 export const START_MARK = "<!-- QA-ENGAGEMENT-START -->";
@@ -25,8 +30,8 @@ export function applyHandoffSection(handoffText, summaryText) {
 }
 
 function main() {
-  if (!existsSync(SUMMARY)) {
-    console.error(`No sanitized summary: ${SUMMARY} — run npm run qa:report first.`);
+  if (!SUMMARY || !existsSync(SUMMARY)) {
+    console.error(`No sanitized summary found — run npm run qa:report first.`);
     process.exit(1);
   }
   const handoff = readFileSync(HANDOFF, "utf8");
