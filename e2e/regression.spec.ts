@@ -152,14 +152,61 @@ test("industrial payoff precedes expansion choice, one modal at a time", async (
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await startRun(page, "EPOCH-EXPAND-01");
-  await page.evaluate(() => window.__seedE2E?.readyExpansion());
-  // Age payoff surfaces first; expansion must not overlap it.
-  await expect(page.locator("#age-screen")).toBeVisible({ timeout: 10000 });
-  expect(await page.locator("#expansion-screen").count()).toBe(0);
-  // Dismiss the payoff (Continue) if still up — it also auto-dismisses.
+  // Pause FIRST so the staged transition cannot fire before we read the HUD:
+  // an open blocking modal (e.g. expansion choice) swallows Escape.
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#pause-screen")).toBeVisible();
+  // Staging must satisfy the CURRENT canonical gates (Phase A A1) — assert
+  // the self-diagnostics before expecting any age screen.
+  const diag = (await page.evaluate(() => window.__seedE2E?.readyExpansion())) as {
+    ready: boolean;
+    gates: Array<{ id: string; have: number; need: number; done: boolean }>;
+    activeOutposts: number;
+    specialized: number;
+    breakthroughs: number;
+  };
+  expect(diag.ready).toBe(true);
+  expect(diag.activeOutposts).toBeGreaterThanOrEqual(2);
+  expect(diag.specialized).toBeGreaterThanOrEqual(1);
+  expect(diag.breakthroughs).toBeGreaterThanOrEqual(1);
+  for (const g of diag.gates) expect(g.done).toBe(true);
+  // Dominion HUD truth: while paused, the age card renders the SAME canonical
+  // gates, all done (3 rows). Pause holds the sim so nothing can race this.
+  await expect(page.locator(".age-card .gate-row")).toHaveCount(3);
+  expect(await page.locator(".age-card .gate-row.done").count()).toBe(3);
+  // Arm the modal spy BEFORE resuming: MutationObserver callbacks run
+  // synchronously on DOM insertion, so no payoff can slip past polling.
+  await page.evaluate(() => {
+    const w = window as unknown as { __modalLog?: string[] };
+    w.__modalLog = [];
+    new MutationObserver((muts) => {
+      for (const m of muts) {
+        for (const n of m.addedNodes) {
+          if (n instanceof HTMLElement && (n.id === "age-screen" || n.id === "expansion-screen")) {
+            const other = n.id === "age-screen" ? "expansion-screen" : "age-screen";
+            const overlap = !!document.getElementById(other);
+            (w.__modalLog as string[]).push(`${n.id}:${overlap ? "OVERLAP" : "alone"}`);
+          }
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+  // Resume: the staged transition fires for real from here.
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#pause-screen")).toHaveCount(0);
+  // Race-free sequencing proof: a MutationObserver records every modal
+  // insertion synchronously, so even a sub-polling-lifetime age payoff is
+  // observed. Overlap at insertion time is recorded too — and forbidden.
+  await expect(page.locator("#expansion-screen")).toBeVisible({ timeout: 30000 });
+  const log = (await page.evaluate(
+    () => (window as unknown as { __modalLog?: string[] }).__modalLog ?? [],
+  )) as string[];
+  expect(log.length).toBeGreaterThan(0);
+  expect(log[0]).toMatch(/^age-screen:/);
+  expect(log.join("|")).not.toContain("OVERLAP");
+  // Dismiss whatever payoff/questions remain, then choose the expansion.
   const cont = page.locator("#age-screen").getByRole("button", { name: "Continue" });
   if ((await cont.count()) > 0) await cont.click({ timeout: 2000 }).catch(() => {});
-  // Expansion choice follows, then gameplay resumes with 3 active families.
   await expect(page.locator("#expansion-screen")).toBeVisible({ timeout: 10000 });
   expect(await page.locator("#age-screen").count()).toBe(0);
   expect(await page.locator("#expansion-screen .card").count()).toBe(2);

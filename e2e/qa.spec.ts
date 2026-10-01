@@ -48,6 +48,42 @@ test("qa mode: gate start, live panel, report export", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("qa mode: custom ?qa=1&seed=X records X truthfully (no golden hardcode)", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+
+  await prepareSave(page);
+  await page.goto("/?qa=1&seed=EPOCH-CUSTOM-42&e2e=1");
+  await expect(page.locator("#qa-gate")).toBeVisible();
+  await expect(page.locator("#qa-gate")).toContainText("EPOCH-CUSTOM-42");
+  await page.locator("#qa-start-playtest").click();
+  await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
+  await expect(page.locator(".hud-seed")).toContainText("EPOCH-CUSTOM-42");
+  // Canonical snapshot carries the session seed (not golden).
+  const snap = JSON.parse(
+    (await page.evaluate(() => (window as unknown as { __seedE2E?: { snapshot: () => string } }).__seedE2E?.snapshot() ?? "{}")) as string,
+  ) as { id: string[] };
+  expect(snap.id[0]).toBe("EPOCH-CUSTOM-42");
+
+  // Inspector hidden by default; F10 opens it (same as the golden-seed flow).
+  await page.keyboard.press("F10");
+  await expect(page.locator("#qa-panel")).toBeVisible();
+  await page.getByRole("button", { name: "Expand QA" }).click();
+  await page.getByRole("button", { name: "END PLAYTEST" }).click();
+  const dlBtn = page.getByRole("button", { name: "DOWNLOAD QA DATA (.json)" });
+  await expect(dlBtn).toBeVisible();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    dlBtn.click(),
+  ]);
+  const path = await download.path();
+  expect(path).toBeTruthy();
+  const data = JSON.parse(fs.readFileSync(path as string, "utf-8")) as { seed: string };
+  expect(data.seed).toBe("EPOCH-CUSTOM-42");
+
+  expect(errors).toEqual([]);
+});
+
 test("qa mode: human-selected origin reaches the simulation", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
