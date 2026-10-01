@@ -8,7 +8,10 @@ import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { InputLatch } from "../../core/sim/InputLatch";
 import { RunSimulation } from "../../core/sim/RunSimulation";
 import type { SimEvent } from "../../core/sim/SimEvent";
-import { MAX_ENEMIES, MAX_PROJ, MAX_PICKUP } from "../../core/sim/RunState";
+import { MAX_ENEMIES, MAX_PROJ, MAX_PICKUP, type SimEnemy } from "../../core/sim/RunState";
+import { CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS } from "../../core/world/territory";
+import { classifySite, frontierObjective, type FrontierObjective, type FrontierSite } from "../frontier/sites";
+import { dominionProgress } from "../../core/progression/ages";
 import { worldToChunk, CHUNK_SIZE, ACTIVE_RADIUS_CHUNKS } from "../../core/world/chunks";
 import { BIOME_STYLE, CIV_LAYER, ENEMY_LINEAGE } from "../../content/content";
 import type { AgeId } from "../../core/tech/graph";
@@ -78,6 +81,10 @@ export class GameScene extends Phaser.Scene {
   private lastHurtT = -10;
   private bossGfx: Phaser.GameObjects.Graphics | null = null;
   private navT = 0;
+  /** Frontier scan (1 Hz): open sites + single shared focus (§22). */
+  private frontierSites: FrontierSite[] = [];
+  private frontierFocus: FrontierObjective | null = null;
+  private siteScratch: SimEnemy[] = [];
   /** Transient impact presentation (never canonical): death rings + damage numbers. */
   private bursts: Array<{ x: number; y: number; t: number; max: number; big: boolean }> = [];
   private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
@@ -251,6 +258,7 @@ export class GameScene extends Phaser.Scene {
       on("keydown-E", () => this.issueSquad("focus"));
       on("keydown-R", () => this.issueSquad("hold"));
       on("keydown-F", () => this.useAbility());
+      on("keydown-C", () => this.claimNearestSite());
       on("keydown-T", () => this.toggleTechMap());
       on("keydown-M", () => this.toggleCivMap());
     }
@@ -492,17 +500,17 @@ export class GameScene extends Phaser.Scene {
       biome: this.qaBiome,
       objective: next < AGES.length
         ? (() => {
-          const gates = ageGates(next, s.ageElapsed, s.knowledgeTotal, this.missionStateOf(s));
+          const gates = ageGates(next, s.knowledgeTotal, this.missionStateOf(s), this.dominionStateOf(s));
           const kn = gates.find((g) => g.id === "knowledge");
-          const st = gates.find((g) => g.id === "stabilization");
+          const dm = gates.find((g) => g.id === "dominion");
           const mi = gates.find((g) => g.id === "mission");
           return {
             killsHave: mi?.have ?? 0,
             killsNeed: mi?.need ?? 0,
             knowHave: kn?.have ?? 0,
             knowNeed: kn?.need ?? 0,
-            elapsedHave: st?.have ?? 0,
-            elapsedNeed: st?.need ?? 0,
+            elapsedHave: dm?.have ?? 0,
+            elapsedNeed: dm?.need ?? 0,
           };
         })()
         : null,
@@ -777,7 +785,7 @@ export class GameScene extends Phaser.Scene {
       title.className = "age-card-title";
       title.textContent = `${t("ui.nextAge")}: ${t(`age.${AGES[next] as AgeId}` as EnKeys)}`;
       ageCard.appendChild(title);
-      const gates = ageGates(next, s.ageElapsed, s.knowledgeTotal, this.missionStateOf(s));
+      const gates = ageGates(next, s.knowledgeTotal, this.missionStateOf(s), this.dominionStateOf(s));
       for (const g of gates) {
         const row = document.createElement("div");
         row.className = "gate-row" + (g.done ? " done" : "");
@@ -803,14 +811,18 @@ export class GameScene extends Phaser.Scene {
           sub.textContent = `${mstep.done ? "✓" : "○"} ${t(mstep.labelKey)} ${mstep.have}/${mstep.need}`;
           ageCard.appendChild(sub);
         }
+        for (const dsub of g.sub) {
+          const sub = document.createElement("div");
+          sub.className = "gate-sub" + (dsub.done ? " done" : "");
+          sub.textContent = `${dsub.done ? "✓" : "○"} ${t(dsub.labelKey)} ${dsub.have}/${dsub.need}`;
+          ageCard.appendChild(sub);
+        }
       }
     } else {
       ageCard.textContent = `${t(`age.${ageId}` as EnKeys)} · ${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
     }
     // Mission one-liner under the top strip (QA structural class retained).
-    age.textContent = next < AGES.length
-      ? this.missionSummary(next)
-      : t(`age.${ageId}` as EnKeys);
+    age.textContent = this.frontierObjectiveText();
     // Persistent Ascension entry (STAY dismisses the offer screen; this stays).
     const wrap = this.hud.ascendWrap;
     if (wrap) {
@@ -844,6 +856,7 @@ export class GameScene extends Phaser.Scene {
     this.navT -= 0.15;
     if (this.navT <= 0) {
       this.navT = 1;
+      this.updateFrontier();
       this.updateCompass();
       this.updateTerritoryBar();
       this.drawMinimap();
@@ -861,22 +874,62 @@ export class GameScene extends Phaser.Scene {
       outpostsTier2: active.filter((x) => x.tier >= 2).length,
       raidsSurvived: s.raidsSurvived,
       signalSecured: s.signalSecured,
+      breakthroughs: s.breakthroughs.length,
     };
   }
 
-  /** One-line mission status for the top strip. */
-  private missionSummary(next: number): string {
+  /** Dominion control state (disabled outposts never count). */
+  private dominionStateOf(s: RunSimulation["state"]): import("../../core/progression/ages").DominionState {
+    const active = activeTerritories(s.territories);
+    return {
+      active: active.length,
+      specialized: active.filter((x) => x.spec !== "").length,
+      tier2: active.filter((x) => x.tier >= 2).length,
+      raidsSurvived: s.raidsSurvived,
+    };
+  }
+
+  /** ONE actionable macro objective, top-left (§11/20). */
+  private frontierObjectiveText(): string {
     const s = this.sim.state;
-    const def = AGE_DEFS[next];
-    if (!def || next === 0) return t(`age.${AGES[s.ageIndex] as AgeId}` as EnKeys);
-    const gates = ageGates(next, s.ageElapsed, s.knowledgeTotal, this.missionStateOf(s));
-    const mission = gates.find((g) => g.id === "mission");
-    const open = mission?.mission.find((m) => !m.done);
-    if (!open) {
-      const blocker = gates.find((g) => !g.done);
-      return blocker ? `${t(`age.${def.id}` as EnKeys)}: ${t(blocker.labelKey)} ${blocker.have}/${blocker.need}` : t(`age.${def.id}` as EnKeys);
+    const f = this.frontierFocus;
+    const arrowFor = (dx: number, dy: number): string => {
+      const arrows = ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"];
+      const idx = ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;
+      return arrows[idx] as string;
+    };
+    if (!f) return t(`age.${AGES[s.ageIndex] as AgeId}` as EnKeys);
+    const site = f.site;
+    const dist = site ? Math.hypot(site.x - s.px, site.y - s.py).toFixed(0) : "";
+    const arrow = site ? arrowFor(site.x - s.px, site.y - s.py) : "";
+    switch (f.kind) {
+      case "raid": {
+        const terr = s.territories.find((x) => x.poiId === site?.poiId);
+        const nm = terr ? t(`poi.${terr.poiType}.name` as EnKeys) : "";
+        const secs = s.raid ? Math.max(0, Math.ceil(s.raid.tMinus)) : 0;
+        return `${t("ui.raidIncoming")}: ${nm} ${secs}s ${arrow} ${dist}u`;
+      }
+      case "stronghold": {
+        const bossOn = s.bossIndex >= 0 && s.enemies[s.bossIndex]?.active === true;
+        return bossOn
+          ? `${t("ui.boss")} ${arrow} ${dist}u`
+          : `${t("objective.assaultStronghold")} ${arrow} ${dist}u`;
+      }
+      case "claim": {
+        const nm = site ? t(`poi.${site.poiType}.name` as EnKeys) : "";
+        return `${t("ui.establishOutpost")}: ${nm} ${arrow} ${dist}u`;
+      }
+      case "clear": {
+        const nm = site ? t(`poi.${site.poiType}.name` as EnKeys) : "";
+        return `${nm}: ${t("ui.claimNeedClear")} (${site?.foes ?? 0}) ${arrow} ${dist}u`;
+      }
+      case "dominion":
+        return `${t("gate.dominion")}: ${f.dominionHave ?? 0}/${f.dominionNeed ?? 0} ${arrow}`;
+      case "site": {
+        const nm = site ? t(`poi.${site.poiType}.name` as EnKeys) : "";
+        return `◈ ${nm} ${arrow} ${dist}u`;
+      }
     }
-    return `${t(open.labelKey)} ${open.have}/${open.need}`;
   }
 
   /** Human label for a pinned target (tech name or breakthrough title). */
@@ -931,22 +984,92 @@ export class GameScene extends Phaser.Scene {
       bar.appendChild(b);
     }
     for (const c of this.sim.claimablePOIs()) {
+      // No claim button while hostiles remain: the objective line + C key
+      // carry the clear state instead (§9).
+      if (!c.clear) continue;
       const b = document.createElement("button");
       b.className = "btn terr-claim-btn";
-      b.disabled = !c.clear;
-      b.textContent = c.clear
-        ? `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)}`
-        : t("ui.claimNeedClear");
-      if (c.clear) {
-        b.addEventListener("click", () => {
-          const ev = this.sim.claimTerritory(c.poiId);
-          this.handleEvents(ev);
-          const terr = s.territories.find((x) => x.poiId === c.poiId);
-          if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
-        });
-      }
+      b.textContent = `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)}`;
+      b.addEventListener("click", () => {
+        const ev = this.sim.claimTerritory(c.poiId);
+        this.handleEvents(ev);
+        const terr = s.territories.find((x) => x.poiId === c.poiId);
+        if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
+      });
       bar.appendChild(b);
     }
+  }
+
+  /**
+   * Frontier site scan (1 Hz, shared by objective/compass/minimap/civmap).
+   * Discovered, unclaimed POIs within 2000u with live foe counts + states.
+   */
+  private scanSites(): FrontierSite[] {
+    const s = this.sim.state;
+    const out: FrontierSite[] = [];
+    if (s.over) return out;
+    const claimed = new Set(s.territories.map((t) => t.poiId));
+    const { cx, cy } = worldToChunk(s.px, s.py);
+    for (let ox = -4; ox <= 4; ox++) {
+      for (let oy = -4; oy <= 4; oy++) {
+        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (!s.poisWorld.includes(poi.id) || claimed.has(poi.id)) continue;
+          const dist = Math.hypot(poi.wx - s.px, poi.wy - s.py);
+          if (dist > 2000) continue;
+          this.siteScratch.length = 0;
+          const foes = this.sim.queryRadius(poi.wx, poi.wy, CLAIM_CLEAR_RADIUS, this.siteScratch);
+          out.push({
+            poiId: poi.id,
+            poiType: poi.type,
+            x: poi.wx,
+            y: poi.wy,
+            dist,
+            foes: foes.length,
+            state: classifySite({
+              discovered: true, claimed: false, disabled: false, underAttack: false,
+              foes: foes.length, inReach: dist <= CLAIM_REACH_RADIUS,
+            }),
+          });
+        }
+      }
+    }
+    out.sort((a, b) => a.dist - b.dist);
+    return out;
+  }
+
+  /** Recompute the single shared frontier focus (§11/22). */
+  private updateFrontier(): void {
+    const s = this.sim.state;
+    this.frontierSites = this.scanSites();
+    let raid: { poiId: string; x: number; y: number; tMinus: number } | null = null;
+    if (s.raid) {
+      const terr = s.territories.find((x) => x.poiId === s.raid?.poiId);
+      if (terr) raid = { poiId: terr.poiId, x: terr.x, y: terr.y, tMinus: s.raid.tMinus };
+    }
+    const next = s.ageIndex + 1;
+    const req = next < AGES.length ? AGE_DEFS[next]?.dominion : undefined;
+    const ds = this.dominionStateOf(s);
+    this.frontierFocus = frontierObjective({
+      raid,
+      stronghold: s.stronghold,
+      bossActive: s.bossIndex >= 0 && (s.enemies[s.bossIndex]?.active === true),
+      openSites: this.frontierSites,
+      dominionHave: ds.active,
+      dominionNeed: req?.outposts ?? 0,
+    });
+  }
+
+  /** [C] claims the nearest valid, clear, in-reach, unclaimed site. */
+  private claimNearestSite(): void {
+    const s = this.sim.state;
+    if (s.over || this.techMapOpen || this.civMapOpen || this.blockingModal) return;
+    const c = this.sim.claimablePOIs().find((x) => x.clear);
+    if (!c) return;
+    this.handleEvents(this.sim.claimTerritory(c.poiId));
+    const terr = s.territories.find((x) => x.poiId === c.poiId);
+    if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
+    this.qa?.noteSimEvent("claim_key", c.poiId);
   }
 
   /** Binding outpost-specialization picker (pauses stepping until decided). */
@@ -1107,6 +1230,20 @@ export class GameScene extends Phaser.Scene {
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
     if (boss?.active) dot(boss.x, boss.y, "#ff2222", 5);
     dot(s.px, s.py, "#ffffff", 4);
+    // Shared focus identity on the civ map: stronghold ring + site.
+    if (s.stronghold?.revealed) {
+      const dx = (s.stronghold.x - s.px) / 512;
+      const dy = (s.stronghold.y - s.py) / 512;
+      if (Math.abs(dx) <= RANGE && Math.abs(dy) <= RANGE) {
+        ctx.strokeStyle = "#ff8800";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(W / 2 + dx * cellX, H / 2 + dy * cellY, 8, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+    const cf = this.frontierFocus?.site;
+    if (cf && cf.poiId !== "stronghold") dot(cf.x, cf.y, "#ffffff", 3);
   }
   private drawMinimap(): void {
     const cv = this.hud.minimap as HTMLCanvasElement | undefined;
@@ -1158,6 +1295,20 @@ export class GameScene extends Phaser.Scene {
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
     if (boss?.active) dot(boss.x, boss.y, "#ff2222", 4);
     dot(s.px, s.py, "#ffffff", 3);
+    // Shared focus identity on the minimap: stronghold + current site.
+    if (s.stronghold?.revealed) {
+      const dx = (s.stronghold.x - s.px) / 512;
+      const dy = (s.stronghold.y - s.py) / 512;
+      if (Math.abs(dx) <= RANGE && Math.abs(dy) <= RANGE) {
+        ctx.strokeStyle = "#ff8800";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(W / 2 + dx * cell, H / 2 + dy * cell, 7, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+    const cf = this.frontierFocus?.site;
+    if (cf && cf.poiId !== "stronghold") dot(cf.x, cf.y, "#ffffff", 2);
   }
 
   private refreshBossBar(): void {
@@ -1174,7 +1325,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Compass strip: boss takes priority, else nearest undiscovered POI. */
+  /** Compass strip: ONE shared focus identity (§22) — boss, raid, stronghold, site. */
   private updateCompass(): void {
     const c = this.hud.compass;
     if (!c) return;
@@ -1191,7 +1342,33 @@ export class GameScene extends Phaser.Scene {
       c.textContent = `${arrowFor(dx, dy)} ${t("ui.boss")} ${Math.hypot(dx, dy).toFixed(0)}u`;
       return;
     }
-    // Nearest undiscovered POI (presentation scan; throttled to 1 Hz).
+    // Raid target first (defend-or-lose pressure).
+    if (s.raid) {
+      const terr = s.territories.find((x) => x.poiId === s.raid?.poiId);
+      if (terr) {
+        const dx = terr.x - s.px;
+        const dy = terr.y - s.py;
+        c.textContent = `⚠ ${t(`poi.${terr.poiType}.name` as EnKeys)} ${Math.hypot(dx, dy).toFixed(0)}u ${arrowFor(dx, dy)}`;
+        return;
+      }
+    }
+    // Revealed stronghold outranks routine navigation.
+    if (s.stronghold?.revealed) {
+      const dx = s.stronghold.x - s.px;
+      const dy = s.stronghold.y - s.py;
+      c.textContent = `👑 ${t("ui.stronghold")} ${Math.hypot(dx, dy).toFixed(0)}u ${arrowFor(dx, dy)}`;
+      return;
+    }
+    // Frontier focus site (claim/clear/navigate share one identity).
+    const f = this.frontierFocus?.site;
+    if (f && this.frontierFocus && this.frontierFocus.kind !== "dominion") {
+      const dx = f.x - s.px;
+      const dy = f.y - s.py;
+      const nm = f.poiId === "stronghold" ? t("ui.stronghold") : t(`poi.${f.poiType}.name` as EnKeys);
+      c.textContent = `◈ ${nm} ${Math.hypot(dx, dy).toFixed(0)}u ${arrowFor(dx, dy)}`;
+      return;
+    }
+    // Fallback: nearest undiscovered POI (presentation scan; throttled to 1 Hz).
     const { cx, cy } = worldToChunk(s.px, s.py);
     const cands: Array<{ x: number; y: number; label: string }> = [];
     for (let ox = -2; ox <= 2; ox++) {
@@ -1929,6 +2106,10 @@ export class GameScene extends Phaser.Scene {
           sfx.boss();
           toast("ui.bossWarning");
           if (save.settings.shake) this.cameras.main.shake(400, 0.01);
+          break;
+        case "stronghold_revealed":
+          sfx.boss();
+          toast("ui.stronghold");
           break;
         case "boss_killed":
           sfx.ascend();
