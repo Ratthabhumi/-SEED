@@ -1,17 +1,7 @@
 // Tech Map E2E: Dagre layout, Panzoom interaction, Fit/Reset controls,
 // pinned route highlight, node click after pan, and clean close without leaks.
 import { test, expect, type Page } from "@playwright/test";
-
-async function startRun(page: Page, seed: string): Promise<void> {
-  await page.goto("/?e2e");
-  await page.evaluate(() => {
-    localStorage.clear();
-  });
-  await page.goto("/?e2e");
-  await page.locator("#seed-input").fill(seed);
-  await page.getByRole("button", { name: /Begin New Run|เริ่มเกม/i }).click();
-  await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
-}
+import { startRun, resolveDrafts } from "./helpers";
 
 test.describe("Tech Map — Dagre & Panzoom Integration", () => {
   test("opens via keyboard [T] and renders 6 age lanes and all canonical nodes", async ({ page }) => {
@@ -130,6 +120,8 @@ test.describe("Tech Map — Dagre & Panzoom Integration", () => {
     await startRun(page, "EPOCH-TECH-005");
 
     for (let i = 0; i < 3; i++) {
+      // Start from a normal playable state: no tutorial, no blocking draft.
+      await resolveDrafts(page);
       await page.locator("#techmap-btn").click();
       await expect(page.locator("#techmap-screen")).toHaveCount(1);
       await page.locator(".techmap-btn-close").click();

@@ -501,8 +501,12 @@ export class VisualLabScene extends Phaser.Scene {
     if (!this.labSim) {
       this.labSim = new RunSimulation({ masterSeed: "EPOCH-LAB-001" });
     }
+    const labSim = this.labSim;
     this.labTechMap = new TechMapView({
-      sim: this.labSim,
+      sim: labSim,
+      onPin: (id) => {
+        labSim.pinTarget(id);
+      },
       onClose: () => this.toggleLabTechMap(),
     });
     this.labTechMap.mount(document.body);

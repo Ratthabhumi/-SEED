@@ -1,11 +1,13 @@
 // Browser smoke: title → run → move → pause → EN/TH → F3 → title.
 // Production build served via `vite preview` (see playwright.config.ts).
 import { test, expect } from "@playwright/test";
+import { prepareSave } from "./helpers";
 
 test("v0.1.1 smoke: launch, run, pause, language switch, back to title", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
 
+  await prepareSave(page);
   await page.goto("/");
   await expect(page.locator(".logo")).toContainText("-SEED");
 

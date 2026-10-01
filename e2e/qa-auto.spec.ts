@@ -3,6 +3,7 @@
 // The sink itself is unit-tested at Node level; here the browser POST is
 // captured via route interception (preview has no sink — same as production).
 import { test, expect } from "@playwright/test";
+import { prepareSave, resolveDrafts } from "./helpers";
 
 interface CapturedPost {
   kind: string;
@@ -25,6 +26,7 @@ test("qa auto-finalize posts target-complete and shows completion", async ({ pag
     await route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
   });
 
+  await prepareSave(page);
   await page.goto("/?qa=1&e2e=1");
   await expect(page.locator("#qa-gate")).toBeVisible();
   await page.locator("#qa-origin-resonant").click();
@@ -33,6 +35,8 @@ test("qa auto-finalize posts target-complete and shows completion", async ({ pag
 
   // Bypass the boss fight; the ascend + legacy + origin path stays real.
   await page.evaluate(() => (window as unknown as { __seedE2E?: { readyAscend: () => void } }).__seedE2E?.readyAscend());
+  // Resolve any legitimate blocking draft first (real modal sequencing).
+  await resolveDrafts(page);
   await page.getByRole("button", { name: "ASCEND to the Next World" }).click();
   await expect(page.locator("#legacy-screen")).toBeVisible();
   await page.locator("#legacy-screen .card").first().click();

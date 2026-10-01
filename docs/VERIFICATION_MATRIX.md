@@ -5,7 +5,6 @@ This document establishes the official verification tiers for the -SEED project 
 ---
 
 ## 1. Verification Tiers
-
 To avoid wasteful re-runs of the entire 3-minute Playwright suite on trivial or localized changes during rapid iterative development, development verification is partitioned into four clear tiers based on blast radius:
 
 | Tier | Category | Examples | Required Local Verification |
@@ -38,3 +37,30 @@ Regardless of development tier, before declaring any milestone complete, merging
 3. **Human Release Gates**:
    - Automated testing is necessary but never sufficient.
    - Human validation must confirm subjective clarity, game feel, readability, and fun before milestone closure.
+
+## 3. Historical Evidence Policy
+
+Milestone visual-audit captures (`docs/visual_audit_v022/`,
+`docs/visual_audit_v022_r2/`, `docs/visual_audit_v0221/`) are **immutable
+historical evidence**. Routine CI must never rewrite them:
+
+- Capture specs were converted to **archival verification**: assert each
+  expected file exists, is non-empty, and has a PNG magic header — plus live
+  product invariants (controls exist, no raw localization keys, deliberate
+  product copy such as "Overview").
+- Live-behavior coverage that used to live inside capture specs (tech-map
+  fit/pin flow, outpost picker, onboarding flow, HUD states) moved into
+  behavior tests that write nothing into archive dirs. Throwaway screenshots,
+  if ever needed, go to gitignored `test-results/`.
+- New milestones create NEW archive dirs (e.g. `docs/visual_audit_v023/`);
+  old dirs are never extended in place.
+
+## 4. E2E Save-State Preconditions
+
+Tests NOT about onboarding boot with `tutorialCompleted: true` via the shared
+`e2e/helpers.ts` `startRun()` (deterministic seeded save through
+`addInitScript`, before GameScene boot). Onboarding tests pass
+`tutorialCompleted: false` explicitly. Modal-blocking suites resolve
+legitimate draft state with `resolveDrafts()` (real clicks, bounded loop).
+No `force: true` clicks anywhere: an intercepted click is a real sequencing
+defect until proven otherwise.

@@ -1,6 +1,7 @@
 // Round-3 regression E2E (?e2e hook): restart, queued drafts, death-once,
 // language invariance, ascension. Production build via vite preview.
 import { test, expect, type Page } from "@playwright/test";
+import { startRun as sharedStartRun, resolveDrafts } from "./helpers";
 
 declare global {
   interface Window {
@@ -18,10 +19,7 @@ declare global {
 }
 
 async function startRun(page: Page, seed: string): Promise<void> {
-  await page.goto("/?e2e");
-  await page.locator("#seed-input").fill(seed);
-  await page.getByRole("button", { name: "Begin New Run" }).click();
-  await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
+  await sharedStartRun(page, seed);
 }
 
 test("restart preserves the master seed", async ({ page }) => {
@@ -120,6 +118,8 @@ test("ascension smoke: child world, run stats retained, world reset", async ({ p
   expect(before.asc).toBe(0);
   // Boss-kill trigger bypassed by hook; ascend() executes the real path.
   await page.evaluate(() => window.__seedE2E?.readyAscend());
+  // Resolve any legitimate blocking draft first (real modal sequencing).
+  await resolveDrafts(page);
   await page.getByRole("button", { name: "ASCEND to the Next World" }).click();
   // Legacy prestige choice, then child-world origin choice.
   await expect(page.locator("#legacy-screen")).toBeVisible();

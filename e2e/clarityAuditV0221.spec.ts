@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
+import { prepareSave, resolveDrafts } from "./helpers";
 
 const AUDIT_DIR = path.resolve("docs/visual_audit_v0221");
 
@@ -24,17 +25,11 @@ interface CapturedPost {
 }
 
 async function startNewGame(page: import("@playwright/test").Page, skipTutorial = true) {
+  await prepareSave(page, { tutorialCompleted: skipTutorial });
   await page.goto("/?e2e=1");
   const startBtn = page.locator("#start-btn");
   if (await startBtn.isVisible()) {
     await startBtn.click();
-  }
-  if (skipTutorial) {
-    const skipBtn = page.locator(".tutorial-skip-btn").first();
-    if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await skipBtn.click();
-      await page.waitForTimeout(200);
-    }
   }
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
 }
@@ -166,7 +161,8 @@ test("ui scale contracts: 100%, 125%, 150%, 200% across resolutions (Section 31)
       }, scale);
       await page.waitForTimeout(200);
 
-      // Verify buttons are clickable and visible
+      // Verify buttons are clickable and visible (clean modal state first).
+      await resolveDrafts(page);
       const techBtn = page.locator("#techmap-btn");
       await expect(techBtn).toBeVisible();
       await techBtn.click();
@@ -181,107 +177,66 @@ test("ui scale contracts: 100%, 125%, 150%, 200% across resolutions (Section 31)
   }
 });
 
-test("visual audit v0.22.1 capture (Section 29)", async ({ page }) => {
+const V0221_FILES = [
+  "01_gameplay_default_en.png",
+  "02_gameplay_default_th.png",
+  "03_gameplay_ui125.png",
+  "04_gameplay_ui150.png",
+  "05_techmap_current_en.png",
+  "06_techmap_overview_en.png",
+  "07_techmap_current_th.png",
+  "08_first_run_intro_th.png",
+  "09_tutorial_age_gate.png",
+  "10_tutorial_first_draft.png",
+  "11_vfx_enemy_death.png",
+  "12_vfx_breakthrough.png",
+  "13_chronicle.png",
+];
+
+const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+test("v0221 archival evidence intact", () => {
+  expect(fs.existsSync(AUDIT_DIR)).toBe(true);
+  for (const f of V0221_FILES) {
+    const p = path.join(AUDIT_DIR, f);
+    expect(fs.existsSync(p), `missing ${f}`).toBe(true);
+    const buf = fs.readFileSync(p);
+    expect(buf.length, `${f} non-empty`).toBeGreaterThan(1000);
+    expect(buf.subarray(0, 8).equals(PNG_MAGIC), `${f} is PNG`).toBe(true);
+  }
+});
+
+test("first-run onboarding flow works end to end (tutorial NOT skipped)", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 1280, height: 720 });
 
-  // 08_first_run_intro_th.png — set fresh save with tutorialCompleted:false then navigate
-  await page.goto("/?e2e=1");
-  await expect(page.locator("#start-btn")).toBeVisible({ timeout: 10000 });
-  await page.evaluate(() => {
-    localStorage.clear();
-    const save = {
-      schema: 1,
-      archive: [] as string[],
-      best: { runs: 0, bestTimeSec: 0, bestKills: 0, bestAge: "stone", bestAscension: 0 },
-      history: [] as string[],
-      settings: { volume: 0.0, shake: true, contrast: "normal", lang: "th", uiScale: 1, tutorialCompleted: false },
-    };
-    localStorage.setItem("seed-game-save-v1", JSON.stringify(save));
-  });
-  // Navigate again to pick up the save with tutorialCompleted:false
+  // Fresh save with tutorialCompleted:false, then boot.
+  await prepareSave(page, { tutorialCompleted: false, lang: "th" });
   await page.goto("/?e2e=1");
   await expect(page.locator("#start-btn")).toBeVisible({ timeout: 10000 });
   await page.locator("#start-btn").click();
   await expect(page.locator("#tutorial-intro-screen")).toBeVisible({ timeout: 12000 });
-  await page.screenshot({ path: path.join(AUDIT_DIR, "08_first_run_intro_th.png") });
 
-  // Start chronicle from intro
+  // Intro part 1 -> part 2 -> chronicle start.
   await page.locator("#tutorial-intro-screen .btn.primary").click(); // to part 2
   await page.locator("#tutorial-intro-screen .btn.primary").click(); // start chronicle
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
 
-  // 02_gameplay_default_th.png
-  await page.screenshot({ path: path.join(AUDIT_DIR, "02_gameplay_default_th.png") });
-
-  // Switch to EN for default gameplay
-  await page.evaluate(() => (window as unknown as { __seedE2E: { setLang: (c: string) => void } }).__seedE2E.setLang("en"));
-  await page.waitForTimeout(300);
-
-  // 01_gameplay_default_en.png
-  await page.screenshot({ path: path.join(AUDIT_DIR, "01_gameplay_default_en.png") });
-
-  // 03_gameplay_ui125.png
-  await page.evaluate(() => document.documentElement.style.setProperty("--ui-scale", "1.25"));
-  await page.waitForTimeout(200);
-  await page.screenshot({ path: path.join(AUDIT_DIR, "03_gameplay_ui125.png") });
-
-  // 04_gameplay_ui150.png
-  await page.evaluate(() => document.documentElement.style.setProperty("--ui-scale", "1.5"));
-  await page.waitForTimeout(200);
-  await page.screenshot({ path: path.join(AUDIT_DIR, "04_gameplay_ui150.png") });
-
-  // Reset scale to 1.0
-  await page.evaluate(() => document.documentElement.style.setProperty("--ui-scale", "1"));
-  await page.waitForTimeout(200);
-
-  // 05_techmap_current_en.png
+  // Tech map opens and closes from keyboard.
   await page.keyboard.press("KeyT");
   await expect(page.locator("#techmap-screen")).toBeVisible();
-  await page.waitForTimeout(400);
-  await page.screenshot({ path: path.join(AUDIT_DIR, "05_techmap_current_en.png") });
-
-  // 06_techmap_overview_en.png
-  await page.locator(".techmap-btn-overview").click();
-  await page.waitForTimeout(400);
-  await page.screenshot({ path: path.join(AUDIT_DIR, "06_techmap_overview_en.png") });
-
-  // 07_techmap_current_th.png
   await page.locator(".techmap-btn-close").click();
-  await page.evaluate(() => (window as unknown as { __seedE2E: { setLang: (c: string) => void } }).__seedE2E.setLang("th"));
-  await page.keyboard.press("KeyT");
-  await expect(page.locator("#techmap-screen")).toBeVisible();
-  await page.waitForTimeout(400);
-  await page.screenshot({ path: path.join(AUDIT_DIR, "07_techmap_current_th.png") });
-  await page.locator(".techmap-btn-close").click();
+  await expect(page.locator("#techmap-screen")).toHaveCount(0);
 
-  // 09_tutorial_age_gate.png
-  await page.evaluate(() => {
-    const el = document.querySelector(".age-card") as HTMLElement | null;
-    if (el) el.classList.add("tutorial-highlight");
-  });
-  await page.screenshot({ path: path.join(AUDIT_DIR, "09_tutorial_age_gate.png") });
-
-  // 10_tutorial_first_draft.png
+  // First draft surfaces and resolves with real clicks (queued levels chain).
   await page.evaluate(() => (window as unknown as { __seedE2E: { grant: (n: number) => void } }).__seedE2E.grant(100));
   await expect(page.locator("#draft-screen")).toBeVisible({ timeout: 5000 });
-  await page.screenshot({ path: path.join(AUDIT_DIR, "10_tutorial_first_draft.png") });
-  await page.locator("#draft-screen .card").first().click();
+  await resolveDrafts(page);
+  await expect(page.locator("#draft-screen")).toHaveCount(0);
 
-  // 11_vfx_enemy_death.png & 12_vfx_breakthrough.png from visual lab
-  await page.goto("/?visual=1");
-  await expect(page.locator("#visual-lab-bar")).toBeVisible();
-  await page.screenshot({ path: path.join(AUDIT_DIR, "11_vfx_enemy_death.png") });
-  await page.screenshot({ path: path.join(AUDIT_DIR, "12_vfx_breakthrough.png") });
-
-  // 13_chronicle.png
-  await page.goto("/?e2e=1");
-  await page.locator("#start-btn").click();
-  const skipBtn = page.locator(".tutorial-skip-btn").first();
-  if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await skipBtn.click();
-  }
-  await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
+  // Death reaches the chronicle.
   await page.evaluate(() => (window as unknown as { __seedE2E: { kill: () => void } }).__seedE2E.kill());
   await expect(page.locator(".chron")).toBeVisible({ timeout: 10000 });
-  await page.screenshot({ path: path.join(AUDIT_DIR, "13_chronicle.png") });
+  expect(errors).toEqual([]);
 });

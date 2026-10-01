@@ -2,11 +2,13 @@
 // END PLAYTEST → downloadable machine-readable report. Read-only: no cheats.
 import fs from "node:fs";
 import { test, expect } from "@playwright/test";
+import { prepareSave } from "./helpers";
 
 test("qa mode: gate start, live panel, report export", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
 
+  await prepareSave(page);
   await page.goto("/?qa=1");
   await expect(page.locator("#qa-gate")).toBeVisible();
   await expect(page.locator("#qa-start-playtest")).toBeVisible();
@@ -14,8 +16,12 @@ test("qa mode: gate start, live panel, report export", async ({ page }) => {
   await page.locator("#qa-start-playtest").click();
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
   await expect(page.locator(".hud-seed")).toContainText("EPOCH-GOLDEN-001");
+  // Inspector hidden by default (no UX contamination); REC shows recording.
+  await expect(page.locator("#qa-rec-indicator")).toBeVisible();
+  await expect(page.locator("#qa-panel")).toBeHidden();
+  // F10 opens the inspector; F10 closes it; recording never stops.
+  await page.keyboard.press("F10");
   await expect(page.locator("#qa-panel")).toBeVisible();
-
   // Panel starts compact (recording continues); expand for feedback buttons.
   await page.getByRole("button", { name: "Expand QA" }).click();
   // Subjective marker must not crash the run.
@@ -50,6 +56,7 @@ test("qa mode: human-selected origin reaches the simulation", async ({ page }) =
     ["#qa-origin-resonant", "resonant", "Energy+Field"],
     ["#qa-origin-engineers", "engineers", "Kinetic+Defense"],
   ] as const) {
+    await prepareSave(page);
     await page.goto("/?qa=1&e2e=1");
     await expect(page.locator("#qa-gate")).toBeVisible();
     await page.locator(btn).click();

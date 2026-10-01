@@ -2,13 +2,7 @@
 // claim flow, squad keys, age checklist, TH rendering. Uses ?e2e staging
 // hooks for travel; every clicked path runs real game code.
 import { test, expect, type Page } from "@playwright/test";
-
-async function startRun(page: Page, seed: string): Promise<void> {
-  await page.goto("/?e2e");
-  await page.locator("#seed-input").fill(seed);
-  await page.getByRole("button", { name: "Begin New Run" }).click();
-  await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
-}
+import { startRun } from "./helpers";
 
 interface E2E {
   grant: (n: number) => void;
