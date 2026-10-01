@@ -1,5 +1,29 @@
 # Session Handoff
 
+## CURRENT CANONICAL STATE — READ THIS FIRST
+
+- Active branch: `feat/v023-frontier-purpose-20261001`
+- Current HEAD: `bbc6df3775176e4e095677b651ce926f17905385`
+- Current code SHA: `bbc6df3775176e4e095677b651ce926f17905385` (Phase A landed:
+  `4382fef` modal/seed-truth fixes, `530ce79` ordered-state + engagement
+  contracts, `bbc6df3` QA pipeline retarget to v023)
+- Local verification (2026-10-01 evening): typecheck CLEAN, unit 310/310 (39
+  files), targeted E2E 6/6 green (industrial payoff via MutationObserver
+  sequencing proof, frontier x2, qa x3 incl. custom-seed truth). Full E2E
+  35/35 was green on the same code before the test/script split commits
+  (no src changes since). Awaiting exact-SHA CI on the pushed tip.
+- Current milestone: v0.23 TECHNICAL CLOSURE (no new gameplay; auditor HOLD on
+  human testing until exact-SHA CI is 3/3 green)
+- Current blockers: none locally — (1) industrial modal test FIXED +
+  race-proofed, (2) QA seed truth FIXED (custom-seed E2E asserts snapshot +
+  report carry `EPOCH-CUSTOM-42`), (3) qa-report emits v023 path/title FIXED
+- Next exact action: push tip → exact-SHA CI green → freeze as
+  v0.23 TECHNICAL BASELINE, then create `fix/v0231-interaction-clarity-20261001`
+- Everything below the `HISTORICAL ARCHIVE` marker is prior-milestone evidence.
+  Do NOT use old resume instructions for current work.
+
+---
+
 ## Timestamp
 
 2026-10-01 office session. v0.23 Frontier Purpose & Late-Game Performance — ACTIVE on `feat/v023-frontier-purpose-20261001` (branched from exact green `f2cd458`).
@@ -307,7 +331,11 @@ rolling F3, fresh ZIP, verifier, notices, smoke E2E).
 
 ## Git Safety State
 
-- ACTIVE branch `feat/v020-engagement-loop-20260930` tracks
+> ⛔ HISTORICAL ARCHIVE — this section describes the v020-era branch layout.
+> Current active branch is `feat/v023-frontier-purpose-20261001` (see CURRENT
+> CANONICAL STATE at top). Do NOT checkout v020 unless rolling back.
+
+- (v020 era) ACTIVE branch `feat/v020-engagement-loop-20260930` tracked
   `origin/feat/v020-engagement-loop-20260930`; working tree clean at handoff.
 - FROZEN baseline: readability `e4d4f8940cac2537fafd0a05895e1ea23b8f7ac2`
   (never modified by this line). Deep rollback: stabilization `737ddf3`.
@@ -315,6 +343,10 @@ rolling F3, fresh ZIP, verifier, notices, smoke E2E).
 - Branch HEAD verified at push time (local == remote; `origin/main` `5e6d5c6`).
 
 ## Exact Resume Procedure
+
+> ⛔ HISTORICAL ARCHIVE — commands below check out the frozen v020 branch.
+> For current work, replace `feat/v020-engagement-loop-20260930` with
+> `feat/v023-frontier-purpose-20261001` (see CURRENT CANONICAL STATE at top).
 
 Fresh machine:
 
@@ -350,12 +382,12 @@ Safety rule: if `git status` is not clean before pulling — STOP, inspect local
 changes, do not reset/delete them automatically. NEVER use `git reset --hard`,
 `git clean -fd`, or force checkout as routine resume steps.
 
-Resume rule: the ACTIVE branch is `feat/v020-engagement-loop-20260930`.
-Do NOT resume on `fix/v011-readability-20260929` (frozen v0.1.1 baseline) or
-`fix/v011-stabilization-20260929` (deep rollback) unless rolling back. If green
-and SHA matches this handoff, run the v0.2 engagement playtest
-(`?qa=1`, EPOCH-GOLDEN-001, pick an Origin, reach Ascension, 2+ min in World #2,
-answer the five 1–5 ratings) before any further editing.
+Resume rule (SUPERSEDED — see CURRENT CANONICAL STATE at top): the commands
+above check out the frozen v020 line. The ACTIVE branch is now
+`feat/v023-frontier-purpose-20261001`. Do NOT resume on
+`fix/v011-readability-20260929` (frozen v0.1.1 baseline),
+`fix/v011-stabilization-20260929` (deep rollback), or
+`feat/v020-engagement-loop-20260930` (frozen v0.2 line) unless rolling back.
 
 ## QA Harness (Human Gate Tooling)
 

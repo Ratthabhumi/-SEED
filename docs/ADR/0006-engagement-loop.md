@@ -41,6 +41,12 @@ Science/Culture draft; meteor → Warfare/Kinetic/Energy draft; vault →
 Industry/Defense draft; signal → rare/mythic draft; megasite → Knowledge cache
 + full heal (no modal); worldtree → full heal + survival draft. Repeats pay
 normal Knowledge. At most 6 major modals per world, each once per family.
+Scope truth: only ruin/meteor/vault/signal spawn in worldgen; megasite and
+worldtree contracts are authored, unit-tested and visualized but dormant
+pending a deliberate worldgen-integration + versioning decision.
+Reachability truth: only ruin/meteor/vault/signal spawn in worldgen;
+megasite/worldtree contracts are authored and tested but dormant until a
+deliberate worldgen-integration + versioning decision (post-engagement-test).
 
 ## Decision 4 — Real Knowledge gates (single resource kept)
 
