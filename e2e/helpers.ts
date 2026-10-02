@@ -56,6 +56,15 @@ export async function resolveDrafts(page: Page, maxRounds = 10): Promise<void> {
   }
 }
 
+/** Fast drain for fat granted queues (tight RAF-paced polling). */
+export async function drainDrafts(page: Page, maxRounds = 120): Promise<void> {
+  for (let i = 0; i < maxRounds; i++) {
+    if ((await page.locator("#draft-screen").count()) === 0) break;
+    await page.locator("#draft-screen .card").first().click();
+    await page.waitForTimeout(60);
+  }
+}
+
 /** No visible UI text may be an unlocalized raw key (e.g. "ui.fit"). */
 export async function assertNoRawKeys(page: Page): Promise<void> {
   const hits = await page.evaluate(() => {
