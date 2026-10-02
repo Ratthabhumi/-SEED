@@ -82,10 +82,12 @@ export class TutorialDirector {
 
     const btnRow = el("div", "btn-row");
     const nextBtn = button("tutorial.intro2.title", () => {
-      // Transition to Part 2
+      // Transition to Part 2: same modal, but the button's semantic contract
+      // changes (Next → Start), so its stable ID changes with it.
       title.textContent = t("tutorial.intro2.title");
       body.textContent = t("tutorial.intro2.body");
       nextBtn.textContent = t("tutorial.btn.start");
+      nextBtn.id = "tutorial-start-btn";
       nextBtn.onclick = (e) => {
         e.stopPropagation();
         screen.remove();
@@ -93,7 +95,8 @@ export class TutorialDirector {
         this.showBanner(t("tutorial.step.move"), 10);
       };
     }, "btn primary");
-    nextBtn.id = "tutorial-start-btn";
+    // Part 1 contract: advances the intro, does NOT start the run.
+    nextBtn.id = "tutorial-next-btn";
 
     const skipBtn = button("tutorial.btn.skip", () => {
       this.skipTutorial();

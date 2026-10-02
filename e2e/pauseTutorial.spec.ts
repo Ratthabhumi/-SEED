@@ -1,4 +1,8 @@
-// Pause IA + replay-tutorial confirmation E2E (v0.23.1 §5/§6).
+// Pause IA + replay-tutorial confirmation E2E (v0.23.1).
+// Behavior selectors use STABLE IDs only (never EN/TH copy):
+//   #replay-tutorial-btn, #tutorial-replay-confirm,
+//   #tutorial-replay-cancel-btn, #tutorial-replay-confirm-btn,
+//   #tutorial-next-btn (intro Part 1), #tutorial-start-btn (intro Part 2).
 // Replay must confirm (never reset silently); Cancel = zero mutation;
 // Confirm = same-seed fresh run, tutorial starts, settings preserved.
 // Clear Save keeps its own separate confirmation. No simultaneous
@@ -42,17 +46,16 @@ test("replay tutorial asks first; cancel mutates nothing", async ({ page }) => {
   page.on("pageerror", (e) => errors.push(e.message));
   await startRun(page, "EPOCH-PAUSE-02");
   await openPause(page);
-  await page.getByRole("button", { name: "Replay Tutorial" }).click();
+  await page.locator("#replay-tutorial-btn").click();
   const confirm = page.locator("#tutorial-replay-confirm");
   await expect(confirm).toBeVisible();
-  await expect(confirm).toContainText("Start the tutorial again?");
-  await expect(confirm.getByRole("button", { name: "Cancel" })).toBeVisible();
-  await expect(confirm.getByRole("button", { name: "Start Tutorial Again" })).toBeVisible();
+  await expect(page.locator("#tutorial-replay-cancel-btn")).toBeVisible();
+  await expect(page.locator("#tutorial-replay-confirm-btn")).toBeVisible();
   // Still exactly one screen surface (nested confirm, not a second modal).
   expect(await page.locator(".screen").count()).toBe(1);
   // Paused sim is frozen: snapshot identical across cancel.
   const before = (await page.evaluate(() => window.__seedE2E?.snapshot() ?? "")) as string;
-  await confirm.getByRole("button", { name: "Cancel" }).click();
+  await page.locator("#tutorial-replay-cancel-btn").click();
   await expect(confirm).toHaveCount(0);
   await expect(page.locator("#pause-screen")).toBeVisible();
   const after = (await page.evaluate(() => window.__seedE2E?.snapshot() ?? "")) as string;
@@ -64,18 +67,18 @@ test("replay confirm restarts the same seed with tutorial and settings kept", as
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await startRun(page, "EPOCH-PAUSE-03", { tutorialCompleted: false, lang: "th", uiScale: 1.5 });
-  // Dismiss the first-run intro (this run's tutorial was already active).
-await expect(page.locator("#tutorial-intro-screen")).toBeVisible();
-    await page.locator("#tutorial-start-btn").click();
-    await expect(page.locator("#tutorial-intro-screen")).toHaveCount(0);
-await openPause(page);
-    // "เล่นบทเรียนใหม่" = "Play Tutorial Again" (Thai)
-    // "เริ่มบทเรียนใหม่" = "Start New Lesson" (Thai)
-    // Use first-match fallback: the second button is "เริ่มบทเรียนใหม่"
-    const replayButtons = page.getByRole("button", { name: /เล่นบทเรียนใหม่|เริ่มบทเรียนใหม่/i });
-    await expect(replayButtons).toHaveCount(2);
-    await replayButtons.last().click(); // "เริ่มบทเรียนใหม่" is the second one
-    await page.getByRole("button", { name: "เริ่มบทเรียนใหม่" }).click();
+  // Dismiss the first-run intro through its phase-aware contract:
+  // Part 1 advances (next), Part 2 starts the run — one modal throughout.
+  await expect(page.locator("#tutorial-intro-screen")).toBeVisible();
+  await expect(page.locator("#tutorial-next-btn")).toBeVisible();
+  await page.locator("#tutorial-next-btn").click();
+  await expect(page.locator("#tutorial-start-btn")).toBeVisible();
+  await page.locator("#tutorial-start-btn").click();
+  await expect(page.locator("#tutorial-intro-screen")).toHaveCount(0);
+  await openPause(page);
+  await page.locator("#replay-tutorial-btn").click();
+  await expect(page.locator("#tutorial-replay-confirm")).toBeVisible();
+  await page.locator("#tutorial-replay-confirm-btn").click();
   // Same seed, fresh run, tutorial begins immediately.
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
   await expect(page.locator(".hud-seed")).toContainText("EPOCH-PAUSE-03");

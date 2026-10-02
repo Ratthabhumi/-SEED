@@ -2044,7 +2044,11 @@ export class GameScene extends Phaser.Scene {
     // HELP — safe reference first, destructive replay behind confirmation.
     const help = section("ui.pauseHelp");
     help.appendChild(button("ui.guide", () => this.showGuide()));
-    help.appendChild(button("ui.resetTutorial", () => this.showReplayConfirm(screen)));
+    // Stable automation contract (never text-dependent): the replay action
+    // always carries #replay-tutorial-btn in every language/scale.
+    const replayBtn = button("ui.resetTutorial", () => this.showReplayConfirm(screen));
+    replayBtn.id = "replay-tutorial-btn";
+    help.appendChild(replayBtn);
 
     // RUN — run-scoped navigation, away from both Resume and Danger.
     const run = section("ui.pauseRun");
@@ -2081,10 +2085,12 @@ export class GameScene extends Phaser.Scene {
     const row = el("div", "btn-row");
     const cancel = document.createElement("button");
     cancel.className = "btn";
+    cancel.id = "tutorial-replay-cancel-btn";
     cancel.textContent = t("ui.cancel");
     cancel.addEventListener("click", () => d.remove());
     const go = document.createElement("button");
     go.className = "btn primary";
+    go.id = "tutorial-replay-confirm-btn";
     go.textContent = t("tutorial.replay.confirm");
     go.addEventListener("click", () => {
       d.remove();
