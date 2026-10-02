@@ -1820,6 +1820,21 @@ export class GameScene extends Phaser.Scene {
     screen.appendChild(el("h2", "", s.draftContext === "poi" ? "ui.poiFound" : "ui.chooseTech"));
     const cards = el("div", "cards");
     const ownedTags = [...s.ownedTags];
+    // Leads-to lookup (read-only graph walk): what each choice unlocks next.
+    const childrenOf = new Map<string, string[]>();
+    for (const g of this.sim.techGraph()) {
+      for (const p of g.prerequisites) {
+        const arr = childrenOf.get(p) ?? [];
+        arr.push(g.id);
+        childrenOf.set(p, arr);
+      }
+    }
+    const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
+    const domainIcon: Record<string, string | undefined> = {
+      warfare: SEED_ASSETS.icons.military,
+      industry: SEED_ASSETS.icons.economy,
+      science: SEED_ASSETS.icons.research,
+    };
     s.draftChoices.forEach((n, i) => {
       const c = el("div", "card");
       c.setAttribute("role", "button");
@@ -1830,6 +1845,15 @@ export class GameScene extends Phaser.Scene {
       d.textContent = t(n.descriptionKey as EnKeys);
       // Phase 4: legible plan — DOMAIN + synergy progress on every card.
       const dom = el("div", "card-domain", `domain.${n.domain}` as EnKeys);
+      const iconSrc = domainIcon[n.domain];
+      if (iconSrc) {
+        const img = document.createElement("img");
+        img.src = iconSrc;
+        img.className = "card-domain-icon";
+        img.alt = "";
+        dom.prepend(img);
+        dom.prepend(document.createTextNode(" "));
+      }
       const syn = document.createElement("div");
       syn.className = "card-synergy";
       const done = completingBreakthrough([...n.tags, ...n.synergyTags], ownedTags, [...s.breakthroughs]);
@@ -1854,6 +1878,17 @@ export class GameScene extends Phaser.Scene {
       c.appendChild(d);
       c.appendChild(dom);
       if (syn.textContent !== "") c.appendChild(syn);
+      // Leads-to: the strategic consequence of this choice (names, not icons).
+      const leads = (childrenOf.get(n.id) ?? [])
+        .map((id) => graphById.get(id))
+        .filter((g): g is NonNullable<typeof g> => !!g && !s.owned.includes(g.id))
+        .slice(0, 2);
+      if (leads.length > 0) {
+        const l = document.createElement("div");
+        l.className = "card-leads";
+        l.textContent = `▸ ${t("ui.leadsTo")}: ${leads.map((g) => t(g.titleKey as EnKeys)).join(" · ")}`;
+        c.appendChild(l);
+      }
       c.appendChild(r);
       // Reroll-changed marker: icon-adjacent text, never color-only.
       if (this.rerollNewIds.has(n.id)) {
@@ -2315,6 +2350,14 @@ export class GameScene extends Phaser.Scene {
       w.className = "toast-sub";
       w.textContent = forms;
       panel.appendChild(w);
+      // One-line purpose: what this age asks of the civilization next.
+      const goal = AGE_DEFS[idx];
+      if (goal) {
+        const o = document.createElement("div");
+        o.className = "age-purpose";
+        o.textContent = `◈ ${t(goal.objectiveKey as EnKeys)}`;
+        panel.appendChild(o);
+      }
       const cont = button("ui.ageContinue", () => this.closeBlocking(), "btn primary");
       panel.appendChild(cont);
       screen.appendChild(panel);

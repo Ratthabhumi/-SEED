@@ -272,6 +272,12 @@ button, input { font-family: inherit; }
 /* Origin cards, synergy lines, goals */
 .origin-title { color: var(--accent); font-size: var(--font-body-strong); font-weight: 700; margin-top: 10px; line-height: 1.7; }
 .card-domain { color: var(--muted); font-size: var(--font-caption); text-transform: uppercase; letter-spacing: 1px; }
+.card-domain-icon { width: 18px; height: 18px; image-rendering: pixelated; vertical-align: -3px; }
+.card-leads { color: #9fd8ff; font-size: var(--font-caption); line-height: 1.7; }
+.age-purpose {
+  color: var(--accent); font-size: var(--font-body); font-weight: 600;
+  line-height: 1.7; margin-top: 8px;
+}
 .card-synergy { color: #7fd4ff; font-size: var(--font-body); line-height: 1.7; }
 .card-synergy.completes { color: var(--accent); font-weight: 700; }
 .hud-goals {
