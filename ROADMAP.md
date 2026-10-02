@@ -129,8 +129,8 @@
   - 🔴 Exact-SHA full CI (was red at 4a2c7db; repaired at f2cd458, run 36815319757 green)
 
 ### v0.23 — Frontier Purpose & Late-Game Performance
-- **Status**: 🟢 ACTIVE
-- **Scope**:
+- **Status**: 🟠 TECHNICAL BASELINE PASSED (exact-SHA CI green at `e32e995`, run 36875936223) / 🟠 HUMAN UX CORRECTIVE (superseded by v0.23.1; branch frozen, do not modify)
+- **Scope** (delivered as built; UX corrective moved to v0.23.1):
   - 🟢 Strategic Site UX (UNSEEN → CLAIMED states, [C] claim action)
   - 🟢 Multi-Outpost Frontier (multiple sites, exact spec benefits)
   - 🟢 Dominion age gate (replaces abstract stabilization timer)
