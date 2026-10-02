@@ -642,7 +642,7 @@ export class RunSimulation {
     s.territories.push({
       poiId, poiType: cand.poiType, x: cand.x, y: cand.y,
       spec: "", tier: 1, hp: OUTPOST_MAXHP, maxHp: OUTPOST_MAXHP,
-      disabled: false, heldSince: s.elapsed, repairT: 0,
+      disabled: false, heldSince: s.elapsed, repairT: 0, garrisoned: false,
     });
     // First claim starts the raid clock (grace window, not instant pressure).
     if (s.lastRaidAt === 0) s.lastRaidAt = s.elapsed;

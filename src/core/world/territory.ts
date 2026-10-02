@@ -16,6 +16,8 @@ export interface Territory {
   hp: number;
   maxHp: number;
   disabled: boolean;
+  /** Whether this outpost is garrisoned (removed from mobile squad pool). */
+  garrisoned: boolean;
   /** World-elapsed seconds when tier 2 became eligible (held-since clock). */
   heldSince: number;
   /** Repair progress 0..REPAIR_NEED while the player is near a disabled post. */

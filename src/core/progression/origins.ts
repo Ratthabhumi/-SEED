@@ -5,6 +5,9 @@ import type { EnKeys } from "../../i18n/en";
 
 export type OriginId = "hunters" | "engineers" | "resonant" | "sentinels";
 
+// Re-export for downstream consumers
+export type { WeaponFamily, EnKeys };
+
 export interface OriginDef {
   id: OriginId;
   nameKey: EnKeys;
