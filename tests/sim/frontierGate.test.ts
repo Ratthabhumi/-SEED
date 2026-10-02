@@ -113,9 +113,11 @@ describe("space → stronghold → boss canonical flow", () => {
     clearField(sim);
     sim.claimTerritory(sigId);
     expect(s.signalSecured).toBe(true);
-    // Tier-2 upgrade on the first outpost (hold time satisfied).
+    // Tier-2 upgrade on the first outpost (hold time satisfied + atomic
+    // Knowledge cost covered — v0.23.1 opportunity cost).
     const terr = s.territories[0];
     if (terr) terr.heldSince = s.elapsed - 200;
+    s.knowledgeTotal = 2000;
     expect(sim.upgradeOutpost(claimed[0] as string).some((e) => e.type === "outpost_upgraded")).toBe(true);
     // Knowledge last so no premature advancement mid-setup.
     s.knowledgeTotal = 6500;

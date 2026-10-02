@@ -9,7 +9,7 @@ import { AGES } from "../../src/core/tech/graph";
 import { BREAKTHROUGHS } from "../../src/core/tech/synergy";
 import {
   CLAIM_REACH_RADIUS, RAID_INTERVAL, activeTerritories,
-  territoryKnowledgeBonus, militaryBonusSlots,
+  territoryKnowledgeBonus, militaryBonusSlots, outpostUpgradeCost,
 } from "../../src/core/world/territory";
 import { SQUAD_BASE_CAP, squadCap } from "../../src/core/combat/squad";
 import { minimapCells } from "../../src/game/render/NavigationRenderer";
@@ -102,10 +102,19 @@ describe("draft agency", () => {
     expect(sim.reserveCard(realIdx).some((e) => e.type === "draft_reserved")).toBe(true);
     expect(sim.state.reservedTech).toBe(reserved);
     // Reroll keeps the reservation and re-offers it (compatible pool).
-    sim.rerollDraft();
+    // v0.23.1 contract: either the redraw changes something (reroll spent)
+    // or the pool is exhausted (reroll kept, explicit unavailable event) —
+    // the reservation persists on both paths.
+    const rerollEv = sim.rerollDraft();
     expect(sim.state.draftOpen).toBe(true);
-    expect(sim.state.rerolls).toBe(0);
     expect(sim.state.draftChoices.map((n) => n.id)).toContain(reserved);
+    const rType = rerollEv[0]?.type;
+    if (rType === "draft_rerolled") {
+      expect(sim.state.rerolls).toBe(0);
+    } else {
+      expect(rType).toBe("draft_reroll_unavailable");
+      expect(sim.state.rerolls).toBe(1);
+    }
     // Picking another card keeps the reservation for the next draft.
     const other = sim.state.draftChoices.findIndex((n) => n.id !== reserved);
     sim.chooseDraft(other);
@@ -128,11 +137,26 @@ describe("draft agency", () => {
     const b = mk();
     const before = a.snapshot();
     expect(b.snapshot()).toBe(before);
-    a.rerollDraft();
-    b.rerollDraft();
-    expect(a.snapshot()).toBe(b.snapshot());
-    expect(a.snapshot()).not.toBe(before);
-    expect(a.rerollDraft()).toEqual([]); // exhausted
+    // v0.23.1: success spends the use and changes the screen; an exhausted
+    // tiny pool reports unavailable with zero mutation — both deterministic.
+    const evA = a.rerollDraft();
+    const evB = b.rerollDraft();
+    expect(evB.map((e) => e.type)).toEqual(evA.map((e) => e.type));
+    expect(b.snapshot()).toBe(a.snapshot());
+    if (evA[0]?.type === "draft_rerolled") {
+      expect(a.snapshot()).not.toBe(before);
+    } else {
+      expect(evA[0]?.type).toBe("draft_reroll_unavailable");
+      expect(a.snapshot()).toBe(before);
+    }
+    // Bounded: a second reroll is exhausted — or was never spent because the
+    // tiny pool had no alternative (v0.23.1: unavailable keeps the use).
+    const second = a.rerollDraft();
+    if (a.state.rerolls === 0) {
+      expect(second).toEqual([]); // exhausted
+    } else {
+      expect(second.map((e) => e.type)).toEqual(["draft_reroll_unavailable"]);
+    }
   });
 
   it("skip is deterministic with bounded consolation and chains queues", () => {
@@ -269,8 +293,15 @@ describe("territory and outposts", () => {
     sim.state.elapsed += 200;
     const terr = sim.state.territories[0];
     if (terr) terr.heldSince = sim.state.elapsed - 200;
+    // v0.23.1 opportunity cost: hold alone is not enough — Knowledge required.
+    sim.state.knowledgeTotal = 0;
+    expect(sim.upgradeOutpost(poiId)).toEqual([]);
+    sim.state.knowledgeTotal = 1000;
+    const before = sim.state.knowledgeTotal;
     expect(sim.upgradeOutpost(poiId).some((e) => e.type === "outpost_upgraded")).toBe(true);
     expect(sim.state.territories[0]?.tier).toBe(2);
+    // Deducted exactly once (canonical stone-age cost).
+    expect(before - sim.state.knowledgeTotal).toBe(outpostUpgradeCost(0));
   });
 
   it("research outposts scale knowledge through the single canonical gain", () => {

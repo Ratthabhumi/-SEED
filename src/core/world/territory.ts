@@ -2,6 +2,7 @@
 // Simulation owns mutation + scheduling; this module owns shapes, tuning
 // constants, and bonus derivation so UI and tests share one source of truth.
 import type { POIType } from "../world/poi";
+import { AGE_DEFS } from "../progression/ages";
 
 export type OutpostSpec = "research" | "military" | "economy";
 
@@ -46,6 +47,61 @@ export const RAID_SIZE_BASE = 3;
 
 export function activeTerritories(ts: readonly Territory[]): Territory[] {
   return ts.filter((t) => !t.disabled);
+}
+
+/**
+ * OUTPOST CAPACITY (v0.23.1 territory economy): claiming is a strategic
+ * trade-off, not free expansion. Provisional balance values, one canonical
+ * function — UI, sim, and tests share it. Disabled outposts do NOT consume
+ * capacity (they are not controlled); repaired posts are grandfathered even
+ * if that exceeds capacity (never evict on repair).
+ */
+export function outpostCapacity(ageIndex: number): number {
+  const ages = AGE_DEFS.length;
+  const clamped = Math.max(0, Math.min(ageIndex, ages - 1));
+  return clamped + 1;
+}
+
+/** Active (controlled, non-disabled) outpost count against capacity. */
+export function outpostsHeld(ts: readonly Territory[]): number {
+  return activeTerritories(ts).length;
+}
+
+/** True when another claim fits under capacity (disabled posts excluded). */
+export function canClaimMore(ts: readonly Territory[], ageIndex: number): boolean {
+  return outpostsHeld(ts) < outpostCapacity(ageIndex);
+}
+
+/**
+ * Mission-critical exemption (v0.23.1 no-softlock rule): the FIRST Alien
+ * Signal claim — required by the Space mission — is always allowed, even on
+ * a full frontier. Rationale: signals are scarce story sites, not economic
+ * expansion; a junk-filled frontier must never block the mission chain.
+ * Later signals follow the normal economy. The exempt post still counts
+ * toward capacity/dominion afterwards (grandfathered, like repairs).
+ */
+export function signalExempt(
+  ts: readonly Territory[],
+  ageIndex: number,
+  poiType: POIType,
+  signalSecured: boolean,
+): boolean {
+  return poiType === "signal" && !signalSecured && !canClaimMore(ts, ageIndex);
+}
+
+/**
+ * OUTPOST UPGRADE COST (v0.23.1): tier 2 costs Knowledge — roughly 9% of the
+ * NEXT age's Knowledge threshold, rounded to readable 25s. Space (no next
+ * age) reuses its own threshold. One canonical pure function; sim and UI
+ * consume the same value so display and deduction can never disagree.
+ */
+export function outpostUpgradeCost(ageIndex: number): number {
+  const last = AGE_DEFS.length - 1;
+  const clamped = Math.max(0, Math.min(ageIndex, last));
+  const basis = AGE_DEFS[Math.min(clamped + 1, last)]?.knowledgeThreshold
+    ?? AGE_DEFS[clamped]?.knowledgeThreshold
+    ?? 0;
+  return Math.max(25, Math.round((basis * 0.09) / 25) * 25);
 }
 
 /** Research: +10% knowledge per active research tier (additive tiers). */

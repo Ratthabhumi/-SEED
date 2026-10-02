@@ -10,7 +10,8 @@ export type SimEvent =
   | { type: "draft_opened"; context: "level" | "poi" }
   | { type: "tech_selected"; techId: string }
   | { type: "draft_reserved"; techId: string }
-  | { type: "draft_rerolled"; rerollsLeft: number }
+  | { type: "draft_rerolled"; rerollsLeft: number; prevIds: string[]; newIds: string[]; changed: number }
+  | { type: "draft_reroll_unavailable" }
   | { type: "draft_skipped" }
   | { type: "pin_set"; target: string }
   | { type: "breakthrough"; id: string }

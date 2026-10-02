@@ -27,7 +27,7 @@ import {
   CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS, OUTPOST_MAXHP, RAID_INTERVAL, RAID_WARN_SEC,
   RAID_SIZE_BASE, TIER2_HOLD_SEC, REPAIR_NEED, activeTerritories,
   territoryKnowledgeBonus, militaryBonusSlots, economyRegenAt,
-  territoryById, type OutpostSpec,
+  territoryById, canClaimMore, signalExempt, outpostUpgradeCost, type OutpostSpec,
 } from "../world/territory";
 import {
   SQUAD_BASE_CAP, SQUAD_MAX, SQUAD_HP, SQUAD_DMG, SQUAD_SPEED, SQUAD_RANGE, SQUAD_CD,
@@ -436,16 +436,66 @@ export class RunSimulation {
 
   /**
    * REROLL the open draft (bounded: 1 per age, reset on age advance).
-   * Consumes the draft stream — deterministic for the same decision trace.
+   * Deterministic meaningful-change contract (v0.23.1): if an alternative
+   * exists, the redraw MUST change >= 1 visible non-reserved card. The
+   * compatible reserved card stays put by design and never counts as a
+   * change. Mechanism: normal weighted rebuild first (pin weighting and
+   * variety preserved); if the rebuild shows nothing new, the weakest
+   * non-reserved pick is force-swapped with the best unseen pool candidate
+   * (weight desc, id asc — no stream, fully deterministic). If NO
+   * alternative exists, the reroll is NOT consumed: zero mutation, zero
+   * stream consumed, and an explicit `draft_reroll_unavailable` event is
+   * returned instead. Same seed + same decisions always yields the same
+   * result on every path.
    */
   rerollDraft(): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (!s.draftOpen || s.over || s.rerolls <= 0) return ev;
+    const prevChoices = [...s.draftChoices];
+    const prevNR = new Set(
+      prevChoices.filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech).map((n) => n.id),
+    );
+    // Alternative check mirrors the open pool buildDraft() draws from
+    // (reroll intentionally drops POI filters, as before — same pool).
+    const prevShown = new Set(prevChoices.map((n) => n.id));
+    const candidates = this.availableNodes().filter(
+      (n) => n.id !== s.reservedTech && !prevShown.has(n.id),
+    );
+    if (candidates.length === 0) {
+      ev.push({ type: "draft_reroll_unavailable" });
+      return ev;
+    }
     s.rerolls--;
     this.buildDraft(s.draftContext);
+    const postShown = new Set(s.draftChoices.map((n) => n.id));
+    let cur = s.draftChoices.filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech);
+    if (!cur.some((n) => !prevNR.has(n.id))) {
+      // Redraw showed nothing new — force the meaningful change.
+      const ordered = [...candidates].sort((a, b) => b.weight - a.weight || (a.id < b.id ? -1 : 1));
+      const swapIn = ordered.find((n) => !postShown.has(n.id));
+      // swapIn always exists here (a candidate outside the previous screen
+      // that the rebuild did not surface); the guard keeps it total anyway.
+      if (swapIn && !postShown.has(swapIn.id)) {
+        let idx = -1;
+        for (let i = s.draftChoices.length - 1; i >= 0; i--) {
+          const n = s.draftChoices[i];
+          if (n && !n.id.startsWith("fb-") && n.id !== s.reservedTech) {
+            idx = i;
+            break;
+          }
+        }
+        s.draftChoices[idx < 0 ? s.draftChoices.length - 1 : idx] = swapIn;
+        cur = s.draftChoices.filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech);
+      }
+    }
+    const newIds = cur.map((n) => n.id);
+    const changed = newIds.filter((id) => !prevNR.has(id)).length;
     this.logHistory("reroll", s.draftContext);
-    ev.push({ type: "draft_rerolled", rerollsLeft: s.rerolls });
+    ev.push({
+      type: "draft_rerolled", rerollsLeft: s.rerolls,
+      prevIds: [...prevNR], newIds, changed,
+    });
     return ev;
   }
 
@@ -576,6 +626,8 @@ export class RunSimulation {
    * CLAIM a cleared POI as civilization territory (one claim per POI id).
    * Direct UI call. Fails silently (returns no events) unless every
    * precondition holds — the UI disables the button via claimablePOIs().
+   * v0.23.1: claims consume OUTPOST CAPACITY (active posts < capacity);
+   * a full frontier rejects with zero mutation (UI explains, never the sim).
    */
   claimTerritory(poiId: string): SimEvent[] {
     const s = this.state;
@@ -585,6 +637,8 @@ export class RunSimulation {
     if (!s.poisWorld.includes(poiId)) return ev;
     const cand = this.claimablePOIs().find((c) => c.poiId === poiId);
     if (!cand || !cand.clear) return ev;
+    if (!canClaimMore(s.territories, s.ageIndex)
+      && !signalExempt(s.territories, s.ageIndex, cand.poiType, s.signalSecured)) return ev;
     s.territories.push({
       poiId, poiType: cand.poiType, x: cand.x, y: cand.y,
       spec: "", tier: 1, hp: OUTPOST_MAXHP, maxHp: OUTPOST_MAXHP,
@@ -612,7 +666,12 @@ export class RunSimulation {
     return ev;
   }
 
-  /** Tier 2 after holding long enough with a chosen spec. */
+  /**
+   * Tier 2 after holding long enough with a chosen spec, PLUS a Knowledge
+   * cost (v0.23.1 opportunity cost). All preconditions checked BEFORE any
+   * mutation: insufficient Knowledge (or hold) rejects with zero partial
+   * state change; success deducts the canonical cost exactly once.
+   */
   upgradeOutpost(poiId: string): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
@@ -620,6 +679,9 @@ export class RunSimulation {
     const t = territoryById(s.territories, poiId);
     if (!t || t.disabled || t.spec === "" || t.tier !== 1) return ev;
     if (s.elapsed - t.heldSince < TIER2_HOLD_SEC) return ev;
+    const cost = outpostUpgradeCost(s.ageIndex);
+    if (s.knowledgeTotal < cost) return ev;
+    s.knowledgeTotal -= cost;
     t.tier = 2;
     t.hp = t.maxHp;
     this.logHistory("upgrade", `${t.spec}@${t.poiType}`);
