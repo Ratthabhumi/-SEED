@@ -31,7 +31,7 @@ import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
-import { uiRoot, clearUI, el, button, toast, applyUiScale } from "../ui";
+import { uiRoot, clearUI, el, button, toast, applyUiScale, isKeyRepeat } from "../ui";
 import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
@@ -277,10 +277,12 @@ export class GameScene extends Phaser.Scene {
       on("keydown-TWO", () => this.pickCard(1));
       on("keydown-THREE", () => this.pickCard(2));
       // Command layer (v021): squad orders + origin ability + map screens.
-      on("keydown-Q", () => this.issueSquad("follow"));
-      on("keydown-E", () => this.issueSquad("focus"));
-      on("keydown-R", () => this.issueSquad("hold"));
-      on("keydown-F", () => this.useAbility());
+      // Q/E/R/F are edge-triggered: ignore held-key auto-repeat so one
+      // physical press is exactly one intentional command (v0.24).
+      on("keydown-Q", (ev?: KeyboardEvent) => { if (!isKeyRepeat(ev)) this.issueSquad("follow"); });
+      on("keydown-E", (ev?: KeyboardEvent) => { if (!isKeyRepeat(ev)) this.issueSquad("focus"); });
+      on("keydown-R", (ev?: KeyboardEvent) => { if (!isKeyRepeat(ev)) this.issueSquad("hold"); });
+      on("keydown-F", (ev?: KeyboardEvent) => { if (!isKeyRepeat(ev)) this.useAbility(); });
       on("keydown-C", () => this.claimNearestSite());
       on("keydown-T", () => this.toggleTechMap());
       on("keydown-M", () => this.toggleCivMap());
@@ -1099,6 +1101,8 @@ export class GameScene extends Phaser.Scene {
       b.className = "btn terr-claim-btn";
       b.textContent = `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)} [C]`;
       b.addEventListener("click", () => {
+        // Attempt telemetry (v0.24): discovery != successful mutation.
+        this.qa?.noteSimEvent("claim_attempt", c.poiId);
         const ev = this.sim.claimTerritory(c.poiId);
         this.handleEvents(ev);
         const terr = s.territories.find((x) => x.poiId === c.poiId);
@@ -1120,7 +1124,10 @@ export class GameScene extends Phaser.Scene {
       b.className = "btn terr-up-btn";
       b.disabled = !afford;
       b.textContent = `${t("ui.upgrade")} (${t(`poi.${up.poiType}.name` as EnKeys)})`;
-      if (afford) b.addEventListener("click", () => this.handleEvents(this.sim.upgradeOutpost(up.poiId)));
+      if (afford) b.addEventListener("click", () => {
+        this.qa?.noteSimEvent("upgrade_attempt", up.poiId);
+        this.handleEvents(this.sim.upgradeOutpost(up.poiId));
+      });
       bar.appendChild(b);
       const line = document.createElement("div");
       line.className = "context-purpose";
@@ -1241,13 +1248,13 @@ export class GameScene extends Phaser.Scene {
     // the sim, read presentation-side before the call.
     if (!canClaimMore(s.territories, s.ageIndex)) {
       toast("ui.capacityFull", `${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`);
-      this.qa?.noteSimEvent("claim_key", "capacity-full");
+      this.qa?.noteSimEvent("claim_attempt", "capacity-full");
       return;
     }
+    this.qa?.noteSimEvent("claim_attempt", c.poiId);
     this.handleEvents(this.sim.claimTerritory(c.poiId));
     const terr = s.territories.find((x) => x.poiId === c.poiId);
     if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
-    this.qa?.noteSimEvent("claim_key", c.poiId);
   }
 
   /** Binding outpost-specialization picker (pauses stepping until decided). */
@@ -1471,6 +1478,7 @@ export class GameScene extends Phaser.Scene {
         : `⬆ ${t("ui.upgradeNeedKnowledge")} (${cost})`;
       if (afford && holdOk) {
         up.addEventListener("click", () => {
+          this.qa?.noteSimEvent("upgrade_attempt", terr.poiId);
           this.handleEvents(this.sim.upgradeOutpost(terr.poiId));
           const root = detail as unknown as { __refresh?: () => void };
           root.__refresh?.();
@@ -1906,11 +1914,12 @@ export class GameScene extends Phaser.Scene {
         const rs = document.createElement("button");
         rs.className = "btn card-reserve";
         rs.textContent = `${t("ui.reserve")}${s.reservedTech === n.id ? " ✓" : ""}`;
-        rs.addEventListener("click", (ev2) => {
-          ev2.stopPropagation();
-          this.handleEvents(this.sim.reserveCard(i));
-          this.refreshHUD();
-        });
+      rs.addEventListener("click", (ev2) => {
+        ev2.stopPropagation();
+        this.qa?.noteSimEvent("reserve_attempt", n.id);
+        this.handleEvents(this.sim.reserveCard(i));
+        this.refreshHUD();
+      });
         c.appendChild(rs);
       }
     });
@@ -1925,6 +1934,8 @@ export class GameScene extends Phaser.Scene {
       // Capture visible ids first: NEW markers are computed presentation-side
       // from the before/after difference (never canonical state).
       const prev = new Set(s.draftChoices.map((n) => n.id));
+      // Attempt telemetry (v0.24): discovery != successful mutation.
+      this.qa?.noteSimEvent("reroll_attempt", [...prev].join("+"));
       this.handleEvents(this.sim.rerollDraft());
       this.rerollNewIds = new Set(s.draftChoices.map((n) => n.id).filter((id) => !prev.has(id)));
       // Choices changed: drop the stale surface so syncDraftUI rebuilds.
@@ -2530,7 +2541,8 @@ export class GameScene extends Phaser.Scene {
         case "draft_reroll_unavailable":
           toast("draft.rerollEmpty");
           sfx.select();
-          this.qa?.noteSimEvent("draft_reroll", "unavailable");
+          // Attempt without mutation (v0.24): distinct from success.
+          this.qa?.noteSimEvent("reroll_unavailable", "none");
           break;
         case "draft_skipped":
           sfx.select();

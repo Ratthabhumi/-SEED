@@ -117,6 +117,26 @@ describe("zero-friction QA watcher and auto-finalization", () => {
     expect(md).toContain("## Performance Summary");
   });
 
+  it("12b. attempt vs success telemetry is reported separately (discovery != mutation)", () => {
+    const s = snap();
+    s.simMarks = [
+      { kind: "reroll_attempt", detail: "a+b+c", simTime: 10, wallTime: 11, age: "stone", ascension: 0 },
+      { kind: "reroll_attempt", detail: "a+b+c", simTime: 20, wallTime: 21, age: "stone", ascension: 0 },
+      { kind: "draft_reroll", detail: "x", simTime: 21, wallTime: 22, age: "stone", ascension: 0 },
+      { kind: "reroll_unavailable", detail: "none", simTime: 30, wallTime: 31, age: "stone", ascension: 0 },
+      { kind: "reserve_attempt", detail: "a", simTime: 40, wallTime: 41, age: "stone", ascension: 0 },
+      { kind: "draft_reserve", detail: "a", simTime: 41, wallTime: 42, age: "stone", ascension: 0 },
+      { kind: "upgrade_attempt", detail: "p1", simTime: 50, wallTime: 51, age: "stone", ascension: 0 },
+      { kind: "claim_attempt", detail: "p1", simTime: 60, wallTime: 61, age: "stone", ascension: 0 },
+      { kind: "territory_claimed", detail: "p1:ruin", simTime: 61, wallTime: 62, age: "stone", ascension: 0 },
+    ];
+    const md = buildSanitizedMarkdown(s as never);
+    expect(md).toContain("- Rerolls: 1 (attempts 2, unavailable 1)");
+    expect(md).toContain("- Reserve uses: 1 (attempts 1)");
+    expect(md).toContain("- Outpost upgrades: 0 (attempts 1)");
+    expect(md).toContain("(claim attempts 1)");
+  });
+
   it("13. handoff update preserves all historical sections outside markers", () => {
     const base = `# Handoff\n\nOld failed-gate evidence stays.\n\n${START_MARK}\n\nOld section.\n\n${END_MARK}\n\nTail stays.\n`;
     const out = applyHandoffSection(base, "# New summary");

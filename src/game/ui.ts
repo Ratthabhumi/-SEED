@@ -59,3 +59,13 @@ export function applyUiScale(scale: number): void {
     document.documentElement.style.setProperty("--ui-scale", String(scale));
   }
 }
+
+/**
+ * Keyboard auto-repeat gate (v0.24): Q/E/R/F gameplay commands must be
+ * edge-triggered — one intentional command per physical press. Held-key
+ * auto-repeat otherwise floods squad telemetry (568 phantom follows) and
+ * double-fires abilities. Movement stays level-polled (never gated here).
+ */
+export function isKeyRepeat(ev: { repeat?: boolean } | undefined | null): boolean {
+  return ev?.repeat === true;
+}

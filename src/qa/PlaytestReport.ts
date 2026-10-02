@@ -112,12 +112,16 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   const pinMarks = marks.filter((m) => m.kind === "pin");
   const pinnedIds = [...new Set(pinMarks.map((m) => m.detail))];
   const reserveCount = marks.filter((m) => m.kind === "draft_reserve").length;
+  const reserveAtt = marks.filter((m) => m.kind === "reserve_attempt").length;
   const rerollCount = marks.filter((m) => m.kind === "draft_reroll").length;
+  const rerollAtt = marks.filter((m) => m.kind === "reroll_attempt").length;
+  const rerollUn = marks.filter((m) => m.kind === "reroll_unavailable").length;
   const skipCount = marks.filter((m) => m.kind === "draft_skip").length;
   const breakthroughMarks = marks.filter((m) => m.kind === "breakthrough");
   const breakthroughIds = [...new Set(breakthroughMarks.map((m) => m.detail))];
 
   const territoryMarks = marks.filter((m) => m.kind === "territory_claimed");
+  const claimAtt = marks.filter((m) => m.kind === "claim_attempt").length;
   const firstTerritory = territoryMarks[0];
   const firstTerritoryTime = firstTerritory ? `${f2(firstTerritory.simTime)}s sim` : "NEVER";
   const specMarks = marks.filter((m) => m.kind === "outpost_spec");
@@ -125,6 +129,7 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   const specM = specMarks.filter((m) => m.detail.endsWith(":military")).length;
   const specE = specMarks.filter((m) => m.detail.endsWith(":economy")).length;
   const upgrades = marks.filter((m) => m.kind === "outpost_upgraded").length;
+  const upgradeAtt = marks.filter((m) => m.kind === "upgrade_attempt").length;
   const raidsIn = marks.filter((m) => m.kind === "raid_incoming").length;
   const raidsDef = marks.filter((m) => m.kind === "raid_repelled").length;
   const raidsLost = marks.filter((m) => m.kind === "outpost_lost").length;
@@ -139,15 +144,15 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(`- Tech Map opened: ${techMapOpens}`);
   L.push(`- First Tech Map open: ${firstTechMapTime}`);
   L.push(`- Paths pinned: ${pinMarks.length} [${pinnedIds.join(", ") || "-"}]`);
-  L.push(`- Reserve uses: ${reserveCount}`);
-  L.push(`- Rerolls: ${rerollCount}`);
+  L.push(`- Reserve uses: ${reserveCount} (attempts ${reserveAtt})`);
+  L.push(`- Rerolls: ${rerollCount} (attempts ${rerollAtt}, unavailable ${rerollUn})`);
   L.push(`- Skips: ${skipCount}`);
   L.push(`- Breakthroughs completed: ${breakthroughMarks.length} [${breakthroughIds.join(", ") || "-"}]`);
   L.push(``);
-  L.push(`- Territories claimed: ${territoryMarks.length} [${territoryMarks.map((m) => m.detail.split(":")[1]).filter(Boolean).join(", ") || "-"}]`);
+  L.push(`- Territories claimed: ${territoryMarks.length} [${territoryMarks.map((m) => m.detail.split(":")[1]).filter(Boolean).join(", ") || "-"}] (claim attempts ${claimAtt})`);
   L.push(`- First territory time: ${firstTerritoryTime}`);
   L.push(`- Outpost types: [Research: ${specR}, Military: ${specM}, Economy: ${specE}]`);
-  L.push(`- Outpost upgrades: ${upgrades}`);
+  L.push(`- Outpost upgrades: ${upgrades} (attempts ${upgradeAtt})`);
   L.push(`- Raids incoming: ${raidsIn}`);
   L.push(`- Raids defended: ${raidsDef}`);
   L.push(`- Raids lost: ${raidsLost}`);

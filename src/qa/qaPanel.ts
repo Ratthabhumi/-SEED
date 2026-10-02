@@ -140,6 +140,19 @@ export class QaSession {
   // Transition memory (previous tick).
   private prevAgeIndex = 0;
   private prevAscension = 0;
+  /**
+   * Last CHECKED canonical transition snapshot (v0.24 QA truth repair).
+   * checkTransitions() runs every Nth RAF tick, so the immediately previous
+   * RAF frame may already belong to the new world when an ascension is
+   * detected — comparing against it falsely reports worldChanged:false.
+   * Ascension N+1 is therefore compared against the last CHECKED state from
+   * N, and the snapshot refreshes on every check run (transition or not).
+   */
+  private checkedAscension = -1;
+  private checkedWorldSeed = "";
+  private checkedRunElapsed = -1;
+  private checkedRunKills = -1;
+  private checkedHighestAge = "";
   private prevBossSpawned = false;
   private prevBossKills = 0;
   private prevDraftOpen = false;
@@ -259,18 +272,17 @@ export class QaSession {
     } catch {
       return;
     }
-    const prev = this.lastFrame;
     this.lastFrame = f;
     this.tickCount++;
     const n = this.tickCount;
-    if (n % 15 === 0) this.checkTransitions(f, prev);
+    if (n % 15 === 0) this.checkTransitions(f);
     if (n % 30 === 0) this.samplePerf(f);
     if (n % 300 === 0) this.scanOverflow();
     if (n % 60 === 0) this.refreshPanel();
     this.maybeAutoFinalize();
   }
 
-  private checkTransitions(f: QaFrameData, prev: QaFrameData | null): void {
+  private checkTransitions(f: QaFrameData): void {
     const ctx = this.ctx(f);
     // Seed invariant (FAIL once): stability of the SESSION seed.
     if (!this.seedFailLogged && f.masterSeed !== this.recorder.seed) {
@@ -278,7 +290,8 @@ export class QaSession {
       this.recorder.assert("seed", "Seed invariant", false, `masterSeed changed to ${f.masterSeed} (session ${this.recorder.seed})`, ctx);
     }
     // Draft lifecycle invariant (FAIL once per stuck-open episode).
-    const surfaces = document.querySelectorAll("#draft-screen").length;
+    // Node-safe: unit tests exercise checkTransitions without a DOM.
+    const surfaces = typeof document === "undefined" ? 0 : document.querySelectorAll("#draft-screen").length;
     if (f.draftOpen && surfaces !== 1) {
       if (!this.draftFailOpen) {
         this.draftFailOpen = true;
@@ -314,17 +327,22 @@ export class QaSession {
             `unexpected jump ${this.prevAgeIndex} → ${f.ageIndex} (asc ${f.ascension})`, ctx);
         }
       } else if (f.ascension === this.prevAscension + 1) {
-        // Ascension: child-world contract.
-        const base = prev;
+        // Ascension: child-world contract, compared against the last CHECKED
+        // state (never the previous RAF frame, which may already be post
+        // transition when this periodic detector runs).
         const orderIdx = (a: string): number => Math.max(0, order.indexOf(a));
         const okSeed = f.masterSeed === this.recorder.seed;
-        const okWorld = base !== null && f.worldSeed !== base.worldSeed;
-        const okTime = base !== null && f.runElapsed >= base.runElapsed;
-        const okKills = base !== null && f.runKills >= base.runKills;
-        const okAge = base !== null && orderIdx(f.runHighestAge) >= orderIdx(base.runHighestAge);
-        const pass = okSeed && okWorld && okTime && okKills && okAge;
+        const hasBaseline = this.checkedAscension >= 0;
+        const okWorld = hasBaseline && f.worldSeed !== this.checkedWorldSeed;
+        const okTime = !hasBaseline || f.runElapsed >= this.checkedRunElapsed;
+        const okKills = !hasBaseline || f.runKills >= this.checkedRunKills;
+        const okAge = !hasBaseline || orderIdx(f.runHighestAge) >= orderIdx(this.checkedHighestAge);
+        const pass = hasBaseline && okSeed && okWorld && okTime && okKills && okAge;
         this.recorder.assert("ascension", "Ascension contract", pass,
-          `seed:${okSeed} worldChanged:${okWorld} time:${okTime} kills:${okKills} age:${okAge}`, ctx);
+          hasBaseline
+            ? `seed:${okSeed} worldChanged:${okWorld} time:${okTime} kills:${okKills} age:${okAge}`
+            : "no checked pre-transition baseline (detector started mid-run)",
+          ctx);
         this.recorder.checkpoint("ASCENSION_STARTED", ctx);
         this.recordEngagement(f, ctx);
         this.recorder.checkpoint("CHILD_WORLD_STARTED", ctx, {
@@ -371,20 +389,23 @@ export class QaSession {
       this.prevAscendReady = false;
     }
     // Post-ascension +30/+60/+120s perf snapshots (120s = engagement target).
+    // v0.24: CHILD-WORLD SIMULATION TIME ONLY — wall time must never satisfy
+    // engagement (sitting paused at the offer screen is not playing).
+    // postAscSim is captured at detection, when f is already child-time.
     if (this.postAscWall > 0) {
-      if (!this.post30Done && (this.wallNow() - this.postAscWall >= 30 || f.simTime - this.postAscSim >= 30)) {
+      if (!this.post30Done && f.simTime - this.postAscSim >= 30) {
         this.post30Done = true;
         this.samplePerf(f);
         this.recorder.checkpoint("POST_ASCENSION_30S", ctx);
         this.recorder.perfSnapshot("post-ascension+30s", ctx);
       }
-      if (!this.post60Done && (this.wallNow() - this.postAscWall >= 60 || f.simTime - this.postAscSim >= 60)) {
+      if (!this.post60Done && f.simTime - this.postAscSim >= 60) {
         this.post60Done = true;
         this.samplePerf(f);
         this.recorder.checkpoint("POST_ASCENSION_60S", ctx);
         this.recorder.perfSnapshot("post-ascension+60s", ctx);
       }
-      if (!this.post120Done && (this.wallNow() - this.postAscWall >= 120 || f.simTime - this.postAscSim >= 120)) {
+      if (!this.post120Done && f.simTime - this.postAscSim >= 120) {
         this.post120Done = true;
         this.samplePerf(f);
         this.recorder.checkpoint("POST_ASCENSION_120S", ctx);
@@ -406,6 +427,13 @@ export class QaSession {
     if (f.pickups >= f.pickupCap) this.recorder.poolSaturation("pickups", f.pickups, f.pickupCap, ctx);
     // Checkpoint autosave (throttled inside): evidence survives browser close.
     this.autosaveReports();
+    // Refresh the checked transition baseline on EVERY check run so the next
+    // ascension compares against the last checked pre-transition state.
+    this.checkedAscension = f.ascension;
+    this.checkedWorldSeed = f.worldSeed;
+    this.checkedRunElapsed = f.runElapsed;
+    this.checkedRunKills = f.runKills;
+    this.checkedHighestAge = f.runHighestAge;
   }
 
   private samplePerf(f: QaFrameData): void {
