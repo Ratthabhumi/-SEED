@@ -61,7 +61,7 @@
 - **v0.23 Frontier Purpose & Late-Game Performance**: 🟠 TECHNICAL BASELINE PASSED (exact-SHA CI green at `e32e995`, run 36875936223)
   - 🟠 HUMAN UX CORRECTIVE (objectives, Tech agency, territory purpose, UI overlap — corrected in v0.23.1)
   - Logical baseline for v0.23.1: `e32e995`
-- **v0.23.1 Interaction Clarity + Tech Agency + Territory Economy**: 🟢 ACTIVE
+- **v0.23.1 Interaction Clarity + Tech Agency + Territory Economy**: 🟡 VALIDATION (implementation + exact-SHA CI green; human gate pending)
 - **v0.24 Game Feel & Audio**: 🔵 RESEARCH READY
   - BLOCKED on v0.23.1 Human Gate (entry gate: v0.23.1 short human audit accepted)
 - **v0.3+**: ⚪ PLANNED

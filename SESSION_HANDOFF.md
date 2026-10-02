@@ -4,13 +4,13 @@
 
 - Active branch: `fix/v0231-interaction-clarity-20261001`
 - Parent logical baseline: `e32e995d4cb86dc24337cfe2c60d6ec1227d6fd0` (v0.23 TECHNICAL BASELINE PASSED / HUMAN UX REJECTED — frozen, do not modify)
-- Current actual HEAD: tip of `fix/v0231-interaction-clarity-20261001` (exact SHA recorded in the CI section below after push)
+- Current actual HEAD: tip of `fix/v0231-interaction-clarity-20261001` (code SHA below + docs tip; exact SHAs recorded in the CI section)
 - Versions: WORLDGEN 2 / CONTENT 6 / SAVE 1 / package 0.2.0-dev.0
-- Current milestone: v0.23.1 Interaction Clarity + Tech Agency + Territory Economy (🟢 ACTIVE)
-- Latest local verification: typecheck clean; unit 334/334; targeted E2E green (pauseTutorial 4/4, frontier 2/2, clarity matrix 3/3 viewports); visual evidence 15/15 captured (`docs/visual_audit_v0231/`, EVIDENCE_CAPTURED / HUMAN_REVIEW_PENDING)
-- Latest exact-SHA CI: v0.23.1 tip — pending (v0.23 parent CI: run 36875936223 SUCCESS)
+- Current milestone: v0.23.1 Interaction Clarity + Tech Agency + Territory Economy (🟡 VALIDATION — implementation + automated gates green, human gate pending)
+- Latest local verification: typecheck clean; unit 334/334; FULL E2E 42/42 local; visual evidence 15/15 captured (`docs/visual_audit_v0231/`, EVIDENCE_CAPTURED / HUMAN_REVIEW_PENDING)
+- Latest exact-SHA CI: run 37014999915 on `3c4a3ee38302d88d31d719a2d48f0f7d1a1a394b` — 3/3 GREEN (verify Node 22 SUCCESS, verify Node 24 SUCCESS, e2e SUCCESS). One CI E2E failure on the way (draft-storm vs pause/map opens) fixed by drain-then-act hardening, re-proven locally and on CI.
 - Completed (actual implemented work): UI surface coordinator + context-stack; pause IA + replay-tutorial confirmation behind stable IDs; phase-aware tutorial intro IDs; progressive Tech DAG mini-paths (CONTENT 6); deterministic reroll contract (meaningful-change + unavailable event + telemetry); outpost capacity 1..6 + Knowledge upgrade cost + first-signal exemption (no-softlock proof); civ-map selected-outpost panel + tracking; semantic visuals (draft leads-to/icons, age purpose); QA pipeline retargeted to `latest-v0231-interaction-human.md` (v0.23 history untouched); responsive clarity matrix; 15 visual evidence files
-- Remaining: final full local gate (one coherent pass) → push → exact-SHA CI 3/3 → short human gate (5–8 min natural play) → auditor PATH A/B decision. Do NOT begin v0.24.
+- Remaining: short human gate ONLY (5–8 min natural play via `npm run qa:human`, target `docs/playtests/latest-v0231-interaction-human.md`) → auditor PATH A/B decision. Do NOT begin v0.24.
 - Everything below the `HISTORICAL ARCHIVE` marker is prior-milestone evidence.
   HISTORICAL ARCHIVE — DO NOT USE FOR CURRENT RESUME.
 
