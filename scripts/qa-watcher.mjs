@@ -81,7 +81,7 @@ export function finalizeReport(
   exists = (p) => existsSync(p),
 ) {
   const md = buildSanitizedMarkdown(snap);
-  const outPath = join(rootDir, "docs", "playtests", "latest-v023-frontier-human.md");
+  const outPath = join(rootDir, "docs", "playtests", "latest-v0231-interaction-human.md");
   mkdir(dirname(outPath));
   write(outPath, md);
 
@@ -97,7 +97,7 @@ export function finalizeReport(
   console.log("");
   console.log("-SEED PLAYTEST EVIDENCE FINALIZED");
   console.log("");
-  console.log("docs/playtests/latest-v023-frontier-human.md");
+  console.log("docs/playtests/latest-v0231-interaction-human.md");
   console.log("SESSION_HANDOFF.md updated");
   console.log("");
 
