@@ -65,12 +65,17 @@ test("replay confirm restarts the same seed with tutorial and settings kept", as
   page.on("pageerror", (e) => errors.push(e.message));
   await startRun(page, "EPOCH-PAUSE-03", { tutorialCompleted: false, lang: "th", uiScale: 1.5 });
   // Dismiss the first-run intro (this run's tutorial was already active).
-  await expect(page.locator("#tutorial-intro-screen")).toBeVisible();
-  await page.getByRole("button", { name: "เริ่มบันทึกประวัติศาสตร์" }).click();
-  await expect(page.locator("#tutorial-intro-screen")).toHaveCount(0);
-  await openPause(page);
-  await page.getByRole("button", { name: "เล่นบทเรียนใหม่" }).click();
-  await page.getByRole("button", { name: "เริ่มบทเรียนใหม่" }).click();
+await expect(page.locator("#tutorial-intro-screen")).toBeVisible();
+    await page.locator("#tutorial-start-btn").click();
+    await expect(page.locator("#tutorial-intro-screen")).toHaveCount(0);
+await openPause(page);
+    // "เล่นบทเรียนใหม่" = "Play Tutorial Again" (Thai)
+    // "เริ่มบทเรียนใหม่" = "Start New Lesson" (Thai)
+    // Use first-match fallback: the second button is "เริ่มบทเรียนใหม่"
+    const replayButtons = page.getByRole("button", { name: /เล่นบทเรียนใหม่|เริ่มบทเรียนใหม่/i });
+    await expect(replayButtons).toHaveCount(2);
+    await replayButtons.last().click(); // "เริ่มบทเรียนใหม่" is the second one
+    await page.getByRole("button", { name: "เริ่มบทเรียนใหม่" }).click();
   // Same seed, fresh run, tutorial begins immediately.
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
   await expect(page.locator(".hud-seed")).toContainText("EPOCH-PAUSE-03");

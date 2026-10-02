@@ -93,6 +93,7 @@ export class TutorialDirector {
         this.showBanner(t("tutorial.step.move"), 10);
       };
     }, "btn primary");
+    nextBtn.id = "tutorial-start-btn";
 
     const skipBtn = button("tutorial.btn.skip", () => {
       this.skipTutorial();
