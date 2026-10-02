@@ -1083,14 +1083,16 @@ export class GameScene extends Phaser.Scene {
       if (!canClaimMore(s.territories, s.ageIndex)) this.appendCapacityLine(bar, s);
       return;
     }
+    // Capacity is stated whenever the frontier is full and ANY unclaimed
+    // site is near — contested or clear. Clearing a site cannot help a full
+    // frontier, so the player is told not to bother (same predicate as sim).
+    const anySite = this.sim.claimablePOIs()[0];
+    if (anySite && !canClaimMore(s.territories, s.ageIndex)) {
+      this.appendCapacityLine(bar, s);
+      return;
+    }
     const c = this.sim.claimablePOIs().find((x) => x.clear);
     if (c) {
-      // Full frontier: explain capacity instead of offering a claim that the
-      // sim must reject (same canonical predicate, presentation-side read).
-      if (!canClaimMore(s.territories, s.ageIndex)) {
-        this.appendCapacityLine(bar, s);
-        return;
-      }
       // No claim button while hostiles remain: the objective line + C key
       // carry the clear state instead (§9).
       const b = document.createElement("button");

@@ -1,6 +1,7 @@
-// Frontier v023 browser coverage: contested → clear → claim through the
-// real UI-mirroring hook, two coexisting territories, civmap frontier sites.
-// Staging hooks only travel/clear; every clicked path runs real game code.
+// Frontier v023.1 browser coverage: contested blocks, deterministic clear
+// staging, capacity gating with UI explanation, coexistence under capacity.
+// Combat timing is NEVER load-bearing: clearing is staged via claimFirst()
+// (field clear + real claim path); tryClaim() mirrors the UI button exactly.
 import { test, expect, type Page } from "@playwright/test";
 import { startRun } from "./helpers";
 
@@ -10,6 +11,7 @@ declare global {
       advance: (s: number) => void;
       teleportToPOI: () => boolean;
       tryClaim: () => string;
+      claimFirst: () => string;
       snapshot: () => string;
       setAgeIndex: (i: number) => number;
     };
@@ -33,56 +35,104 @@ test("contested site blocks claim; clearing unblocks; capacity gates the second"
   await startRun(page, "EPOCH-FRONT-01");
   const h = await hook(page);
 
-  // First territory via the UI-mirroring claim path.
-  expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
-  await page.evaluate(() => window.__seedE2E?.advance(12));
-  let contested = false;
-  let claimedA = "";
-  for (let i = 0; i < 20 && claimedA === ""; i++) {
-    const r: string = await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "");
-    if (r === "") {
-      contested = true;
-    } else {
-      claimedA = r;
-      break;
-    }
-    await page.evaluate(() => window.__seedE2E?.advance(2));
-  }
-  expect(contested).toBe(true); // foes within the clear radius blocked it
-  expect(claimedA).not.toBe("");
+  // Freeze wall-time first: with the sim paused, ONLY explicit advance()
+  // calls step the world — no realtime respawns, farming, or age-ups can
+  // drift the trace between CDP calls. Every staging hook works paused
+  // (direct state mutation + manual steps + auto-picked drafts).
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#pause-screen")).toBeVisible();
 
-  // Stone frontier holds ONE outpost: a second claim is rejected with zero
-  // mutation, and the UI explains capacity instead of offering the claim.
+  // PART A: contested site blocks the real UI-mirroring claim path.
+  // Deterministic order: first PROVE threat inside the clear radius (from
+  // the canonical snapshot), then the block follows necessarily — the probe
+  // itself can never accidentally claim, so capacity accounting stays exact.
   expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
-  let blocked = 0;
-  for (let i = 0; i < 10; i++) {
-    const r: string = await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "");
-    if (r === "") blocked++;
-    await page.evaluate(() => window.__seedE2E?.advance(2));
+  await page.evaluate(() => window.__seedE2E?.advance(4));
+  let threatSeen = false;
+  for (let i = 0; i < 4 && !threatSeen; i++) {
+    const s = JSON.parse((await page.evaluate(() => window.__seedE2E?.snapshot() ?? "{}")) as string) as {
+      p?: number[];
+      e?: string[];
+    };
+    const px = s.p?.[0] ?? 0;
+    const py = s.p?.[1] ?? 0;
+    threatSeen = (s.e ?? []).some((row) => {
+      const c = row.split(",");
+      return Math.hypot(Number(c[0]) - px, Number(c[1]) - py) < 400;
+    });
+    if (!threatSeen) await page.evaluate(() => window.__seedE2E?.advance(2));
   }
-  expect(blocked).toBe(10);
-  const snap1 = JSON.parse((await page.evaluate(() => window.__seedE2E?.snapshot() ?? "{}")) as string) as {
-    terr?: string[];
-  };
-  expect((snap1.terr ?? []).filter((t) => t.split(",")[0] === claimedA)).toHaveLength(1);
-  expect(snap1.terr ?? []).toHaveLength(1);
-  await expect(page.locator(".territory-bar")).toContainText("OUTPOST CAPACITY FULL", { timeout: 20000 });
+  expect(threatSeen).toBe(true); // live foe inside the claim-clear radius
+  expect(await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "CLAIMED")).toBe("");
 
-  // Iron frontier holds three: the second territory coexists (not replaced,
-  // not disabled) once capacity allows. Generous budget: iron-age threat
-  // takes longer to clear than stone.
-  expect(await page.evaluate(() => window.__seedE2E?.setAgeIndex(2))).toBe(2);
+  // PART B: deterministic clear staging, then the REAL claim path.
+  // claimFirst() clears the field (staging) and runs claim + spec for real.
   expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
   await page.evaluate(() => window.__seedE2E?.advance(3));
-  let claimedB = "";
-  for (let i = 0; i < 30 && claimedB === ""; i++) {
-    const r: string = await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "");
-    if (r !== "" && r !== claimedA) {
-      claimedB = r;
-      break;
-    }
+  const claimedA: string = await page.evaluate(() => window.__seedE2E?.claimFirst() ?? "");
+  expect(claimedA).not.toBe("");
+
+  // PART C: fill the frontier to the CURRENT age's capacity (the bot may
+  // have aged on wall-time farming — never assume stone), then prove the
+  // next claim is rejected with zero mutation and the UI explains capacity.
+  // Do-while: the final iteration always parks at a fresh POI, so the
+  // probes below run on a discovered, in-reach, freshly-cleared site with
+  // zero intervening steps (paused sim = pristine field).
+  const capOf = (age: number): number => age + 1; // outpostCapacity
+  let age = 0;
+  let held = 1;
+  let iters = 0;
+  do {
+    expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
     await page.evaluate(() => window.__seedE2E?.advance(2));
+    await page.evaluate(() => window.__seedE2E?.claimFirst() ?? "");
+    const s = JSON.parse((await page.evaluate(() => window.__seedE2E?.snapshot() ?? "{}")) as string) as {
+      terr?: string[];
+      age?: [number];
+    };
+    held = (s.terr ?? []).length;
+    age = s.age?.[0] ?? age;
+    iters++;
+  } while (held < capOf(age) && iters < 6);
+  // Full means held == cap — or cap+1 via the mission-critical first-signal
+  // exemption (never capacity-blocked by design; see territoryEconomy.test).
+  expect(held).toBeGreaterThanOrEqual(capOf(age));
+  // Park at a fresh POI (teleport lands on it; one sim-second discovers it
+  // while distant spawns stay outside the clear radius), then probe.
+  expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
+  await page.evaluate(() => window.__seedE2E?.advance(1));
+  const probe: string = await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "");
+  if (probe === "") {
+    // Rejected on a clear in-reach site: capacity is the only remaining
+    // reason — and the UI must say exactly that.
+    await expect(page.locator(".territory-bar")).toContainText("OUTPOST CAPACITY FULL", { timeout: 20000 });
+  } else {
+    // The only legal claim on a full frontier is the first-signal
+    // exemption: prove it, then prove the SECOND signal follows economy.
+    const after = JSON.parse((await page.evaluate(() => window.__seedE2E?.snapshot() ?? "{}")) as string) as {
+      terr?: string[];
+    };
+    const got = (after.terr ?? []).find((t) => t.split(",")[0] === probe);
+    expect(got?.split(",")[1]).toBe("signal");
+    expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
+    await page.evaluate(() => window.__seedE2E?.advance(1));
+    expect(await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "BLOCKED")).toBe("");
+    await expect(page.locator(".territory-bar")).toContainText("OUTPOST CAPACITY FULL", { timeout: 20000 });
   }
+
+  // PART D: a genuine second POI claims for real under a HIGHER capacity
+  // and both territories coexist (not replaced, not disabled). The target
+  // age is computed from current holdings (cap = age+1 > held always has
+  // room), so wall-time aging can never close the window.
+  const preD = JSON.parse((await page.evaluate(() => window.__seedE2E?.snapshot() ?? "{}")) as string) as {
+    terr?: string[];
+  };
+  const heldD = (preD.terr ?? []).length;
+  const target = Math.max(2, heldD);
+  expect(await page.evaluate((t) => window.__seedE2E?.setAgeIndex(t) ?? -1, target)).toBe(target);
+  expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
+  await page.evaluate(() => window.__seedE2E?.advance(3));
+  const claimedB: string = await page.evaluate(() => window.__seedE2E?.claimFirst() ?? "");
   expect(claimedB).not.toBe("");
   expect(claimedB).not.toBe(claimedA);
   void h;
@@ -99,16 +149,15 @@ test("civ map shows claimed territories and frontier sites", async ({ page }) =>
   page.on("pageerror", (e) => errors.push(e.message));
   await startRun(page, "EPOCH-FRONT-02");
   // Iron frontier (capacity 3) so two claims fit; stone would hold one.
+  // Deterministic: teleport (travel) + advance (discover) + claimFirst
+  // (clear + real claim). No combat-timing dependence.
   expect(await page.evaluate(() => window.__seedE2E?.setAgeIndex(2))).toBe(2);
-  await page.evaluate(() => window.__seedE2E?.teleportToPOI());
-  await page.evaluate(() => window.__seedE2E?.advance(3));
-  // Claim two sites (poll until both land; combat may contest).
   const claimed: string[] = [];
-  for (let i = 0; i < 30 && claimed.length < 2; i++) {
-    const r: string = await page.evaluate(() => window.__seedE2E?.tryClaim() ?? "");
-    if (r !== "" && !claimed.includes(r)) claimed.push(r);
-    await page.evaluate(() => window.__seedE2E?.teleportToPOI());
+  for (let i = 0; i < 4 && claimed.length < 2; i++) {
+    expect(await page.evaluate(() => window.__seedE2E?.teleportToPOI())).toBe(true);
     await page.evaluate(() => window.__seedE2E?.advance(3));
+    const r: string = await page.evaluate(() => window.__seedE2E?.claimFirst() ?? "");
+    if (r !== "" && !claimed.includes(r)) claimed.push(r);
   }
   expect(claimed).toHaveLength(2);
 
