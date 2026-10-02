@@ -65,6 +65,21 @@ export async function drainDrafts(page: Page, maxRounds = 120): Promise<void> {
   }
 }
 
+/** Open pause robustly: wall-time combat can pop a draft between actions
+ * (ESC never pauses over an open draft), so drain-then-pause with retries. */
+export async function openPause(page: Page, retries = 5): Promise<void> {
+  for (let i = 0; i < retries; i++) {
+    await drainDrafts(page, 40);
+    await page.keyboard.press("Escape");
+    try {
+      await expect(page.locator("#pause-screen")).toBeVisible({ timeout: 3000 });
+      return;
+    } catch {
+      if (i === retries - 1) throw new Error("pause never opened (draft storm?)");
+    }
+  }
+}
+
 /** No visible UI text may be an unlocalized raw key (e.g. "ui.fit"). */
 export async function assertNoRawKeys(page: Page): Promise<void> {
   const hits = await page.evaluate(() => {

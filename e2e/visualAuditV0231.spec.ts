@@ -6,7 +6,16 @@
 // Quality: player-like state, no QA/debug overlays, no 1e9 HP
 // (cleanPresentation before every shot), no impossible values.
 import { test, expect } from "@playwright/test";
-import { startRun, drainDrafts } from "./helpers";
+import { startRun, drainDrafts, openPause } from "./helpers";
+import type { Page } from "@playwright/test";
+
+/** Open a map overlay: drain wall-time drafts first (map keys never open
+ * over a draft). Capture-only robustness for reruns. */
+async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "#civmap-screen"): Promise<void> {
+  await drainDrafts(page, 40);
+  await page.keyboard.press(key);
+  await expect(page.locator(screen)).toBeVisible();
+}
 
 test.skip(process.env.SEED_CAPTURE !== "1", "capture-only: run with SEED_CAPTURE=1");
 
@@ -77,8 +86,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
     expect(cvBox).toBeTruthy();
     await page.mouse.click(cvBox!.x + cvBox!.width / 2, cvBox!.y + cvBox!.height / 2);
   }
-  await page.keyboard.press("M");
-  await expect(page.locator("#civmap-screen")).toBeVisible();
+  await openMap(page, "M", "#civmap-screen");
   await clickMapCenter();
   await expect(page.locator("#civmap-detail .civmap-detail-name")).toBeVisible({ timeout: 5000 });
   await shot("11_civmap_selected_outpost.png");
@@ -88,8 +96,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
   // Tracking persists across map sessions — no second click (clicking the
   // tracked site would untoggle it).
   await page.evaluate(() => window.__seedE2E?.advance(95));
-  await page.keyboard.press("M");
-  await expect(page.locator("#civmap-screen")).toBeVisible();
+  await openMap(page, "M", "#civmap-screen");
   await expect(page.locator("#civmap-detail .civmap-detail-name")).toBeVisible({ timeout: 5000 });
   await expect(page.locator("#civmap-detail")).toContainText(/ค่าอัปเกรด|ความรู้ยังไม่พอ/);
   await shot("12_upgrade_cost.png");
@@ -115,8 +122,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
 
   // Pause + field guide in TH.
-  await page.keyboard.press("Escape");
-  await expect(page.locator("#pause-screen")).toBeVisible();
+  await openPause(page);
   await shot("02_pause_menu_th.png");
   await page.locator("#pause-screen").getByRole("button", { name: "คู่มือและปุ่มควบคุม" }).click();
   await expect(page.locator("#guide-screen")).toBeVisible();
@@ -163,8 +169,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
   await expect(page.locator("#draft-screen")).toHaveCount(0);
 
   // Tech map CURRENT early, then mid (owned techs), then OVERVIEW.
-  await page.keyboard.press("T");
-  await expect(page.locator("#techmap-screen")).toBeVisible();
+  await openMap(page, "T", "#techmap-screen");
   await shot("06_techmap_current_early.png");
   await page.keyboard.press("T");
   // Tech map CURRENT mid (several owned techs), then OVERVIEW.
@@ -172,8 +177,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
   await expect(page.locator("#draft-screen")).toBeVisible({ timeout: 15000 });
   await drainDrafts(page);
   await expect(page.locator("#draft-screen")).toHaveCount(0);
-  await page.keyboard.press("T");
-  await expect(page.locator("#techmap-screen")).toBeVisible();
+  await openMap(page, "T", "#techmap-screen");
   await shot("07_techmap_current_mid.png");
   await page.locator(".techmap-btn-fit").click();
   await page.waitForTimeout(400);
@@ -185,8 +189,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
   await shot("13_command_context.png");
 
   // 200% TH pause: sections reachable via internal scroll, still readable.
-  await page.keyboard.press("Escape");
-  await expect(page.locator("#pause-screen")).toBeVisible();
+  await openPause(page);
   await page.locator("#pause-screen").getByRole("button", { name: "200%", exact: true }).click();
   await shot("15_ui200_th.png");
   await page.keyboard.press("Escape");

@@ -3,7 +3,7 @@
 // Layout contracts use boundingBox geometry; prose alignment, pause/draft
 // reachability, Tech/Civ map usability asserted in both languages.
 import { test, expect, type Page } from "@playwright/test";
-import { startRun, drainDrafts } from "./helpers";
+import { startRun, drainDrafts, openPause } from "./helpers";
 
 declare global {
   interface Window {
@@ -57,8 +57,7 @@ async function assertContextClear(page: Page): Promise<void> {
 }
 
 async function setScale(page: Page, label: "100%" | "125%" | "150%" | "200%"): Promise<void> {
-  await page.keyboard.press("Escape");
-  await expect(page.locator("#pause-screen")).toBeVisible();
+  await openPause(page);
   await page.locator("#pause-screen").getByRole("button", { name: label, exact: true }).click();
   await page.keyboard.press("Escape");
   await expect(page.locator("#pause-screen")).toHaveCount(0);
@@ -75,6 +74,14 @@ async function closeDraft(page: Page): Promise<void> {
   // overlays (tech/civ map) stay blocked behind the next draft.
   await drainDrafts(page);
   await expect(page.locator("#draft-screen")).toHaveCount(0);
+}
+
+/** Open a map overlay: a wall-time level-up can pop a draft between any two
+ * actions (map keys never open over a draft), so drain first. */
+async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "#civmap-screen"): Promise<void> {
+  await drainDrafts(page, 40);
+  await page.keyboard.press(key);
+  await expect(page.locator(screen)).toBeVisible();
 }
 
 const PAUSE_HEADINGS_EN = ["Primary", "Display", "Help", "Run", "Danger Zone"];
@@ -95,8 +102,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     expect(draftAlign).toBe("left");
     await closeDraft(page);
     // Tech CURRENT then OVERVIEW: all six ages reachable, no page overflow.
-    await page.keyboard.press("T");
-    await expect(page.locator("#techmap-screen")).toBeVisible();
+    await openMap(page, "T", "#techmap-screen");
     expect(await page.locator(".techmap-node.available").count()).toBeGreaterThan(0);
     // Six age lanes exist (marker cols carry no box — count, not visibility).
     expect(await page.locator(".techmap-col").count()).toBe(6);
@@ -110,8 +116,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     await page.evaluate(() => window.__seedE2E?.advance(3));
     const claimed: string = await page.evaluate(() => window.__seedE2E?.claimFirst() ?? "");
     expect(claimed).not.toBe("");
-    await page.keyboard.press("M");
-    await expect(page.locator("#civmap-screen")).toBeVisible();
+    await openMap(page, "M", "#civmap-screen");
     // Click the true CSS center (canvas attr pixels are CSS-stretched).
     const cvBox = await page.locator("#civmap-screen canvas").boundingBox();
     expect(cvBox).toBeTruthy();
@@ -126,8 +131,7 @@ async function viewportMatrix(page: Page): Promise<void> {
 
   await test.step("TH: pause, guide prose, draft", async () => {
     await page.evaluate(() => window.__seedE2E?.setLang("th"));
-    await page.keyboard.press("Escape");
-    await expect(page.locator("#pause-screen")).toBeVisible();
+    await openPause(page);
     await expect(page.locator("#pause-screen")).toContainText("โซนอันตราย");
     await page.keyboard.press("Escape");
     await openDraft(page);
@@ -139,8 +143,8 @@ async function viewportMatrix(page: Page): Promise<void> {
     await page.evaluate(() => window.__seedE2E?.setLang("en"));
     for (const label of ["125%", "150%"] as const) {
       await setScale(page, label);
-      await page.keyboard.press("Escape");
-      await expect(page.locator("#pause-screen")).toBeVisible();
+      // Reopen robustly: wall-time XP between actions can pop a draft.
+      await openPause(page);
       const fit = await page.locator("#pause-screen .pause-panel").evaluate((el) => ({
         scroll: el.scrollHeight,
         client: el.clientHeight,
@@ -163,8 +167,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     await openDraft(page);
     await expect(page.locator("#draft-screen .card")).toHaveCount(3);
     await closeDraft(page);
-    await page.keyboard.press("T");
-    await expect(page.locator("#techmap-screen")).toBeVisible();
+    await openMap(page, "T", "#techmap-screen");
     await expect(page.locator(".techmap-side")).toBeVisible();
     await expect(page.locator(".techmap-btn-fit")).toBeVisible();
     await page.keyboard.press("T");
