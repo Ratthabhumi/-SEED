@@ -42,7 +42,8 @@ export async function startRun(page: Page, seed: string, opts: TestSaveOptions =
   await prepareSave(page, opts);
   await page.goto("/?e2e");
   await page.locator("#seed-input").fill(seed);
-  await page.getByRole("button", { name: /Begin New Run|เริ่มเกม/i }).click();
+  // Use stable ID selector instead of fragile text-based selector (Thai copy may vary)
+  await page.locator("#start-btn").click();
   await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
 }
 
