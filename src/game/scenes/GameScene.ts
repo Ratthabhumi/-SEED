@@ -23,7 +23,7 @@ import type { WeaponFamily } from "../../core/combat/weapons";
 import { CRITICAL_SPINE } from "../../core/tech/graph";
 import { AGE_DEFS, ageGates } from "../../core/progression/ages";
 import { ORIGIN_SQUAD_NAME, ORIGIN_ABILITY, squadCap } from "../../core/combat/squad";
-import { militaryBonusSlots, territoryKnowledgeBonus, activeTerritories, TIER2_HOLD_SEC, type OutpostSpec } from "../../core/world/territory";
+import { militaryBonusSlots, territoryKnowledgeBonus, activeTerritories, TIER2_HOLD_SEC, REPAIR_NEED, outpostCapacity, canClaimMore, outpostsHeld, outpostUpgradeCost, type OutpostSpec } from "../../core/world/territory";
 import { scaleKnowledge } from "../../core/sim/progression";
 import { threatBudget } from "../../core/director/director";
 import { getWeaponStage } from "../../core/combat/weapons";
@@ -99,6 +99,8 @@ export class GameScene extends Phaser.Scene {
   private onboard: { done: Set<string>; active: string; until: number } = { done: new Set(), active: "", until: 0 };
   /** Transient NEW markers for the last reroll (presentation-only). */
   private rerollNewIds = new Set<string>();
+  /** Civ-map tracked outpost (presentation-only highlight, never canonical). */
+  private trackedPoiId: string | null = null;
   private tutorial: TutorialDirector | null = null;
 
   // QA harness (read-only observer, ?qa=1 only — null in normal play).
@@ -438,6 +440,16 @@ export class GameScene extends Phaser.Scene {
           const s = this.sim.state;
           const id = poiId || s.territories[0]?.poiId || "e2e_outpost";
           this.showSpecPicker(id);
+        },
+        setAgeIndex: (i: number) => {
+          // Test-only staging for capacity/frontier flows: jump the age
+          // clock (same direct-field precedent as readyExpansion) so claims
+          // run under a chosen capacity. No events, no gate bypass effects.
+          const s = this.sim.state;
+          s.ageIndex = Math.max(0, Math.min(i, AGES.length - 1));
+          s.ageElapsed = 0;
+          this.refreshHUD();
+          return s.ageIndex;
         },
       };
     }
@@ -1067,10 +1079,18 @@ export class GameScene extends Phaser.Scene {
       b.addEventListener("click", () => this.showSpecPicker(unspecced.poiId));
       bar.appendChild(b);
       purpose("ui.specPurpose");
+      // A full frontier is still worth stating next to the pending decision.
+      if (!canClaimMore(s.territories, s.ageIndex)) this.appendCapacityLine(bar, s);
       return;
     }
     const c = this.sim.claimablePOIs().find((x) => x.clear);
     if (c) {
+      // Full frontier: explain capacity instead of offering a claim that the
+      // sim must reject (same canonical predicate, presentation-side read).
+      if (!canClaimMore(s.territories, s.ageIndex)) {
+        this.appendCapacityLine(bar, s);
+        return;
+      }
       // No claim button while hostiles remain: the objective line + C key
       // carry the clear state instead (§9).
       const b = document.createElement("button");
@@ -1089,13 +1109,39 @@ export class GameScene extends Phaser.Scene {
     const up = s.territories.find(
       (x) => !x.disabled && x.spec !== "" && x.tier === 1 && s.elapsed - x.heldSince >= TIER2_HOLD_SEC,
     );
-    if (up) {
+    if (up && up.spec !== "") {
+      // BEFORE confirmation: current tier → next, current bonus → new bonus,
+      // exact Knowledge cost. Unaffordable stays visible but disabled.
+      const cost = outpostUpgradeCost(s.ageIndex);
+      const afford = s.knowledgeTotal >= cost;
       const b = document.createElement("button");
       b.className = "btn terr-up-btn";
+      b.disabled = !afford;
       b.textContent = `${t("ui.upgrade")} (${t(`poi.${up.poiType}.name` as EnKeys)})`;
-      b.addEventListener("click", () => this.handleEvents(this.sim.upgradeOutpost(up.poiId)));
+      if (afford) b.addEventListener("click", () => this.handleEvents(this.sim.upgradeOutpost(up.poiId)));
       bar.appendChild(b);
+      const line = document.createElement("div");
+      line.className = "context-purpose";
+      line.textContent = afford
+        ? `T1 → T2 · ${this.outpostBonusText(up.spec, 1)} → ${this.outpostBonusText(up.spec, 2)} · ${t("ui.upgradeCost")}: ${cost} ${t("ui.knowledge")}`
+        : `${t("ui.upgradeNeedKnowledge")} (${t("ui.upgradeCost")}: ${cost} ${t("ui.knowledge")})`;
+      bar.appendChild(line);
     }
+  }
+
+  /** Capacity truth line shared by the full-frontier prompt states. */
+  private appendCapacityLine(bar: HTMLElement, s: RunSimulation["state"]): void {
+    const full = document.createElement("div");
+    full.className = "capacity-full";
+    full.textContent = `${t("ui.capacityFull")} — ${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`;
+    bar.appendChild(full);
+  }
+
+  /** REAL per-outpost mechanical bonus text (same derivation as the sim). */
+  private outpostBonusText(spec: OutpostSpec, tier: 1 | 2): string {
+    if (spec === "research") return `+${tier * 10}% ${t("ui.knowledge")}`;
+    if (spec === "economy") return `+${(1.5 * tier).toFixed(1)} HP/s`;
+    return `+1 ${t("ui.squad")}`;
   }
 
   /**
@@ -1189,6 +1235,13 @@ export class GameScene extends Phaser.Scene {
     if (s.over || this.techMapOpen || this.civMapOpen || this.blockingModal) return;
     const c = this.sim.claimablePOIs().find((x) => x.clear);
     if (!c) return;
+    // Capacity is explained, never silently swallowed: same predicate as
+    // the sim, read presentation-side before the call.
+    if (!canClaimMore(s.territories, s.ageIndex)) {
+      toast("ui.capacityFull", `${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`);
+      this.qa?.noteSimEvent("claim_key", "capacity-full");
+      return;
+    }
     this.handleEvents(this.sim.claimTerritory(c.poiId));
     const terr = s.territories.find((x) => x.poiId === c.poiId);
     if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
@@ -1298,16 +1351,47 @@ export class GameScene extends Phaser.Scene {
     cv.height = 300;
     panel.appendChild(cv);
     const list = el("div", "civmap-list");
+    panel.appendChild(list);
+    // Selected-outpost management (v0.23.1): click the map to inspect;
+    // only relevant actions, every button labeled with icon + purpose.
+    const detail = el("div", "civmap-detail");
+    detail.id = "civmap-detail";
+    panel.appendChild(detail);
+    panel.appendChild(button("ui.back", () => this.toggleCivMap(), "btn primary"));
+    screen.appendChild(panel);
+    root.appendChild(screen);
+    const refresh = (): void => {
+      this.renderCivMapLedger(list, detail);
+      this.drawCivMap(cv);
+    };
+    cv.style.cursor = "pointer";
+    cv.addEventListener("click", (ev2) => {
+      const pick = this.pickCivMapSite(cv, ev2);
+      this.trackedPoiId = pick && pick !== this.trackedPoiId ? pick : null;
+      this.qa?.noteSimEvent("civmap_track", this.trackedPoiId ?? "none");
+      refresh();
+    });
+    // Panel UPGRADE/TRACK actions re-render through this hook.
+    (detail as unknown as { __refresh?: () => void }).__refresh = refresh;
+    refresh();
+  }
+
+  /** Territory ledger + selected-site panel (shared by open + refresh). */
+  private renderCivMapLedger(list: HTMLElement, detail: HTMLElement): void {
+    const s = this.sim.state;
+    list.innerHTML = "";
     if (s.territories.length === 0) {
       const d = document.createElement("div");
-      d.textContent = "—";
+      d.textContent = `— ${t("ui.noOutposts")}`;
       list.appendChild(d);
     }
     for (const terr of s.territories) {
       const d = document.createElement("div");
+      const tracked = this.trackedPoiId === terr.poiId;
+      if (tracked) d.className = "civmap-tracked";
       const specKey = terr.spec === "" ? null : (`ui.spec${terr.spec[0]?.toUpperCase()}${terr.spec.slice(1)}` as EnKeys);
       const raidMark = s.raid && s.raid.poiId === terr.poiId ? ` ⚠ ${t("ui.raidIncoming")} ${Math.ceil(s.raid.tMinus)}s` : "";
-      d.textContent = `◈ ${t(`poi.${terr.poiType}.name` as EnKeys)} · ` +
+      d.textContent = `${tracked ? "◎ " : "◈ "}${t(`poi.${terr.poiType}.name` as EnKeys)} · ` +
         `${specKey ? t(specKey) : "—"} · T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}${terr.disabled ? " · ✗" : ""}${raidMark}`;
       list.appendChild(d);
     }
@@ -1318,11 +1402,119 @@ export class GameScene extends Phaser.Scene {
       d.textContent = `👑 ${t("ui.stronghold")} · ${Math.hypot(dx, dy).toFixed(0)}u`;
       list.appendChild(d);
     }
-    panel.appendChild(list);
-    panel.appendChild(button("ui.back", () => this.toggleCivMap(), "btn primary"));
-    screen.appendChild(panel);
-    root.appendChild(screen);
-    this.drawCivMap(cv);
+    const cap = document.createElement("div");
+    cap.className = "civmap-capacity";
+    cap.textContent = `${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`;
+    list.appendChild(cap);
+    this.renderCivMapDetail(detail);
+  }
+
+  /** Selected outpost: image + name + state + REAL bonus + relevant actions. */
+  private renderCivMapDetail(detail: HTMLElement): void {
+    const s = this.sim.state;
+    detail.innerHTML = "";
+    const terr = s.territories.find((x) => x.poiId === this.trackedPoiId);
+    if (!terr) return;
+    const head = document.createElement("div");
+    head.className = "civmap-detail-head";
+    if (terr.spec !== "") {
+      const img = document.createElement("img");
+      img.src = SEED_ASSETS.structures[terr.spec];
+      img.className = "structure-preview-icon";
+      img.alt = terr.spec;
+      head.appendChild(img);
+    }
+    const name = document.createElement("span");
+    name.className = "civmap-detail-name";
+    name.textContent = `◈ ${t(`poi.${terr.poiType}.name` as EnKeys)}`;
+    head.appendChild(name);
+    detail.appendChild(head);
+
+    const raided = s.raid?.poiId === terr.poiId;
+    const stateTxt = terr.disabled ? t("ui.siteDisabled") : raided ? t("ui.siteRaid") : t("ui.siteActive");
+    const specTxt = terr.spec === ""
+      ? t("ui.outpostSpec")
+      : t(`ui.spec${terr.spec[0]?.toUpperCase()}${terr.spec.slice(1)}` as EnKeys);
+    const rows: Array<[string, string]> = [
+      [t("ui.siteState"), `${stateTxt}${raided && s.raid ? ` (${Math.ceil(s.raid.tMinus)}s)` : ""}`],
+      [specTxt, `T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}`],
+      [t("ui.siteBonus"), terr.spec === "" ? "—" : this.outpostBonusText(terr.spec, terr.tier)],
+      [t("ui.siteHeld"), this.fmtTime(Math.max(0, s.elapsed - terr.heldSince))],
+    ];
+    for (const [k, v] of rows) {
+      const r = document.createElement("div");
+      r.className = "civmap-detail-row";
+      r.textContent = `${k}: ${v}`;
+      detail.appendChild(r);
+    }
+    if (terr.disabled) {
+      const rep = document.createElement("div");
+      rep.className = "context-purpose";
+      rep.textContent = terr.repairT > 0
+        ? `${t("ui.repairing")} ${Math.floor(terr.repairT)}/${REPAIR_NEED}s`
+        : t("ui.repairHint");
+      detail.appendChild(rep);
+    }
+    const actions = el("div", "btn-row");
+    // UPGRADE only when eligible; cost + benefit stated before confirmation.
+    const holdOk = s.elapsed - terr.heldSince >= TIER2_HOLD_SEC;
+    if (!terr.disabled && terr.spec !== "" && terr.tier === 1) {
+      const cost = outpostUpgradeCost(s.ageIndex);
+      const afford = s.knowledgeTotal >= cost;
+      const up = document.createElement("button");
+      up.className = "btn";
+      up.disabled = !afford;
+      up.textContent = afford
+        ? `⬆ ${t("ui.upgrade")}: T1 → T2 · ${t("ui.upgradeCost")} ${cost}`
+        : `⬆ ${t("ui.upgradeNeedKnowledge")} (${cost})`;
+      if (afford && holdOk) {
+        up.addEventListener("click", () => {
+          this.handleEvents(this.sim.upgradeOutpost(terr.poiId));
+          const root = detail as unknown as { __refresh?: () => void };
+          root.__refresh?.();
+        });
+      } else if (!holdOk) {
+        up.disabled = true;
+        up.textContent = `⬆ ${t("ui.upgradeNeedHold")}`;
+      }
+      actions.appendChild(up);
+    }
+    const track = document.createElement("button");
+    track.className = "btn";
+    track.textContent = `◎ ${t(this.trackedPoiId ? "ui.tracking" : "ui.track")}`;
+    track.addEventListener("click", () => {
+      this.trackedPoiId = this.trackedPoiId ? null : terr.poiId;
+      const root = detail as unknown as { __refresh?: () => void };
+      root.__refresh?.();
+    });
+    actions.appendChild(track);
+    detail.appendChild(actions);
+  }
+
+  /** Map a canvas click to the nearest territory (world↔canvas is invertible). */
+  private pickCivMapSite(cv: HTMLCanvasElement, ev: MouseEvent): string | null {
+    const s = this.sim.state;
+    const rect = cv.getBoundingClientRect();
+    if (rect.width <= 0) return null;
+    const W = cv.width;
+    const H = cv.height;
+    const RANGE = 12;
+    const cellX = W / (RANGE * 2 + 1);
+    const cellY = H / (RANGE * 2 + 1);
+    const cxp = ((ev.clientX - rect.left) / rect.width) * W;
+    const cyp = ((ev.clientY - rect.top) / rect.height) * H;
+    let best: string | null = null;
+    let bestD = 22; // canvas px grab radius
+    for (const terr of s.territories) {
+      const x = W / 2 + ((terr.x - s.px) / 512) * cellX;
+      const y = H / 2 + ((terr.y - s.py) / 512) * cellY;
+      const d = Math.hypot(x - cxp, y - cyp);
+      if (d < bestD) {
+        bestD = d;
+        best = terr.poiId;
+      }
+    }
+    return best;
   }
 
   private drawCivMap(cv: HTMLCanvasElement): void {
@@ -1391,6 +1583,16 @@ export class GameScene extends Phaser.Scene {
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(83,224,200,0.4)";
+        ctx.lineWidth = 1;
+      }
+      // Tracked-outpost ring (presentation-only selection, never canonical).
+      if (this.trackedPoiId === terr.poiId) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, 11, 0, Math.PI * 2);
         ctx.stroke();
         ctx.strokeStyle = "rgba(83,224,200,0.4)";
         ctx.lineWidth = 1;
@@ -2272,7 +2474,12 @@ export class GameScene extends Phaser.Scene {
           break;
         case "draft_rerolled":
           sfx.select();
-          this.qa?.noteSimEvent("draft_reroll", `${e.rerollsLeft} left`);
+          this.qa?.noteSimEvent("draft_reroll", `${e.rerollsLeft} left: ${e.prevIds.join("+")} → ${e.newIds.join("+")} (${e.changed} new)`);
+          break;
+        case "draft_reroll_unavailable":
+          toast("draft.rerollEmpty");
+          sfx.select();
+          this.qa?.noteSimEvent("draft_reroll", "unavailable");
           break;
         case "draft_skipped":
           sfx.select();

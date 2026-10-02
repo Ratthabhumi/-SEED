@@ -461,6 +461,20 @@ button, input { font-family: inherit; }
 .civmap-panel { width: min(640px, 94vw); }
 .civmap-panel canvas { width: 100%; border-radius: 8px; border: 1px solid #2c3a52; }
 .civmap-list { font-size: var(--font-body); line-height: 1.8; margin: 10px 0; text-align: left; }
+.civmap-tracked { color: var(--accent); font-weight: 700; }
+.civmap-capacity { color: var(--muted); font-size: var(--font-caption); margin-top: 6px; }
+
+/* Selected-outpost management panel (v0.23.1): image + state + real bonus
+ * + relevant actions only. */
+.civmap-detail { margin: 10px 0; border-top: 1px solid #2c3a52; padding-top: 10px; }
+.civmap-detail:empty { display: none; }
+.civmap-detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.civmap-detail-name { font-size: var(--font-body-strong); font-weight: 800; color: var(--text); }
+.civmap-detail-row { font-size: var(--font-body); line-height: 1.7; text-align: left; }
+.capacity-full {
+  color: var(--accent); font-weight: 800; font-size: var(--font-body);
+  line-height: 1.7; max-width: 100%; overflow-wrap: break-word;
+}
 
 /* Onboarding & Tutorial Presentation */
 .tutorial-intro-modal {
