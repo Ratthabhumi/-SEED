@@ -2,25 +2,23 @@
 
 ## CURRENT CANONICAL STATE — READ THIS FIRST
 
-- Active branch: `feat/v023-frontier-purpose-20261001`
-- Current HEAD: tip of `feat/v023-frontier-purpose-20261001` (docs-only delta
-  over the CI-verified code SHA below; code identical)
-- Current code SHA: `00960ed` (Phase A landed:
-  `4382fef` modal/seed-truth fixes, `530ce79` ordered-state + engagement
-  contracts, `bbc6df3` QA pipeline retarget to v023, `00960ed` docs reconcile)
-- Exact-SHA CI: run 36875075100 — 3/3 GREEN (verify Node 22 SUCCESS, verify
-  Node 24 SUCCESS, e2e SUCCESS). v0.23 TECHNICAL BASELINE frozen at `00960ed`.
-- Current milestone: v0.23 TECHNICAL CLOSURE (no new gameplay; auditor HOLD on
-  human testing until exact-SHA CI is 3/3 green)
-- Current blockers: none locally — (1) industrial modal test FIXED +
-  race-proofed, (2) QA seed truth FIXED (custom-seed E2E asserts snapshot +
-  report carry `EPOCH-CUSTOM-42`), (3) qa-report emits v023 path/title FIXED
-- Next exact action: v0.23 TECHNICAL BASELINE frozen — create
-  `fix/v0231-interaction-clarity-20261001` for the next milestone
+- Active branch: `fix/v0231-interaction-clarity-20261001`
+- Parent logical baseline: `e32e995d4cb86dc24337cfe2c60d6ec1227d6fd0` (v0.23 TECHNICAL BASELINE PASSED / HUMAN UX REJECTED — frozen, do not modify)
+- Current actual HEAD: tip of `fix/v0231-interaction-clarity-20261001` (exact SHA recorded in the CI section below after push)
+- Versions: WORLDGEN 2 / CONTENT 6 / SAVE 1 / package 0.2.0-dev.0
+- Current milestone: v0.23.1 Interaction Clarity + Tech Agency + Territory Economy (🟢 ACTIVE)
+- Latest local verification: typecheck clean; unit 334/334; targeted E2E green (pauseTutorial 4/4, frontier 2/2, clarity matrix 3/3 viewports); visual evidence 15/15 captured (`docs/visual_audit_v0231/`, EVIDENCE_CAPTURED / HUMAN_REVIEW_PENDING)
+- Latest exact-SHA CI: v0.23.1 tip — pending (v0.23 parent CI: run 36875936223 SUCCESS)
+- Completed (actual implemented work): UI surface coordinator + context-stack; pause IA + replay-tutorial confirmation behind stable IDs; phase-aware tutorial intro IDs; progressive Tech DAG mini-paths (CONTENT 6); deterministic reroll contract (meaningful-change + unavailable event + telemetry); outpost capacity 1..6 + Knowledge upgrade cost + first-signal exemption (no-softlock proof); civ-map selected-outpost panel + tracking; semantic visuals (draft leads-to/icons, age purpose); QA pipeline retargeted to `latest-v0231-interaction-human.md` (v0.23 history untouched); responsive clarity matrix; 15 visual evidence files
+- Remaining: final full local gate (one coherent pass) → push → exact-SHA CI 3/3 → short human gate (5–8 min natural play) → auditor PATH A/B decision. Do NOT begin v0.24.
 - Everything below the `HISTORICAL ARCHIVE` marker is prior-milestone evidence.
-  Do NOT use old resume instructions for current work.
+  HISTORICAL ARCHIVE — DO NOT USE FOR CURRENT RESUME.
 
 ---
+
+## HISTORICAL ARCHIVE — DO NOT USE FOR CURRENT RESUME
+
+Everything below describes frozen prior milestones (v0.23 and earlier).
 
 ## Timestamp
 

@@ -58,8 +58,12 @@
   - 🟠 HUMAN INTEGRATION STILL EVOLVING
 - **v0.22.1 First-Run Clarity**: ✅ TECHNICAL GATE (exact-SHA CI green)
   - 🟠 HUMAN UX CORRECTIVE (HUD overlap, UI-scale breakage, territory purpose, Tech Map overflow, Space FPS)
-- **v0.23 Frontier Purpose & Late-Game Performance**: 🟢 ACTIVE
-- **v0.24 Game Feel & Audio**: 🔵 RESEARCH READY (entry gate: v0.23 human macro loop accepted)
+- **v0.23 Frontier Purpose & Late-Game Performance**: 🟠 TECHNICAL BASELINE PASSED (exact-SHA CI green at `e32e995`, run 36875936223)
+  - 🟠 HUMAN UX CORRECTIVE (objectives, Tech agency, territory purpose, UI overlap — corrected in v0.23.1)
+  - Logical baseline for v0.23.1: `e32e995`
+- **v0.23.1 Interaction Clarity + Tech Agency + Territory Economy**: 🟢 ACTIVE
+- **v0.24 Game Feel & Audio**: 🔵 RESEARCH READY
+  - BLOCKED on v0.23.1 Human Gate (entry gate: v0.23.1 short human audit accepted)
 - **v0.3+**: ⚪ PLANNED
 
 ---
@@ -73,21 +77,28 @@
   - Kenney Board Game Icons (CC0) — UI category emblems
   - Kenney UI Pack - Sci-Fi (CC0) — Window frames & bevels
   - Approved agent skills (`.agents/skills/`) — Curated implementation references
-- 🟠 **IMPLEMENTED BUT CORRECTIVE**:
-  - Kenney Particle Pack (CC0) — Solid black background textures rendered with NORMAL blend mode; corrective pass fixes blend mode to ADD/SCREEN and pools cleanly.
-- 🔵 **RESEARCH READY**:
-  - ZzFX — Procedural audio candidate for v0.23 sound language.
-- ⏸ **EVIDENCE-GATED**:
+  - Progressive disclosure (v0.23.1) — Q/E/R/F/T/M/C surfaced only when relevant
+  - Contextual tutorial + surface coordination (v0.23.1) — one context-stack lane, exactly-one BLOCKING
+  - Progressive Tech DAG (v0.23.1) — deterministic spine→foundation→specialization mini-paths
+  - Outpost Capacity per Age (v0.23.1) — Stone 1 … Space 6, mission-signal exemption
+  - Knowledge-cost Outpost upgrade (v0.23.1) — ≈9% of next Age threshold
+- 🟠 **IMPLEMENTED / HUMAN VALIDATION PENDING**:
+  - Kenney Particle Pack (CC0) — Corrective ADD/SCREEN blend handling; human validation of VFX readability still pending.
+- 📖 **DESIGN REFERENCES ONLY (never code sources)**:
+  - Mindustry, The Riftbreaker, OpenRA, shapez, Unciv (design references for territory/expansion/defense; GPL sources never copied)
+  - World of ClaudeCraft, awesome-ai-game, awesome-ai-built-games, AI Game Central, itch AI-game catalog (landscape awareness only).
+- 🔵 **APPROVED / NOT CURRENTLY USED**:
+  - Kenney Game Icons 1.0 (CC0) — approved small-subset use only; not needed yet.
+  - Kenney Game Icons Expansion 1.0 (CC0) — approved small-subset use only; not needed yet.
+- 🔵 **RESEARCH READY / NOT USED**:
+  - ZzFX — Procedural audio candidate (v0.24 sound language gate).
+- ⏸ **DEFERRED / EVIDENCE-GATED (do not add now)**:
   - EasyStar.js / navmesh — Routing only if unit obstacle navigation proves deficient in gameplay evidence.
-- ⏸ **FUTURE WORLD REVIEW**:
   - `simplex-noise` — Terrain variation requiring deliberate `WORLDGEN_VERSION` review.
-- ⏸ **NOT CURRENTLY JUSTIFIED**:
   - Miniplex ECS migration — Custom pooled simulation already outperforms budget.
   - RexUI migration — Vanilla DOM modals offer cleaner control and lower overhead.
   - Runtime LLM systems — Conflicts with deterministic offline simulation and latency targets.
-- 📖 **REFERENCE ONLY (No code integration)**:
-  - Mindustry, The Riftbreaker, OpenRA, shapez, Unciv, World of ClaudeCraft (design references for territory/expansion/defense; GPL sources never copied)
-  - awesome-ai-game, awesome-ai-built-games, AI Game Central, itch AI-game catalog (landscape awareness only).
+  - SpriteGPULayer — No evidence of a sprite-batch bottleneck justifying it.
 
 ---
 
