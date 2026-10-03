@@ -3,6 +3,7 @@
 // constants, and bonus derivation so UI and tests share one source of truth.
 import type { POIType } from "../world/poi";
 import { AGE_DEFS } from "../progression/ages";
+import { calculateLogisticsCost, calculateMaxLogistics } from "../emergence/outpostLogistics";
 
 export type OutpostSpec = "research" | "military" | "economy";
 
@@ -134,3 +135,6 @@ export function economyRegenAt(ts: readonly Territory[], px: number, py: number)
 export function territoryById(ts: readonly Territory[], poiId: string): Territory | undefined {
   return ts.find((t) => t.poiId === poiId);
 }
+
+// Re-export logistics functions for UI consumption
+export { calculateLogisticsCost, calculateMaxLogistics } from "../emergence/outpostLogistics";

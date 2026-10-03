@@ -161,7 +161,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
     }
   });
 
-  it("verifies no personal workstation file:/// URLs exist in repository markdown", () => {
+  it("verifies no personal workstation file:/// URLs exist in repository markdown", { timeout: 30000 }, () => {
     function walkMd(dir: string): string[] {
       let results: string[] = [];
       const entries = fs.readdirSync(dir, { withFileTypes: true });

@@ -23,7 +23,8 @@ import type { WeaponFamily } from "../../core/combat/weapons";
 import { CRITICAL_SPINE } from "../../core/tech/graph";
 import { AGE_DEFS, ageGates } from "../../core/progression/ages";
 import { ORIGIN_SQUAD_NAME, ORIGIN_ABILITY, squadCap } from "../../core/combat/squad";
-import { militaryBonusSlots, territoryKnowledgeBonus, activeTerritories, TIER2_HOLD_SEC, REPAIR_NEED, outpostCapacity, canClaimMore, outpostsHeld, outpostUpgradeCost, type OutpostSpec } from "../../core/world/territory";
+import { militaryBonusSlots, territoryKnowledgeBonus, activeTerritories, TIER2_HOLD_SEC, REPAIR_NEED, outpostUpgradeCost, calculateLogisticsCost, calculateMaxLogistics, type OutpostSpec } from "../../core/world/territory";
+import { calculateMaxLogistics as calculateMaxLogisticsEmergence } from "../../core/emergence/outpostLogistics";
 import { scaleKnowledge } from "../../core/sim/progression";
 import { threatBudget } from "../../core/director/director";
 import { getWeaponStage } from "../../core/combat/weapons";
@@ -442,6 +443,12 @@ export class GameScene extends Phaser.Scene {
           const s = this.sim.state;
           const id = poiId || s.territories[0]?.poiId || "e2e_outpost";
           this.showSpecPicker(id);
+        },
+        setOutpostSpec: (poiId: string, spec: "research" | "military" | "economy") => {
+          const ev = this.sim.setOutpostSpec(poiId, spec);
+          this.handleEvents(ev);
+          this.refreshHUD();
+          return ev; // return events array (empty if failed)
         },
         setAgeIndex: (i: number) => {
           // Test-only staging for capacity/frontier flows: jump the age
@@ -1081,16 +1088,16 @@ export class GameScene extends Phaser.Scene {
       b.addEventListener("click", () => this.showSpecPicker(unspecced.poiId));
       bar.appendChild(b);
       purpose("ui.specPurpose");
-      // A full frontier is still worth stating next to the pending decision.
-      if (!canClaimMore(s.territories, s.ageIndex)) this.appendCapacityLine(bar, s);
+      // A full logistics is still worth stating next to the pending decision.
+      if (s.logistics >= s.maxLogistics) this.appendLogisticsLine(bar, s);
       return;
     }
-    // Capacity is stated whenever the frontier is full and ANY unclaimed
+    // Logistics is stated whenever the frontier is full and ANY unclaimed
     // site is near — contested or clear. Clearing a site cannot help a full
-    // frontier, so the player is told not to bother (same predicate as sim).
+    // logistics, so the player is told not to bother (same predicate as sim).
     const anySite = this.sim.claimablePOIs()[0];
-    if (anySite && !canClaimMore(s.territories, s.ageIndex)) {
-      this.appendCapacityLine(bar, s);
+    if (anySite && s.logistics >= s.maxLogistics) {
+      this.appendLogisticsLine(bar, s);
       return;
     }
     const c = this.sim.claimablePOIs().find((x) => x.clear);
@@ -1138,11 +1145,11 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Capacity truth line shared by the full-frontier prompt states. */
-  private appendCapacityLine(bar: HTMLElement, s: RunSimulation["state"]): void {
+  /** Logistics truth line shared by the full-logistics prompt states. */
+  private appendLogisticsLine(bar: HTMLElement, s: RunSimulation["state"]): void {
     const full = document.createElement("div");
-    full.className = "capacity-full";
-    full.textContent = `${t("ui.capacityFull")} — ${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`;
+    full.className = "logistics-full";
+    full.textContent = `${t("ui.logisticsFull")} — ${t("ui.logisticsLine")} ${s.logistics}/${s.maxLogistics}`;
     bar.appendChild(full);
   }
 
@@ -1244,13 +1251,7 @@ export class GameScene extends Phaser.Scene {
     if (s.over || this.techMapOpen || this.civMapOpen || this.blockingModal) return;
     const c = this.sim.claimablePOIs().find((x) => x.clear);
     if (!c) return;
-    // Capacity is explained, never silently swallowed: same predicate as
-    // the sim, read presentation-side before the call.
-    if (!canClaimMore(s.territories, s.ageIndex)) {
-      toast("ui.capacityFull", `${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`);
-      this.qa?.noteSimEvent("claim_attempt", "capacity-full");
-      return;
-    }
+    // v0.24: claim is free; Logistics only consumed when specializing (setOutpostSpec).
     this.qa?.noteSimEvent("claim_attempt", c.poiId);
     this.handleEvents(this.sim.claimTerritory(c.poiId));
     const terr = s.territories.find((x) => x.poiId === c.poiId);
@@ -1265,20 +1266,33 @@ export class GameScene extends Phaser.Scene {
       { id: "economy", name: "ui.specEconomy", desc: "ui.specEconomyDesc" },
     ];
     this.showBlocking("spec-screen", 0, (screen) => {
+      const s = this.sim.state;
       const panel = el("div", "panel panel-md");
       panel.appendChild(el("h2", "", "ui.outpostSpec"));
+      
+      // Show current logistics
+      const logisticsInfo = el("div", "logistics-info");
+      logisticsInfo.textContent = `${t("ui.logisticsLine")} ${s.logistics}/${s.maxLogistics}`;
+      panel.appendChild(logisticsInfo);
+      
       const row = el("div", "btn-row");
       for (const sp of specs) {
+        const cost = calculateLogisticsCost(sp.id, 1, s.ageIndex);
+        const canAfford = s.logistics + cost <= s.maxLogistics;
         const b = document.createElement("button");
         b.className = "btn primary terr-spec-btn";
+        if (!canAfford) b.disabled = true;
         const icon = document.createElement("img");
         icon.src = SEED_ASSETS.structures[sp.id];
         icon.className = "structure-preview-icon";
         icon.alt = sp.id;
         b.appendChild(icon);
         const txt = document.createElement("span");
-        txt.textContent = `${t(sp.name)} — ${t(sp.desc)}`;
+        txt.textContent = `${t(sp.name)} — ${t(sp.desc)} — ${t("ui.logisticsCost")}: ${cost}`;
         b.appendChild(txt);
+        if (!canAfford) {
+          b.title = t("ui.insufficientLogistics");
+        }
         b.addEventListener("click", () => {
           this.handleEvents(this.sim.setOutpostSpec(poiId, sp.id));
           this.closeBlocking();
@@ -1412,8 +1426,8 @@ export class GameScene extends Phaser.Scene {
       list.appendChild(d);
     }
     const cap = document.createElement("div");
-    cap.className = "civmap-capacity";
-    cap.textContent = `${t("ui.capacityLine")} ${outpostsHeld(s.territories)}/${outpostCapacity(s.ageIndex)}`;
+    cap.className = "civmap-logistics";
+    cap.textContent = `${t("ui.logisticsLine")} ${s.logistics}/${s.maxLogistics}`;
     list.appendChild(cap);
     this.renderCivMapDetail(detail);
   }

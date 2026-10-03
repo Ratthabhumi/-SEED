@@ -478,6 +478,27 @@ export class RunSimulation {
     ev.push({ type: "draft_opened", context: "poi" });
   }
 
+  /**
+   * Resolve a TechNode by ID from either the main graph or fallback cards.
+   * Fallback nodes are not in the graph but are valid TechNodes with proper effects.
+   */
+  private resolveTechNode(nodeId: string): TechNode | undefined {
+    // First check the main tech graph
+    const graphNode = this.graph.find((n) => n.id === nodeId);
+    if (graphNode) return graphNode;
+    
+    // Check fallback cards (level-based, but we can infer from nodeId pattern)
+    // Fallback IDs are like "fb-dmg-1", "fb-hp-2", etc.
+    const fbMatch = nodeId.match(/^fb-(dmg|hp|spd)-(\d+)$/);
+    if (fbMatch) {
+      const level = parseInt(fbMatch[2], 10);
+      const fbCards = fallbackCards(level);
+      return fbCards.find((f) => f.id === nodeId);
+    }
+    
+    return undefined;
+  }
+
   /** Apply a draft pick. Returns events (tech_selected, breakthrough*, maybe draft_opened). */
   chooseDraft(i: number): SimEvent[] {
     const s = this.state;
@@ -489,8 +510,8 @@ export class RunSimulation {
     s.draftOffers = [];
     s.draftContext = "level";
     
-    // Find the base TechNode for bookkeeping
-    const node = this.graph.find((n) => n.id === offer.nodeId);
+    // Resolve the TechNode (handles both graph nodes and fallback nodes)
+    const node = this.resolveTechNode(offer.nodeId);
     if (!node) return ev;
     
     // Bookkeeping: owned, tags, synergyTags, weaponEvolve (same as grantNode but without base effects)
