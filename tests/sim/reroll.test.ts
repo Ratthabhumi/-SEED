@@ -21,15 +21,15 @@ function openDraft(sim: RunSimulation): void {
 }
 
 function shownIds(sim: RunSimulation): string[] {
-  return sim.state.draftChoices.map((n) => n.id);
+  return sim.state.draftOffers.map((o) => o.nodeId);
 }
 
 /** Non-reserved, non-fallback ids currently visible. */
 function shownReal(sim: RunSimulation): string[] {
   const s = sim.state;
-  return s.draftChoices
-    .filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech)
-    .map((n) => n.id);
+  return s.draftOffers
+    .filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech)
+    .map((o) => o.nodeId);
 }
 
 /** Non-reserved real ids the pool could show (what a redraw draws from). */
@@ -41,27 +41,39 @@ function poolReal(sim: RunSimulation): string[] {
     .map((x) => x.id);
 }
 
-/** Directed trace with a proven alternative (validated staging: after five
- * owned drafts the pool holds an unshown real node the diversity rule
- * skipped). The staging precondition is asserted loudly — if the DAG ever
- * moves, this fails at setup, never mysteriously mid-contract. */
+/** Directed trace with a proven alternative (validated staging: after three
+ * owned drafts the pool holds an unshown real node). The staging
+ * precondition is asserted loudly — if the DAG ever moves, this fails at
+ * setup, never mysteriously mid-contract. Searches seeds dynamically since
+ * offer engine v0.24 changes draft selection (Gumbel-Top-k with quality). */
 function stagedAlternative(): RunSimulation {
-  const sim = new RunSimulation({ masterSeed: "EPOCH-PROBE-2", originId: "sentinels" });
-  const ev: never[] = [];
-  sim.gainKnowledge(500000, "test", ev);
-  for (let i = 0; i < 5; i++) {
-    if (sim.state.draftOpen) sim.chooseDraft(0);
-    else {
-      const e2: never[] = [];
-      sim.gainKnowledge(500000, "test", e2);
+  const origins = ["sentinels", "hunters", "engineers", "resonant"];
+  const seeds = [];
+  for (let i = 1; i <= 50; i++) {
+    seeds.push(`EPOCH-PROBE-${i}`);
+    seeds.push(`EPOCH-REROLL-${i}`);
+    seeds.push(`EPOCH-GOLDEN-${i}`);
+  }
+  for (const origin of origins) {
+    for (const seed of seeds) {
+      const sim = new RunSimulation({ masterSeed: seed, originId: origin });
+      const ev: never[] = [];
+      sim.gainKnowledge(500000, "test", ev);
+      for (let i = 0; i < 3; i++) {
+        if (sim.state.draftOpen) sim.chooseDraft(0);
+        else {
+          const e2: never[] = [];
+          sim.gainKnowledge(500000, "test", e2);
+        }
+      }
+      if (!sim.state.draftOpen) continue;
+      const pool = new Set(poolReal(sim));
+      const shown = new Set(shownReal(sim));
+      const outside = [...pool].filter((id) => !shown.has(id));
+      if (outside.length > 0) return sim;
     }
   }
-  expect(sim.state.draftOpen).toBe(true);
-  const pool = new Set(poolReal(sim));
-  const shown = new Set(shownReal(sim));
-  const outside = [...pool].filter((id) => !shown.has(id));
-  expect(outside.length, "staged pool must offer an alternative").toBeGreaterThan(0);
-  return sim;
+  throw new Error("No seed/origin found with staged alternative for offer engine v0.24");
 }
 
 describe("reroll meaningful-change contract", () => {
@@ -79,21 +91,21 @@ describe("reroll meaningful-change contract", () => {
     expect(new Set(ok.newIds)).toEqual(new Set(shownReal(sim)));
     expect(ok.newIds.filter((id) => !before.includes(id)).length).toBe(ok.changed);
     expect(sim.state.draftOpen).toBe(true);
-    expect(sim.state.draftChoices).toHaveLength(3);
+    expect(sim.state.draftOffers).toHaveLength(3);
     // No duplicate cards on screen after a forced swap.
     expect(new Set(shownIds(sim)).size).toBe(shownIds(sim).length);
   });
 
   it("reserved compatible card stays and never counts as a change", () => {
     const sim = stagedAlternative();
-    const realIdx = sim.state.draftChoices.findIndex((n) => !n.id.startsWith("fb-"));
+    const realIdx = sim.state.draftOffers.findIndex((o) => !o.nodeId.startsWith("fb-"));
     expect(realIdx).toBeGreaterThanOrEqual(0);
-    const reserved = sim.state.draftChoices[realIdx]?.id as string;
+    const reserved = sim.state.draftOffers[realIdx]?.nodeId as string;
     sim.reserveCard(realIdx);
     const ev = sim.rerollDraft();
     const ok = ev.find((e) => e.type === "draft_rerolled");
     expect(ok?.type).toBe("draft_rerolled");
-    expect(sim.state.draftChoices.map((n) => n.id)).toContain(reserved);
+    expect(sim.state.draftOffers.map((o) => o.nodeId)).toContain(reserved);
     if (ok?.type !== "draft_rerolled") throw new Error("unreachable");
     expect(ok.newIds).not.toContain(reserved);
     expect(ok.changed).toBeGreaterThanOrEqual(1);

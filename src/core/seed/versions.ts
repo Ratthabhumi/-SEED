@@ -30,14 +30,22 @@
 //   territorial-control gate, boss spawns as the consequence of approaching
 //   the revealed Stronghold. Same seed + same decisions replay identically.
 // v0.23.1 interaction clarity + territory economy:
-// - WORLDGEN_VERSION stays 2: chunk/POI placement unchanged.
-// - CONTENT_VERSION 5 -> 6: Tech DAG side branches form deterministic
-//   progressive mini-paths (spine -> foundation -> specialization) instead of
-//   the wide frontier; outpost capacity + Knowledge upgrade costs gate the
-//   territory economy. Same seed + same decisions replay identically; old
-//   decision traces diverge by design.
+  // - WORLDGEN_VERSION stays 2: chunk/POI placement unchanged.
+  // - CONTENT_VERSION 5 -> 6: Tech DAG side branches form deterministic
+  //   progressive mini-paths (spine -> foundation -> specialization) instead of
+  //   the wide frontier; outpost capacity + Knowledge upgrade costs gate the
+  //   territory economy. Same seed + same decisions replay identically; old
+  //   decision traces diverge by design.
+  //
+  // v0.24 emergent seed core:
+  // - WORLDGEN_VERSION stays 2: chunk/POI placement unchanged.
+  // - CONTENT_VERSION 6 -> 7: World Laws (domain bias, tech modifiers, enemy
+  //   ecology, territory rules, pacing profile) and Offer Engine (Gumbel-Top-k,
+  //   quality sampling, anti-pattern penalties) integrated into canonical
+  //   runtime. Same seed + same decisions replay identically; old decision
+  //   traces diverge by design.
 export const WORLDGEN_VERSION = 2;
-export const CONTENT_VERSION = 6;
+export const CONTENT_VERSION = 7;
 export const SAVE_SCHEMA_VERSION = 1;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;

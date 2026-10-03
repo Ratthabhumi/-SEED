@@ -62,10 +62,12 @@ export interface OutpostState extends Territory {
 }
 
 export function calculateMaxLogistics(ageIndex: number, originLogisticsBonus: number = 0, techLogisticsBonus: number = 0): number {
-  return Math.min(6, (ageIndex + 1) + originLogisticsBonus + techLogisticsBonus);
+  // Base logistics: age 0 starts at 3 to allow research(1)+military(2) or similar combos
+  // Grows by 1 per age, caps at 8
+  return Math.min(8, (ageIndex + 3) + originLogisticsBonus + techLogisticsBonus);
 }
 
-export function calculateLogisticsCost(spec: OutpostSpec, tier: 1 | 2, ageIndex: number): number {
+export function calculateLogisticsCost(spec: OutpostSpec, tier: 1 | 2, ageIndex: number = 0): number {
   const base = DEFAULT_OUTPOST_CONFIG.logisticsPerTier[spec];
   const tierMult = tier === 1 ? 1 : 1.5;
   return Math.ceil(base * tierMult);
@@ -78,9 +80,10 @@ export function canFoundOutpost(currentLogistics: number, cost: number, maxLogis
 export function applyFoundOutpost(
   state: { logistics: number; maxLogistics: number; territories: Territory[] },
   spec: OutpostSpec,
-  tier: 1 | 2
+  tier: 1 | 2,
+  ageIndex: number = 0
 ): boolean {
-  const cost = calculateLogisticsCost(spec, tier, 0); // ageIndex from context
+  const cost = calculateLogisticsCost(spec, tier, ageIndex);
   if (!canFoundOutpost(state.logistics, cost, state.maxLogistics)) return false;
   state.logistics += cost;
   return true;
@@ -92,7 +95,7 @@ export function applyUpgradeOutpost(
   tier: 1 | 2,
   ageIndex: number
 ): { success: boolean; cost: number } {
-  const cost = calculateLogisticsCost(spec, 2, 0) - calculateLogisticsCost(spec, 1, 0);
+  const cost = calculateLogisticsCost(spec, 2, ageIndex) - calculateLogisticsCost(spec, 1, ageIndex);
   // In reality, knowledge cost is handled in simulation
   return { success: true, cost };
 }
@@ -139,7 +142,7 @@ export function calculateGarrisonBenefit(
   const cfg = DEFAULT_OUTPOST_CONFIG.garrison.benefit;
   
   if (spec === "economy") {
-    const dist = Math.hypot(outpost.x - 0, outpost.y - 0); // player pos would be passed
+    const dist = Math.hypot(outpost.x - playerPos.x, outpost.y - playerPos.y);
     if (dist <= 800) {
       return { hpRegen: cfg.economy * tier, squadBonus: 0, knowledgeMul: 0 };
     }

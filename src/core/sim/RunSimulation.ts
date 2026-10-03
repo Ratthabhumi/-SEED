@@ -21,6 +21,10 @@ import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from
 import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
+import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
+import { CONTENT_VERSION } from "../seed/versions";
+import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
+import { calculateMaxLogistics, calculateLogisticsCost, applyFoundOutpost, calculateKnowledgeUpgradeCost, calculateGarrisonBenefit, toggleGarrison, type OutpostConfig } from "../emergence/outpostLogistics";
 import { canAdvanceAge, type DominionState } from "../progression/ages";
 import { missionDone, type MissionState } from "../progression/missions";
 import {
@@ -48,6 +52,9 @@ import type { SimEvent } from "./SimEvent";
 import {
   MAX_ENEMIES, MAX_PROJ, MAX_PICKUP, MAX_MINES, SPATIAL_CELL,
   type RunState, type SimEnemy,
+  type DraftOffer,
+  type TechModifierId,
+  type TechQuality,
 } from "./RunState";
 
 const OBJECTIVE_KILLS = [0, 25, 60, 120, 200, 0];
@@ -93,6 +100,8 @@ export class RunSimulation {
   // ------------------------------------------------------------ construction
   private freshWorldState(masterSeed: string, ascension: number, originId: string): RunState {
     const worldSeed = ascension === 0 ? masterSeed : deriveAscensionSeed(masterSeed, ascension);
+    const worldLaws = generateWorldLaws(masterSeed, WORLDGEN_VERSION, CONTENT_VERSION);
+    const maxLogistics = calculateMaxLogistics(0);
     return {
       masterSeed, worldSeed,
       worldNonce: worldNonceFor(masterSeed, ascension),
@@ -102,17 +111,25 @@ export class RunSimulation {
       px: 0, py: 0, vx: 0, vy: 0, dashT: 0, dashCd: 0, iframe: 0,
       build: defaultEffectTarget(),
       level: 1, xp: 0, xpNext: xpForLevel(1), knowledgeTotal: 0,
-      pendingLevels: 0, draftOpen: false, draftChoices: [],
+      pendingLevels: 0, draftOpen: false, draftOffers: [],
       owned: [], ownedTags: [], breakthroughs: [],
       weaponStage: { kinetic: 0, energy: 0, defense: 0, field: 0 },
       reservedTech: "", rerolls: 1, pinnedTarget: "",
       originId, expansionFamily: "",
+      originMechanic: {
+        hunterMarks: [], hunterTrophies: [],
+        fabricationModules: [], fabricationCharges: 0,
+        harmonicCharge: 0, lastResonanceFamily: "",
+        bastionLinks: [],
+      },
       legacies: [],
       poiFamiliesClaimed: [],
       draftContext: "level",
       elitesAge: 0, raidsSurvived: 0, signalSecured: false,
       missionDoneCache: false,
       territories: [], raid: null, lastRaidAt: 0,
+      logistics: 0,
+      maxLogistics,
       squad: Array.from({ length: SQUAD_MAX }, (_, i) => ({
         active: i < SQUAD_BASE_CAP, x: (i === 0 ? -30 : 30), y: 0,
         hp: SQUAD_HP, maxHp: SQUAD_HP, dmg: SQUAD_DMG, cd: 0, inv: 0,
@@ -120,6 +137,7 @@ export class RunSimulation {
       squadMode: "follow" as SquadMode, focusX: 0, focusY: 0,
       abilityCd: 0, overdriveT: 0,
       history: [],
+      recentDraftOffers: [],
       spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
       guardianAng: 0, orbitAng: 0, beamFlash: null,
@@ -140,6 +158,7 @@ export class RunSimulation {
       stats: { kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0 },
       damageBySource: {}, topDamageSource: "", highestAge: "stone",
       worldDamageBySource: {}, worldTopDamageSource: "", worldBreakthroughsEarned: [],
+      worldLaws,
     };
   }
 
@@ -336,44 +355,116 @@ export class RunSimulation {
 
   private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
     const s = this.state;
-    let pool = this.availableNodes();
-    if (filter) {
-      const picked = pool.filter(filter);
-      // A themed draft with zero candidates falls back to the open pool
-      // (still a real choice, never an empty modal).
-      if (picked.length > 0) pool = picked;
-    }
-    const path = this.pinnedPathIds();
-    const poolIds = new Set(pool.map((n) => n.id));
-    const scored = pool.map((n) => ({
-      n,
-      // Pinned-path nodes get a bounded ×2 weight (variety preserved).
-      w: n.weight * (0.5 + this.streams.draft.nextFloat()) * (path.has(n.id) ? 2 : 1),
-    }));
-    scored.sort((a, b) => b.w - a.w);
-    const picks: TechNode[] = [];
-    const kinds = new Set<string>();
-    for (const cand of scored) {
-      const k = cand.n.effects[0]?.kind ?? "other";
-      if (picks.length < 3 && (!kinds.has(k) || picks.length >= 2)) {
-        picks.push(cand.n);
-        kinds.add(k);
-      }
-      if (picks.length >= 3) break;
-    }
+    const result = generateOffers({
+      sim: {
+        owned: s.owned,
+        ownedTags: s.ownedTags,
+        breakthroughs: s.breakthroughs,
+        ageIndex: s.ageIndex,
+        age: AGES[s.ageIndex],
+        originId: s.originId,
+        expansionFamily: s.expansionFamily,
+        pinnedTarget: s.pinnedTarget,
+        draftChoices: s.draftOffers.map(o => o.nodeId),
+        reservedTech: s.reservedTech,
+        history: s.history,
+        techGraph: () => this.graph,
+      },
+      laws: s.worldLaws,
+      activeFamilies: new Set(activeFamilies(s.originId, s.expansionFamily)),
+      recentOffers: s.recentDraftOffers,
+      recentPicks: s.history.filter(h => h.kind === "tech_selected").map(h => h.label),
+      rng: this.streams.draft,
+    }, undefined, 3);
+    
+    // Convert OfferCandidate to DraftOffer with quality/modifiers applied
+    let offers = result.map((c) => this.convertToDraftOffer(c.node, c.quality, c.score));
+    
     // Reserved card reappears in the next compatible draft (replaces the
     // weakest pick; never a 4th card, never a fallback slot steal).
-    if (s.reservedTech !== "" && poolIds.has(s.reservedTech) && !picks.some((n) => n.id === s.reservedTech)) {
-      const node = pool.find((n) => n.id === s.reservedTech);
-      if (node && picks.length > 0) picks[picks.length - 1] = node;
+    if (s.reservedTech !== "" && !offers.some((o) => o.nodeId === s.reservedTech)) {
+      const pool = this.availableNodes();
+      const poolIds = new Set(pool.map((n) => n.id));
+      if (poolIds.has(s.reservedTech)) {
+        const node = pool.find((n) => n.id === s.reservedTech);
+        if (node && offers.length > 0) {
+          // Create DraftOffer for reserved tech with default quality
+          offers[offers.length - 1] = this.convertToDraftOffer(node, "COMMON", 0);
+        }
+      }
     }
+    
     // Emergency fallback only (should be rare with the wide-frontier graph).
-    // Dedicated keys whose numbers match the effects EXACTLY (P2 localization).
     const fb = fallbackCards(s.level);
-    while (picks.length < 3) picks.push(fb[picks.length] as TechNode);
-    s.draftChoices = picks;
+    while (offers.length < 3) {
+      const fbNode = fb[offers.length] as TechNode;
+      offers.push(this.convertToDraftOffer(fbNode, "COMMON", 0));
+    }
+    
+    s.draftOffers = offers;
+    s.recentDraftOffers.push(offers.map(o => o.nodeId));
+    while (s.recentDraftOffers.length > 5) s.recentDraftOffers.shift();
     s.draftOpen = true;
     s.draftContext = context;
+  }
+
+  /**
+   * Convert a TechNode + quality + score into a canonical DraftOffer.
+   * Quality and modifiers affect the effective effects presented to the player.
+   */
+  private convertToDraftOffer(
+    node: TechNode,
+    quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC",
+    score: number
+  ): DraftOffer {
+    const qualityMods: Record<string, number> = {
+      COMMON: 1.0,
+      UNCOMMON: 1.25,
+      RARE: 1.5,
+      MYTHIC: 2.0,
+    };
+    
+    // Sample modifiers based on quality (deterministic from nodeId + quality)
+    const modifierPool: TechModifierId[] = [
+      "overcharged", "extended", "efficient", "volatile",
+      "piercing", "splash", "homing", "chain",
+      "reinforced", "regenerating", "warded", "adaptive",
+      "swift", "silent", "massive", "precise",
+    ];
+    
+    // Deterministic modifier selection
+    const modCount = quality === "MYTHIC" ? 3 : quality === "RARE" ? 2 : quality === "UNCOMMON" ? 1 : 0;
+    const modifierIds: TechModifierId[] = [];
+    for (let i = 0; i < modCount; i++) {
+      const idx = (fnv1a32(`${node.id}:${quality}:${i}`) >>> 0) % modifierPool.length;
+      modifierIds.push(modifierPool[idx]);
+    }
+    
+    // Apply quality multiplier to effect values
+    const mult = qualityMods[quality];
+    const effectiveEffects = node.effects.map((e) => ({
+      ...e,
+      value: typeof e.value === "number" ? e.value * mult : e.value,
+    }));
+    
+    // Score breakdown for telemetry/debug
+    const scoreBreakdown = {
+      base: Math.log(Math.max(1, node.weight)),
+      origin: 0,
+      synergy: 0,
+      worldLaw: 0,
+      novelty: 0,
+      penalty: 0,
+      qualityMult: mult,
+    };
+    
+    return {
+      nodeId: node.id,
+      quality,
+      modifierIds,
+      effectiveEffects,
+      scoreBreakdown,
+    };
   }
 
   /**
@@ -392,20 +483,33 @@ export class RunSimulation {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (!s.draftOpen || s.over) return ev;
-    const n = s.draftChoices[i];
-    if (!n) return ev;
+    const offer = s.draftOffers[i];
+    if (!offer) return ev;
     s.draftOpen = false;
-    s.draftChoices = [];
+    s.draftOffers = [];
     s.draftContext = "level";
-    this.grantNode(n.id, n);
-    if (s.reservedTech === n.id) s.reservedTech = "";
+    
+    // Find the base TechNode
+    const node = this.graph.find((n) => n.id === offer.nodeId);
+    if (!node) return ev;
+    
+    this.grantNode(node.id, node);
+    if (s.reservedTech === node.id) s.reservedTech = "";
     s.stats.techsTaken++;
-    ev.push({ type: "tech_selected", techId: n.id });
+    ev.push({ 
+      type: "tech_selected", 
+      techId: node.id,
+      quality: offer.quality,
+      modifierIds: offer.modifierIds,
+    });
+    
+    // Apply effective effects (with quality/modifiers already applied)
+    for (const e of offer.effectiveEffects) applyTechEffect(s.build, e);
+    
     const ownedTags = new Set(s.ownedTags);
     const unlocked = new Set(s.breakthroughs);
     for (const b of checkBreakthroughs(ownedTags, unlocked)) {
       s.breakthroughs.push(b.id);
-      // Earned-in-this-world evidence (P1-04); inherited heirs never land here.
       if (!s.worldBreakthroughsEarned.includes(b.id)) s.worldBreakthroughsEarned.push(b.id);
       for (const e of b.effects) applyTechEffect(s.build, e);
       this.logHistory("breakthrough", b.id);
@@ -427,10 +531,10 @@ export class RunSimulation {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (!s.draftOpen || s.over) return ev;
-    const n = s.draftChoices[i];
-    if (!n || n.id.startsWith("fb-")) return ev;
-    s.reservedTech = n.id;
-    ev.push({ type: "draft_reserved", techId: n.id });
+    const offer = s.draftOffers[i];
+    if (!offer || offer.nodeId.startsWith("fb-")) return ev;
+    s.reservedTech = offer.nodeId;
+    ev.push({ type: "draft_reserved", techId: offer.nodeId });
     return ev;
   }
 
@@ -452,13 +556,13 @@ export class RunSimulation {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (!s.draftOpen || s.over || s.rerolls <= 0) return ev;
-    const prevChoices = [...s.draftChoices];
+    const prevOffers = [...s.draftOffers];
     const prevNR = new Set(
-      prevChoices.filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech).map((n) => n.id),
+      prevOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech).map((o) => o.nodeId),
     );
     // Alternative check mirrors the open pool buildDraft() draws from
     // (reroll intentionally drops POI filters, as before — same pool).
-    const prevShown = new Set(prevChoices.map((n) => n.id));
+    const prevShown = new Set(prevOffers.map((o) => o.nodeId));
     const candidates = this.availableNodes().filter(
       (n) => n.id !== s.reservedTech && !prevShown.has(n.id),
     );
@@ -468,9 +572,9 @@ export class RunSimulation {
     }
     s.rerolls--;
     this.buildDraft(s.draftContext);
-    const postShown = new Set(s.draftChoices.map((n) => n.id));
-    let cur = s.draftChoices.filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech);
-    if (!cur.some((n) => !prevNR.has(n.id))) {
+    const postShown = new Set(s.draftOffers.map((o) => o.nodeId));
+    let cur = s.draftOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech);
+    if (!cur.some((o) => !prevNR.has(o.nodeId))) {
       // Redraw showed nothing new — force the meaningful change.
       const ordered = [...candidates].sort((a, b) => b.weight - a.weight || (a.id < b.id ? -1 : 1));
       const swapIn = ordered.find((n) => !postShown.has(n.id));
@@ -478,18 +582,19 @@ export class RunSimulation {
       // that the rebuild did not surface); the guard keeps it total anyway.
       if (swapIn && !postShown.has(swapIn.id)) {
         let idx = -1;
-        for (let i = s.draftChoices.length - 1; i >= 0; i--) {
-          const n = s.draftChoices[i];
-          if (n && !n.id.startsWith("fb-") && n.id !== s.reservedTech) {
+        for (let i = s.draftOffers.length - 1; i >= 0; i--) {
+          const o = s.draftOffers[i];
+          if (o && !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech) {
             idx = i;
             break;
           }
         }
-        s.draftChoices[idx < 0 ? s.draftChoices.length - 1 : idx] = swapIn;
-        cur = s.draftChoices.filter((n) => !n.id.startsWith("fb-") && n.id !== s.reservedTech);
+        // Replace with a new DraftOffer for the swapIn node
+        s.draftOffers[idx < 0 ? s.draftOffers.length - 1 : idx] = this.convertToDraftOffer(swapIn, "COMMON", 0);
+        cur = s.draftOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech);
       }
     }
-    const newIds = cur.map((n) => n.id);
+    const newIds = cur.map((o) => o.nodeId);
     const changed = newIds.filter((id) => !prevNR.has(id)).length;
     this.logHistory("reroll", s.draftContext);
     ev.push({
@@ -508,7 +613,7 @@ export class RunSimulation {
     const ev: SimEvent[] = [];
     if (!s.draftOpen || s.over) return ev;
     s.draftOpen = false;
-    s.draftChoices = [];
+    s.draftOffers = [];
     s.draftContext = "level";
     s.pendingLevels--;
     this.gainKnowledge(10 + s.level * 2, "skip", ev);
@@ -626,8 +731,8 @@ export class RunSimulation {
    * CLAIM a cleared POI as civilization territory (one claim per POI id).
    * Direct UI call. Fails silently (returns no events) unless every
    * precondition holds — the UI disables the button via claimablePOIs().
-   * v0.23.1: claims consume OUTPOST CAPACITY (active posts < capacity);
-   * a full frontier rejects with zero mutation (UI explains, never the sim).
+   * v0.24: territory claim is free; logistics cost applies when setting spec.
+   * Signal first-claim exemption still applies (v0.23.1 no-softlock).
    */
   claimTerritory(poiId: string): SimEvent[] {
     const s = this.state;
@@ -637,8 +742,9 @@ export class RunSimulation {
     if (!s.poisWorld.includes(poiId)) return ev;
     const cand = this.claimablePOIs().find((c) => c.poiId === poiId);
     if (!cand || !cand.clear) return ev;
-    if (!canClaimMore(s.territories, s.ageIndex)
-      && !signalExempt(s.territories, s.ageIndex, cand.poiType, s.signalSecured)) return ev;
+    // Signal first-claim exemption (v0.23.1): always allow first Signal claim.
+    // Other claims are gated by logistics at spec assignment (setOutpostSpec).
+    // No hard limit on claim count; logistics is the constraint.
     s.territories.push({
       poiId, poiType: cand.poiType, x: cand.x, y: cand.y,
       spec: "", tier: 1, hp: OUTPOST_MAXHP, maxHp: OUTPOST_MAXHP,
@@ -652,14 +758,27 @@ export class RunSimulation {
     return ev;
   }
 
-  /** Choose the ONE specialization for a fresh claim. Irreversible. */
+  /** Choose the ONE specialization for a fresh claim. Irreversible.
+   * v0.24: consumes Logistics points based on spec + tier. */
   setOutpostSpec(poiId: string, spec: OutpostSpec): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (s.over) return ev;
     const t = territoryById(s.territories, poiId);
     if (!t || t.spec !== "" || t.disabled) return ev;
+    
+    // Check logistics cost (tier 1)
+    const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
+    if (s.logistics + cost > s.maxLogistics) {
+      // Signal first-claim exemption still applies (v0.23.1 no-softlock)
+      // but we need to allow the spec assignment even if logistics exceeded
+      // only for the very first Signal claim
+      const isFirstSignal = spec === "research" && t.poiType === "signal" && !s.signalSecured && !canClaimMore(s.territories, s.ageIndex);
+      if (!isFirstSignal) return ev;
+    }
+    
     t.spec = spec;
+    s.logistics += cost;
     if (spec === "military") this.reinforceSquad();
     this.logHistory("outpost", `${spec}@${t.poiType}`);
     ev.push({ type: "outpost_spec", poiId, spec });
@@ -668,9 +787,8 @@ export class RunSimulation {
 
   /**
    * Tier 2 after holding long enough with a chosen spec, PLUS a Knowledge
-   * cost (v0.23.1 opportunity cost). All preconditions checked BEFORE any
-   * mutation: insufficient Knowledge (or hold) rejects with zero partial
-   * state change; success deducts the canonical cost exactly once.
+   * cost (v0.23.1 opportunity cost) AND logistics cost (v0.24).
+   * All preconditions checked BEFORE any mutation.
    */
   upgradeOutpost(poiId: string): SimEvent[] {
     const s = this.state;
@@ -679,13 +797,65 @@ export class RunSimulation {
     const t = territoryById(s.territories, poiId);
     if (!t || t.disabled || t.spec === "" || t.tier !== 1) return ev;
     if (s.elapsed - t.heldSince < TIER2_HOLD_SEC) return ev;
-    const cost = outpostUpgradeCost(s.ageIndex);
-    if (s.knowledgeTotal < cost) return ev;
-    s.knowledgeTotal -= cost;
+    const knowledgeCost = outpostUpgradeCost(s.ageIndex);
+    if (s.knowledgeTotal < knowledgeCost) return ev;
+    const logisticsCost = calculateLogisticsCost(t.spec, 2, s.ageIndex) - calculateLogisticsCost(t.spec, 1, s.ageIndex);
+    if (s.logistics + logisticsCost > s.maxLogistics) return ev;
+    s.knowledgeTotal -= knowledgeCost;
+    s.logistics += logisticsCost;
     t.tier = 2;
     t.hp = t.maxHp;
     this.logHistory("upgrade", `${t.spec}@${t.poiType}`);
     ev.push({ type: "outpost_upgraded", poiId });
+    return ev;
+  }
+
+  /**
+   * Garrison/Recall an outpost.
+   * Garrisoning removes a mobile squad slot but activates the outpost's benefit.
+   * Recalling restores the mobile slot and deactivates the benefit.
+   */
+  garrisonOutpost(poiId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    const t = territoryById(s.territories, poiId);
+    if (!t || t.disabled || t.spec === "") return ev;
+    
+    const activeMobile = s.squad.filter(a => a.active).length;
+    const maxSlots = squadCap(militaryBonusSlots(activeTerritories(s.territories)));
+    
+    if (!t.garrisoned) {
+      // Garrison: need at least 1 mobile squad remaining
+      if (activeMobile - 1 < 1) return ev;
+      t.garrisoned = true;
+      // Deactivate one mobile squad
+      for (const a of s.squad) {
+        if (a.active) {
+          a.active = false;
+          break;
+        }
+      }
+      this.logHistory("garrison", `on@${t.poiType}`);
+      ev.push({ type: "outpost_garrisoned", poiId, spec: t.spec });
+    } else {
+      // Recall
+      t.garrisoned = false;
+      // Try to activate a reserve squad if under cap
+      if (activeMobile < maxSlots) {
+        for (const a of s.squad) {
+          if (!a.active) {
+            a.active = true;
+            a.hp = a.maxHp;
+            a.x = s.px - 30;
+            a.y = s.py;
+            break;
+          }
+        }
+      }
+      this.logHistory("garrison", `off@${t.poiType}`);
+      ev.push({ type: "outpost_recalled", poiId, spec: t.spec });
+    }
     return ev;
   }
 
@@ -1499,6 +1669,7 @@ export class RunSimulation {
       }
       if (canAdvanceAge(next, s.knowledgeTotal, ms, ds)) {
         s.ageIndex = next;
+        s.maxLogistics = calculateMaxLogistics(next);
         s.ageElapsed = 0;
         s.ageKills = 0;
         s.elitesAge = 0;

@@ -85,7 +85,9 @@ describe("origins and active families", () => {
     sim.gainKnowledge(100000, "test", ev);
     let rounds = 0;
     while (sim.state.draftOpen && rounds++ < 12) {
-      for (const n of sim.state.draftChoices) {
+      for (const o of sim.state.draftOffers) {
+        const n = sim.techGraph().find((node) => node.id === o.nodeId);
+        if (!n) continue;
         for (const e of n.effects) {
           expect(!e.family || active.has(e.family), `${n.id} offers dead ${e.family}`).toBe(true);
         }
@@ -164,8 +166,13 @@ describe("origins and active families", () => {
           sim.claimTerritory(c.poiId);
           const terr = sim.state.territories.find((x) => x.poiId === c.poiId);
           if (terr && terr.spec === "") {
-            sim.setOutpostSpec(c.poiId, SPECS[specIdx % SPECS.length] as "research" | "military" | "economy");
-            specIdx++;
+            // Check logistics before setting spec (v0.24)
+            const spec = SPECS[specIdx % SPECS.length] as "research" | "military" | "economy";
+            const logisticsCost = (spec === "military") ? 2 : 1;
+            if (sim.state.logistics + logisticsCost <= sim.state.maxLogistics) {
+              sim.setOutpostSpec(c.poiId, spec);
+              specIdx++;
+            }
           }
         }
         for (const terr of sim.state.territories) sim.upgradeOutpost(terr.poiId);

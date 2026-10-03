@@ -75,7 +75,6 @@ export const DEFAULT_OFFER_CONFIG: OfferEngineConfig = {
 };
 
 export interface TechOfferContext {
-  rng: ReturnType<typeof import("../seed/streams").createStreamRng>;
   sim: {
     owned: string[];
     ownedTags: string[];
@@ -88,12 +87,13 @@ export interface TechOfferContext {
     draftChoices: string[];
     reservedTech: string;
     history: Array<{ kind: string; label: string; t: number }>;
+    techGraph: () => readonly TechNode[];
   };
   laws: import("./worldLaws").WorldLaws;
   activeFamilies: Set<string>;
-  draftRng: ReturnType<typeof import("../seed/streams").createStreamRng>;
   recentOffers: string[][];
   recentPicks: string[];
+  rng: ReturnType<typeof import("../seed/streams").createStreamRng>;
 }
 
 function softmax(z: number[], temp = 1.0): number[] {
@@ -118,16 +118,20 @@ function sampleQuality(rng: ReturnType<typeof import("../seed/streams").createSt
   return "MYTHIC";
 }
 
-// Quality floors/ceilings by age
-function clampQualityByAge(quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC", ageIdx: number, config: typeof DEFAULT_OFFER_CONFIG): "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC" {
-  const ages = ["stone", "bronze", "iron", "industrial", "atomic", "space"];
+// Quality floors/ceilings by age (deterministic via seeded RNG)
+function clampQualityByAge(
+  quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC",
+  ageIdx: number,
+  config: typeof DEFAULT_OFFER_CONFIG,
+  rng: ReturnType<typeof import("../seed/streams").createStreamRng>
+): "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC" {
   if (ageIdx <= 2 && quality === "COMMON") {
     // Early ages: ensure mythic floor
-    if (Math.random() < DEFAULT_OFFER_CONFIG.mythicFloorEarly) return "MYTHIC";
+    if (rng.nextFloat() < DEFAULT_OFFER_CONFIG.mythicFloorEarly) return "MYTHIC";
   }
   if (ageIdx >= 3 && quality === "MYTHIC") {
     // Late ages: ensure common floor
-    if (Math.random() < DEFAULT_OFFER_CONFIG.commonFloorLate) return "COMMON";
+    if (rng.nextFloat() < DEFAULT_OFFER_CONFIG.commonFloorLate) return "COMMON";
   }
   return quality;
 }
@@ -221,25 +225,71 @@ export function generateOffers(
   config: OfferEngineConfig = DEFAULT_OFFER_CONFIG,
   K = 3
 ): OfferCandidate[] {
-  const { sim, laws, activeFamilies, draftRng, recentOffers, recentPicks } = context;
+  const { sim, laws, activeFamilies, recentOffers, recentPicks, rng } = context;
   
   // Build available pool (same logic as sim.availableNodes)
-  // In practice, this would come from sim.availableNodes() 
-  // For now, assume it's passed in or derived from sim
-  // This is a simplified version - real implementation hooks into RunSimulation
+  let pool = sim.techGraph().filter((n: TechNode) => {
+    if (sim.owned.includes(n.id)) return false;
+    if (n.prerequisites.some((p: string) => !sim.owned.includes(p))) return false;
+    if (n.exclusions.some((e: string) => sim.owned.includes(e))) return false;
+    if (n.effects.some((e: { family?: string }) => e.family && !activeFamilies.has(e.family))) return false;
+    const ageIdx = ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(n.age);
+    return ageIdx <= sim.ageIndex + 1;
+  });
   
-  // Placeholder: real implementation integrates with RunSimulation.availableNodes()
-  return [];
+  // Sample quality for each candidate and score them
+  const candidates = pool.map((node: TechNode) => {
+    const quality = sampleQuality(rng, config.qualityBaseProb);
+    const clampedQuality = clampQualityByAge(quality, ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(node.age), config, rng);
+    const score = computeOfferScore(node, clampedQuality, {
+      sim,
+      laws,
+      activeFamilies,
+      recentOffers,
+      recentPicks: sim.history.filter(h => h.kind === "tech_selected").map(h => h.label),
+      config: DEFAULT_OFFER_CONFIG,
+    });
+    
+    return { node, quality: clampedQuality, score, gumbel: 0, novelty: 0, penalty: 0 };
+  });
+  
+  // Score each candidate
+  const scored = candidates.map((c) => ({
+    ...c,
+    score: computeOfferScore(c.node, c.quality, {
+      sim,
+      laws,
+      activeFamilies,
+      recentOffers: [],
+      recentPicks: [],
+      config: DEFAULT_OFFER_CONFIG,
+    }),
+  }));
+  
+  // Gumbel-Top-k selection
+  const selected = gumbelTopK(scored, K, rng);
+  
+  // Apply quality clamping based on age
+  const finalCandidates = selected.map((c) => ({
+    node: c.node,
+    quality: clampQualityByAge(c.quality, ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(c.node.age), config, rng),
+    score: c.score,
+    gumbel: c.gumbel,
+    novelty: c.novelty,
+    penalty: c.penalty,
+  }));
+  
+  return finalCandidates;
 }
 
 /**
  * Gumbel-Top-k sampling for K=3
  */
-export function gumbelTopK(
-  candidates: Array<{ id: string; score: number }>,
+export function gumbelTopK<T extends { score: number }>(
+  candidates: Array<T>,
   K: number,
   rng: ReturnType<typeof import("../seed/streams").createStreamRng>
-): Array<{ id: string; score: number; gumbel: number }> {
+): Array<T & { gumbel: number }> {
   const withGumbel = candidates.map((c) => ({
     ...c,
     gumbel: -Math.log(-Math.log(rng.nextFloat())),
@@ -258,6 +308,7 @@ export function computeOfferScore(
     effects: Array<{ family?: string }>;
     rarity: Rarity;
   },
+  quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC",
   ctx: {
     sim: { owned: string[]; ownedTags: string[]; breakthroughs: string[]; ageIndex: number; age: AgeId; originId: string; expansionFamily: string; pinnedTarget: string; draftChoices: string[]; reservedTech: string; history: Array<{ kind: string; label: string; t: number }> };
     laws: { domainBias: Record<string, number>; combatBias: Record<string, number> };
@@ -294,8 +345,8 @@ export function computeOfferScore(
   // H: underused path boost
   score += w.weights.underusedPathBoost * underusedPathBoost({ domain: node.domain, tags: node.tags }, ctx.recentOffers);
   
-  // Quality multiplier
-  score *= QUALITY_MULT[ctx.sim.reservedTech === "" ? "COMMON" : "COMMON"]; // Placeholder
+  // Quality multiplier (use the sampled quality)
+  score *= QUALITY_MULT[quality];
   
   // Pin bonus
   if (ctx.sim.pinnedTarget && ctx.sim.pinnedTarget === node.id) score *= 2.0;

@@ -5,6 +5,7 @@
 import { describe, it, expect } from "vitest";
 import { RunSimulation } from "../../src/core/sim/RunSimulation";
 import { ageGates } from "../../src/core/progression/ages";
+import { calculateMaxLogistics } from "../../src/core/emergence/outpostLogistics";
 import type { MissionState } from "../../src/core/progression/missions";
 import type { DominionState } from "../../src/core/progression/ages";
 import type { InputFrame } from "../../src/core/sim/InputFrame";
@@ -99,6 +100,7 @@ describe("space → stronghold → boss canonical flow", () => {
     const s = sim.state;
     s.elapsed = 500;
     s.ageIndex = 4;
+    s.maxLogistics = calculateMaxLogistics(4); // age 4: 4 + 3 = 7
     s.ageElapsed = 200;
     s.ageKills = 300;
     s.elitesAge = 2;
@@ -112,9 +114,10 @@ describe("space → stronghold → boss canonical flow", () => {
     const sigId = discoverType(sim, "signal");
     clearField(sim);
     sim.claimTerritory(sigId);
+    sim.setOutpostSpec(sigId, "research"); // spec required for upgrade
     expect(s.signalSecured).toBe(true);
     // Tier-2 upgrade on the first outpost (hold time satisfied + atomic
-    // Knowledge cost covered — v0.23.1 opportunity cost).
+    // Knowledge cost covered — v0.23.1 opportunity cost + v0.24 logistics).
     const terr = s.territories[0];
     if (terr) terr.heldSince = s.elapsed - 200;
     s.knowledgeTotal = 2000;

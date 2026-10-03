@@ -80,7 +80,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
       b.bonusProjectiles, b.bonusGuardians, b.bonusAura, b.bonusOrbit, b.bonusMines, b.beamUnlocked ? 1 : 0],
     lvl: [s.level, r6(s.xp), s.xpNext, r6(s.knowledgeTotal), s.pendingLevels, s.draftOpen ? 1 : 0,
       // P1-03: draft order is gameplay (chooseDraft(i) indexes it) — preserved.
-      s.draftChoices.map((n) => n.id)],
+      s.draftOffers.map((o) => `${o.nodeId}:${o.quality}:${o.modifierIds.join(",")}`)],
     // v021: draft agency shapes future drafts — canonical.
     agency: [s.reservedTech, s.rerolls, s.pinnedTarget],
     // v021: age-mission counters.

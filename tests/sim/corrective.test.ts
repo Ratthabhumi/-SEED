@@ -24,7 +24,7 @@ describe("canonical ordered state (P1-03)", () => {
     grant(b, 100000);
     expect(a.state.draftOpen && b.state.draftOpen).toBe(true);
     // Force distinct orders by reversing one choice list (same elements).
-    b.state.draftChoices = [...b.state.draftChoices].reverse();
+    b.state.draftOffers = [...b.state.draftOffers].reverse();
     expect(a.snapshot()).not.toBe(b.snapshot());
   });
 

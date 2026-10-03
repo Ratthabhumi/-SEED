@@ -1839,13 +1839,16 @@ export class GameScene extends Phaser.Scene {
         childrenOf.set(p, arr);
       }
     }
-    const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
+const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     const domainIcon: Record<string, string | undefined> = {
       warfare: SEED_ASSETS.icons.military,
       industry: SEED_ASSETS.icons.economy,
       science: SEED_ASSETS.icons.research,
     };
-    s.draftChoices.forEach((n, i) => {
+    s.draftOffers.forEach((offer, i) => {
+      // Get base TechNode for title/description/domain
+      const n = graphById.get(offer.nodeId);
+      if (!n) return;
       const c = el("div", "card");
       c.setAttribute("role", "button");
       c.appendChild(el("div", "key", undefined, `[${i + 1}]`));
@@ -1866,13 +1869,15 @@ export class GameScene extends Phaser.Scene {
       }
       const syn = document.createElement("div");
       syn.className = "card-synergy";
-      const done = completingBreakthrough([...n.tags, ...n.synergyTags], ownedTags, [...s.breakthroughs]);
+      // Use base node tags for synergy (quality modifies values, not tags)
+      const effTags = n.tags;
+      const done = completingBreakthrough([...effTags], ownedTags, [...s.breakthroughs]);
       if (done) {
         syn.textContent = `${t("ui.completes")}: ${t(done.titleKey)}`;
         syn.classList.add("completes");
       } else {
         const lines: string[] = [];
-        for (const p of breakthroughProgress([...ownedTags, ...n.tags, ...n.synergyTags], [...s.breakthroughs])) {
+        for (const p of breakthroughProgress([...ownedTags, ...effTags], [...s.breakthroughs])) {
           if (p.have === 0 || p.have >= p.need) continue;
           const names = p.missing.map((m) => {
             const k = tagDisplayKey(m);
@@ -1883,7 +1888,15 @@ export class GameScene extends Phaser.Scene {
         }
         syn.textContent = lines.join("  ");
       }
-      const r = el("div", `rarity rarity-${n.rarity}`, undefined, t(`rarity.${n.rarity}` as EnKeys));
+      // Quality badge (v0.24)
+      const q = el("div", `quality quality-${offer.quality.toLowerCase()}`, undefined, t(`quality.${offer.quality.toLowerCase()}` as EnKeys));
+      // Modifiers display
+      if (offer.modifierIds.length > 0) {
+        const m = document.createElement("div");
+        m.className = "card-modifiers";
+        m.textContent = offer.modifierIds.map((mid) => t(`modifier.${mid.toLowerCase()}` as EnKeys)).join(" · ");
+        c.appendChild(m);
+      }
       c.appendChild(h);
       c.appendChild(d);
       c.appendChild(dom);
@@ -1899,9 +1912,9 @@ export class GameScene extends Phaser.Scene {
         l.textContent = `▸ ${t("ui.leadsTo")}: ${leads.map((g) => t(g.titleKey as EnKeys)).join(" · ")}`;
         c.appendChild(l);
       }
-      c.appendChild(r);
+      c.appendChild(q);
       // Reroll-changed marker: icon-adjacent text, never color-only.
-      if (this.rerollNewIds.has(n.id)) {
+      if (this.rerollNewIds.has(offer.nodeId)) {
         const badge = document.createElement("div");
         badge.className = "card-new";
         badge.textContent = `✦ ${t("draft.newBadge")}`;
@@ -1910,13 +1923,13 @@ export class GameScene extends Phaser.Scene {
       c.addEventListener("click", () => this.pickCard(i));
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
-      if (!n.id.startsWith("fb-")) {
+      if (!offer.nodeId.startsWith("fb-")) {
         const rs = document.createElement("button");
         rs.className = "btn card-reserve";
-        rs.textContent = `${t("ui.reserve")}${s.reservedTech === n.id ? " ✓" : ""}`;
+        rs.textContent = `${t("ui.reserve")}${s.reservedTech === offer.nodeId ? " ✓" : ""}`;
       rs.addEventListener("click", (ev2) => {
         ev2.stopPropagation();
-        this.qa?.noteSimEvent("reserve_attempt", n.id);
+        this.qa?.noteSimEvent("reserve_attempt", offer.nodeId);
         this.handleEvents(this.sim.reserveCard(i));
         this.refreshHUD();
       });
@@ -1933,11 +1946,11 @@ export class GameScene extends Phaser.Scene {
     reroll.addEventListener("click", () => {
       // Capture visible ids first: NEW markers are computed presentation-side
       // from the before/after difference (never canonical state).
-      const prev = new Set(s.draftChoices.map((n) => n.id));
+      const prev = new Set(s.draftOffers.map((o) => o.nodeId));
       // Attempt telemetry (v0.24): discovery != successful mutation.
       this.qa?.noteSimEvent("reroll_attempt", [...prev].join("+"));
       this.handleEvents(this.sim.rerollDraft());
-      this.rerollNewIds = new Set(s.draftChoices.map((n) => n.id).filter((id) => !prev.has(id)));
+      this.rerollNewIds = new Set(s.draftOffers.map((o) => o.nodeId).filter((id) => !prev.has(id)));
       // Choices changed: drop the stale surface so syncDraftUI rebuilds.
       document.getElementById("draft-screen")?.remove();
     });

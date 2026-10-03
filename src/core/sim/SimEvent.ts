@@ -8,7 +8,7 @@ import type { SquadMode } from "../combat/squad";
 
 export type SimEvent =
   | { type: "draft_opened"; context: "level" | "poi" }
-  | { type: "tech_selected"; techId: string }
+  | { type: "tech_selected"; techId: string; quality?: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC"; modifierIds?: string[] }
   | { type: "draft_reserved"; techId: string }
   | { type: "draft_rerolled"; rerollsLeft: number; prevIds: string[]; newIds: string[]; changed: number }
   | { type: "draft_reroll_unavailable" }
@@ -22,6 +22,8 @@ export type SimEvent =
   | { type: "territory_claimed"; poiId: string; poiType: POIType }
   | { type: "outpost_spec"; poiId: string; spec: OutpostSpec }
   | { type: "outpost_upgraded"; poiId: string }
+  | { type: "outpost_garrisoned"; poiId: string; spec: OutpostSpec }
+  | { type: "outpost_recalled"; poiId: string; spec: OutpostSpec }
   | { type: "outpost_lost"; poiId: string }
   | { type: "outpost_repaired"; poiId: string }
   | { type: "raid_incoming"; poiId: string; seconds: number }

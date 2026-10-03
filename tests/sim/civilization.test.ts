@@ -79,7 +79,7 @@ describe("tech map truth", () => {
   it("owned tech never disappears after later picks", () => {
     const sim = testSim();
     openDraft(sim);
-    const first = sim.state.draftChoices[0]?.id as string;
+    const first = sim.state.draftOffers[0]?.nodeId as string;
     sim.chooseDraft(0);
     for (let i = 0; i < 6; i++) {
       if (!sim.state.draftOpen) {
@@ -96,9 +96,9 @@ describe("draft agency", () => {
   it("reserve persists exactly one compatible card across reroll and picks", () => {
     const sim = testSim();
     openDraft(sim);
-    const realIdx = sim.state.draftChoices.findIndex((n) => !n.id.startsWith("fb-"));
+    const realIdx = sim.state.draftOffers.findIndex((o) => !o.nodeId.startsWith("fb-"));
     expect(realIdx).toBeGreaterThanOrEqual(0);
-    const reserved = sim.state.draftChoices[realIdx]?.id as string;
+    const reserved = sim.state.draftOffers[realIdx]?.nodeId as string;
     expect(sim.reserveCard(realIdx).some((e) => e.type === "draft_reserved")).toBe(true);
     expect(sim.state.reservedTech).toBe(reserved);
     // Reroll keeps the reservation and re-offers it (compatible pool).
@@ -107,7 +107,7 @@ describe("draft agency", () => {
     // the reservation persists on both paths.
     const rerollEv = sim.rerollDraft();
     expect(sim.state.draftOpen).toBe(true);
-    expect(sim.state.draftChoices.map((n) => n.id)).toContain(reserved);
+    expect(sim.state.draftOffers.map((o) => o.nodeId)).toContain(reserved);
     const rType = rerollEv[0]?.type;
     if (rType === "draft_rerolled") {
       expect(sim.state.rerolls).toBe(0);
@@ -116,12 +116,12 @@ describe("draft agency", () => {
       expect(sim.state.rerolls).toBe(1);
     }
     // Picking another card keeps the reservation for the next draft.
-    const other = sim.state.draftChoices.findIndex((n) => n.id !== reserved);
+    const other = sim.state.draftOffers.findIndex((o) => o.nodeId !== reserved);
     sim.chooseDraft(other);
     expect(sim.state.reservedTech).toBe(reserved);
     // Reserving a fallback card is rejected.
     openDraft(sim);
-    const fbIdx = sim.state.draftChoices.findIndex((n) => n.id.startsWith("fb-"));
+    const fbIdx = sim.state.draftOffers.findIndex((o) => o.nodeId.startsWith("fb-"));
     if (fbIdx >= 0) {
       expect(sim.reserveCard(fbIdx)).toEqual([]);
     }

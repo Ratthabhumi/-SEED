@@ -493,7 +493,7 @@ export class TechMapView {
     // Find frontier nodes: available to draft, recently owned, or starting stone node
     const frontierNodes: LayoutNode[] = [];
     for (const node of this.layoutResult.nodes) {
-      if (s.owned.includes(node.id) || s.draftChoices.some((c) => c.id === node.id)) {
+      if (s.owned.includes(node.id) || s.draftOffers.some((c) => c.nodeId === node.id)) {
         frontierNodes.push(node);
       }
     }

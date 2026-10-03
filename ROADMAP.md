@@ -62,7 +62,7 @@
   - 🟠 HUMAN UX CORRECTIVE (objectives, Tech agency, territory purpose, UI overlap — corrected in v0.23.1)
   - Logical baseline for v0.23.1: `e32e995`
 - **v0.23.1 Interaction Clarity + Tech Agency + Territory Economy**: 🟠 TECHNICAL PASS (exact-SHA CI green) / 🟠 HUMAN CORE-LOOP CORRECTIVE — FROZEN at `cf9c0ce` (human evidence: Space→boss→ascension reached, but loop feels patterned/predictable; Tech Map never opened, rarity by age, origins indistinct)
-- **v0.24 Emergent Seed Core Prototype**: 🟢 ACTIVE
+- **v0.24 Emergent Seed Core**: 🟡 PLAYABLE PROTOTYPE (implementation + automated gates green, human audit pending)
 - **Game Feel & Audio (old v0.24 scope)**: ⏸ DEFERRED — returns only after the new core passes its human gate
 - **v0.3+**: ⚪ PLANNED
 
@@ -140,16 +140,39 @@
   - 🟢 Space performance profiling + deterministic spatial nearest
   - 🟡 Human validation (EPOCH-AET4-3SFC)
 
-### v0.24 — Game Feel & Audio
-- **Status**: 🔵 RESEARCH READY
-- **Entry Gate**: v0.23 human macro loop accepted.
+### v0.24 — Emergent Seed Core (Emergence Prototype)
+- **Status**: 🟡 PLAYABLE PROTOTYPE (implementation + automated gates green, human audit pending)
+- **Entry Gate**: v0.23.1 technical baseline frozen at `cf9c0ce`
 - **Scope**:
-  - Combat impact (hit stop, directional knockback feel, projectile trails).
-  - Coherent SFX language across ages (Stone percussion → Bronze resonance → Industrial steam → Atomic hum → Space pulse).
-  - Civilization command audio cues (squad rally, focus confirmation, ability discharge).
-  - Boss telegraph audio and territory alarm sirens.
-  - Safe evaluation of procedural audio (ZzFX pre-generation or isolated cosmetic audio streams).
-  - Motion accessibility toggles (screen shake dampening, flash suppression).
+  - **World Laws** — deterministic universe rules from masterSeed (domain bias, combat bias, world axes: aggression/scarcity/anomaly/volatility/territoriality). Universe-level: same masterSeed across Ascension = same World Laws.
+  - **Offer Engine** — Gumbel-Top-k (K=3) selection with quality sampling (COMMON/UNCOMMON/RARE/MYTHIC), anti-pattern penalties, early mythic floor / late common floor. `DraftOffer` type (nodeId, quality, modifierIds, effectiveEffects) replaces raw `TechNode[]`.
+  - **Origins Runtime** — 4 distinct identities (Hunters: Marked Prey/Trophy, Engineers: Fabrication, Resonant: Harmonic Charge, Sentinels: Bastion Network). Config derived from `getOriginRuleset(originId)`, mutable mechanic state in `originMechanic`.
+  - **Logistics & Garrison** — explicit Logistics points replace opaque capacity. Costs: Research=1, Military=2, Economy=1 per tier (tier 2 ×1.5). Signal first-claim exemption preserved. Garrison: 1 mobile slot cost, spec-specific benefits.
+  - **Distribution Audit** — `tests/emergence/distribution.audit.test.ts` + `npm run analyze:v024` (10k deterministic seeds). Metrics: quality dist, early mythic rate, late common rate, fallback offer rate, reroll alt availability, same-card repetition, longest low-quality streak, offer collision rate, origin JSD, world laws determinism, logistics growth.
+- **Deferred to v0.24 R2**:
+  - Enemy Ecology — 8+ archetypes (chassis×attack×mobility×modifier×role), compatibility rules, spawn path integration
+  - Director — seeded stream, RELAX/BUILD/PEAK/RECOVER phases, pressure logic, encounter composition
+  - Events — procedural templates
+  - FATE / Lock / Reroll / Choose — player-facing draft agency
+  - World Law player reveal — readable clues through observation
+- **Deliverables**:
+  - ✅ World Laws generation (deterministic, universe-level)
+  - ✅ Offer Engine with Gumbel-Top-k, quality, modifiers, anti-patterns
+  - ✅ Origins runtime (4 distinct mechanical identities)
+  - ✅ Logistics & Garrison (explicit points, Signal exemption, slot cost)
+  - ✅ DraftOffer type (quality, modifiers, effectiveEffects)
+  - ✅ Distribution audit test + 10k seed corpus
+  - ✅ Typecheck + unit (343) + build + check + analyze:v024 all PASS
+  - 🟡 Human audit pending
+
+### Game Feel & Audio (old v0.24 scope): ⏸ DEFERRED
+- Returns only after the new core passes its human gate.
+- Combat impact (hit stop, directional knockback feel, projectile trails).
+- Coherent SFX language across ages (Stone percussion → Bronze resonance → Industrial steam → Atomic hum → Space pulse).
+- Civilization command audio cues (squad rally, focus confirmation, ability discharge).
+- Boss telegraph audio and territory alarm sirens.
+- Safe evaluation of procedural audio (ZzFX pre-generation or isolated cosmetic audio streams).
+- Motion accessibility toggles (screen shake dampening, flash suppression).
 
 ### v0.3 — World Identity & Strategic Geography
 - **Scope**:

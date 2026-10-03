@@ -71,7 +71,7 @@ export function generateWorldLaws(
   const territoriality = sigmoid(nextNormal());
 
   // Identity string for debugging/audit
-  const seedIdentity = `${masterSeed}@w${WORLDGEN_VERSION}:c${CONTENT_VERSION}:laws`;
+  const seedIdentity = `${masterSeed}@w${worldgenVersion}:c${contentVersion}:laws`;
 
   return {
     domainBias,

@@ -5,9 +5,37 @@ import type { WeaponFamily } from "../combat/weapons";
 import type { EnemyFamily, EliteAffix } from "../director/director";
 import type { TechNode } from "../tech/graph";
 import type { POIType } from "../world/poi";
+import type { WorldLaws } from "../emergence/worldLaws";
 import type { EffectTarget } from "./progression";
 import type { Territory, RaidState } from "../world/territory";
 import type { SimAlly, SquadMode } from "../combat/squad";
+
+// Draft offer quality (generated per-offer, not from authored rarity)
+export type TechQuality = "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC";
+
+// Generated tech modifier IDs (v0.24 emergence)
+export type TechModifierId =
+  | "overcharged" | "extended" | "efficient" | "volatile"
+  | "piercing" | "splash" | "homing" | "chain"
+  | "reinforced" | "regenerating" | "warded" | "adaptive"
+  | "swift" | "silent" | "massive" | "precise";
+
+// A single generated draft offer — instance, not authored content
+export interface DraftOffer {
+  nodeId: string;
+  quality: TechQuality;
+  modifierIds: TechModifierId[];
+  effectiveEffects: TechNode["effects"]; // resolved effects after quality/modifiers
+  scoreBreakdown?: {
+    base: number;
+    origin: number;
+    synergy: number;
+    worldLaw: number;
+    novelty: number;
+    penalty: number;
+    qualityMult: number;
+  };
+}
 
 export interface SimEnemy {
   active: boolean; x: number; y: number;
@@ -56,7 +84,7 @@ export interface RunState {
   knowledgeTotal: number;
   pendingLevels: number;
   draftOpen: boolean;
-  draftChoices: TechNode[];
+  draftOffers: DraftOffer[];
   owned: string[];
   ownedTags: string[];
   breakthroughs: string[];
@@ -68,6 +96,20 @@ export interface RunState {
   // Build identity (ADR-0006): origin pair + at most one expansion unlock.
   originId: string;
   expansionFamily: WeaponFamily | "";
+  // Origin mechanic state (mutable runtime state, config derived from getOriginRuleset)
+  originMechanic: {
+    // Hunters: Marked Prey / Trophy
+    hunterMarks: string[];
+    hunterTrophies: string[];
+    // Engineers: Fabrication
+    fabricationModules: Array<{ type: string; level: number }>;
+    fabricationCharges: number;
+    // Resonant: Harmonic charge
+    harmonicCharge: number;
+    lastResonanceFamily: string | "";
+    // Sentinels: Bastion Network
+    bastionLinks: Array<{ siteA: string; siteB: string }>;
+  };
   // Ascension legacy prestige: bounded inherited defs (max 3, FIFO).
   legacies: string[];
   // First-discovery major POI rewards, one per family per world.
@@ -82,6 +124,9 @@ export interface RunState {
   territories: Territory[];
   raid: RaidState | null;
   lastRaidAt: number;
+  // Logistics / Garrison (v0.24)
+  logistics: number;
+  maxLogistics: number;
   // Origin command squad + active ability timers.
   squad: SimAlly[];
   squadMode: SquadMode;
@@ -91,6 +136,8 @@ export interface RunState {
   overdriveT: number;
   // Build history: bounded FIFO of player decisions (chronicle + tech map).
   history: Array<{ t: number; kind: string; label: string }>;
+  // Recent draft offers for anti-pattern penalties (offer engine v0.24).
+  recentDraftOffers: string[][];
   // Draft provenance for UI titles ("level" vs "poi").
   draftContext: "level" | "poi";
   // Timers / angles (transient but canonical — recreated identically per run)
@@ -103,6 +150,8 @@ export interface RunState {
   projs: SimProj[];
   pickups: SimPickup[];
   mines: SimMine[];
+  // World laws (derived from seed, governs tech/enemy/territory generation)
+  worldLaws: WorldLaws;
   // World-scoped discovery (reset per ascension) + run totals
   chunksWorld: string[];
   poisWorld: string[];

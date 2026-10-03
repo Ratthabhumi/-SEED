@@ -5,15 +5,15 @@ import { createStreamRng } from "../seed/streams";
 
 export type DirectorPhase = "RELAX" | "BUILD" | "PEAK" | "RECOVER";
 
-interface DirectorState {
+type DirectorState = {
   phase: DirectorPhase;
   phaseTimer: number;
   phaseDuration: number;
   pressure: number;
   recentEvents: Array<{ type: string; simTime: number }>;
-}
+};
 
-interface DirectorConfig {
+type DirectorConfig = {
   basePressure: number;
   pressurePerEnemy: number;
   pressurePerTerritory: number;
@@ -44,11 +44,7 @@ function generateDirector(
   masterSeed: string,
   config: typeof DEFAULT_DIRECTOR_CONFIG = DEFAULT_DIRECTOR_CONFIG
 ) {
-  // Use a dedicated director stream
-  const rng = {
-    nextFloat: () => Math.random(),
-    nextInt: (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min,
-  };
+  const rng = createStreamRng(masterSeed, "director");
 
   function computePressure(sim: {
     player: { hp: number; maxHp: number; px: number; py: number };
@@ -111,7 +107,7 @@ function generateDirector(
       if (nextPhase !== state.phase) {
         state.phase = nextPhase;
         state.phaseTimer = 0;
-        state.phaseDuration = 45 + Math.random() * 30;
+        state.phaseDuration = 45 + rng.nextFloat() * 30;
       }
     };
 
@@ -144,12 +140,12 @@ function generateDirector(
       if (nextPhase !== state.phase) {
         state.phase = nextPhase;
         state.phaseTimer = 0;
-        state.phaseDuration = 45 + Math.random() * 30;
+        state.phaseDuration = 45 + rng.nextFloat() * 30;
       }
     }
 
-    return { state, step, getState: () => state };
+    return { state, step, getState: () => state, rng };
   }
 
-
+// export { generateDirector, type DirectorState, type DirectorConfig, DEFAULT_DIRECTOR_CONFIG };
 export { generateDirector, type DirectorState, type DirectorConfig, DEFAULT_DIRECTOR_CONFIG };
