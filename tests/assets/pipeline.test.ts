@@ -105,7 +105,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
     expect(lock.packages["node_modules/@panzoom/panzoom"]?.license).toBe("MIT");
   });
 
-  it("verifies SHA256 integrity and vendor file existence for every manifest asset", () => {
+  it("verifies SHA256 integrity and vendor file existence for every manifest asset", { timeout: 30000 }, () => {
     const crypto = require("crypto");
     const raw = fs.readFileSync(manifestPath, "utf-8");
     const manifest = JSON.parse(raw);

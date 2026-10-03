@@ -6,7 +6,7 @@ import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { InputLatch } from "../../core/sim/InputLatch";
-import { RunSimulation } from "../../core/sim/RunSimulation";
+import { RunSimulation, fallbackCards } from "../../core/sim/RunSimulation";
 import type { SimEvent } from "../../core/sim/SimEvent";
 import { MAX_ENEMIES, MAX_PROJ, MAX_PICKUP, type SimEnemy } from "../../core/sim/RunState";
 import { CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS } from "../../core/world/territory";
@@ -1840,6 +1840,9 @@ export class GameScene extends Phaser.Scene {
       }
     }
 const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
+    // Also include fallback cards (they're valid TechNodes but not in the graph)
+    const fb = fallbackCards(s.level);
+    for (const f of fb) graphById.set(f.id, f);
     const domainIcon: Record<string, string | undefined> = {
       warfare: SEED_ASSETS.icons.military,
       industry: SEED_ASSETS.icons.economy,

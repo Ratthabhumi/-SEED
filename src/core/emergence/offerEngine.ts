@@ -219,11 +219,13 @@ function underusedPathBoost(node: { domain: string; tags: string[] }, recentOffe
 
 /**
  * Generate K=3 offers using Gumbel-Top-k from available pool.
+ * Accepts an optional candidate filter for POI-themed drafts.
  */
 export function generateOffers(
   context: TechOfferContext,
   config: OfferEngineConfig = DEFAULT_OFFER_CONFIG,
-  K = 3
+  K = 3,
+  candidateFilter?: (n: TechNode) => boolean
 ): OfferCandidate[] {
   const { sim, laws, activeFamilies, recentOffers, recentPicks, rng } = context;
   
@@ -237,7 +239,13 @@ export function generateOffers(
     return ageIdx <= sim.ageIndex + 1;
   });
   
-  // Sample quality for each candidate and score them
+  // Apply POI candidate filter if provided
+  if (candidateFilter) {
+    const filtered = pool.filter(candidateFilter);
+    if (filtered.length > 0) pool = filtered;
+  }
+  
+  // Sample quality for each candidate ONCE and score them
   const candidates = pool.map((node: TechNode) => {
     const quality = sampleQuality(rng, config.qualityBaseProb);
     const clampedQuality = clampQualityByAge(quality, ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(node.age), config, rng);
@@ -253,26 +261,13 @@ export function generateOffers(
     return { node, quality: clampedQuality, score, gumbel: 0, novelty: 0, penalty: 0 };
   });
   
-  // Score each candidate
-  const scored = candidates.map((c) => ({
-    ...c,
-    score: computeOfferScore(c.node, c.quality, {
-      sim,
-      laws,
-      activeFamilies,
-      recentOffers: [],
-      recentPicks: [],
-      config: DEFAULT_OFFER_CONFIG,
-    }),
-  }));
+  // Gumbel-Top-k selection (with temperature)
+  const selected = gumbelTopK(candidates, K, rng, config.gumbelTemp);
   
-  // Gumbel-Top-k selection
-  const selected = gumbelTopK(scored, K, rng);
-  
-  // Apply quality clamping based on age
+  // Return selected candidates with their ORIGINAL clamped quality (no second clamping)
   const finalCandidates = selected.map((c) => ({
     node: c.node,
-    quality: clampQualityByAge(c.quality, ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(c.node.age), config, rng),
+    quality: c.quality,
     score: c.score,
     gumbel: c.gumbel,
     novelty: c.novelty,
@@ -288,11 +283,12 @@ export function generateOffers(
 export function gumbelTopK<T extends { score: number }>(
   candidates: Array<T>,
   K: number,
-  rng: ReturnType<typeof import("../seed/streams").createStreamRng>
+  rng: ReturnType<typeof import("../seed/streams").createStreamRng>,
+  temperature = 1.0
 ): Array<T & { gumbel: number }> {
   const withGumbel = candidates.map((c) => ({
     ...c,
-    gumbel: -Math.log(-Math.log(rng.nextFloat())),
+    gumbel: -Math.log(-Math.log(rng.nextFloat())) * temperature,
   }));
   withGumbel.sort((a, b) => (b.score + b.gumbel) - (a.score + a.gumbel));
   return withGumbel.slice(0, K);

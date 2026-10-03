@@ -182,6 +182,8 @@ describe("outpost capacity", () => {
       clearField(sim);
       sim.step(1 / 60, IDLE);
     }
+    // Signal claim succeeded, now specialize it (exemption should allow it)
+    expect(sim.setOutpostSpec(sig.id, "research").some((e) => e.type === "outpost_spec")).toBe(true);
     expect(s.signalSecured).toBe(true);
     // 2 original + junk (claimed but unspecialized) + signal = 4
     // Junk claim succeeds (free), spec fails (logistics full), signal claim + spec succeeds (exemption)

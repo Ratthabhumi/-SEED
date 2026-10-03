@@ -375,7 +375,7 @@ export class RunSimulation {
       recentOffers: s.recentDraftOffers,
       recentPicks: s.history.filter(h => h.kind === "tech_selected").map(h => h.label),
       rng: this.streams.draft,
-    }, undefined, 3);
+    }, undefined, 3, filter);
     
     // Convert OfferCandidate to DraftOffer with quality/modifiers applied
     let offers = result.map((c) => this.convertToDraftOffer(c.node, c.quality, c.score));
@@ -489,11 +489,27 @@ export class RunSimulation {
     s.draftOffers = [];
     s.draftContext = "level";
     
-    // Find the base TechNode
+    // Find the base TechNode for bookkeeping
     const node = this.graph.find((n) => n.id === offer.nodeId);
     if (!node) return ev;
     
-    this.grantNode(node.id, node);
+    // Bookkeeping: owned, tags, synergyTags, weaponEvolve (same as grantNode but without base effects)
+    const first = !s.owned.includes(node.id);
+    if (first) {
+      s.owned.push(node.id);
+      this.logHistory("tech", node.id);
+    }
+    for (const tg of node.tags) if (!s.ownedTags.includes(tg)) s.ownedTags.push(tg);
+    for (const st of node.synergyTags) if (!s.ownedTags.includes(st)) s.ownedTags.push(st);
+    for (const e of node.effects) {
+      if (e.kind === "weaponEvolve") {
+        const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+        for (const fam of (Object.keys(s.weaponStage) as WeaponFamily[])) {
+          if (active.has(fam)) s.weaponStage[fam] = 5;
+        }
+      }
+    }
+    
     if (s.reservedTech === node.id) s.reservedTech = "";
     s.stats.techsTaken++;
     ev.push({ 
@@ -503,7 +519,7 @@ export class RunSimulation {
       modifierIds: offer.modifierIds,
     });
     
-    // Apply effective effects (with quality/modifiers already applied)
+    // Apply effective effects (with quality/modifiers already applied) EXACTLY ONCE
     for (const e of offer.effectiveEffects) applyTechEffect(s.build, e);
     
     const ownedTags = new Set(s.ownedTags);
@@ -752,7 +768,7 @@ export class RunSimulation {
     });
     // First claim starts the raid clock (grace window, not instant pressure).
     if (s.lastRaidAt === 0) s.lastRaidAt = s.elapsed;
-    if (cand.poiType === "signal") s.signalSecured = true;
+    // signalSecured is set in setOutpostSpec after successful specialization
     this.logHistory("claim", cand.poiType);
     ev.push({ type: "territory_claimed", poiId, poiType: cand.poiType });
     return ev;
@@ -770,16 +786,21 @@ export class RunSimulation {
     // Check logistics cost (tier 1)
     const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
     if (s.logistics + cost > s.maxLogistics) {
-      // Signal first-claim exemption still applies (v0.23.1 no-softlock)
-      // but we need to allow the spec assignment even if logistics exceeded
-      // only for the very first Signal claim
-      const isFirstSignal = spec === "research" && t.poiType === "signal" && !s.signalSecured && !canClaimMore(s.territories, s.ageIndex);
+      // Signal first-claim exemption (v0.23.1 no-softlock):
+      // Allow first Signal specialization even if logistics full.
+      // Check if this is the first Signal territory being specialized.
+      const hasSignalSpecialized = s.territories.some(
+        (terr) => terr.poiType === "signal" && terr.spec !== ""
+      );
+      const isFirstSignal = t.poiType === "signal" && !hasSignalSpecialized;
       if (!isFirstSignal) return ev;
     }
     
     t.spec = spec;
     s.logistics += cost;
     if (spec === "military") this.reinforceSquad();
+    // Mark signal as secured AFTER successful specialization (for mission tracking)
+    if (t.poiType === "signal") s.signalSecured = true;
     this.logHistory("outpost", `${spec}@${t.poiType}`);
     ev.push({ type: "outpost_spec", poiId, spec });
     return ev;
