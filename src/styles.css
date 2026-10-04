@@ -37,6 +37,11 @@ button, input { font-family: inherit; }
   background: radial-gradient(ellipse at center, rgba(11,14,20,0.7) 0%, rgba(11,14,20,0.92) 100%);
   pointer-events: auto; padding: 20px; text-align: center;
   z-index: 50;
+  overflow: hidden;
+}
+
+#ui .screen .cards-wrapper {
+  height: 90vh; overflow-y: auto;
 }
 
 /* Semantic panel size system */
@@ -177,7 +182,8 @@ button, input { font-family: inherit; }
 .hud-ascend .btn { pointer-events: auto; }
 
 /* Draft cards */
-.cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.cards-wrapper { max-height: 90vh; overflow-y: auto; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; justify-content: center; }
 .card {
   background: #141d2e; border: 1px solid #3a4a63; border-radius: 12px;
   padding: 18px 20px; width: min(88vw, 260px); min-height: 220px; cursor: pointer;

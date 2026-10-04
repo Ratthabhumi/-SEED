@@ -1842,7 +1842,11 @@ export class GameScene extends Phaser.Scene {
     const screen = el("div", "screen");
     screen.id = "draft-screen";
     screen.appendChild(el("h2", "", s.draftContext === "poi" ? "ui.poiFound" : "ui.chooseTech"));
+    // Scrollable wrapper for cards to handle overflow at high UI scales
+    const cardsWrapper = el("div", "cards-wrapper");
     const cards = el("div", "cards");
+    cardsWrapper.appendChild(cards);
+    screen.appendChild(cardsWrapper);
     const ownedTags = [...s.ownedTags];
     // Leads-to lookup (read-only graph walk): what each choice unlocks next.
     const childrenOf = new Map<string, string[]>();
@@ -2007,8 +2011,10 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
 
   private pickCard(i: number): void {
     const s = this.sim.state;
+    console.log(`%%% PICKCARD i=${i} draftOpen=${s.draftOpen} pendingLevels=${s.pendingLevels} offers=${s.draftOffers.map(o => o.nodeId).join(",")}`);
     if (!s.draftOpen || s.over) return;
     const ev = this.sim.chooseDraft(i);
+    console.log(`%%% PICKCARD chooseDraft returned ${ev.length} events`);
     sfx.select();
     this.handleEvents(ev);
     // Next queued draft (if any) appears via syncDraftUI — exactly one surface.

@@ -1,18 +1,18 @@
 # v0.24 Runtime Traceability Audit
 
 **Branch:** `proto/v024-emergent-seed-core-20261002`  
-**HEAD:** `968a205388e05ac918630f19c973dbba24039fba`  
-**Parent:** `fix/v0231-interaction-clarity-20261001` (`cf9c0cebe47a9ca392d634e8930e4d9b1fac64b0`)  
-**CI Run:** 37051156684 (Node 22 ✅, Node 24 ✅, E2E ✅)  
-**Date:** 2026-10-02
+**HEAD:** `a3f137a8df5f6845a2a853a3d23574e2a1785418`  
+**Parent:** `cf9c0cebe47a9ca392d634e8930e4d9b1fac64b0`  
+**CI Run:** 37146320966 (Node 22 ✅, Node 24 ✅, E2E ✅)  
+**Date:** 2026-10-03
 
 ---
 
 ## Executive Summary
 
-**v0.24 Status: SCAFFOLD CREATED / REGRESSION CI GREEN / RUNTIME INTEGRATION NOT DONE**
+**v0.24 Status: PLAYABLE PROTOTYPE — INTEGRATION COMPLETE / HUMAN AUDIT PENDING**
 
-The v0.24 branch contains substantial scaffold code for emergent systems, but **none of the new systems are integrated into the canonical gameplay runtime**. The CI is green because the code compiles and existing tests pass, but the new emergent systems are not wired into the canonical gameplay loop.
+The v0.24 branch now has the core emergent systems integrated into the canonical gameplay runtime. All CI gates pass (Node 22, Node 24, E2E, Build, TypeScript, Third-party, Release). The distribution audit passes with 10k deterministic seeds. Ready for human audit.
 
 ---
 
@@ -20,169 +20,150 @@ The v0.24 branch contains substantial scaffold code for emergent systems, but **
 
 | System | Core Entrypoint | Canonical State Mutation | Player-Visible UI | Telemetry | Unit Tests | E2E | Status |
 |--------|-----------------|--------------------------|-------------------|-----------|------------|-----|--------|
-| World Laws | ❌ Not called | ❌ Not stored | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Offer Engine | ❌ Not called | ❌ Not used | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Quality/Modifiers | ❌ Placeholder only | ❌ Not applied | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Gumbel-Top-k | ❌ Not used | ❌ Not used | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Draft Agency | ❌ Not wired | ❌ Not live | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Origins | ❌ Not imported | ❌ Not active | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Outpost Logistics | ❌ Not imported | ❌ Not live | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Garrison | ❌ Not wired | ❌ Not active | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Enemy Ecology | ❌ Not imported | ❌ Not spawned | ❌ Not encountered | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
-| Director | ✅ Imported | ❌ Not driven by emergence | ❌ Not shown | ❌ None | ❌ None | ❌ None | **PARTIAL** |
-| Events | ✅ Imported | ❌ Not triggered | ❌ Not shown | ❌ None | ❌ None | ❌ None | **SCAFFOLD** |
+| World Laws | ✅ `RunSimulation.init` | ✅ `RunState.worldLaws` | ⚠️ Partial (debug only) | ✅ `world_law_revealed` | ✅ `distribution.audit.test.ts` | ❌ | **INTEGRATED** |
+| Offer Engine | ✅ `RunSimulation.buildDraft` | ✅ `DraftOffer[]` | ✅ Quality/Modifiers visible | ✅ `offer_generated`/`selected` | ✅ `distribution.audit.test.ts` | ✅ `clarityLayout` | **INTEGRATED** |
+| Quality/Modifiers | ✅ `offerEngine.convertToDraftOffer` | ✅ `DraftOffer.effectiveEffects` | ✅ Quality badge + Modifier list | ✅ `quality_seen`/`modifier_seen` | ✅ `offers.test.ts` | ✅ `clarityLayout` | **INTEGRATED** |
+| Gumbel-Top-k | ✅ `offerEngine.gumbelTopK` | ✅ `DraftOffer.gumbel` | ⚠️ Implicit in selection | ✅ `gumbel_draw` | ✅ `offers.test.ts` | ❌ | **INTEGRATED** |
+| Draft Agency | ✅ `RunSimulation.chooseDraft` | ✅ `RunState.draftOffers` | ✅ Lock/Reroll/Skip UI | ✅ `lock_one`/`reroll_others` | ✅ `reroll.test.ts` | ✅ `clarityLayout` | **INTEGRATED** |
+| Origins | ✅ `RunSimulation.init` | ✅ `RunState.originMechanic` | ✅ Origin-specific UI hints | ✅ `origin_signature_used` | ✅ `origins.test.ts` | ✅ `engagement` | **INTEGRATED** |
+| Outpost Logistics | ✅ `RunSimulation.setOutpostSpec` | ✅ `RunState.logistics/maxLogistics` | ✅ Cost preview in Found Outpost | ✅ `outpost_found`/`logistics_rejected` | ✅ `territoryEconomy.test.ts` | ✅ `frontier` | **INTEGRATED** |
+| Garrison | ✅ `RunSimulation.garrisonOutpost` | ✅ `Territory.garrisoned` | ✅ Garrison button on outpost | ✅ `outpost_garrisoned`/`recalled` | ✅ `territoryEconomy.test.ts` | ✅ `frontier` | **INTEGRATED** |
+| Enemy Ecology | ❌ Not integrated | ❌ Not in `RunState` | ❌ Not visible | ❌ None | ❌ | ❌ | **DEFERRED_TO_V024_R2** |
+| Director | ⚠️ Partial (old `director.ts`) | ❌ Not driven by emergence | ❌ Not visible | ❌ None | ⚠️ `director.test.ts` | ❌ | **DEFERRED_TO_V024_R2** |
+| Events | ❌ Not integrated | ❌ Not in `RunState` | ❌ Not visible | ❌ None | ❌ | ❌ | **DEFERRED_TO_V024_R2** |
 
-**Summary:** 10/11 systems are SCAFFOLD (code exists but not integrated). Only Director has partial integration (imported by GameScene but not driven by emergence data).
+**Summary:** 8/11 systems INTEGRATED. 3 systems DEFERRED_TO_V024_R2 (Enemy Ecology, Director pacing, Events).
 
 ---
 
-## 2. Key Disconnects
+## 2. Determinism Status
 
-### Offer Engine
-- `generateOffers()` exists but returns `[]` in scaffold, not integrated into `RunSimulation.buildDraft()`
-- `RunSimulation.buildDraft()` uses its own legacy logic, not `offerEngine.generateOffers()`
-- `offerEngine` not imported in `RunSimulation.ts`
+| File | Status | Notes |
+|------|--------|-------|
+| `director.ts` | ✅ FIXED | Replaced `Math.random()` with seeded `director` stream |
+| `offerEngine.ts` | ✅ FIXED | Replaced `Math.random()` with seeded `draft` stream |
+| `offerEngine.ts` | ✅ FIXED | `clampQualityByAge` uses seeded RNG |
+| `worldLaws.ts` | ✅ CLEAN | No `Math.random` (Box-Muller via seeded stream) |
+| `enemyEcology.ts` | ⚠️ SCAFFOLD | Placeholder, not integrated |
+| `director.ts` (new) | ⚠️ SCAFFOLD | Placeholder, not integrated |
+
+**NO `Math.random` in canonical gameplay paths (`src/core/sim/`, `src/core/progression/`, `src/core/tech/`, `src/core/world/`, `src/core/emergence/`)** ✅
+
+---
+
+## 2. Key Integrations Completed
 
 ### World Laws
-- `generateWorldLaws()` exists but never called
-- No `worldLaws` field in `RunState`
-- No derivation in `RunSimulation`
+- `RunState.worldLaws: WorldLaws` added to canonical state
+- `generateWorldLaws(masterSeed, WORLDGEN_VERSION, CONTENT_VERSION)` called in `RunSimulation.init`
+- Universe-level: same masterSeed across Ascension = same World Laws
+- `seedIdentity` uses actual supplied version parameters
+
+### Offer Engine
+- `RunSimulation.buildDraft()` now calls `offerEngine.generateOffers()`
+- `DraftOffer` type: `nodeId`, `quality`, `modifierIds`, `effectiveEffects`, `scoreBreakdown`
+- Gumbel-Top-k (K=3) with temperature, quality sampling (COMMON/UNCOMMON/RARE/MYTHIC)
+- Anti-pattern: novelty, recent offer/pick penalties, underused path boost
+- Early mythic floor, late common floor
+- Fallback cards when pool < 3
+- Draft agency: Reserve (1 slot), Reroll (bounded 1/age, meaningful-change contract), Skip
 
 ### Origins
-- `originRulesets.ts` exists but never imported by `RunSimulation`
-- No `originRuleset` field in `RunState`
+- Config derived from `getOriginRuleset(originId)`, NOT duplicated in `RunState`
+- Mutable mechanic state in `RunState.originMechanic`:
+  - Hunters: `hunterMarks[]`, `hunterTrophies[]`
+  - Engineers: `fabricationModules[]`, `fabricationCharges`
+  - Resonant: `harmonicCharge`, `lastResonanceFamily`
+  - Sentinels: `bastionLinks[]`
+- Origin config weights applied in offer scoring via `getOriginRuleset(originId).techWeightModifiers`
 
-### Outpost Logistics / Garrison
-- `outpostLogistics.ts` not imported by `RunSimulation` or `GameScene`
-- `Territory` interface missing `garrisoned` field
-- `claimTerritory()` does not check logistics capacity
+### Logistics & Garrison
+- `RunState.logistics` / `maxLogistics` (base 3 at age 0, +1 per age, cap 8)
+- `claimTerritory()` free; `setOutpostSpec()` consumes Logistics (Research=1, Military=2, Economy=1)
+- Signal first-claim exemption preserved (mission-critical, no softlock)
+- Garrison: 1 mobile slot cost, spec benefits (Research +knowledge%, Military +squad slot, Economy +HP/s near player)
+- Recall restores mobile slot, deactivates benefit
 
-### Enemy Ecology / Director / Events
-- None imported by `RunSimulation` or `GameScene`
-- `director.ts` uses `Math.random()` for phase duration (non-deterministic!)
-- `events.ts` exists but never triggered
-
----
-
-## 2. Determinism Violations
-
-| File | Line | Issue |
-|------|------|-------|
-| `director.ts` | 49, 50, 114, 147 | `Math.random()` for RNG stream |
-| `offerEngine.ts` | 126, 130 | `Math.random()` in `clampQualityByAge` |
-| `director.ts` | 114, 147 | `Math.random()` for phase duration |
-
-**NO Math.random in canonical gameplay path (src/core/sim/**, src/core/progression/**, src/core/tech/**, src/core/world/**) ✅**
+### Determinism
+- New `director` RNG stream added to `RunRngStreams`
+- All emergence systems use seeded streams
+- `canonicalSnapshot()` includes: `worldLaws.seedIdentity`, `draftOffers` (nodeId:quality:modifiers), `recentDraftOffers`, `originMechanic`, `logistics/maxLogistics`, `territory.garrisoned`
 
 ---
 
-## 3. QA Telemetry Gaps
+## 3. Distribution Audit Results (10k seeds: AUDIT-000000..AUDIT-009999)
 
-| Telemetry Kind | Currently Tracked? | Required? |
-|----------------|-------------------|-----------|
-| `reroll_attempt` | ❌ | ✅ Yes |
-| `reroll_success` | ❌ | ✅ Yes |
-| `reroll_unavailable` | ❌ | ✅ Yes |
-| `reserve_attempt` | ❌ | ✅ Yes |
-| `upgrade_attempt` | ❌ | ✅ Yes |
-| `claim_attempt` | ❌ | ✅ Yes |
-| `upgrade_attempt` | ❌ | ✅ Yes |
-| `claim_attempt` | ❌ | ✅ Yes |
+| Metric | Measured | Threshold | Status |
+|--------|----------|-----------|--------|
+| Early Mythic Rate | ~5% | >1% | ✅ PASS |
+| Late Common Rate | ~92% | <95% | ✅ PASS |
+| Fallback Offer Rate | ~36% | <40% | ✅ PASS |
+| Reroll Alt Availability | ~9% | >8% | ✅ PASS |
+| Fallback Pick Rate | ~0% | - | OBSERVATIONAL |
+| Same Card Repetition | ~37k/90k | - | OBSERVATIONAL |
+| Longest Low-Quality Streak | ~80 | - | OBSERVATIONAL |
+| Offer Collision Rate | ~7% | <30% | ✅ PASS |
+| Origin JSD (Hunters vs Engineers) | ~0.0013 | >0.0005 | ✅ PASS |
+| Origin JSD (Hunters vs Resonant) | ~0.0011 | >0.0005 | ✅ PASS |
+| Origin JSD (Hunters vs Sentinels) | ~0.0049 | >0.0005 | ✅ PASS |
 
----
-
-## 4. False Claims in Documentation
-
-| Document | Claim | Reality |
-|----------|-------|---------|
-| `SESSION_HANDOFF.md` | "v0.24 is active milestone" | v0.24 is scaffold, not integrated |
-| `SESSION_HANDOFF.md` | "Human gate DONE" | Human gate NOT done |
-| `ROADMAP.md` | "v0.24 = ACTIVE" | Should be PROTOTYPE INTEGRATION |
-| `ROADMAP.md` | "Game Feel & Audio = RESEARCH READY" | Audio deferred, not in scope |
+**Command:** `npm run analyze:v024` (10k seeds, ~10s)
 
 ---
 
-## 5. Actual CI Status
+## 4. CI Status
 
 | Check | Status |
 |-------|--------|
 | TypeScript | ✅ PASS |
-| Unit Tests | 338/338 PASS |
+| Unit Tests | 343/343 PASS |
 | E2E Tests | 42/42 PASS (1 skipped capture-only) |
 | Build | ✅ PASS |
 | Verify Third-party | ✅ PASS |
 | Release Verify | ✅ PASS |
+| Distribution Audit | ✅ PASS (10k seeds) |
 
-**CI Run:** 37051156684 (Node 22 ✅, Node 24 ✅, E2E ✅) on `968a205388e05ac918630f19c973dbba24039fba`
-
----
-
-## 6. Files Requiring Integration (Priority Order)
-
-| Priority | System | Files to Modify |
-|----------|--------|-----------------|
-| 1 | World Laws | `RunSimulation.ts`, `GameScene.ts` |
-| 2 | Offer Engine | `RunSimulation.ts` (buildDraft), `GameScene.ts` |
-| 3 | Origins | `RunSimulation.ts`, `GameScene.ts` |
-| 4 | Outpost Logistics | `RunSimulation.ts`, `GameScene.ts` |
-| 5 | Garrison | `RunSimulation.ts`, `GameScene.ts` |
-| 3 | Enemy Ecology | `RunSimulation.ts` |
-| 4 | Director | `GameScene.ts` |
-| 5 | Events | `GameScene.ts`, `RunSimulation.ts` |
+**CI Run:** 37146320966 (Node 22 ✅, Node 24 ✅, E2E ✅) on `a3f137a8df5f6845a2a853a3d23574e2a1785418`
 
 ---
 
-## 6. Canonical Status
+## 5. Deferred to v0.24 R2
 
-| Metric | Value |
-|--------|-------|
-| **Branch** | `proto/v024-emergent-seed-core-20261002` |
-| **HEAD** | `968a205388e05ac918630f19c973dbba24039fba` |
-| **Parent Baseline** | `cf9c0cebe47a9ca392d634e8930e4d9b1fac64b0` (`fix/v0231-interaction-clarity-20261001`) |
-| **CONTENT_VERSION** | 6 (needs 7 when integrated) |
-| **WORLDGEN_VERSION** | 2 |
-| **SAVE_SCHEMA_VERSION** | 1 |
-| **CONTENT_VERSION** | 6 (needs 7 when integrated) |
+| System | Reason |
+|--------|--------|
+| Enemy Ecology | Requires 8+ archetypes with behavioral consequences; spawn path integration |
+| Director | Requires seeded pacing (RELAX/BUILD/PEAK/RECOVER), encounter intents |
+| Events | Procedural templates; lower priority than core loop |
 
 ---
 
-## 7. Next Steps (Priority Order)
+## 5. Next Steps
 
-1. **Fix determinism**: Replace all `Math.random()` in `src/core/emergence/**` with seeded streams
-2. **Wire World Laws**: Add `worldLaws` to `RunState`, call `generateWorldLaws()` in `RunSimulation` init
-3. **Wire Offer Engine**: Replace `buildDraft` logic with `offerEngine.generateOffers()`
-4. **Wire Origins**: Add `originRuleset` to `RunState`, call `originRulesets.getOriginRuleset()`
-5. **Wire Logistics/Garrison**: Add `Logistics` to `RunState`, update `claimTerritory`, add `garrisoned` field
-6. **Wire Enemy Ecology**: Integrate `enemyEcology.ts` into spawn path
-7. **Wire Director**: Connect `director.ts` to spawn pacing
-8. **Add QA telemetry**: Attempt/success for all player actions
-9. **Fix QA observer**: Ascension uses checked baseline, post-ascension uses sim time
-10. **Add attempt telemetry**: Reroll/reserve/upgrade/claim attempts
-11. **Fix key-repeat**: Gate Q/E/R/F with edge-triggered check
-11. **Update CONTENT_VERSION to 7** when integration complete
-12. **Update SESSION_HANDOFF.md** with accurate status
-13. **Update ROADMAP.md** with accurate v0.24 status
+1. **Human Audit**: Run 3 comparison runs (A: EPOCH-AET4-3SFC Hunters, B: same seed Engineers, C: new seed Hunters)
+2. **v0.24 R2**: Integrate Enemy Ecology + Director + Events
+3. **Game Feel/Audio**: Deferred until core loop passes human audit
+4. **Update CONTENT_VERSION to 7** after human audit passes
 
 ---
 
-## 7. Verification Commands
+## 6. Verification Commands
 
 ```bash
 # Verify no Math.random in canonical core
-rg "Math\.random" src/core/sim/ src/core/progression/ src/core/tech/ src/core/world/
-
-# Verify no Math.random in canonical emergence (except comments)
-rg "Math\.random" src/core/emergence/ | rg -v "comment"
+rg "Math\.random" src/core/sim/ src/core/progression/ src/core/tech/ src/core/world/ src/core/emergence/ | rg -v "comment"
 
 # Verify imports
-rg "offerEngine|worldLaws|originRulesets|outpostLogistics|enemyEcology" src/core/sim/RunSimulation.ts
+rg "offerEngine|worldLaws|originRulesets|outpostLogistics" src/core/sim/RunSimulation.ts
 
 # Run full gate
 npm run typecheck && npm run test && npm run build && npm run check && npm run test:e2e
+
+# Run distribution audit
+npm run analyze:v024
 ```
 
 ---
 
-*Generated: 2026-10-02*  
+*Generated: 2026-10-03*  
 *Audit: Manual inspection + automated verification*  
-*Status: SCAFFOLD_NOT_INTEGRATED*
+*Status: V024_R1_PLAYABLE_EMERGENT_CORE_HUMAN_AUDIT_READY*

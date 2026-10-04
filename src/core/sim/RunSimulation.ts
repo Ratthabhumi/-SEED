@@ -355,6 +355,7 @@ export class RunSimulation {
 
   private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
     const s = this.state;
+    console.log(`[buildDraft] context=${context}, pendingLevels=${s.pendingLevels}, ageIndex=${s.ageIndex}`);
     const result = generateOffers({
       sim: {
         owned: s.owned,
@@ -406,6 +407,7 @@ export class RunSimulation {
     while (s.recentDraftOffers.length > 5) s.recentDraftOffers.shift();
     s.draftOpen = true;
     s.draftContext = context;
+    console.log(`[buildDraft] done: draftOpen=${s.draftOpen}, draftOffers=${s.draftOffers.map(o => o.nodeId).join(",")}, pendingLevels=${s.pendingLevels}`);
   }
 
   /**
@@ -503,16 +505,26 @@ export class RunSimulation {
   chooseDraft(i: number): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
-    if (!s.draftOpen || s.over) return ev;
+    if (!s.draftOpen || s.over) {
+      console.log(`%%% CHOOSEDRAFT REJECTED: draftOpen=${s.draftOpen}, over=${s.over}`);
+      return ev;
+    }
     const offer = s.draftOffers[i];
-    if (!offer) return ev;
+    if (!offer) {
+      console.log(`%%% CHOOSEDRAFT REJECTED: no offer at index ${i}`);
+      return ev;
+    }
+    console.log(`%%% CHOOSEDRAFT choosing offer ${i}: ${offer.nodeId} (quality=${offer.quality}, pendingLevels=${s.pendingLevels})`);
     s.draftOpen = false;
     s.draftOffers = [];
     s.draftContext = "level";
     
     // Resolve the TechNode (handles both graph nodes and fallback nodes)
     const node = this.resolveTechNode(offer.nodeId);
-    if (!node) return ev;
+    if (!node) {
+      console.log(`[chooseDraft] REJECTED: could not resolve node ${offer.nodeId}`);
+      return ev;
+    }
     
     // Bookkeeping: owned, tags, synergyTags, weaponEvolve (same as grantNode but without base effects)
     const first = !s.owned.includes(node.id);

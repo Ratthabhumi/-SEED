@@ -178,9 +178,28 @@ async function viewportMatrix(page: Page): Promise<void> {
 test("clarity matrix 1280x720", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   const errors: string[] = [];
+  const consoleLogs: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (msg) => {
+    const text = msg.text();
+    const type = msg.type();
+    // Capture ALL console messages for debugging
+    if (text.includes("%%%") || text.includes("[buildDraft]") || text.includes("[chooseDraft]") || text.includes("[pickCard]") || text.startsWith("%%%")) {
+      consoleLogs.push(`${type}: ${text}`);
+    }
+    // Also log all console messages for debugging
+    if (text.includes("%%%")) {
+      consoleLogs.push(`CAPTURED: ${type}: ${text}`);
+    }
+  });
+  // Test console capture
+  await page.evaluate(() => console.log("%%% TEST CONSOLE CAPTURE WORKS"));
   await startRun(page, "EPOCH-CLAR-720");
   await viewportMatrix(page);
+  if (consoleLogs.length > 0) {
+    console.log("=== BROWSER CONSOLE LOGS ===");
+    consoleLogs.forEach(l => console.log(l));
+  }
   expect(errors).toEqual([]);
 });
 

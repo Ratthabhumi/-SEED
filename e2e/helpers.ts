@@ -59,10 +59,21 @@ export async function resolveDrafts(page: Page, maxRounds = 10): Promise<void> {
 /** Fast drain for fat granted queues (tight RAF-paced polling). */
 export async function drainDrafts(page: Page, maxRounds = 120): Promise<void> {
   for (let i = 0; i < maxRounds; i++) {
-    if ((await page.locator("#draft-screen").count()) === 0) break;
+    const draftCount = await page.locator("#draft-screen").count();
+    if (draftCount === 0) break;
+    const cardCount = await page.locator("#draft-screen .card").count();
+    const cardIds = await page.locator("#draft-screen .card").evaluateAll(cards => cards.map(c => c.textContent?.slice(0, 50)));
+    const cardBox = await page.locator("#draft-screen .card").first().boundingBox();
+    console.log(`[drainDrafts] round ${i}: draftCount=${draftCount}, cardCount=${cardCount}, cardBox=${JSON.stringify(cardBox)}, cards=${JSON.stringify(cardIds)}`);
+    if (cardCount === 0) {
+      console.log(`[drainDrafts] no cards found, breaking`);
+      break;
+    }
     await page.locator("#draft-screen .card").first().click();
     await page.waitForTimeout(60);
   }
+  const finalDraftCount = await page.locator("#draft-screen").count();
+  console.log(`[drainDrafts] finished: final draftCount=${finalDraftCount}`);
 }
 
 /** Open pause robustly: wall-time combat can pop a draft between actions
