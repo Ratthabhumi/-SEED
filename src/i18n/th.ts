@@ -275,6 +275,8 @@ export const th: Record<EnKeys, string> = {
 
   "ui.reroll": "สุ่มใหม่",
   "ui.skip": "ข้าม",
+  "ui.select": "เลือก",
+  "ui.selectCard": "เลือกการ์ด {0}",
   "ui.pinPath": "ปักหมุดเส้นทาง",
   "ui.unpin": "ถอนหมุด",
   "ui.ownedStays": "เทคโนโลยีที่เลือกแล้วยังคงทำงาน การเลือกใบใหม่ไม่ได้แทนที่ใบเก่า",

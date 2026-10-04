@@ -67,12 +67,29 @@ async function openDraft(page: Page): Promise<void> {
   // One draft is enough for layout; fat grants queue dozens (xp curve).
   await page.evaluate(() => window.__seedE2E?.grant(30));
   await expect(page.locator("#draft-screen")).toBeVisible({ timeout: 15000 });
+  // Capture ALL browser console messages
+  page.on("pageerror", (err) => {
+    console.log(`[BROWSER ERROR] ${err.message}`);
+  });
+  page.on("console", (msg) => {
+    const text = msg.text();
+    if (msg.type() === "error" || text.includes("%%%") || text.includes("OPEN_DRAFT")) {
+      console.log(`[BROWSER CONSOLE ${msg.type()}] ${text}`);
+    }
+  });
 }
 
 async function closeDraft(page: Page): Promise<void> {
   // Drafts chain while pendingLevels last — drain them all, or later
   // overlays (tech/civ map) stay blocked behind the next draft.
-  await drainDrafts(page);
+  // Keep draining until no draft screen remains (queued drafts chain).
+  for (let i = 0; i < 5; i++) {
+    await drainDrafts(page);
+    const count = await page.locator("#draft-screen").count();
+    if (count === 0) return;
+    // Small pause for any microtask queue to settle
+    await page.waitForTimeout(50);
+  }
   await expect(page.locator("#draft-screen")).toHaveCount(0);
 }
 
@@ -80,8 +97,9 @@ async function closeDraft(page: Page): Promise<void> {
  * actions (map keys never open over a draft), so drain first. */
 async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "#civmap-screen"): Promise<void> {
   await drainDrafts(page, 40);
+  // Press key directly - Phaser listens on window
   await page.keyboard.press(key);
-  await expect(page.locator(screen)).toBeVisible();
+  await expect(page.locator(screen)).toBeVisible({ timeout: 10000 });
 }
 
 const PAUSE_HEADINGS_EN = ["Primary", "Display", "Help", "Run", "Danger Zone"];

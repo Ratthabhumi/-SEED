@@ -51,7 +51,10 @@ export async function startRun(page: Page, seed: string, opts: TestSaveOptions =
 export async function resolveDrafts(page: Page, maxRounds = 10): Promise<void> {
   for (let i = 0; i < maxRounds; i++) {
     if ((await page.locator("#draft-screen").count()) === 0) break;
-    await page.locator("#draft-screen .card").first().click();
+    // Click the explicit SELECT button inside the first card
+    const selectBtn = page.locator("#draft-screen .card .card-select").first();
+    await selectBtn.waitFor({ state: "attached", timeout: 10000 });
+    await selectBtn.click();
     await page.waitForTimeout(150);
   }
 }
@@ -63,13 +66,15 @@ export async function drainDrafts(page: Page, maxRounds = 120): Promise<void> {
     if (draftCount === 0) break;
     const cardCount = await page.locator("#draft-screen .card").count();
     const cardIds = await page.locator("#draft-screen .card").evaluateAll(cards => cards.map(c => c.textContent?.slice(0, 50)));
-    const cardBox = await page.locator("#draft-screen .card").first().boundingBox();
-    console.log(`[drainDrafts] round ${i}: draftCount=${draftCount}, cardCount=${cardCount}, cardBox=${JSON.stringify(cardBox)}, cards=${JSON.stringify(cardIds)}`);
+    console.log(`[drainDrafts] round ${i}: draftCount=${draftCount}, cardCount=${cardCount}, cards=${JSON.stringify(cardIds)}`);
     if (cardCount === 0) {
       console.log(`[drainDrafts] no cards found, breaking`);
       break;
     }
-    await page.locator("#draft-screen .card").first().click();
+    // Click the explicit SELECT button inside the first card
+    const selectBtn = page.locator("#draft-screen .card .card-select").first();
+    await selectBtn.waitFor({ state: "attached", timeout: 10000 });
+    await selectBtn.click();
     await page.waitForTimeout(60);
   }
   const finalDraftCount = await page.locator("#draft-screen").count();

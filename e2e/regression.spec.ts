@@ -48,7 +48,10 @@ test("queued multi-level draft: one surface, clean completion", async ({ page })
     expect(await page.locator("#draft-screen").count()).toBe(1);
     const cards = page.locator("#draft-screen .card");
     expect(await cards.count()).toBeLessThanOrEqual(3);
-    await cards.first().click();
+    // Click the explicit SELECT button inside the first card
+    const selectBtn = page.locator("#draft-screen .card .card-select").first();
+    await selectBtn.waitFor({ state: "attached", timeout: 10000 });
+    await selectBtn.click();
     await page.waitForTimeout(150);
   }
   await expect(page.locator("#draft-screen")).toHaveCount(0);

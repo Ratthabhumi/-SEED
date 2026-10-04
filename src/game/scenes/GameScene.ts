@@ -1871,7 +1871,6 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       const n = graphById.get(offer.nodeId);
       if (!n) return;
       const c = el("div", "card");
-      c.setAttribute("role", "button");
       c.appendChild(el("div", "key", undefined, `[${i + 1}]`));
       const h = document.createElement("h3");
       h.textContent = t(n.titleKey as EnKeys);
@@ -1941,24 +1940,39 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
         badge.textContent = `✦ ${t("draft.newBadge")}`;
         c.appendChild(badge);
       }
-      c.addEventListener("click", () => this.pickCard(i));
+      // Explicit SELECT button (replaces role="button" on card)
+      const selectBtn = document.createElement("button");
+      selectBtn.className = "btn card-select";
+      selectBtn.dataset.testid = "card-select";
+      try {
+        selectBtn.textContent = t("ui.select");
+        selectBtn.setAttribute("aria-label", `${t("ui.selectCard")} ${i + 1}`);
+      } catch {
+        selectBtn.textContent = "SELECT";
+        selectBtn.setAttribute("aria-label", `Select card ${i + 1}`);
+      }
+      selectBtn.addEventListener("click", () => this.pickCard(i));
+      c.appendChild(selectBtn);
+      console.log(`%%% OPEN_DRAFT created select button for offer ${i}: ${offer.nodeId}, button in DOM: ${c.contains(selectBtn)}`);
+      // Verify button is in DOM
+      setTimeout(() => {
+        console.log(`%%% OPEN_DRAFT button still in DOM after timeout: ${c.contains(selectBtn)}, parent: ${selectBtn.parentElement?.className}`);
+      }, 100);
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
       if (!offer.nodeId.startsWith("fb-")) {
         const rs = document.createElement("button");
         rs.className = "btn card-reserve";
         rs.textContent = `${t("ui.reserve")}${s.reservedTech === offer.nodeId ? " ✓" : ""}`;
-      rs.addEventListener("click", (ev2) => {
-        ev2.stopPropagation();
-        this.qa?.noteSimEvent("reserve_attempt", offer.nodeId);
-        this.handleEvents(this.sim.reserveCard(i));
-        this.refreshHUD();
-      });
+        rs.addEventListener("click", (ev2) => {
+          ev2.stopPropagation();
+          this.qa?.noteSimEvent("reserve_attempt", offer.nodeId);
+          this.handleEvents(this.sim.reserveCard(i));
+          this.refreshHUD();
+        });
         c.appendChild(rs);
       }
     });
-    screen.appendChild(cards);
-    // Draft agency row: reroll (bounded) + skip + owned-stays truth.
     const agency = el("div", "draft-agency");
     const reroll = document.createElement("button");
     reroll.className = "btn";

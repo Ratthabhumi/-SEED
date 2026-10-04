@@ -20,8 +20,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - id: version
-        run: echo "version=$(node -p 'require(\"package.json\").version')" >> $GITHUB_OUTPUT
-      - run: npm run check
+        run: echo "version=$(node -p 'require("package.json").version')" >> $GITHUB_OUTPUT
       - run: npm run zip
       - run: npm run release:verify
       - uses: actions/upload-artifact@v4
@@ -42,3 +41,16 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:e2e
+
+  analyze:
+    needs: verify
+    if: matrix.node == 24
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run analyze:v024

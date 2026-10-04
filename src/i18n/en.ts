@@ -273,6 +273,8 @@ export const en = {
 
   "ui.reroll": "REROLL",
   "ui.skip": "SKIP",
+  "ui.select": "SELECT",
+  "ui.selectCard": "Select card {0}",
   "ui.pinPath": "PIN PATH",
   "ui.unpin": "UNPIN",
   "ui.ownedStays": "Owned technologies remain active. Choosing a new technology does not replace previous technologies.",
