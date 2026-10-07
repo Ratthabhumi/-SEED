@@ -61,9 +61,9 @@
 - **v0.23 Frontier Purpose & Late-Game Performance**: 🟠 TECHNICAL BASELINE PASSED (exact-SHA CI green at `e32e995`, run 36875936223)
   - 🟠 HUMAN UX CORRECTIVE (objectives, Tech agency, territory purpose, UI overlap — corrected in v0.23.1)
   - Logical baseline for v0.23.1: `e32e995`
-- **v0.23.1 Interaction Clarity + Tech Agency + Territory Economy**: 🟠 TECHNICAL PASS (exact-SHA CI green) / 🟠 HUMAN CORE-LOOP CORRECTIVE — FROZEN at `cf9c0ce` (human evidence: Space→boss→ascension reached, but loop feels patterned/predictable; Tech Map never opened, rarity by age, origins indistinct)
-- **v0.24 Emergent Seed Core**: 🟡 PLAYABLE PROTOTYPE (implementation + automated gates green, human audit pending)
-- **Game Feel & Audio (old v0.24 scope)**: ⏸ DEFERRED — returns only after the new core passes its human gate
+- **v0.24 Emergent Technical Foundation**: 🟡 TECHNICAL BASELINE FREEZE (technical stabilization, CI repair, debug clean, frozen as baseline for v0.25)
+- **v0.25 Player-Visible Emergence**: 🟢 ACTIVE VALIDATION TARGET (decouple offer quality from selection, remove age rarity clamping, make Origin identity legible, derive meaningful World Traits, experience audit)
+- **Game Feel & Audio**: ⏸ DEFERRED — returns only after emergence passes human gate
 - **v0.3+**: ⚪ PLANNED
 
 ---

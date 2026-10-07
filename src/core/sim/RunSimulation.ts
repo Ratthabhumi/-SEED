@@ -506,15 +506,12 @@ export class RunSimulation {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (!s.draftOpen || s.over) {
-      console.log(`%%% CHOOSEDRAFT REJECTED: draftOpen=${s.draftOpen}, over=${s.over}`);
       return ev;
     }
     const offer = s.draftOffers[i];
     if (!offer) {
-      console.log(`%%% CHOOSEDRAFT REJECTED: no offer at index ${i}`);
       return ev;
     }
-    console.log(`%%% CHOOSEDRAFT choosing offer ${i}: ${offer.nodeId} (quality=${offer.quality}, pendingLevels=${s.pendingLevels})`);
     s.draftOpen = false;
     s.draftOffers = [];
     s.draftContext = "level";
@@ -522,7 +519,6 @@ export class RunSimulation {
     // Resolve the TechNode (handles both graph nodes and fallback nodes)
     const node = this.resolveTechNode(offer.nodeId);
     if (!node) {
-      console.log(`[chooseDraft] REJECTED: could not resolve node ${offer.nodeId}`);
       return ev;
     }
     

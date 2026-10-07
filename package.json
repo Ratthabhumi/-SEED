@@ -11,6 +11,7 @@
     "test:e2e": "playwright test",
     "build": "vite build",
     "check": "npm run typecheck && npm run test -- --reporter=basic && npm run verify:third-party && npm run build",
+    "analyze": "npm run analyze:v024",
     "analyze:v024": "vitest run tests/emergence/distribution.audit.test.ts --reporter=verbose",
     "preview": "vite preview",
     "zip": "node scripts/make-zip.mjs",

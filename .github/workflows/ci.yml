@@ -44,7 +44,6 @@ jobs:
 
   analyze:
     needs: verify
-    if: matrix.node == 24
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -39,11 +39,10 @@
   //
   // v0.24 emergent seed core:
   // - WORLDGEN_VERSION stays 2: chunk/POI placement unchanged.
-  // - CONTENT_VERSION 6 -> 7: World Laws (domain bias, tech modifiers, enemy
-  //   ecology, territory rules, pacing profile) and Offer Engine (Gumbel-Top-k,
-  //   quality sampling, anti-pattern penalties) integrated into canonical
-  //   runtime. Same seed + same decisions replay identically; old decision
-  //   traces diverge by design.
+  // - CONTENT_VERSION 6 -> 7: World Laws (domain bias, combat bias, world axes)
+  //   and Offer Engine (Gumbel-Top-k, quality sampling, anti-pattern penalties)
+  //   integrated into canonical runtime. Enemy ecology and emergence director
+  //   remain experimental scaffolds. Same seed + same decisions replay identically.
 export const WORLDGEN_VERSION = 2;
 export const CONTENT_VERSION = 7;
 export const SAVE_SCHEMA_VERSION = 1;

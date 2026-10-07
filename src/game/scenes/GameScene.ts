@@ -1942,6 +1942,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       }
       // Explicit SELECT button (replaces role="button" on card)
       const selectBtn = document.createElement("button");
+      selectBtn.type = "button";
       selectBtn.className = "btn card-select";
       selectBtn.dataset.testid = "card-select";
       try {
@@ -1953,15 +1954,11 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       }
       selectBtn.addEventListener("click", () => this.pickCard(i));
       c.appendChild(selectBtn);
-      console.log(`%%% OPEN_DRAFT created select button for offer ${i}: ${offer.nodeId}, button in DOM: ${c.contains(selectBtn)}`);
-      // Verify button is in DOM
-      setTimeout(() => {
-        console.log(`%%% OPEN_DRAFT button still in DOM after timeout: ${c.contains(selectBtn)}, parent: ${selectBtn.parentElement?.className}`);
-      }, 100);
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
       if (!offer.nodeId.startsWith("fb-")) {
         const rs = document.createElement("button");
+        rs.type = "button";
         rs.className = "btn card-reserve";
         rs.textContent = `${t("ui.reserve")}${s.reservedTech === offer.nodeId ? " ✓" : ""}`;
         rs.addEventListener("click", (ev2) => {
@@ -1975,6 +1972,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     });
     const agency = el("div", "draft-agency");
     const reroll = document.createElement("button");
+    reroll.type = "button";
     reroll.className = "btn";
     reroll.disabled = s.rerolls <= 0;
     reroll.textContent = `${t("ui.reroll")} (${s.rerolls})`;
@@ -1990,6 +1988,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       document.getElementById("draft-screen")?.remove();
     });
     const skip = document.createElement("button");
+    skip.type = "button";
     skip.className = "btn";
     skip.textContent = t("ui.skip");
     skip.addEventListener("click", () => {
@@ -2025,10 +2024,8 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
 
   private pickCard(i: number): void {
     const s = this.sim.state;
-    console.log(`%%% PICKCARD i=${i} draftOpen=${s.draftOpen} pendingLevels=${s.pendingLevels} offers=${s.draftOffers.map(o => o.nodeId).join(",")}`);
     if (!s.draftOpen || s.over) return;
     const ev = this.sim.chooseDraft(i);
-    console.log(`%%% PICKCARD chooseDraft returned ${ev.length} events`);
     sfx.select();
     this.handleEvents(ev);
     // Next queued draft (if any) appears via syncDraftUI — exactly one surface.

@@ -298,7 +298,7 @@ export function fireEvent(
   rng: ReturnType<typeof import("../seed/streams").createStreamRng>
 ): Event {
   const event: Event = {
-    id: `${template.type}_${Date.now()}_${rng.nextInt(0, 1000000)}`,
+    id: `${template.type}_${rng.nextInt(0, 1000000)}_${rng.nextInt(0, 1000000)}`,
     type: template.type,
     trigger: template.trigger,
     location,
