@@ -20,12 +20,12 @@ jobs:
       - run: npm ci
       - run: npm run check
       - id: version
-        run: echo "version=$(node -p 'require("package.json").version')" >> $GITHUB_OUTPUT
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
       - run: npm run zip
       - run: npm run release:verify
       - uses: actions/upload-artifact@v4
         with:
-          name: seed-web-${{ steps.version.outputs.version }}
+          name: seed-web-${{ steps.version.outputs.version }}-node${{ matrix.node }}
           path: release/seed-web-${{ steps.version.outputs.version }}.zip
           retention-days: 14
 
@@ -52,4 +52,4 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run analyze:v024
+      - run: npm run analyze

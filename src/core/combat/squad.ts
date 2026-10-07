@@ -33,20 +33,14 @@ export const ORIGIN_SQUAD_NAME: Record<OriginId, EnKeys> = {
   sentinels: "squad.sentinels.name",
 };
 
-export type AbilityId = "volley" | "overdrive" | "nova" | "bulwark";
-
-export interface AbilityDef {
-  id: AbilityId;
-  nameKey: EnKeys;
-  descKey: EnKeys;
-  cooldown: number;
-}
+import { originById, type AbilityId, type AbilityDef } from "../progression/origins";
+export type { AbilityId, AbilityDef };
 
 export const ORIGIN_ABILITY: Record<OriginId, AbilityDef> = {
-  hunters: { id: "volley", nameKey: "ability.volley.name", descKey: "ability.volley.description", cooldown: 25 },
-  engineers: { id: "overdrive", nameKey: "ability.overdrive.name", descKey: "ability.overdrive.description", cooldown: 25 },
-  resonant: { id: "nova", nameKey: "ability.nova.name", descKey: "ability.nova.description", cooldown: 25 },
-  sentinels: { id: "bulwark", nameKey: "ability.bulwark.name", descKey: "ability.bulwark.description", cooldown: 30 },
+  hunters: originById("hunters").ability,
+  engineers: originById("engineers").ability,
+  resonant: originById("resonant").ability,
+  sentinels: originById("sentinels").ability,
 };
 
 export const OVERDRIVE_DURATION = 6;

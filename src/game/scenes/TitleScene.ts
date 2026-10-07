@@ -95,8 +95,11 @@ export class TitleScene extends Phaser.Scene {
     panel.appendChild(seedRow);
 
     // Shared Origin selector (normal + QA flows read pickedOrigin).
-    panel.appendChild(el("div", "origin-title", "ui.chooseOrigin"));
-    const descLine = el("div", "logo-sub", ORIGINS[0]!.descKey as never);
+    const formatOriginDesc = (o: typeof ORIGINS[0]) =>
+      `${t(o.descKey)} · [F] ${t(o.ability.nameKey)} (${o.ability.cooldown}s) · ${t(o.strategyKey)}`;
+    const descLine = document.createElement("div");
+    descLine.className = "logo-sub";
+    descLine.textContent = formatOriginDesc(ORIGINS[0]!);
     const oRow = el("div", "btn-row");
     const oBtns: HTMLButtonElement[] = [];
     for (const o of ORIGINS) {
@@ -110,7 +113,7 @@ export class TitleScene extends Phaser.Scene {
         pickedOrigin = o.id;
         for (const x of oBtns) x.classList.remove("active");
         b.classList.add("active");
-        descLine.textContent = t(o.descKey);
+        descLine.textContent = formatOriginDesc(o);
       });
       oRow.appendChild(b);
       oBtns.push(b);

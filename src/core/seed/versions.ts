@@ -43,8 +43,16 @@
   //   and Offer Engine (Gumbel-Top-k, quality sampling, anti-pattern penalties)
   //   integrated into canonical runtime. Enemy ecology and emergence director
   //   remain experimental scaffolds. Same seed + same decisions replay identically.
+  //
+  // v0.25 player-visible emergence:
+  // - WORLDGEN_VERSION stays 2: chunk/POI placement unchanged.
+  // - CONTENT_VERSION 7 -> 8: Offer Engine two-stage separation (Stage 1 Gumbel-Top-k
+  //   tech selection without quality coupling; Stage 2 quality sampling across all
+  //   qualities in all ages without age clamping). Laws combatBias wired to combat-family
+  //   tech score. Authoritative origin identity legibility and deterministic player-visible
+  //   World Traits derived from domainBias and combatBias.
 export const WORLDGEN_VERSION = 2;
-export const CONTENT_VERSION = 7;
+export const CONTENT_VERSION = 8;
 export const SAVE_SCHEMA_VERSION = 1;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;

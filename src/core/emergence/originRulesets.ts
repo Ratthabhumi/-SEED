@@ -1,9 +1,10 @@
-// v0.24 Origins — unique rulesets per identity
-// Each Origin has a unique mechanical verb, not just family pairs.
+// Reserved experimental scaffolds for future deep mechanics.
+// Canonical live Origin differentiation is governed by authoritative definitions in
+// src/core/progression/origins.ts (families, signature active F ability, offer weighting).
 
 import type { OriginId, WeaponFamily, EnKeys } from "../progression/origins";
 import type { EffectTarget } from "../sim/progression";
-import { ORIGINS } from "../progression/origins";
+import { ORIGINS, originById } from "../progression/origins";
 
 export type OriginRulesetId = "hunters" | "engineers" | "resonant" | "sentinels";
 
@@ -11,16 +12,16 @@ export interface OriginRuleset {
   id: OriginRulesetId;
   nameKey: EnKeys;
   descriptionKey: EnKeys;
-  // Unique mechanical verb
+  // Unique mechanical verb (reserved scaffold)
   system: {
     type: "marked_prey" | "fabrication" | "resonance" | "bastion_network";
     config: Record<string, number | string | boolean>;
   };
-  // Starting families (kept for compatibility)
+  // Starting families (authoritative from origins.ts)
   families: [WeaponFamily, WeaponFamily];
-  // Tech weighting modifiers
+  // Tech weighting modifiers (authoritative from origins.ts)
   techWeightModifiers: Record<string, number>;
-  // Unique starting ability/structure
+  // Unique starting ability/structure (reserved scaffold)
   signature: {
     type: string;
     config: Record<string, number | string | boolean>;
@@ -30,8 +31,8 @@ export interface OriginRuleset {
 export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
   hunters: {
     id: "hunters",
-    nameKey: "origin.hunters.name",
-    descriptionKey: "origin.hunters.description",
+    nameKey: originById("hunters").nameKey,
+    descriptionKey: originById("hunters").descKey,
     system: {
       type: "marked_prey",
       config: {
@@ -40,14 +41,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
         trophyChoices: 3,
       },
     },
-    families: ["kinetic", "field"],
-    techWeightModifiers: {
-      // Hunters favor offense and field
-      kinetic: 1.3,
-      field: 1.2,
-      energy: 0.9,
-      defense: 0.8,
-    },
+    families: originById("hunters").families,
+    techWeightModifiers: originById("hunters").techWeightModifiers,
     signature: {
       type: "marked_prey",
       config: {},
@@ -55,8 +50,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
   },
   engineers: {
     id: "engineers",
-    nameKey: "origin.engineers.name",
-    descriptionKey: "origin.engineers.description",
+    nameKey: originById("engineers").nameKey,
+    descriptionKey: originById("engineers").descKey,
     system: {
       type: "fabrication",
       config: {
@@ -65,13 +60,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
         turretDiscount: 0.1,
       },
     },
-    families: ["kinetic", "defense"],
-    techWeightModifiers: {
-      kinetic: 1.2,
-      defense: 1.3,
-      energy: 0.9,
-      field: 0.8,
-    },
+    families: originById("engineers").families,
+    techWeightModifiers: originById("engineers").techWeightModifiers,
     signature: {
       type: "fabrication",
       config: {},
@@ -79,8 +69,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
   },
   resonant: {
     id: "resonant",
-    nameKey: "origin.resonant.name",
-    descriptionKey: "origin.resonant.description",
+    nameKey: originById("resonant").nameKey,
+    descriptionKey: originById("resonant").descKey,
     system: {
       type: "resonance",
       config: {
@@ -89,13 +79,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
         chainMultiplier: 1.5,
       },
     },
-    families: ["energy", "field"],
-    techWeightModifiers: {
-      energy: 1.3,
-      field: 1.2,
-      kinetic: 0.9,
-      defense: 0.8,
-    },
+    families: originById("resonant").families,
+    techWeightModifiers: originById("resonant").techWeightModifiers,
     signature: {
       type: "resonance",
       config: {},
@@ -103,8 +88,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
   },
   sentinels: {
     id: "sentinels",
-    nameKey: "origin.sentinels.name",
-    descriptionKey: "origin.sentinels.description",
+    nameKey: originById("sentinels").nameKey,
+    descriptionKey: originById("sentinels").descKey,
     system: {
       type: "bastion_network",
       config: {
@@ -113,13 +98,8 @@ export const ORIGIN_RULESETS: Record<OriginRulesetId, OriginRuleset> = {
         networkBonus: 0.2,
       },
     },
-    families: ["energy", "defense"],
-    techWeightModifiers: {
-      energy: 1.2,
-      defense: 1.3,
-      kinetic: 0.9,
-      field: 0.9,
-    },
+    families: originById("sentinels").families,
+    techWeightModifiers: originById("sentinels").techWeightModifiers,
     signature: {
       type: "bastion_network",
       config: {},

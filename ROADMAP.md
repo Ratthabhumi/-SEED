@@ -61,8 +61,8 @@
 - **v0.23 Frontier Purpose & Late-Game Performance**: 🟠 TECHNICAL BASELINE PASSED (exact-SHA CI green at `e32e995`, run 36875936223)
   - 🟠 HUMAN UX CORRECTIVE (objectives, Tech agency, territory purpose, UI overlap — corrected in v0.23.1)
   - Logical baseline for v0.23.1: `e32e995`
-- **v0.24 Emergent Technical Foundation**: 🟡 TECHNICAL BASELINE FREEZE (technical stabilization, CI repair, debug clean, frozen as baseline for v0.25)
-- **v0.25 Player-Visible Emergence**: 🟢 ACTIVE VALIDATION TARGET (decouple offer quality from selection, remove age rarity clamping, make Origin identity legible, derive meaningful World Traits, experience audit)
+- **v0.24 Emergent Technical Foundation**: ✅ CERTIFIED TECHNICAL BASELINE (exact-SHA CI green at `9c261e4`, run 37644086577; frozen as baseline for v0.25)
+- **v0.25 Player-Visible Emergence**: 🟢 ACTIVE VALIDATION TARGET (decoupled offer quality from selection, removed age rarity clamping, authoritative origin identity and signature abilities legible in UI with EN/TH parity, deterministic World Traits derived and surfaced, experience audit with synthetic player policies)
 - **Game Feel & Audio**: ⏸ DEFERRED — returns only after emergence passes human gate
 - **v0.3+**: ⚪ PLANNED
 

@@ -1,5 +1,5 @@
 // v0.24 Emergence exports
-export { generateWorldLaws, worldLawsAffix, type WorldLaws } from "./worldLaws";
+export { generateWorldLaws, worldLawsAffix, deriveWorldTraits, type WorldLaws, type WorldTrait } from "./worldLaws";
 export { 
   generateOffers, 
   gumbelTopK, 

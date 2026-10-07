@@ -23,6 +23,7 @@ import type { WeaponFamily } from "../../core/combat/weapons";
 import { CRITICAL_SPINE } from "../../core/tech/graph";
 import { AGE_DEFS, ageGates } from "../../core/progression/ages";
 import { ORIGIN_SQUAD_NAME, ORIGIN_ABILITY, squadCap } from "../../core/combat/squad";
+import { deriveWorldTraits } from "../../core/emergence/worldLaws";
 import { militaryBonusSlots, territoryKnowledgeBonus, activeTerritories, TIER2_HOLD_SEC, REPAIR_NEED, outpostUpgradeCost, calculateLogisticsCost, calculateMaxLogistics, type OutpostSpec } from "../../core/world/territory";
 import { calculateMaxLogistics as calculateMaxLogisticsEmergence } from "../../core/emergence/outpostLogistics";
 import { scaleKnowledge } from "../../core/sim/progression";
@@ -302,6 +303,10 @@ export class GameScene extends Phaser.Scene {
     this.tutorial.start();
     this.refreshGround(true);
     toast("ui.ageReached", t("age.stone"), t("objective.stone"));
+    const startTraits = deriveWorldTraits(this.sim.state.worldLaws);
+    if (startTraits.length > 0) {
+      toast("ui.worldTraits", startTraits.map((tr) => t(tr.nameKey)).join(" · "));
+    }
 
     // Deterministic E2E/dev hook (query param only — never in production play).
     // Exposes scripted progression/death/introspection WITHOUT touching balance.
@@ -2059,6 +2064,29 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     const primary = section("ui.pausePrimary");
     primary.appendChild(button("ui.resume", () => this.togglePause(), "btn primary"));
 
+    // IDENTITY & WORLD TRAITS — what makes this seed and origin distinct
+    const identitySec = section("ui.chooseOrigin");
+    const orig = originById(this.sim.state.originId);
+    const origInfo = document.createElement("p");
+    origInfo.style.margin = "4px 0";
+    origInfo.textContent = `${t(orig.nameKey)} (${orig.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")}) · [F] ${t(orig.ability.nameKey)} (${orig.ability.cooldown}s) — ${t(orig.strategyKey)}`;
+    identitySec.appendChild(origInfo);
+
+    const traits = deriveWorldTraits(this.sim.state.worldLaws);
+    if (traits.length > 0) {
+      const traitHeader = document.createElement("div");
+      traitHeader.style.fontWeight = "bold";
+      traitHeader.style.marginTop = "6px";
+      traitHeader.textContent = t("ui.worldTraits");
+      identitySec.appendChild(traitHeader);
+      for (const tr of traits) {
+        const trP = document.createElement("p");
+        trP.style.margin = "2px 0";
+        trP.textContent = `◈ ${t(tr.nameKey)}: ${t(tr.descKey)}`;
+        identitySec.appendChild(trP);
+      }
+    }
+
     // DISPLAY — look and language, no gameplay effect.
     const display = section("ui.pauseDisplay");
     const save = loadSave(localStorage);
@@ -2194,6 +2222,8 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
 
     addSection("ui.nextAge", "guide.advancement");
     addSection("ui.squad", "guide.controls");
+    addSection("guide.originAbilities", "guide.originAbilitiesDesc");
+    addSection("guide.worldLaws", "guide.worldLawsDesc");
     addSection("ui.techMap", "guide.techStacking");
     addSection("ui.outpostSpec", "guide.territory");
 
@@ -2276,6 +2306,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       [t("chronicle.chunks"), String(s.stats.chunksTotal)],
       [t("chronicle.poi"), String(s.stats.poisTotal)],
       [t("chronicle.origin"), origin ? t(origin.nameKey) : s.originId],
+      [t("chronicle.traits"), deriveWorldTraits(s.worldLaws).map((tr) => t(tr.nameKey)).join(" · ") || "-"],
       [t("chronicle.legacy"), legacyNames.length > 0 ? legacyNames.join(" · ") : "-"],
       [t("ui.topDamage"), `${famKey} · v${CONTENT_VERSION}`],
     ];

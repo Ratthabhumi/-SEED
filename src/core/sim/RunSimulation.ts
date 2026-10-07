@@ -155,7 +155,16 @@ export class RunSimulation {
       mines: Array.from({ length: MAX_MINES }, () => ({ active: false, x: 0, y: 0, dmg: 10, radius: 60, life: 0 })),
       chunksWorld: [], poisWorld: [],
       bossSpawned: false, ascendReady: false, bossIndex: -1, stronghold: null, over: false,
-      stats: { kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0 },
+      stats: {
+        kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0,
+        abilityUses: 0,
+        draftPicksByDomain: {},
+        draftPicksByFamily: {},
+        outpostsClaimed: 0,
+        rerollsUsed: 0,
+        reservesUsed: 0,
+        skipsUsed: 0,
+      },
       damageBySource: {}, topDamageSource: "", highestAge: "stone",
       worldDamageBySource: {}, worldTopDamageSource: "", worldBreakthroughsEarned: [],
       worldLaws,
@@ -355,7 +364,6 @@ export class RunSimulation {
 
   private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
     const s = this.state;
-    console.log(`[buildDraft] context=${context}, pendingLevels=${s.pendingLevels}, ageIndex=${s.ageIndex}`);
     const result = generateOffers({
       sim: {
         owned: s.owned,
@@ -407,7 +415,6 @@ export class RunSimulation {
     while (s.recentDraftOffers.length > 5) s.recentDraftOffers.shift();
     s.draftOpen = true;
     s.draftContext = context;
-    console.log(`[buildDraft] done: draftOpen=${s.draftOpen}, draftOffers=${s.draftOffers.map(o => o.nodeId).join(",")}, pendingLevels=${s.pendingLevels}`);
   }
 
   /**
@@ -541,6 +548,14 @@ export class RunSimulation {
     
     if (s.reservedTech === node.id) s.reservedTech = "";
     s.stats.techsTaken++;
+    if (node.domain) {
+      s.stats.draftPicksByDomain[node.domain] = (s.stats.draftPicksByDomain[node.domain] || 0) + 1;
+    }
+    for (const eff of node.effects) {
+      if (eff.family) {
+        s.stats.draftPicksByFamily[eff.family] = (s.stats.draftPicksByFamily[eff.family] || 0) + 1;
+      }
+    }
     ev.push({ 
       type: "tech_selected", 
       techId: node.id,
@@ -579,6 +594,7 @@ export class RunSimulation {
     const offer = s.draftOffers[i];
     if (!offer || offer.nodeId.startsWith("fb-")) return ev;
     s.reservedTech = offer.nodeId;
+    s.stats.reservesUsed = (s.stats.reservesUsed || 0) + 1;
     ev.push({ type: "draft_reserved", techId: offer.nodeId });
     return ev;
   }
@@ -616,6 +632,7 @@ export class RunSimulation {
       return ev;
     }
     s.rerolls--;
+    s.stats.rerollsUsed = (s.stats.rerollsUsed || 0) + 1;
     this.buildDraft(s.draftContext);
     const postShown = new Set(s.draftOffers.map((o) => o.nodeId));
     let cur = s.draftOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech);
@@ -661,6 +678,7 @@ export class RunSimulation {
     s.draftOffers = [];
     s.draftContext = "level";
     s.pendingLevels--;
+    s.stats.skipsUsed = (s.stats.skipsUsed || 0) + 1;
     this.gainKnowledge(10 + s.level * 2, "skip", ev);
     this.logHistory("skip", `level-${s.level}`);
     ev.push({ type: "draft_skipped" });
@@ -795,6 +813,7 @@ export class RunSimulation {
       spec: "", tier: 1, hp: OUTPOST_MAXHP, maxHp: OUTPOST_MAXHP,
       disabled: false, heldSince: s.elapsed, repairT: 0, garrisoned: false,
     });
+    s.stats.outpostsClaimed = (s.stats.outpostsClaimed || 0) + 1;
     // First claim starts the raid clock (grace window, not instant pressure).
     if (s.lastRaidAt === 0) s.lastRaidAt = s.elapsed;
     // signalSecured is set in setOutpostSpec after successful specialization
@@ -1044,6 +1063,7 @@ export class RunSimulation {
     const b = s.build;
     const ev: SimEvent[] = [];
     if (s.over || s.abilityCd > 0) return ev;
+    s.stats.abilityUses = (s.stats.abilityUses || 0) + 1;
     const abil = ORIGIN_ABILITY[originById(s.originId).id];
     s.abilityCd = abil.cooldown;
     if (abil.id === "volley") {

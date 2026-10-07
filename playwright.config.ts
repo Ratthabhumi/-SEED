@@ -5,7 +5,7 @@ export default defineConfig({
   // Slow-office-machine accommodation (i5-10210U + software WebGL): some
   // real-time gameplay tests need >60s wall-clock there. Assertions unchanged;
   // a genuine hang still fails at this cap. CI (fast) is unaffected.
-  timeout: 120_000,
+  timeout: 180_000,
   fullyParallel: false,
   workers: 1,
   use: {

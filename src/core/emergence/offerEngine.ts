@@ -1,10 +1,11 @@
-// v0.24 Tech Offer Engine — deterministic, quality-aware, Gumbel-Top-k
-// No age-rarity pattern. Quality sampled per offer. Gumbel-Top-k for K=3.
+// v0.25 Tech Offer Engine — deterministic, two-stage decoupled offer generation
+// Stage 1: WHAT TECH APPEARS — Gumbel-Top-k over eligible TechNodes (quality-independent).
+// Stage 2: HOW SPECIAL THAT OFFER INSTANCE IS — quality sampled across all qualities without age clamping.
 
 import { createStreamRng } from "../seed/streams";
-import { WorldLaws } from "./worldLaws";
-import { CRITICAL_SPINE } from "../tech/graph";
-import type { TechNode, TechGraph, AgeId, Domain, Rarity } from "../tech/graph";
+import type { WorldLaws } from "./worldLaws";
+import { ORIGINS, type WeaponFamily } from "../progression/origins";
+import type { TechNode, AgeId, Rarity } from "../tech/graph";
 
 export interface OfferCandidate {
   node: TechNode;
@@ -16,19 +17,18 @@ export interface OfferCandidate {
 }
 
 export interface OfferEngineConfig {
-  // Quality baseline probabilities
+  // Quality baseline probabilities (Stage 2)
   qualityBaseProb: {
     COMMON: number;
     UNCOMMON: number;
     RARE: number;
     MYTHIC: number;
   };
-  // Scoring weights
+  // Scoring weights (Stage 1)
   weights: {
     originAffinity: number;      // A
     buildSynergy: number;        // B
     worldLawAffinity: number;    // C
-    geographyAffinity: number;   // D
     novelty: number;             // E
     recentOfferPenalty: number;  // F
     recentPickPenalty: number;   // G
@@ -42,9 +42,6 @@ export interface OfferEngineConfig {
     maxRepeatQuality: number;
     badLuckCap: number;
   };
-  // Early mythic / late common floors
-  mythicFloorEarly: number;  // min mythic probability in first 3 ages
-  commonFloorLate: number;   // max common probability in last 3 ages
 }
 
 export const DEFAULT_OFFER_CONFIG: OfferEngineConfig = {
@@ -58,7 +55,6 @@ export const DEFAULT_OFFER_CONFIG: OfferEngineConfig = {
     originAffinity: 1.5,
     buildSynergy: 1.2,
     worldLawAffinity: 1.0,
-    geographyAffinity: 0.8,
     novelty: 0.5,
     recentOfferPenalty: 0.7,
     recentPickPenalty: 0.5,
@@ -70,8 +66,6 @@ export const DEFAULT_OFFER_CONFIG: OfferEngineConfig = {
     maxRepeatQuality: 2,
     badLuckCap: 5,
   },
-  mythicFloorEarly: 0.02,
-  commonFloorLate: 0.40,
 };
 
 export interface TechOfferContext {
@@ -89,22 +83,18 @@ export interface TechOfferContext {
     history: Array<{ kind: string; label: string; t: number }>;
     techGraph: () => readonly TechNode[];
   };
-  laws: import("./worldLaws").WorldLaws;
+  laws: WorldLaws;
   activeFamilies: Set<string>;
   recentOffers: string[][];
   recentPicks: string[];
-  rng: ReturnType<typeof import("../seed/streams").createStreamRng>;
+  rng: ReturnType<typeof createStreamRng>;
 }
 
-function softmax(z: number[], temp = 1.0): number[] {
-  const maxZ = Math.max(...z);
-  const exps = z.map((v) => Math.exp((v - maxZ) / temp));
-  const sum = exps.reduce((a, b) => a + b, 0);
-  return exps.map((v) => v / sum);
-}
-
-// Sample quality from config distribution
-function sampleQuality(rng: ReturnType<typeof import("../seed/streams").createStreamRng>, probs: { COMMON: number; UNCOMMON: number; RARE: number; MYTHIC: number }): "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC" {
+// Sample quality from config distribution (Stage 2) — all qualities possible across all ages
+function sampleQuality(
+  rng: ReturnType<typeof createStreamRng>,
+  probs: { COMMON: number; UNCOMMON: number; RARE: number; MYTHIC: number }
+): "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC" {
   const u = rng.nextFloat();
   const cum = [
     probs.COMMON,
@@ -118,52 +108,20 @@ function sampleQuality(rng: ReturnType<typeof import("../seed/streams").createSt
   return "MYTHIC";
 }
 
-// Quality floors/ceilings by age (deterministic via seeded RNG)
-function clampQualityByAge(
-  quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC",
-  ageIdx: number,
-  config: typeof DEFAULT_OFFER_CONFIG,
-  rng: ReturnType<typeof import("../seed/streams").createStreamRng>
-): "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC" {
-  if (ageIdx <= 2 && quality === "COMMON") {
-    // Early ages: ensure mythic floor
-    if (rng.nextFloat() < DEFAULT_OFFER_CONFIG.mythicFloorEarly) return "MYTHIC";
-  }
-  if (ageIdx >= 3 && quality === "MYTHIC") {
-    // Late ages: ensure common floor
-    if (rng.nextFloat() < DEFAULT_OFFER_CONFIG.commonFloorLate) return "COMMON";
-  }
-  return quality;
-}
-
-// Quality affects score multiplier
-const QUALITY_MULT = {
-  COMMON: 1.0,
-  UNCOMMON: 1.25,
-  RARE: 1.5,
-  MYTHIC: 2.0,
-};
-
 // Novelty bonus based on recent offer history
-function computeNovelty(nodeId: string, recentOffers: string[][], ageIdx: number): number {
+function computeNovelty(nodeId: string, recentOffers: string[][], _ageIdx: number): number {
   let bonus = 0;
   const flat = recentOffers.flat();
-  if (!flat.includes(nodeId)) bonus += 1.0; // never offered
-  // Age transition novelty
-  if (recentOffers.length > 0) {
-    const lastAge = recentOffers[recentOffers.length - 1]?.[0];
-    const nodeAge = ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(
-      ["stone", "bronze", "iron", "industrial", "atomic", "space"].find(a => 
-        ["stone", "bronze", "iron", "industrial", "atomic", "space"].includes(a)
-      ) ?? "stone"
-    );
-    // Simplified: boost if from different age
-  }
+  if (!flat.includes(nodeId)) bonus += 1.0; // never offered recently
   return bonus;
 }
 
 // Build synergy with current owned tags
-function computeBuildSynergy(node: { tags: string[]; synergyTags: string[] }, ownedTags: string[], breakthroughs: string[]): number {
+function computeBuildSynergy(
+  node: { tags: string[]; synergyTags: string[] },
+  ownedTags: string[],
+  breakthroughs: string[]
+): number {
   let bonus = 0;
   const allOwned = new Set([...ownedTags, ...breakthroughs]);
   for (const t of [...node.tags, ...node.synergyTags]) {
@@ -173,7 +131,10 @@ function computeBuildSynergy(node: { tags: string[]; synergyTags: string[] }, ow
 }
 
 // Origin affinity
-function computeOriginAffinity(node: { effects: Array<{ family?: string }> }, activeFamilies: Set<string>): number {
+function computeOriginAffinity(
+  node: { effects: Array<{ family?: string }> },
+  activeFamilies: Set<string>
+): number {
   if (activeFamilies.size === 0) return 0;
   let bonus = 0;
   for (const eff of node.effects) {
@@ -182,12 +143,20 @@ function computeOriginAffinity(node: { effects: Array<{ family?: string }> }, ac
   return bonus;
 }
 
-// World law affinity
-function computeWorldLawAffinity(node: { tags: string[]; domain: string }, laws: { domainBias: Record<string, number>; combatBias: Record<string, number> }): number {
+// World law affinity: wired to both domainBias and combatBias
+function computeWorldLawAffinity(
+  node: { domain: string; effects: Array<{ family?: string }> },
+  laws: { domainBias: Record<string, number>; combatBias: Record<string, number> }
+): number {
   let bonus = 0;
   // Domain bias
-  bonus += laws.domainBias[node.domain] * 2.0 || 0;
-  // Family bias via effects
+  bonus += (laws.domainBias[node.domain] ?? 0) * 2.0;
+  // Combat family bias wired to laws.combatBias
+  for (const eff of node.effects) {
+    if (eff.family && laws.combatBias[eff.family]) {
+      bonus += (laws.combatBias[eff.family] ?? 0) * 1.5;
+    }
+  }
   return bonus;
 }
 
@@ -208,18 +177,102 @@ function recentPickPenalty(nodeId: string, recentPicks: string[]): number {
   return 1.0 / (recentPicks.length - idx);
 }
 
-// Underused path boost
-function underusedPathBoost(node: { domain: string; tags: string[] }, recentOffers: string[][]): number {
-  const flat = recentOffers.flat();
-  const domainCount = flat.filter(id => id.startsWith(node.domain)).length;
+// Underused path boost based on domain frequency in recent offers (using actual metadata)
+function underusedPathBoost(
+  nodeDomain: string,
+  recentOfferDomainCounts: Map<string, number>
+): number {
+  const domainCount = recentOfferDomainCounts.get(nodeDomain) ?? 0;
   if (domainCount === 0) return 2.0;
   if (domainCount <= 2) return 1.0;
   return 0;
 }
 
+export function computeOfferScore(
+  node: { 
+    id: string; 
+    weight: number; 
+    domain: string; 
+    tags: string[]; 
+    synergyTags: string[]; 
+    effects: Array<{ family?: string }>;
+    rarity: Rarity;
+  },
+  ctx: {
+    sim: {
+      owned: string[];
+      ownedTags: string[];
+      breakthroughs: string[];
+      ageIndex: number;
+      age: AgeId;
+      originId: string;
+      expansionFamily: string;
+      pinnedTarget: string;
+      draftChoices: string[];
+      reservedTech: string;
+      history: Array<{ kind: string; label: string; t: number }>;
+    };
+    laws: { domainBias: Record<string, number>; combatBias: Record<string, number> };
+    activeFamilies: Set<string>;
+    recentOffers: string[][];
+    recentPicks: string[];
+    recentDomainCounts?: Map<string, number>;
+    config: typeof DEFAULT_OFFER_CONFIG;
+  }
+): number {
+  const w = ctx.config;
+  let score = Math.log(Math.max(1, node.weight));
+  
+  // A: origin active family affinity
+  score += w.weights.originAffinity * computeOriginAffinity({ effects: node.effects }, ctx.activeFamilies);
+
+  // Origin strategic bias
+  const originDef = ORIGINS.find((o) => o.id === ctx.sim.originId);
+  if (originDef) {
+    for (const eff of node.effects) {
+      if (eff.family && originDef.techWeightModifiers[eff.family as WeaponFamily]) {
+        score += (originDef.techWeightModifiers[eff.family as WeaponFamily] - 1.0) * 1.5;
+      }
+    }
+  }
+  
+  // B: build synergy
+  score += w.weights.buildSynergy * computeBuildSynergy(
+    { tags: node.tags, synergyTags: node.synergyTags },
+    ctx.sim.ownedTags,
+    ctx.sim.breakthroughs
+  );
+  
+  // C: world law affinity (domain + combat bias)
+  score += w.weights.worldLawAffinity * computeWorldLawAffinity(
+    { domain: node.domain, effects: node.effects },
+    ctx.laws
+  );
+  
+  // E: novelty
+  score += w.weights.novelty * computeNovelty(node.id, ctx.recentOffers, ctx.sim.ageIndex);
+  
+  // F: recent offer penalty
+  score -= w.weights.recentOfferPenalty * recentOfferPenalty(node.id, ctx.recentOffers);
+  
+  // G: recent pick penalty
+  score -= w.weights.recentPickPenalty * recentPickPenalty(node.id, ctx.recentPicks);
+  
+  // H: underused path boost
+  const domainCounts = ctx.recentDomainCounts ?? new Map<string, number>();
+  score += w.weights.underusedPathBoost * underusedPathBoost(node.domain, domainCounts);
+  
+  // Pinned target bonus
+  if (ctx.sim.pinnedTarget && ctx.sim.pinnedTarget === node.id) score *= 2.0;
+  
+  // NOTE: Quality is intentionally NOT factored into Stage 1 node selection.
+  return score;
+}
+
 /**
- * Generate K=3 offers using Gumbel-Top-k from available pool.
- * Accepts an optional candidate filter for POI-themed drafts.
+ * Generate K=3 offers using two-stage decoupled pipeline.
+ * STAGE 1: Gumbel-Top-k over eligible TechNodes (quality-independent).
+ * STAGE 2: Sample quality and modifiers per selected offer without age-clamping.
  */
 export function generateOffers(
   context: TechOfferContext,
@@ -229,8 +282,9 @@ export function generateOffers(
 ): OfferCandidate[] {
   const { sim, laws, activeFamilies, recentOffers, recentPicks, rng } = context;
   
-  // Build available pool (same logic as sim.availableNodes)
-  let pool = sim.techGraph().filter((n: TechNode) => {
+  // Build available pool
+  const allNodes = sim.techGraph();
+  let pool = allNodes.filter((n: TechNode) => {
     if (sim.owned.includes(n.id)) return false;
     if (n.prerequisites.some((p: string) => !sim.owned.includes(p))) return false;
     if (n.exclusions.some((e: string) => sim.owned.includes(e))) return false;
@@ -244,46 +298,60 @@ export function generateOffers(
     const filtered = pool.filter(candidateFilter);
     if (filtered.length > 0) pool = filtered;
   }
-  
-  // Sample quality for each candidate ONCE and score them
+
+  // Pre-calculate domain frequency in recent offers using actual node metadata
+  const nodeDomainMap = new Map<string, string>();
+  for (const n of allNodes) nodeDomainMap.set(n.id, n.domain);
+  const recentDomainCounts = new Map<string, number>();
+  for (const batch of recentOffers) {
+    for (const id of batch) {
+      const d = nodeDomainMap.get(id);
+      if (d) recentDomainCounts.set(d, (recentDomainCounts.get(d) ?? 0) + 1);
+    }
+  }
+
+  // --- STAGE 1: WHAT TECH APPEARS ---
   const candidates = pool.map((node: TechNode) => {
-    const quality = sampleQuality(rng, config.qualityBaseProb);
-    const clampedQuality = clampQualityByAge(quality, ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(node.age), config, rng);
-    const score = computeOfferScore(node, clampedQuality, {
+    const score = computeOfferScore(node, {
       sim,
       laws,
       activeFamilies,
       recentOffers,
-      recentPicks: sim.history.filter(h => h.kind === "tech_selected").map(h => h.label),
-      config: DEFAULT_OFFER_CONFIG,
+      recentPicks: recentPicks.length > 0 ? recentPicks : sim.history.filter(h => h.kind === "tech_selected").map(h => h.label),
+      recentDomainCounts,
+      config,
     });
-    
-    return { node, quality: clampedQuality, score, gumbel: 0, novelty: 0, penalty: 0 };
+    return { node, score };
   });
-  
-  // Gumbel-Top-k selection (with temperature)
-  const selected = gumbelTopK(candidates, K, rng, config.gumbelTemp);
-  
-  // Return selected candidates with their ORIGINAL clamped quality (no second clamping)
-  const finalCandidates = selected.map((c) => ({
-    node: c.node,
-    quality: c.quality,
-    score: c.score,
-    gumbel: c.gumbel,
-    novelty: c.novelty,
-    penalty: c.penalty,
-  }));
-  
+
+  const selectedNodes = gumbelTopK(candidates, K, rng, config.gumbelTemp);
+
+  // --- STAGE 2: HOW SPECIAL THAT OFFER INSTANCE IS ---
+  // Sample quality per selected offer without age clamping; all qualities valid in every age.
+  const finalCandidates: OfferCandidate[] = selectedNodes.map((c) => {
+    const quality = sampleQuality(rng, config.qualityBaseProb);
+    const novelty = computeNovelty(c.node.id, recentOffers, sim.ageIndex);
+    const penalty = recentOfferPenalty(c.node.id, recentOffers);
+    return {
+      node: c.node,
+      quality,
+      score: c.score,
+      gumbel: c.gumbel,
+      novelty,
+      penalty,
+    };
+  });
+
   return finalCandidates;
 }
 
 /**
- * Gumbel-Top-k sampling for K=3
+ * Gumbel-Top-k sampling
  */
 export function gumbelTopK<T extends { score: number }>(
   candidates: Array<T>,
   K: number,
-  rng: ReturnType<typeof import("../seed/streams").createStreamRng>,
+  rng: ReturnType<typeof createStreamRng>,
   temperature = 1.0
 ): Array<T & { gumbel: number }> {
   const withGumbel = candidates.map((c) => ({
@@ -292,60 +360,4 @@ export function gumbelTopK<T extends { score: number }>(
   }));
   withGumbel.sort((a, b) => (b.score + b.gumbel) - (a.score + a.gumbel));
   return withGumbel.slice(0, K);
-}
-
-export function computeOfferScore(
-  node: { 
-    id: string; 
-    weight: number; 
-    domain: string; 
-    tags: string[]; 
-    synergyTags: string[]; 
-    effects: Array<{ family?: string }>;
-    rarity: Rarity;
-  },
-  quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC",
-  ctx: {
-    sim: { owned: string[]; ownedTags: string[]; breakthroughs: string[]; ageIndex: number; age: AgeId; originId: string; expansionFamily: string; pinnedTarget: string; draftChoices: string[]; reservedTech: string; history: Array<{ kind: string; label: string; t: number }> };
-    laws: { domainBias: Record<string, number>; combatBias: Record<string, number> };
-    activeFamilies: Set<string>;
-    recentOffers: string[][];
-    recentPicks: string[];
-    config: typeof DEFAULT_OFFER_CONFIG;
-  }
-): number {
-  const w = ctx.config;
-  let score = Math.log(Math.max(1, node.weight));
-  
-  // A: origin affinity
-  score += w.weights.originAffinity * computeOriginAffinity({ effects: node.effects }, ctx.activeFamilies);
-  
-  // B: build synergy
-  score += w.weights.buildSynergy * computeBuildSynergy({ tags: node.tags, synergyTags: node.synergyTags }, ctx.sim.ownedTags, ctx.sim.breakthroughs);
-  
-  // C: world law affinity
-  score += w.weights.worldLawAffinity * computeWorldLawAffinity({ tags: node.tags, domain: node.domain }, ctx.laws);
-  
-  // D: geography affinity (placeholder)
-  score += w.weights.geographyAffinity * 0;
-  
-  // E: novelty
-  score += w.weights.novelty * computeNovelty(node.id, ctx.recentOffers, ctx.sim.ageIndex);
-  
-  // F: recent offer penalty
-  score -= w.weights.recentOfferPenalty * recentOfferPenalty(node.id, ctx.recentOffers);
-  
-  // G: recent pick penalty
-  score -= w.weights.recentPickPenalty * recentPickPenalty(node.id, ctx.recentPicks);
-  
-  // H: underused path boost
-  score += w.weights.underusedPathBoost * underusedPathBoost({ domain: node.domain, tags: node.tags }, ctx.recentOffers);
-  
-  // Quality multiplier (use the sampled quality)
-  score *= QUALITY_MULT[quality];
-  
-  // Pin bonus
-  if (ctx.sim.pinnedTarget && ctx.sim.pinnedTarget === node.id) score *= 2.0;
-  
-  return score;
 }

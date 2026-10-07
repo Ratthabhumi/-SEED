@@ -206,6 +206,7 @@ for (const o of ORIGINS) {
           sim.state.elitesAge = 2; // guardian uses elitesAge
         }
         steps++;
+        if (steps % 1000 === 0) await new Promise((r) => setTimeout(r, 0));
       }
       expect(sim.state.ageIndex, `origin ${o.id} reached space`).toBe(5);
       expect(spaceAt, `origin ${o.id} space time recorded`).toBeGreaterThan(0);

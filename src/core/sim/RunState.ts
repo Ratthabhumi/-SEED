@@ -58,6 +58,14 @@ export interface SimMine { active: boolean; x: number; y: number; dmg: number; r
 export interface RunStats {
   kills: number; elites: number; bosses: number; techsTaken: number;
   chunksTotal: number; poisTotal: number; knowledgeEarned: number;
+  // v0.25 emergence telemetry
+  abilityUses: number;
+  draftPicksByDomain: Record<string, number>;
+  draftPicksByFamily: Record<string, number>;
+  outpostsClaimed: number;
+  rerollsUsed: number;
+  reservesUsed: number;
+  skipsUsed: number;
 }
 
 export interface RunState {
@@ -96,18 +104,20 @@ export interface RunState {
   // Build identity (ADR-0006): origin pair + at most one expansion unlock.
   originId: string;
   expansionFamily: WeaponFamily | "";
-  // Origin mechanic state (mutable runtime state, config derived from getOriginRuleset)
+  // Reserved experimental scaffold state — not active runtime mechanics in v0.25.
+  // Canonical origin differentiation is driven by starting family pairs, signature F abilities,
+  // and offer weighting.
   originMechanic: {
-    // Hunters: Marked Prey / Trophy
+    // Hunters: Marked Prey / Trophy (reserved)
     hunterMarks: string[];
     hunterTrophies: string[];
-    // Engineers: Fabrication
+    // Engineers: Fabrication (reserved)
     fabricationModules: Array<{ type: string; level: number }>;
     fabricationCharges: number;
-    // Resonant: Harmonic charge
+    // Resonant: Harmonic charge (reserved)
     harmonicCharge: number;
     lastResonanceFamily: string | "";
-    // Sentinels: Bastion Network
+    // Sentinels: Bastion Network (reserved)
     bastionLinks: Array<{ siteA: string; siteB: string }>;
   };
   // Ascension legacy prestige: bounded inherited defs (max 3, FIFO).

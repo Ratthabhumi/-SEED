@@ -97,3 +97,47 @@ export function worldLawsAffix(world: WorldLaws): string[] {
   if (world.territoriality > 0.7) tags.push("high-territoriality");
   return tags;
 }
+
+export interface WorldTrait {
+  id: string;
+  nameKey: import("../../i18n/en").EnKeys;
+  descKey: import("../../i18n/en").EnKeys;
+  kind: "domain" | "combat";
+  bias: number;
+}
+
+/**
+ * Derive 1–2 player-visible World Traits with actual gameplay consequences.
+ * Domain bias influences Tech node selection; combat bias influences combat-family affinity.
+ */
+export function deriveWorldTraits(laws: WorldLaws): WorldTrait[] {
+  const traits: WorldTrait[] = [];
+  
+  const domainEntries = Object.entries(laws.domainBias);
+  if (domainEntries.length > 0) {
+    domainEntries.sort((a, b) => b[1] - a[1]);
+    const topDomain = domainEntries[0]!;
+    traits.push({
+      id: `trait-domain-${topDomain[0]}`,
+      nameKey: `trait.${topDomain[0]}.name` as import("../../i18n/en").EnKeys,
+      descKey: `trait.${topDomain[0]}.desc` as import("../../i18n/en").EnKeys,
+      kind: "domain",
+      bias: topDomain[1],
+    });
+  }
+  
+  const combatEntries = Object.entries(laws.combatBias);
+  if (combatEntries.length > 0) {
+    combatEntries.sort((a, b) => b[1] - a[1]);
+    const topCombat = combatEntries[0]!;
+    traits.push({
+      id: `trait-combat-${topCombat[0]}`,
+      nameKey: `trait.${topCombat[0]}.name` as import("../../i18n/en").EnKeys,
+      descKey: `trait.${topCombat[0]}.desc` as import("../../i18n/en").EnKeys,
+      kind: "combat",
+      bias: topCombat[1],
+    });
+  }
+
+  return traits;
+}
