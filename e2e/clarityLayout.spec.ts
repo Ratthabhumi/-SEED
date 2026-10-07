@@ -87,8 +87,16 @@ async function closeDraft(page: Page): Promise<void> {
  * actions (map keys never open over a draft), so drain first. */
 async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "#civmap-screen"): Promise<void> {
   await drainDrafts(page, 40);
-  // Press key directly - Phaser listens on window
-  await page.keyboard.press(key);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.keyboard.press(key);
+    try {
+      await expect(page.locator(screen)).toBeVisible({ timeout: 2500 });
+      return;
+    } catch {
+      await drainDrafts(page, 20);
+      await page.waitForTimeout(200);
+    }
+  }
   await expect(page.locator(screen)).toBeVisible({ timeout: 10000 });
 }
 

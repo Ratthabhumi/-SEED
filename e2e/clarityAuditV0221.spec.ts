@@ -158,6 +158,8 @@ test("ui scale contracts: 100%, 125%, 150%, 200% across resolutions (Section 31)
     for (const scale of [1, 1.25, 1.5, 2] as const) {
       await page.evaluate((s) => {
         document.documentElement.style.setProperty("--ui-scale", String(s));
+        const w = window as any;
+        if (w.__seedE2E) w.__seedE2E.cleanPresentation();
       }, scale);
       await page.waitForTimeout(200);
 
