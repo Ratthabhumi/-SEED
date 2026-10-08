@@ -4,7 +4,7 @@
 
 <!-- QA-ENGAGEMENT-START -->
 
-No v0.26.1 human pilot recorded. HUMAN_FUN_VERDICT = PENDING.
+Operator-reported v0.26.1 pilot on `c310c20`: Industrial 11:43 / Logistics 6/6 specialization softlock. Status `INTERRUPTED_BY_BUG`; evidence in `docs/playtests/v0261-outpost-softlock-20261008.md`. HUMAN_FUN_VERDICT = PENDING.
 Historical evidence remains in docs/playtests/ and Git history.
 
 <!-- QA-ENGAGEMENT-END -->
@@ -13,7 +13,7 @@ Historical evidence remains in docs/playtests/ and Git history.
 
 - Codex review continuation (2026-10-08): retained the existing branch and baseline; corrected readiness blockers listed below. The prior CI run certifies `efb9f81` only; verify the correction commit's exact-SHA CI before calling the corrected build ready.
 
-- Active branch: `fix/v0261-playtest-readiness-20261008`
+- Active branch: `feat/v0261-outpost-softlock-20261008`
 - Base development commit: `5fe8f26506411869e1ec04f0f57b2d579481eeb2` on `feat/v026-experience-evidence-20261008` (v0.26 Experience Evidence).
 - Certified v0.25 automated baseline: `12e172cba23fdf06cec4bf0057fcf3fcfb3a4d2d` on `feat/v025-player-visible-emergence-20261005` (exact-SHA CI run 37658953734 100% green: Node 22, Node 24, Chromium E2E, Analyze).
 - Certified v0.24 technical baseline: `9c261e43c670ddf2208f8b4c38748879bcf167da` on `proto/v024-emergent-seed-core-20261002`.
@@ -112,3 +112,18 @@ npm run release:verify
 # Launch Human QA Environment (single command starts Vite + watcher)
 npm run qa:human
 ```
+
+
+## v0.26.1 P1 Outpost softlock correction — 2026-10-08
+
+- Work branch: `feat/v0261-outpost-softlock-20261008`, verified parent `c310c20cb56fa095ad7a4da50e5d93be974cb29f`.
+- Operator-observed Industrial 11:43 / Logistics 6/6 softlock recorded in `docs/playtests/v0261-outpost-softlock-20261008.md`; session `INTERRUPTED_BY_BUG`, human fun/replay verdicts PENDING.
+- Shared read-only canonical specialization predicate; optional EN/TH Later/Esc and keyboard focus containment; deferred claims do not mask first Signal or free claim actions. FIFO blocking contract preserved.
+- First-Signal charged capacity overflow is an intentional existing mission exemption (7/6 or 8/6), not new free Logistics. Ordinary/subsequent claims cannot specialize past capacity. No balance, version, dependency, save or worldgen changes.
+- Added focused unit and Chromium regressions; no v0.27, main merge, public release or tag.
+- Final validation results and exact-SHA CI are reported in the corrective delivery. Until exact-SHA CI and operator revalidation, no human-pass claim.
+
+- Final local check: 353/353 tests in 45 files, typecheck, provenance verification and production build PASS. Analyze and standalone test PASS. ZIP + release:verify 17/17 PASS (46 files, 1114 KB).
+- Final focused Chromium: 8/8 PASS (6 new softlock cases + 2 frontier cases), including Thai 200% at 1280×720. Thai screenshots visually inspected.
+- Initial full browser sweep: 45 PASS, 2 failures repaired and verified by the focused rerun, 1 pre-existing capture-only skip (`SEED_CAPTURE=1`). Final full-suite certification remains the exact-SHA CI job.
+- One concurrent check attempt timed out in the existing 60-second factorial audit plus worker RPC; after browser work stopped, unchanged `npm run check` passed in 20.38s. No timeout/acceptance threshold relaxed. Existing large-bundle warning and NO_COLOR/FORCE_COLOR warnings remain; hardware performance was not measured.

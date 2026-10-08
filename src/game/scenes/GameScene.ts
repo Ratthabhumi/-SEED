@@ -268,8 +268,8 @@ export class GameScene extends Phaser.Scene {
           return;
         }
         if (this.blockingModal) {
-          // Timed beats dismiss; binding choices must be decided.
-          if (this.modalT > 0) this.closeBlocking();
+          // Optional specialization and timed beats dismiss; binding choices remain.
+          if (this.modalT > 0 || this.blockingModal.id === "spec-screen") this.closeBlocking();
           return;
         }
         const s = this.sim.state;
@@ -443,6 +443,41 @@ export class GameScene extends Phaser.Scene {
           this.handleEvents(this.sim.setOutpostSpec(c.poiId, "research"));
           this.refreshHUD();
           return c.poiId;
+        },
+        stageSpecRegression: (signal = false, full = true) => {
+          const s = this.sim.state;
+          s.ageIndex = 3;
+          s.elapsed = s.runElapsed = 703;
+          s.ageElapsed = 0;
+          s.maxLogistics = 6;
+          s.logistics = full ? 6 : 0;
+          s.build.hp = s.build.maxHp = 1e9;
+          for (const e of s.enemies) e.active = false;
+          for (let ox = -8; ox <= 8; ox++) for (let oy = -8; oy <= 8; oy++) {
+            const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, ox, oy);
+            for (const poi of desc.poi) {
+              if ((poi.type === "signal") !== signal || s.poisWorld.includes(poi.id)) continue;
+              s.px = poi.wx;
+              s.py = poi.wy;
+              s.poisWorld.push(poi.id);
+              this.refreshHUD();
+              this.claimNearestSite();
+              return poi.id;
+            }
+          }
+          throw new Error("No regression site found");
+        },
+        specRegressionState: () => ({
+          elapsed: this.sim.state.elapsed,
+          ageIndex: this.sim.state.ageIndex,
+          logistics: this.sim.state.logistics,
+          maxLogistics: this.sim.state.maxLogistics,
+          signalSecured: this.sim.state.signalSecured,
+          territories: this.sim.state.territories,
+        }),
+        queueSpecRegression: (poiId: string) => {
+          this.showBlocking("spec-regression-beat", 60);
+          this.showSpecPicker(poiId);
         },
         openSpecPicker: (poiId?: string) => {
           const s = this.sim.state;
@@ -1085,7 +1120,9 @@ export class GameScene extends Phaser.Scene {
       p.textContent = t(key);
       bar.appendChild(p);
     };
-    const unspecced = s.territories.find((x) => x.spec === "" && !x.disabled);
+    const pending = s.territories.filter((x) => x.spec === "" && !x.disabled);
+    // An unaffordable deferred claim must not hide an eligible first Signal.
+    const unspecced = pending.find((x) => this.sim.canSetOutpostSpec(x.poiId, "research")) ?? pending[0];
     if (unspecced) {
       const b = document.createElement("button");
       b.className = "btn terr-spec-btn";
@@ -1093,17 +1130,13 @@ export class GameScene extends Phaser.Scene {
       b.addEventListener("click", () => this.showSpecPicker(unspecced.poiId));
       bar.appendChild(b);
       purpose("ui.specPurpose");
-      // A full logistics is still worth stating next to the pending decision.
-      if (s.logistics >= s.maxLogistics) this.appendLogisticsLine(bar, s);
-      return;
     }
+    // Free claims remain available alongside deferred specialization.
     // Logistics is stated whenever the frontier is full and ANY unclaimed
-    // site is near — contested or clear. Clearing a site cannot help a full
-    // logistics, so the player is told not to bother (same predicate as sim).
+    // site is near — contested or clear. Claiming itself has no cost.
     const anySite = this.sim.claimablePOIs()[0];
-    if (anySite && s.logistics >= s.maxLogistics) {
+    if ((unspecced || anySite) && s.logistics >= s.maxLogistics) {
       this.appendLogisticsLine(bar, s);
-      return;
     }
     const c = this.sim.claimablePOIs().find((x) => x.clear);
     if (c) {
@@ -1263,7 +1296,7 @@ export class GameScene extends Phaser.Scene {
     if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
   }
 
-  /** Binding outpost-specialization picker (pauses stepping until decided). */
+  /** Optional specialization: free claims can be specialized later. */
   private showSpecPicker(poiId: string): void {
     const specs: Array<{ id: OutpostSpec; name: EnKeys; desc: EnKeys }> = [
       { id: "research", name: "ui.specResearch", desc: "ui.specResearchDesc" },
@@ -1283,7 +1316,7 @@ export class GameScene extends Phaser.Scene {
       const row = el("div", "btn-row");
       for (const sp of specs) {
         const cost = calculateLogisticsCost(sp.id, 1, s.ageIndex);
-        const canAfford = s.logistics + cost <= s.maxLogistics;
+        const canAfford = this.sim.canSetOutpostSpec(poiId, sp.id);
         const b = document.createElement("button");
         b.className = "btn primary terr-spec-btn";
         if (!canAfford) b.disabled = true;
@@ -1299,13 +1332,35 @@ export class GameScene extends Phaser.Scene {
           b.title = t("ui.insufficientLogistics");
         }
         b.addEventListener("click", () => {
-          this.handleEvents(this.sim.setOutpostSpec(poiId, sp.id));
-          this.closeBlocking();
+          const events = this.sim.setOutpostSpec(poiId, sp.id);
+          this.handleEvents(events);
+          if (events.some((event) => event.type === "outpost_spec")) this.closeBlocking();
         });
         row.appendChild(b);
       }
       panel.appendChild(row);
+      panel.appendChild(button("ui.specLater", () => this.closeBlocking(), "btn spec-later-btn"));
+      const hint = el("p", "", "ui.specLaterHint");
+      hint.id = "spec-later-hint";
+      panel.appendChild(hint);
+      screen.setAttribute("role", "dialog");
+      screen.setAttribute("aria-modal", "true");
+      screen.setAttribute("aria-label", t("ui.outpostSpec"));
+      screen.setAttribute("aria-describedby", hint.id);
       screen.appendChild(panel);
+      const controls = Array.from(panel.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      controls[0]?.focus();
+      screen.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          this.closeBlocking();
+        } else if (event.key === "Tab") {
+          event.preventDefault();
+          const index = controls.indexOf(document.activeElement as HTMLButtonElement);
+          controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length]?.focus();
+        }
+      });
     });
   }
 

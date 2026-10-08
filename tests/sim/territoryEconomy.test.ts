@@ -274,3 +274,60 @@ describe("no progression softlock", () => {
     }
   });
 });
+
+
+describe("P1 specialization validation at Industrial Logistics 6/6", () => {
+  function pending(sim: RunSimulation, poiId: string, signal = false) {
+    const s = sim.state;
+    s.ageIndex = 3;
+    s.elapsed = 703;
+    s.logistics = s.maxLogistics = 6;
+    s.territories.push({ poiId, poiType: signal ? "signal" : "ruin", x: s.px, y: s.py,
+      spec: "", tier: 1, hp: 300, maxHp: 300, disabled: false,
+      heldSince: 703, repairT: 0, garrisoned: false });
+  }
+
+  it("all unaffordable choices reject without mutation; pending claims can be retried", () => {
+    const sim = testSim();
+    pending(sim, "pending");
+    const before = JSON.stringify(sim.state);
+    for (const spec of ["research", "military", "economy"] as const) {
+      expect(sim.canSetOutpostSpec("pending", spec)).toBe(false);
+      expect(sim.setOutpostSpec("pending", spec)).toEqual([]);
+    }
+    expect(JSON.stringify(sim.state)).toBe(before);
+    sim.state.maxLogistics = 7;
+    expect(sim.canSetOutpostSpec("pending", "research")).toBe(true);
+    expect(sim.setOutpostSpec("pending", "research")).toContainEqual({type: "outpost_spec", poiId: "pending", spec: "research"});
+    expect(sim.state.logistics).toBe(7);
+  });
+
+  it.each(["research", "military", "economy"] as const)("first Signal permits %s with explicit charged overflow, only once", (spec) => {
+    const sim = testSim();
+    pending(sim, "first", true);
+    pending(sim, "second", true);
+    const before = JSON.stringify(sim.state);
+    expect(sim.canSetOutpostSpec("first", spec)).toBe(true);
+    expect(JSON.stringify(sim.state)).toBe(before);
+    expect(sim.setOutpostSpec("first", spec)).toHaveLength(1);
+    expect(sim.state.signalSecured).toBe(true);
+    expect(sim.state.logistics).toBe(spec === "military" ? 8 : 7);
+    expect(sim.state.maxLogistics).toBe(6);
+    expect(sim.canSetOutpostSpec("first", spec)).toBe(false);
+    expect(sim.canSetOutpostSpec("second", spec)).toBe(false);
+    expect(sim.setOutpostSpec("second", spec)).toEqual([]);
+    sim.state.territories[0]!.disabled = true;
+    expect(sim.canSetOutpostSpec("second", spec)).toBe(false);
+  });
+
+  it("rejects absent, disabled and game-over targets", () => {
+    const sim = testSim();
+    pending(sim, "disabled", true);
+    sim.state.territories[0]!.disabled = true;
+    expect(sim.canSetOutpostSpec("disabled", "research")).toBe(false);
+    expect(sim.canSetOutpostSpec("missing", "research")).toBe(false);
+    sim.state.territories[0]!.disabled = false;
+    sim.state.over = true;
+    expect(sim.canSetOutpostSpec("disabled", "research")).toBe(false);
+  });
+});

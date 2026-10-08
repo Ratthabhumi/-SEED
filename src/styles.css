@@ -635,3 +635,6 @@ button, input { font-family: inherit; }
   font-size: var(--font-body); padding: 8px 16px; min-height: 44px;
   max-width: 100%;
 }
+
+/* Optional outpost decision remains scrollable at large Thai/UI text scales. */
+#spec-screen .panel { max-height: calc(100dvh - 40px); overflow-y: auto; }

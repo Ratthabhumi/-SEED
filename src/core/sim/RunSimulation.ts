@@ -822,28 +822,28 @@ export class RunSimulation {
     return ev;
   }
 
+  /** Read-only canonical validation, shared by the picker and mutation path.
+   * Preserves the intentional first-Signal overflow for mission progression.
+   * It still charges the full cost; subsequent Signals receive no exemption. */
+  canSetOutpostSpec(poiId: string, spec: OutpostSpec): boolean {
+    const s = this.state;
+    const t = territoryById(s.territories, poiId);
+    if (s.over || !t || t.spec !== "" || t.disabled) return false;
+    const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
+    const firstSignal = t.poiType === "signal" &&
+      !s.territories.some((other) => other.poiType === "signal" && other.spec !== "");
+    return s.logistics + cost <= s.maxLogistics || firstSignal;
+  }
+
   /** Choose the ONE specialization for a fresh claim. Irreversible.
    * v0.24: consumes Logistics points based on spec + tier. */
   setOutpostSpec(poiId: string, spec: OutpostSpec): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
-    if (s.over) return ev;
-    const t = territoryById(s.territories, poiId);
-    if (!t || t.spec !== "" || t.disabled) return ev;
-    
-    // Check logistics cost (tier 1)
+    if (!this.canSetOutpostSpec(poiId, spec)) return ev;
+    const t = territoryById(s.territories, poiId)!;
     const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
-    if (s.logistics + cost > s.maxLogistics) {
-      // Signal first-claim exemption (v0.23.1 no-softlock):
-      // Allow first Signal specialization even if logistics full.
-      // Check if this is the first Signal territory being specialized.
-      const hasSignalSpecialized = s.territories.some(
-        (terr) => terr.poiType === "signal" && terr.spec !== ""
-      );
-      const isFirstSignal = t.poiType === "signal" && !hasSignalSpecialized;
-      if (!isFirstSignal) return ev;
-    }
-    
+
     t.spec = spec;
     s.logistics += cost;
     if (spec === "military") this.reinforceSquad();

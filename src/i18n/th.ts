@@ -391,6 +391,8 @@ export const th: Record<EnKeys, string> = {
   "ui.logisticsFull": "ลอจิสติกส์ถึงขีดจำกัด",
   "ui.logisticsLine": "ลอจิสติกส์",
   "ui.logisticsCost": "ค่าลอจิสติกส์",
+  "ui.specLater": "ไว้ภายหลัง (Esc)",
+  "ui.specLaterHint": "เก็บพื้นที่ที่ยึดไว้ แล้วเลือกความเชี่ยวชาญจากปุ่มฐานภายหลังเมื่อลอจิสติกส์เพียงพอ ฐานสัญญาณแห่งแรกใช้เกินความจุได้เพื่อให้ภารกิจเดินต่อ",
   "ui.insufficientLogistics": "ลอจิสติกส์ไม่พอ",
   "ui.foundOutpost": "ตั้งฐาน",
   "ui.secureSite": "รักษาพื้นที่",

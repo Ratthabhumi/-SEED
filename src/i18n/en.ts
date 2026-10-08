@@ -389,6 +389,8 @@ export const en = {
   "ui.logisticsFull": "LOGISTICS LIMIT REACHED",
   "ui.logisticsLine": "Logistics",
   "ui.logisticsCost": "Logistics cost",
+  "ui.specLater": "Later (Esc)",
+  "ui.specLaterHint": "Keep this claim and specialize later from the outpost prompt when Logistics are available. The first Signal can exceed capacity to secure the mission.",
   "ui.insufficientLogistics": "Insufficient Logistics",
   "ui.foundOutpost": "FOUND OUTPOST",
   "ui.secureSite": "SECURE SITE",
