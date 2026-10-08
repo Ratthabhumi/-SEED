@@ -16,6 +16,24 @@ export function getReportOutputPath(snap, rootDir = ROOT) {
 
 const f2 = (n) => (Number.isFinite(n) ? n.toFixed(2) : "n/a");
 
+/**
+ * Strips personal paths, emails, non-loopback IPs, and secret/identifier leaks.
+ */
+export function sanitizePrivacy(text) {
+  if (typeof text !== "string") return "";
+  return text
+    // Strip Windows local paths: e.g. C:\Users\... or C:/Users/...
+    .replace(/[A-Za-z]:[\\\/](?:Users|Documents and Settings|home|var|tmp)[^"'\n\r\t,;]*/gi, "[REDACTED_LOCAL_PATH]")
+    // Strip Unix absolute home/user paths: e.g. /Users/... or /home/...
+    .replace(/(?:\/(?:home|Users|root|tmp))\/[^"'\n\r\t,;]*/g, "[REDACTED_LOCAL_PATH]")
+    // Strip file:// URLs
+    .replace(/file:\/\/\/[^\s"']+/gi, "[REDACTED_FILE_URL]")
+    // Strip emails
+    .replace(/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g, "[REDACTED_EMAIL]")
+    // Strip non-loopback IP addresses (preserve 127.0.0.1 or localhost)
+    .replace(/\b(?!127\.0\.0\.1)(?:\d{1,3}\.){3}\d{1,3}\b/g, "[REDACTED_IP]");
+}
+
 /** Build the sanitized markdown from a raw recorder snapshot. Pure-ish, tested. */
 export function buildSanitizedMarkdown(snap) {
   const L = [];
@@ -37,9 +55,9 @@ export function buildSanitizedMarkdown(snap) {
   L.push(``);
   L.push(`## Run`);
   L.push(``);
-  L.push(`- sessionId: ${snap.sessionId ?? "unknown"}`);
+  L.push(`- sessionId: ${sanitizePrivacy(String(snap.sessionId ?? "unknown"))}`);
   L.push(`- reportSequence: ${snap.reportSequence ?? 1}`);
-  L.push(`- seed: ${snap.seed ?? "unknown"}`);
+  L.push(`- seed: ${sanitizePrivacy(String(snap.seed ?? "unknown"))}`);
   L.push(`- origin: ${snap.originId ?? snap.engagement?.[0]?.origin ?? "unknown"}`);
   if (snap.worldTraits && snap.worldTraits.length > 0) {
     L.push(`- worldTraits: ${snap.worldTraits.join(", ")}`);
@@ -175,10 +193,10 @@ export function buildSanitizedMarkdown(snap) {
   L.push(`## Assertions / Errors`);
   const fails = (snap.assertions ?? []).filter((a) => !a.pass);
   L.push(`- failed assertions: ${fails.length}`);
-  for (const a of fails.slice(0, 50)) L.push(`  - [FAIL] ${a.id} — ${a.name}: ${a.detail}`);
+  for (const a of fails.slice(0, 50)) L.push(`  - [FAIL] ${a.id} — ${a.name}: ${sanitizePrivacy(a.detail)}`);
   const errs = (snap.consoleEntries ?? []).filter((x) => x.level === "error");
   L.push(`- console errors: ${errs.length}`);
-  for (const e of errs.slice(0, 20)) L.push(`  - ${e.message}`);
+  for (const e of errs.slice(0, 20)) L.push(`  - ${sanitizePrivacy(e.message)}`);
   L.push(``);
   L.push(`## Human Ratings (recorded, never inferred)`);
   if ((snap.ratings ?? []).length === 0) L.push(`- not provided`);
@@ -187,12 +205,22 @@ export function buildSanitizedMarkdown(snap) {
   L.push(`## Human Feedback Marks (optional)`);
   if ((snap.feedback ?? []).length === 0) L.push(`- none pressed (neutral — not positive, not negative)`);
   for (const fb of (snap.feedback ?? []).slice(0, 100)) {
-    L.push(`- [${fb.category}] [${fb.label}] ${fb.note || "(no note)"} @${f2(fb.simTime)}s ${fb.age}`);
+    L.push(`- [${fb.category}] [${fb.label}] ${sanitizePrivacy(fb.note || "(no note)")} @${f2(fb.simTime)}s ${fb.age}`);
   }
   L.push(``);
   L.push(`## Human Comment (optional)`);
   L.push(``);
-  L.push(snap.humanComment ? `- comment: "${snap.humanComment}"` : `- comment: NOT PROVIDED`);
+  L.push(snap.humanComment ? `- comment: "${sanitizePrivacy(snap.humanComment)}"` : `- comment: NOT PROVIDED`);
+  L.push(``);
+  L.push(`## Evidence & Gate Classification`);
+  L.push(``);
+  const hasHumanRatings = Array.isArray(snap.ratings) && snap.ratings.length > 0;
+  L.push(`- Machine Telemetry Status: ${fails.length === 0 && errs.length === 0 ? "AUTOMATED_CHECKS_PASS" : "AUTOMATED_CHECKS_FAIL"}`);
+  L.push(`- Human Subjective Evidence: ${hasHumanRatings ? "HUMAN_RATINGS_RECORDED" : "PENDING_HUMAN_PLAYTEST"}`);
+  L.push(`- Human Fun / Replay Verdict: ${hasHumanRatings ? "HUMAN_EVALUATION_IN_PROGRESS" : "HUMAN_FUN_PENDING (No automated fun claims allowed)"}`);
+  L.push(``);
+  L.push(`> RULE: Telemetry describes what happened; only living human players can rate fun and strategic agency.`);
+  L.push(`> A report without genuine human subjective input MUST NOT be labeled as HUMAN_FUN_PASS.`);
   L.push(``);
   return L.join("\n");
 }

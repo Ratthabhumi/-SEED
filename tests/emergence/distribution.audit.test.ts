@@ -207,18 +207,27 @@ describe("v0.26 emergence & experience distribution audit", () => {
     }
 
     const fallbackRate = totalFallbackOffers / (totalRealOffers + totalFallbackOffers);
-    const rerollRate = rerollTotal > 0 ? rerollAvailable / rerollTotal : 0;
-    const totalDraftSamples = AUDIT_SEEDS * AGES.length;
-    const collisionRate = Array.from(fingerprints.values()).filter(c => c > 1).length / totalDraftSamples;
+    // Reroll pool alternative candidate availability: fraction of drafts with rerolls where unshown candidates exist
+    const rerollPoolAvailabilityRate = rerollTotal > 0 ? rerollAvailable / rerollTotal : 0;
+    // Denominator uses genuinely observed draft samples across all seeds and ages
+    const observedDraftSamples = Array.from(fingerprints.values()).reduce((sum, c) => sum + c, 0);
+    // Metric definition reconciliation:
+    // 1. collidingFingerprintGroupRate: fraction of observed drafts whose unique fingerprint group appears > 1 time
+    //    (previously mislabeled 'collision rate' and masked repeated sample frequency).
+    const collidingFingerprintGroupRate = Array.from(fingerprints.values()).filter(c => c > 1).length / observedDraftSamples;
+    // 2. duplicateDraftSampleFrequency: genuine rate of redundant draft occurrences across the sample space.
+    const duplicateDraftSampleFrequency = Array.from(fingerprints.values()).reduce((sum, c) => sum + (c > 1 ? c - 1 : 0), 0) / observedDraftSamples;
 
     console.log(`Global real quality:`, normalizeDist(globalQualityDist));
     console.log(`Fallback offer rate: ${(fallbackRate * 100).toFixed(2)}%`);
-    console.log(`Reroll alternative availability: ${(rerollRate * 100).toFixed(2)}%`);
-    console.log(`Collision rate: ${(collisionRate * 100).toFixed(2)}%`);
+    console.log(`Reroll candidate pool availability: ${(rerollPoolAvailabilityRate * 100).toFixed(2)}%`);
+    console.log(`Colliding fingerprint group rate: ${(collidingFingerprintGroupRate * 100).toFixed(2)}%`);
+    console.log(`Duplicate draft sample frequency (true collision rate): ${(duplicateDraftSampleFrequency * 100).toFixed(2)}%`);
 
     expect(fallbackRate).toBeLessThan(0.40);
-    expect(rerollRate).toBeGreaterThan(0.08);
-    expect(collisionRate).toBeLessThan(0.35);
+    expect(rerollPoolAvailabilityRate).toBeGreaterThan(0.08);
+    expect(collidingFingerprintGroupRate).toBeLessThan(0.35);
+    expect(duplicateDraftSampleFrequency).toBeLessThan(0.65);
   });
 
   // --------------------------------------------------------------------------
@@ -488,7 +497,8 @@ describe("v0.26 emergence & experience distribution audit", () => {
       };
     });
 
-    console.log("=== [Class B: Natural Gameplay] Factorial Policy Aggregates ===");
+    console.log("=== [Class B: Natural Gameplay] Factorial Policy Aggregates (48 runs, max 40s canonical sim time) ===");
+    console.log("Note: Measures autonomous simulation capabilities & invariant adherence via direct API actions; does NOT prove human player onboarding or fun.");
     console.table(policyAggregates);
 
     const expanderAgg = policyAggregates.find(a => a.policy === "EXPANDER")!;
@@ -514,9 +524,12 @@ describe("v0.26 emergence & experience distribution audit", () => {
   });
 
   // --------------------------------------------------------------------------
-  // Class C: Trajectory Divergence (Excluding Fallbacks)
+  // Class C: Single-Draft Offer & First-Pick Heuristic Divergence (Excluding Fallbacks)
   // --------------------------------------------------------------------------
-  it("[Class C: Trajectory Divergence] Same Seed + Different Origins & Different Seeds + Same Origin (Excluding Fallbacks)", { timeout: 60000 }, () => {
+  it("[Class C: Single-Draft Offer & First-Pick Heuristic Divergence] Same Seed + Different Origins & Different Seeds + Same Origin (Excluding Fallbacks)", { timeout: 60000 }, () => {
+    // Clarification: This evaluates single-draft offer generation divergence and first non-fallback heuristic pick
+    // after artificial Knowledge injection (gainKnowledge(2000)).
+    // This measures structural offer engine divergence, NOT full multi-draft player decision trajectories.
     // 1. SAME SEED + DIFFERENT ORIGIN DIVERGENCE (Excluding Fallbacks)
     const originOffersByDomain: Record<OriginId, Record<string, number>> = {
       hunters: {}, engineers: {}, resonant: {}, sentinels: {},
@@ -563,7 +576,8 @@ describe("v0.26 emergence & experience distribution audit", () => {
       }
     }
 
-    console.log("=== [Class C: Trajectory Divergence] Canonical Domain Offers (Fallback Excluded) ===");
+    console.log("=== [Class C: Single-Draft Offer & First-Pick Heuristic Divergence] Canonical Domain Offers (Fallback Excluded) ===");
+    console.log("Note: Single-draft offer/heuristic-pick divergence, not full player trajectory divergence.");
     for (const origin of ORIGIN_LIST) {
       console.log(`${origin} offers:`, originOffersByDomain[origin], `(fallback count: ${originFallbackOffers[origin]})`);
       console.log(`${origin} picks: `, originPicksByDomain[origin]);

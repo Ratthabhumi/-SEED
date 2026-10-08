@@ -48,21 +48,22 @@ Testers must complete runs across three structured cohorts to provide causal iso
 
 ## 3. Playtest Execution Instructions
 
-1. Start local dev server:
+1. In a single terminal, launch the zero-friction QA environment:
    ```bash
-   npm run dev
+   npm run qa:human
    ```
+   *(Note: `npm run qa:human` automatically starts Vite on port 5173 and runs the auto-finalizing report watcher. Do NOT run `npm run dev` in a separate terminal — doing so causes a port collision on 5173.)*
+
 2. Open browser with QA telemetry enabled:
    ```
    http://localhost:5173/?qa=1
    ```
-3. In terminal, launch the zero-friction QA watcher:
-   ```bash
-   npm run qa:human
-   ```
+
+3. Play test run (victory via Ascension/Boss, death, or manual exit).
    *(The watcher automatically detects terminal run completion, generates the sanitized markdown report, and updates `SESSION_HANDOFF.md` without manual commands.)*
-4. Complete the run (victory via Ascension/Boss, death, or manual exit).
-5. On the post-run screen, complete the in-game rating survey (or fill in the score sheet below).
+
+4. On the post-run screen, complete the in-game rating survey (or fill in the score sheet below).
+   *(Machine telemetry measures actions and performance; subjective ratings must be provided by the human player.)*
 
 ---
 

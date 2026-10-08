@@ -63,7 +63,8 @@
   - Logical baseline for v0.23.1: `e32e995`
 - **v0.24 Emergent Technical Foundation**: ✅ CERTIFIED TECHNICAL BASELINE (exact-SHA CI green at `9c261e4`, run 37644086577; frozen baseline)
 - **v0.25 Player-Visible Emergence**: ✅ CERTIFIED AUTOMATED GATE (exact-SHA CI green at `12e172c`, run 37658953734 across Node 22, Node 24, E2E, Analyze; frozen baseline)
-- **v0.26 Experience Evidence & Playability Validation**: 🟢 ACTIVE VALIDATION TARGET (branch `feat/v026-experience-evidence-20261008`: separated Class A/B/C audit evidence, true mathematical normalized JSD, isolated fallbacks, autonomous factorial policy simulation with active EXPANDER outposts, upgraded QA pipeline, playtest protocol, research ledger)
+- **v0.26 Experience Evidence**: ✅ CERTIFIED AUTOMATED GATE (`5fe8f26`, CI 4/4 passed across Node 22, Node 24, E2E, Analyze; frozen baseline)
+- **v0.26.1 Playtest Readiness & Evidence Truth**: 🟢 ACTIVE TARGET (branch `fix/v0261-playtest-readiness-20261008`: evidence metric truth, duplicate draft sample frequency reporting, reconciled research ledger with real paths, hardened QA launcher & privacy sanitization, two-stage GUR playtest protocol)
 - **v0.27 (Post-Human Playtest)**: ⚪ PLANNED — Direction to be decided strictly by human playtest findings (Combat Feel vs Pacing Director vs Strategic Geography vs Territory Rework)
 - **Game Feel & Audio**: ⏸ DEFERRED — returns if human playtest reveals combat feel deficit
 - **v0.3+**: ⚪ PLANNED

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSanitizedMarkdown } from "../../scripts/qa-report.mjs";
+import { buildSanitizedMarkdown, sanitizePrivacy } from "../../scripts/qa-report.mjs";
 import { applyHandoffSection, START_MARK, END_MARK } from "../../scripts/qa-handoff.mjs";
 import { ReportDetector, isTerminalReport, reportIdentity, finalizeReport, checkAndFinalize } from "../../scripts/qa-watcher.mjs";
 import { QA_REPORT_DIR } from "../../scripts/qa-sink.mjs";
@@ -261,5 +261,39 @@ describe("zero-friction QA watcher and auto-finalization", () => {
 
     const updatedHandoff = files.get(handoffPath);
     expect(updatedHandoff).toContain("# -SEED v0.26 Experience Evidence Human — Sanitized Evidence");
+  });
+
+  it("sanitizes private filesystem paths, emails, and forbids automatic HUMAN_FUN_PASS", () => {
+    // 1. Unit privacy redaction
+    const winPath = "Error at C:\\Users\\Tester\\secret\\file.ts:12";
+    expect(sanitizePrivacy(winPath)).toContain("[REDACTED_LOCAL_PATH]");
+    expect(sanitizePrivacy(winPath)).not.toContain("Tester");
+
+    const unixPath = "Failed in /home/tester/repo/src/core.ts";
+    expect(sanitizePrivacy(unixPath)).toContain("[REDACTED_LOCAL_PATH]");
+
+    const email = "Contact me at tester.dev@domain.co.th for details";
+    expect(sanitizePrivacy(email)).toBe("Contact me at [REDACTED_EMAIL] for details");
+
+    const fileUrl = "Loaded file:///C:/Users/Admin/Desktop/app.html";
+    expect(sanitizePrivacy(fileUrl)).toContain("[REDACTED_FILE_URL]");
+
+    // 2. Report evidence classification
+    const s = {
+      ...snap(),
+      consoleEntries: [{ level: "error", message: "Failed at C:\\Users\\SecretUser\\test.js" }],
+      humanComment: "My email is dev@local.org",
+      ratings: [], // No human ratings
+    };
+    const md = buildSanitizedMarkdown(s as never);
+    expect(md).toContain("[REDACTED_LOCAL_PATH]");
+    expect(md).not.toContain("SecretUser");
+    expect(md).toContain("[REDACTED_EMAIL]");
+    expect(md).not.toContain("dev@local.org");
+
+    // Must never declare human fun pass without ratings
+    expect(md).toContain("Human Subjective Evidence: PENDING_HUMAN_PLAYTEST");
+    expect(md).toContain("Human Fun / Replay Verdict: HUMAN_FUN_PENDING");
+    expect(md).not.toContain("Human Fun / Replay Verdict: HUMAN_FUN_PASS");
   });
 });
