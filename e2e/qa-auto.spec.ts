@@ -9,8 +9,9 @@ interface CapturedPost {
   kind: string;
   seed: string;
   reason: string;
+  reportSequence: number;
   markdown: string;
-  data: { checkpoints: Array<{ event: string }> };
+  data: { checkpoints: Array<{ event: string }>; humanComment?: string; ratings: Array<{ score: number }> };
 }
 
 test("qa auto-finalize posts target-complete and shows completion", async ({ page }) => {
@@ -58,6 +59,13 @@ test("qa auto-finalize posts target-complete and shows completion", async ({ pag
   expect(last.reason).toBe("target-complete");
   expect(typeof last.markdown).toBe("string");
   expect(last.data.checkpoints.map((c) => c.event)).toContain("CHILD_WORLD_STARTED");
+  await page.locator(".qa-comment-input").fill("Human pilot response");
+  await page.locator(".qa-comment-btn.primary").click();
+  await expect.poll(() => posts[posts.length - 1]?.data.humanComment).toBe("Human pilot response");
+  expect(posts[posts.length - 1]!.reportSequence).toBeGreaterThan(last.reportSequence);
+  await page.locator("#qa-rec-indicator").click();
+  await page.locator(".qa-rate").first().click();
+  await expect.poll(() => posts[posts.length - 1]?.data.ratings.length).toBeGreaterThan(0);
   await expect(page.locator(".hud")).toBeVisible();
   expect(errors).toEqual([]);
 });

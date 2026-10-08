@@ -917,6 +917,7 @@ export class QaSession {
 
     const finishComment = (val: string | null) => {
       this.recorder.setHumanComment(val);
+      this.persistedTerminal = false; // Save the human response after initial completion telemetry.
       this.persistReports("target-complete", true);
       commentBox.remove();
     };
@@ -963,6 +964,10 @@ export class QaSession {
           const f = this.lastFrame;
           if (!f) return;
           this.recorder.rate(q, v, this.ctx(f));
+          if (this.ended) {
+            this.persistedTerminal = false;
+            this.persistReports(this.recorder.snapshot().endReason, true);
+          }
           box.innerHTML = "";
           this.showDownloads();
         });

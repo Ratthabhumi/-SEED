@@ -212,9 +212,9 @@ describe("v0.26 emergence & experience distribution audit", () => {
     // Denominator uses genuinely observed draft samples across all seeds and ages
     const observedDraftSamples = Array.from(fingerprints.values()).reduce((sum, c) => sum + c, 0);
     // Metric definition reconciliation:
-    // 1. collidingFingerprintGroupRate: fraction of observed drafts whose unique fingerprint group appears > 1 time
+    // 1. collidingFingerprintGroupRate: fraction of unique fingerprint groups appearing > 1 time
     //    (previously mislabeled 'collision rate' and masked repeated sample frequency).
-    const collidingFingerprintGroupRate = Array.from(fingerprints.values()).filter(c => c > 1).length / observedDraftSamples;
+    const collidingFingerprintGroupRate = Array.from(fingerprints.values()).filter(c => c > 1).length / fingerprints.size;
     // 2. duplicateDraftSampleFrequency: genuine rate of redundant draft occurrences across the sample space.
     const duplicateDraftSampleFrequency = Array.from(fingerprints.values()).reduce((sum, c) => sum + (c > 1 ? c - 1 : 0), 0) / observedDraftSamples;
 
@@ -226,6 +226,7 @@ describe("v0.26 emergence & experience distribution audit", () => {
 
     expect(fallbackRate).toBeLessThan(0.40);
     expect(rerollPoolAvailabilityRate).toBeGreaterThan(0.08);
+    // Unique-group denominator corrects the previous drafts denominator (~15.90%).
     expect(collidingFingerprintGroupRate).toBeLessThan(0.35);
     expect(duplicateDraftSampleFrequency).toBeLessThan(0.65);
   });

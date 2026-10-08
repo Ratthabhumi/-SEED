@@ -1,6 +1,17 @@
 # Session Handoff
 
+## Latest human playtest evidence
+
+<!-- QA-ENGAGEMENT-START -->
+
+No v0.26.1 human pilot recorded. HUMAN_FUN_VERDICT = PENDING.
+Historical evidence remains in docs/playtests/ and Git history.
+
+<!-- QA-ENGAGEMENT-END -->
+
 ## CURRENT CANONICAL STATE — READ THIS FIRST
+
+- Codex review continuation (2026-10-08): retained the existing branch and baseline; corrected readiness blockers listed below. The prior CI run certifies `efb9f81` only; verify the correction commit's exact-SHA CI before calling the corrected build ready.
 
 - Active branch: `fix/v0261-playtest-readiness-20261008`
 - Base development commit: `5fe8f26506411869e1ec04f0f57b2d579481eeb2` on `feat/v026-experience-evidence-20261008` (v0.26 Experience Evidence).
@@ -23,7 +34,7 @@
 1. **Evidence Integrity & Audit Corrections (`tests/emergence/distribution.audit.test.ts`)**:
    - **Class A Metric Truth**:
      - Denominator explicitly bound to genuinely observed draft samples (`observedDraftSamples = 6000`).
-     - Separated `collidingFingerprintGroupRate` (15.90%, fraction of unique fingerprint groups appearing > 1 time) from `duplicateDraftSampleFrequency` (53.97%, true duplicate sample frequency across all drafts).
+     - Corrected collidingFingerprintGroupRate to divide by unique groups (historical 15.90% used drafts as denominator) from `duplicateDraftSampleFrequency` (53.97%, true duplicate sample frequency across all drafts).
      - Reroll pool alternative candidate availability verified at 56.50% (> 8%).
      - Real age buckets (stone..space) verified with zero age quality clamping (all 4 qualities present).
    - **Class B Simulation Boundary Clarification**:
@@ -61,6 +72,26 @@
    - Enforces observation vs interpretation vs recommendation separation.
 
 ---
+
+## Codex review corrections — 2026-10-08
+
+- Corrected Class A unique-group denominator: colliding groups / unique fingerprints = 34.54%; duplicate samples remain 53.97%. Kept the existing 35% unique-group acceptance threshold.
+- Restored the QA handoff markers required by finalization. Watcher and CLI now both save independent, safely hashed session summaries; raw same-second session/revision archives no longer collide.
+- Save terminal comments and ratings after initial completion; reportSequence makes the watcher accept each human-response revision. Added browser POST regression coverage.
+- Sink records server-derived buildSha and buildDirty in raw JSON; sanitized summaries retain both. Keep the checkout fixed throughout a pilot and reject UNKNOWN provenance.
+- Redact the whole sanitized report, including labels/telemetry; cover arbitrary Windows drives and IPv6. Hashed report filenames prevent client session identifiers from escaping the report directory. Redaction covers common patterns and still requires operator privacy review before commit.
+- Corrected remaining ledger paths/symbols, C claim key, unverified seed-bias claims, and hardware-performance claims. Small-cohort scores are discussion prompts, not automatic v0.27 implementation gates.
+- Launcher smoke: npm run qa:human started Vite on 127.0.0.1:5173 with strictPort and watcher; stopped after the smoke. No human pilot was performed. Historical playtest documents were not overwritten.
+- Local npm run check PASS: typecheck, 348 tests in 45 files (including all 6 audit tests), license/provenance verification, production build. A prior local run passed tests but had a worker RPC timeout; the clean rerun exited 0.
+- Focused Chromium regression PASS: e2e/qa-auto.spec.ts verifies completion POST, subsequent human-comment POST, increasing sequence, and saved rating POST. Full E2E coverage is delegated to the new exact-SHA GitHub CI.
+- HUMAN_FUN_VERDICT = PENDING; REPLAY_DESIRE_VERDICT = PENDING. No merge, release, or v0.27 implementation is authorized by this review.
+
+### First human pilot
+
+1. Use the corrected commit with clean gameplay/tooling files; stop any other server on 5173 and run npm run qa:human (there is no npm run qa alias).
+2. Open http://localhost:5173/?qa=1, choose Origin, and START PLAYTEST. Follow Stage A in docs/playtests/PLAYTEST_PROTOCOL_V0261.md: 15 minutes without coaching, then neutral interview and explicit ratings.
+3. Save in-game ratings/comment after ending. Verify the per-session sanitized summary, tested SHA, and buildDirty=false; raw JSON stays in gitignored test-results/human-playtests/.
+4. Put interview observations in a separate anonymous pilot notes file; review privacy before committing evidence. Choose v0.27 only after actual findings.
 
 ## VERIFICATION COMMANDS
 

@@ -79,7 +79,7 @@ Rather than forcing every novice through an exhausting 8-run matrix, evaluation 
   - [ ] When the first draft card screen appeared, did the player read cards or click immediately?
   - [ ] Did the player discover the Origin Ability ('F' key)? How long until first use?
   - [ ] Did the player notice the top-center World Traits banner?
-  - [ ] Did the player discover territory claim ('E' key) when entering a POI circle?
+  - [ ] Did the player discover territory claim ('C' key) when entering a POI circle?
   - [ ] Did the player open the Tech Map ('T' key)?
   - [ ] Signs of hesitation, frustration, or visual confusion.
 
@@ -107,7 +107,7 @@ Record tester's direct scores (never infer from telemetry):
 ### Stage B: Focused Identity Comparison
 
 - **Cohort**: 2–4 players who completed Stage A or have basic survivor familiarity.
-- **Purpose**: Scientifically isolate Origin and Seed identity without exhausting testers.
+- **Purpose**: Compare Origin and Seed identity without exhausting testers.
 - **Counterbalancing**: Alternate the presentation order to prevent learning effects:
   - Tester 1: Condition A first, then Condition B.
   - Tester 2: Condition B first, then Condition A.
@@ -120,7 +120,7 @@ Record tester's direct scores (never infer from telemetry):
 
 #### Paired Test 2: Seed Divergence (Same Origin, 2 Contrasting Seeds)
 - **Origin**: `engineers`
-- **Pair**: `V026-SEED-A` (Aggression/Warfare trait bias) vs `V026-SEED-B` (Industry/Culture trait bias).
+- **Pair**: `V026-SEED-A` vs `V026-SEED-B` (record the actual displayed traits; no trait bias is assumed).
 - **Duration**: 7 minutes per Seed.
 - **Core Question**: *"Did you notice the world traits altering your card options or survival strategy?"*
 
@@ -158,9 +158,10 @@ Ensure browser console is clear and resolution is at least 1280×720.
 - Let tester play according to Stage A or Stage B.
 - When the run ends (death, Ascension, or intentional exit), telemetry is captured to `test-results/human-playtests/latest.json`.
 - The watcher automatically writes sanitized summary to `docs/playtests/latest-v026-experience-human.md` and updates `SESSION_HANDOFF.md`.
-- Fill in the tester interview notes and subjective rating scores into the report.
+- Each session also has a separate session-<hashed-id>-sanitized.md report. Capture interview notes in a separate pilot-<anonymous-id>-notes.md so regeneration cannot erase them. Record ratings and comments in-game; they are saved again after completion.
 
 ### Step 4: Verification Before Git Commit
+- Confirm buildSha equals the tested commit and buildDirty is false. UNKNOWN provenance is not certified evidence. Keep the server on the same checkout throughout the run; restart after code changes.
 Inspect git diff:
 ```bash
 git diff docs/playtests/
@@ -172,7 +173,7 @@ Confirm zero personal paths, IP addresses, or unredacted emails leaked before st
 
 ## 5. Decision Gates for Milestone v0.27
 
-Post-playtest evaluation determines the single top-priority vertical slice for v0.27:
+Use repeated observations plus interview evidence to choose a single v0.27 priority. The following score thresholds are discussion prompts, not statistical release gates or automatic authorization to add deferred systems:
 
 1. **UX / Onboarding Gate**: If *First-Minute Clarity* < 3.5:
    → **v0.27 First-Time User Experience & Visual Wayfinding**.

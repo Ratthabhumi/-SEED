@@ -5,6 +5,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { isIP } from "node:net";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LATEST = join(ROOT, "test-results", "human-playtests", "latest.json");
@@ -16,14 +18,23 @@ export function getReportOutputPath(snap, rootDir = ROOT) {
 
 const f2 = (n) => (Number.isFinite(n) ? n.toFixed(2) : "n/a");
 
+// Hash client identifiers: never interpolate them into filesystem paths.
+export function getSessionReportPath(snap, rootDir = ROOT) {
+  if (!snap.sessionId || (snap.versions?.content ?? 0) < 8) return null;
+  const id = createHash("sha256").update(String(snap.sessionId)).digest("hex").slice(0, 24);
+  return join(rootDir, "docs", "playtests", `session-${id}-sanitized.md`);
+}
+
 /**
- * Strips personal paths, emails, non-loopback IPs, and secret/identifier leaks.
+ * Redacts common local paths, emails, and IP addresses. Human review is still required.
  */
 export function sanitizePrivacy(text) {
   if (typeof text !== "string") return "";
   return text
+    // Redact URLs before local-path matching can consume their drive component.
+    .replace(/file:\/\/\/[^\s"']+/gi, "[REDACTED_FILE_URL]")
     // Strip Windows local paths: e.g. C:\Users\... or C:/Users/...
-    .replace(/[A-Za-z]:[\\\/](?:Users|Documents and Settings|home|var|tmp)[^"'\n\r\t,;]*/gi, "[REDACTED_LOCAL_PATH]")
+    .replace(/[A-Za-z]:[\\\/][^"'\n\r\t,;]*/gi, "[REDACTED_LOCAL_PATH]")
     // Strip Unix absolute home/user paths: e.g. /Users/... or /home/...
     .replace(/(?:\/(?:home|Users|root|tmp))\/[^"'\n\r\t,;]*/g, "[REDACTED_LOCAL_PATH]")
     // Strip file:// URLs
@@ -31,7 +42,8 @@ export function sanitizePrivacy(text) {
     // Strip emails
     .replace(/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g, "[REDACTED_EMAIL]")
     // Strip non-loopback IP addresses (preserve 127.0.0.1 or localhost)
-    .replace(/\b(?!127\.0\.0\.1)(?:\d{1,3}\.){3}\d{1,3}\b/g, "[REDACTED_IP]");
+    .replace(/\b(?!127\.0\.0\.1)(?:\d{1,3}\.){3}\d{1,3}\b/g, "[REDACTED_IP]")
+    .replace(/[0-9a-f:]*:[0-9a-f:]+/gi, (value) => isIP(value) === 6 && value !== "::1" ? "[REDACTED_IP]" : value);
 }
 
 /** Build the sanitized markdown from a raw recorder snapshot. Pure-ish, tested. */
@@ -57,6 +69,8 @@ export function buildSanitizedMarkdown(snap) {
   L.push(``);
   L.push(`- sessionId: ${sanitizePrivacy(String(snap.sessionId ?? "unknown"))}`);
   L.push(`- reportSequence: ${snap.reportSequence ?? 1}`);
+  L.push(`- buildSha: ${snap.buildSha ?? "UNKNOWN (not captured)"}`);
+  L.push(`- buildDirty: ${snap.buildDirty ?? "UNKNOWN"}`);
   L.push(`- seed: ${sanitizePrivacy(String(snap.seed ?? "unknown"))}`);
   L.push(`- origin: ${snap.originId ?? snap.engagement?.[0]?.origin ?? "unknown"}`);
   if (snap.worldTraits && snap.worldTraits.length > 0) {
@@ -222,7 +236,8 @@ export function buildSanitizedMarkdown(snap) {
   L.push(`> RULE: Telemetry describes what happened; only living human players can rate fun and strategic agency.`);
   L.push(`> A report without genuine human subjective input MUST NOT be labeled as HUMAN_FUN_PASS.`);
   L.push(``);
-  return L.join("\n");
+  // Apply to the entire output so labels and telemetry strings cannot bypass redaction.
+  return sanitizePrivacy(L.join("\n"));
 }
 
 function main() {
@@ -242,8 +257,8 @@ function main() {
   console.log(`wrote ${outPath}`);
 
   // Write independent session file if sessionId is present
-  if (snap.sessionId && (snap.versions?.content ?? 0) >= 8) {
-    const sessionOut = join(ROOT, "docs", "playtests", `session-${snap.sessionId}-sanitized.md`);
+  const sessionOut = getSessionReportPath(snap);
+  if (sessionOut) {
     writeFileSync(sessionOut, md, "utf8");
     console.log(`wrote session report: ${sessionOut}`);
   }

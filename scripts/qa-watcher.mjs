@@ -4,7 +4,7 @@
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildSanitizedMarkdown, getReportOutputPath } from "./qa-report.mjs";
+import { buildSanitizedMarkdown, getReportOutputPath, getSessionReportPath } from "./qa-report.mjs";
 import { applyHandoffSection } from "./qa-handoff.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -16,7 +16,7 @@ export const TERMINAL_REASONS = new Set(["target-complete", "player-died", "huma
  */
 export function reportIdentity(snap) {
   if (!snap || typeof snap !== "object") return "";
-  return `${snap.sessionId ?? ""}::${snap.seed ?? ""}::${snap.wallStart ?? ""}::${snap.wallEnd ?? ""}::${snap.endReason ?? ""}`;
+  return `${snap.sessionId ?? ""}::${snap.seed ?? ""}::${snap.wallStart ?? ""}::${snap.wallEnd ?? ""}::${snap.endReason ?? ""}::${snap.reportSequence ?? ""}`;
 }
 
 /**
@@ -84,6 +84,8 @@ export function finalizeReport(
   const outPath = getReportOutputPath(snap, rootDir);
   mkdir(dirname(outPath));
   write(outPath, md);
+  const sessionPath = getSessionReportPath(snap, rootDir);
+  if (sessionPath) write(sessionPath, md);
 
   const handoffPath = join(rootDir, "SESSION_HANDOFF.md");
   const handoff = read(handoffPath);

@@ -79,6 +79,14 @@ describe("qa sink filenames", () => {
 });
 
 describe("qa sink storage", () => {
+  it("preserves different sessions and response revisions saved in the same second", () => {
+    const fs = memfs();
+    const now = new Date(Date.UTC(2026, 8, 30));
+    for (const [sessionId, reportSequence] of [["a", 1], ["b", 1], ["b", 2]] as const) {
+      storeQaReport("/root", { ...VALID, sessionId, reportSequence }, now, fs.write, fs.mkdir);
+    }
+    expect(fs.files.size).toBe(8); // latest pair + three archived pairs
+  });
   it("writes only latest + stamped copies under the fixed directory", () => {
     const fs = memfs();
     const stored = storeQaReport(

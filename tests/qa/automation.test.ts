@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSanitizedMarkdown, sanitizePrivacy } from "../../scripts/qa-report.mjs";
+import { buildSanitizedMarkdown, sanitizePrivacy, getSessionReportPath } from "../../scripts/qa-report.mjs";
 import { applyHandoffSection, START_MARK, END_MARK } from "../../scripts/qa-handoff.mjs";
 import { ReportDetector, isTerminalReport, reportIdentity, finalizeReport, checkAndFinalize } from "../../scripts/qa-watcher.mjs";
 import { QA_REPORT_DIR } from "../../scripts/qa-sink.mjs";
@@ -44,6 +44,21 @@ function snap() {
 }
 
 describe("sanitized summary (qa:report)", () => {
+  it("redacts telemetry labels and isolates sessions without trusting paths", () => {
+    const data = { ...snap(), sessionId: "../../private", versions: { ...snap().versions, content: 8 },
+      buildSha: "a".repeat(40), buildDirty: false,
+      simMarks: [{ kind: "tech", detail: "pilot@example.com", simTime: 1, age: "stone", ascension: 0 }],
+      ratings: [{ question: "C:/Projects/Private/file", score: 3 }] };
+    const md = buildSanitizedMarkdown(data);
+    expect(md).not.toContain("pilot@example.com");
+    expect(md).not.toContain("Projects/Private");
+    expect(md).toContain(`buildSha: ${"a".repeat(40)}`);
+    expect(sanitizePrivacy("host 2001:db8::123")).not.toContain("2001:db8::123");
+    const path = getSessionReportPath(data, "repo");
+    expect(path).toMatch(/session-[a-f0-9]{24}-sanitized\.md$/);
+    expect(path).not.toContain("..");
+    expect(path).not.toBe(getSessionReportPath({ ...data, sessionId: "other" }, "repo"));
+  });
   it("keeps project evidence and drops fingerprints", () => {
     const md = buildSanitizedMarkdown(snap() as never);
     expect(md).toContain("EPOCH-GOLDEN-001");
@@ -247,12 +262,18 @@ describe("zero-friction QA watcher and auto-finalization", () => {
     const s = {
       ...snap(),
       versions: { packageVersion: "0.2.0-dev.0", worldgen: 2, content: 8, saveSchema: 1 },
+      sessionId: "pilot-a",
+      reportSequence: 1,
       originId: "hunters",
       worldTraits: ["trait-domain-warfare", "trait-combat-kinetic"],
     };
 
     const result = finalizeReport(s, root, mem.write, mem.read, mem.mkdir, mem.exists);
     expect(result).not.toBeNull();
+    const archivePath = getSessionReportPath(s, root)!.replace(/\\/g, "/");
+    expect(files.get(archivePath)).toContain("Human Ratings");
+    const detector = new ReportDetector(reportIdentity(s));
+    expect(detector.shouldFinalize({ ...s, reportSequence: 2, humanComment: "Player response" })).toBe(true);
     const outSummary = files.get(`${root}/docs/playtests/latest-v026-experience-human.md`);
     expect(outSummary).toBeDefined();
     expect(outSummary).toContain("# -SEED v0.26 Experience Evidence Human — Sanitized Evidence");

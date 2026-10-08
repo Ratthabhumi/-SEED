@@ -11,7 +11,7 @@ export declare function qaFileNames(now: Date, seed: string): {
 };
 export declare function storeQaReport(
   rootDir: string,
-  body: { seed: string; markdown: string; data: unknown; reason?: string },
+  body: { seed: string; markdown: string; data: unknown; reason?: string; sessionId?: string; reportSequence?: number },
   now: Date,
   write?: (path: string, text: string) => void,
   mkdir?: (path: string) => void,
