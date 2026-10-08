@@ -4,7 +4,7 @@
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildSanitizedMarkdown } from "./qa-report.mjs";
+import { buildSanitizedMarkdown, getReportOutputPath } from "./qa-report.mjs";
 import { applyHandoffSection } from "./qa-handoff.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -81,7 +81,7 @@ export function finalizeReport(
   exists = (p) => existsSync(p),
 ) {
   const md = buildSanitizedMarkdown(snap);
-  const outPath = join(rootDir, "docs", "playtests", "latest-v0231-interaction-human.md");
+  const outPath = getReportOutputPath(snap, rootDir);
   mkdir(dirname(outPath));
   write(outPath, md);
 
@@ -97,7 +97,7 @@ export function finalizeReport(
   console.log("");
   console.log("-SEED PLAYTEST EVIDENCE FINALIZED");
   console.log("");
-  console.log("docs/playtests/latest-v0231-interaction-human.md");
+  console.log(outPath);
   console.log("SESSION_HANDOFF.md updated");
   console.log("");
 

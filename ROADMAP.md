@@ -61,9 +61,11 @@
 - **v0.23 Frontier Purpose & Late-Game Performance**: 🟠 TECHNICAL BASELINE PASSED (exact-SHA CI green at `e32e995`, run 36875936223)
   - 🟠 HUMAN UX CORRECTIVE (objectives, Tech agency, territory purpose, UI overlap — corrected in v0.23.1)
   - Logical baseline for v0.23.1: `e32e995`
-- **v0.24 Emergent Technical Foundation**: ✅ CERTIFIED TECHNICAL BASELINE (exact-SHA CI green at `9c261e4`, run 37644086577; frozen as baseline for v0.25)
-- **v0.25 Player-Visible Emergence**: 🟢 ACTIVE VALIDATION TARGET (decoupled offer quality from selection, removed age rarity clamping, authoritative origin identity and signature abilities legible in UI with EN/TH parity, deterministic World Traits derived and surfaced, experience audit with synthetic player policies)
-- **Game Feel & Audio**: ⏸ DEFERRED — returns only after emergence passes human gate
+- **v0.24 Emergent Technical Foundation**: ✅ CERTIFIED TECHNICAL BASELINE (exact-SHA CI green at `9c261e4`, run 37644086577; frozen baseline)
+- **v0.25 Player-Visible Emergence**: ✅ CERTIFIED AUTOMATED GATE (exact-SHA CI green at `12e172c`, run 37658953734 across Node 22, Node 24, E2E, Analyze; frozen baseline)
+- **v0.26 Experience Evidence & Playability Validation**: 🟢 ACTIVE VALIDATION TARGET (branch `feat/v026-experience-evidence-20261008`: separated Class A/B/C audit evidence, true mathematical normalized JSD, isolated fallbacks, autonomous factorial policy simulation with active EXPANDER outposts, upgraded QA pipeline, playtest protocol, research ledger)
+- **v0.27 (Post-Human Playtest)**: ⚪ PLANNED — Direction to be decided strictly by human playtest findings (Combat Feel vs Pacing Director vs Strategic Geography vs Territory Rework)
+- **Game Feel & Audio**: ⏸ DEFERRED — returns if human playtest reveals combat feel deficit
 - **v0.3+**: ⚪ PLANNED
 
 ---

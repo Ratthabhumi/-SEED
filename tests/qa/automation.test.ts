@@ -228,4 +228,38 @@ describe("zero-friction QA watcher and auto-finalization", () => {
       ),
     ).toBeNull();
   });
+
+  it("finalizes v0.26 report to latest-v026-experience-human.md without overwriting historical summaries", () => {
+    const files = new Map<string, string>();
+    const dirs: string[] = [];
+    const norm = (p: string) => p.replace(/\\/g, "/");
+    const mem = {
+      write: (p: string, t: string) => files.set(norm(p), t),
+      read: (p: string) => files.get(norm(p)) ?? "",
+      mkdir: (p: string) => dirs.push(norm(p)),
+      exists: (p: string) => files.has(norm(p)),
+    };
+
+    const root = "/repo";
+    const handoffPath = `${root}/SESSION_HANDOFF.md`;
+    mem.write(handoffPath, `# Handoff\n\n${START_MARK}\nOld.\n${END_MARK}\n\nTail.\n`);
+
+    const s = {
+      ...snap(),
+      versions: { packageVersion: "0.2.0-dev.0", worldgen: 2, content: 8, saveSchema: 1 },
+      originId: "hunters",
+      worldTraits: ["trait-domain-warfare", "trait-combat-kinetic"],
+    };
+
+    const result = finalizeReport(s, root, mem.write, mem.read, mem.mkdir, mem.exists);
+    expect(result).not.toBeNull();
+    const outSummary = files.get(`${root}/docs/playtests/latest-v026-experience-human.md`);
+    expect(outSummary).toBeDefined();
+    expect(outSummary).toContain("# -SEED v0.26 Experience Evidence Human — Sanitized Evidence");
+    expect(outSummary).toContain("- origin: hunters");
+    expect(outSummary).toContain("- worldTraits: trait-domain-warfare, trait-combat-kinetic");
+
+    const updatedHandoff = files.get(handoffPath);
+    expect(updatedHandoff).toContain("# -SEED v0.26 Experience Evidence Human — Sanitized Evidence");
+  });
 });

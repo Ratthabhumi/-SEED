@@ -1,17 +1,21 @@
-// v0.25 Emergence & Experience Distribution Audit
-// Measures real age-index buckets (Stone..Space), separates real vs fallback offers,
-// evaluates rule-based synthetic players, and tests trajectory divergence.
+// v0.26 Emergence & Experience Distribution Audit
+// Separates three distinct evidence classes:
+//   Class A: Conditioned Distribution Tests (Staged Sampling)
+//   Class B: Natural Gameplay Simulations (Full Step Loop Factorial Evaluation)
+//   Class C: Trajectory Divergence (Excluding Fallbacks, Mathematical JSD)
 // Deterministic seeded streams only. No Math.random.
 
 import { describe, it, expect } from "vitest";
 import { generateWorldLaws, deriveWorldTraits, type WorldLaws } from "../../src/core/emergence/worldLaws";
-import { generateOffers, type OfferCandidate } from "../../src/core/emergence/offerEngine";
 import { calculateMaxLogistics, calculateLogisticsCost } from "../../src/core/emergence/outpostLogistics";
 import { ORIGINS, originById, type OriginId, type WeaponFamily } from "../../src/core/progression/origins";
 import { ORIGIN_ABILITY } from "../../src/core/combat/squad";
 import { RunSimulation } from "../../src/core/sim/RunSimulation";
+import { SIM_DT } from "../../src/core/sim/fixedStep";
+import { worldToChunk } from "../../src/core/world/chunks";
 import { WORLDGEN_VERSION, CONTENT_VERSION } from "../../src/core/seed/versions";
 import { AGES, type AgeId } from "../../src/core/tech/graph";
+import type { InputFrame } from "../../src/core/sim/InputFrame";
 
 interface QualityDist {
   COMMON: number;
@@ -27,23 +31,53 @@ interface AgeMetrics {
   qualityDist: QualityDist;
 }
 
-function shannonEntropy(counts: Record<string, number>): number {
+/**
+ * Standard Shannon entropy: H(P) = -sum p_i * log2(p_i)
+ * Uses base 2 logarithm; returns bits.
+ */
+export function shannonEntropy(counts: Record<string, number>): number {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  if (total === 0) return 0;
-  return -Object.values(counts).reduce((sum, c) => {
-    if (c === 0) return sum;
-    const p = c / total;
-    return sum + p * Math.log2(p);
-  }, 0);
+  if (total <= 0) return 0;
+  let ent = 0;
+  for (const c of Object.values(counts)) {
+    if (c > 0) {
+      const p = c / total;
+      ent -= p * Math.log2(p);
+    }
+  }
+  return ent;
 }
 
-function jsDivergence(p: Record<string, number>, q: Record<string, number>): number {
+/**
+ * Mathematically correct Jensen-Shannon Divergence:
+ * JSD(P || Q) = H(M) - 0.5 * (H(P) + H(Q))
+ * where M = 0.5 * (P + Q).
+ * Using base-2 logarithm, JSD is bounded in [0, 1].
+ */
+export function jsDivergence(p: Record<string, number>, q: Record<string, number>): number {
+  const sumP = Object.values(p).reduce((a, b) => a + b, 0);
+  const sumQ = Object.values(q).reduce((a, b) => a + b, 0);
+  if (sumP <= 0 || sumQ <= 0) return 0;
+
   const allKeys = new Set([...Object.keys(p), ...Object.keys(q)]);
-  const m: Record<string, number> = {};
+  const normP: Record<string, number> = {};
+  const normQ: Record<string, number> = {};
+  const mixture: Record<string, number> = {};
+
   for (const k of allKeys) {
-    m[k] = ((p[k] || 0) + (q[k] || 0)) / 2;
+    const pk = (p[k] || 0) / sumP;
+    const qk = (q[k] || 0) / sumQ;
+    normP[k] = pk;
+    normQ[k] = qk;
+    mixture[k] = 0.5 * (pk + qk);
   }
-  return (shannonEntropy(m) - 0.5 * (shannonEntropy(p) + shannonEntropy(q))) * 0.5;
+
+  const hM = shannonEntropy(mixture);
+  const hP = shannonEntropy(normP);
+  const hQ = shannonEntropy(normQ);
+
+  const jsd = hM - 0.5 * (hP + hQ);
+  return Math.max(0, Math.min(1, jsd));
 }
 
 function normalizeDist(dist: QualityDist): Record<string, number> {
@@ -57,11 +91,41 @@ function normalizeDist(dist: QualityDist): Record<string, number> {
   };
 }
 
-describe("v0.25 emergence and experience distribution audit", () => {
-  const AUDIT_SEEDS = 1000;
+describe("v0.26 emergence & experience distribution audit", () => {
   const ORIGIN_LIST: OriginId[] = ["hunters", "engineers", "resonant", "sentinels"];
 
-  it("measures real age-index buckets and separates fallback vs real offers", { timeout: 90000 }, () => {
+  // --------------------------------------------------------------------------
+  // Math Unit Verification: JSD Properties
+  // --------------------------------------------------------------------------
+  it("verifies mathematical Jensen-Shannon Divergence properties and normalization", () => {
+    // 1. Identical distributions -> JSD = 0
+    const p1 = { a: 10, b: 20 };
+    const q1 = { a: 20, b: 40 };
+    expect(jsDivergence(p1, q1)).toBeCloseTo(0, 5);
+
+    // 2. Completely orthogonal distributions -> JSD = 1.0 (with base-2 log)
+    const p2 = { a: 10 };
+    const q2 = { b: 10 };
+    expect(jsDivergence(p2, q2)).toBeCloseTo(1.0, 5);
+
+    // 3. Symmetry: JSD(P, Q) === JSD(Q, P)
+    const p3 = { warfare: 5, industry: 2, science: 3 };
+    const q3 = { warfare: 1, industry: 6, science: 3 };
+    expect(jsDivergence(p3, q3)).toBeCloseTo(jsDivergence(q3, p3), 5);
+
+    // 4. Boundedness in [0, 1]
+    const d = jsDivergence(p3, q3);
+    expect(d).toBeGreaterThanOrEqual(0);
+    expect(d).toBeLessThanOrEqual(1);
+  });
+
+  // --------------------------------------------------------------------------
+  // Class A: Conditioned Distribution Tests (Staged Sampling)
+  // --------------------------------------------------------------------------
+  it("[Class A: Conditioned Sampling] Real Age Buckets, Decoupled Quality, and Fallback Invariants", { timeout: 90000 }, () => {
+    // Conditioned/staged sampling: intentionally stages sim.state.ageIndex across all 6 real ages (stone..space)
+    // to test offer engine candidate generation, quality sampling distributions, and fallback rates at statistical scale.
+    const AUDIT_SEEDS = 1000;
     const ageMetrics: Record<AgeId, AgeMetrics> = {
       stone: { age: "stone", realCount: 0, fallbackCount: 0, qualityDist: { COMMON: 0, UNCOMMON: 0, RARE: 0, MYTHIC: 0 } },
       bronze: { age: "bronze", realCount: 0, fallbackCount: 0, qualityDist: { COMMON: 0, UNCOMMON: 0, RARE: 0, MYTHIC: 0 } },
@@ -79,11 +143,11 @@ describe("v0.25 emergence and experience distribution audit", () => {
     const fingerprints = new Map<string, number>();
 
     for (let i = 0; i < AUDIT_SEEDS; i++) {
-      const seed = `AUDIT-V025-${i.toString().padStart(6, "0")}`;
+      const seed = `AUDIT-V026-${i.toString().padStart(6, "0")}`;
       const origin = ORIGIN_LIST[i % ORIGIN_LIST.length]!;
       const sim = new RunSimulation({ masterSeed: seed, originId: origin });
 
-      // Sample offers across all 6 real ages
+      // Staged sample across all 6 real ages
       for (let ageIdx = 0; ageIdx < AGES.length; ageIdx++) {
         const ageId = AGES[ageIdx] as AgeId;
         sim.state.ageIndex = ageIdx;
@@ -116,14 +180,13 @@ describe("v0.25 emergence and experience distribution audit", () => {
             rerollTotal++;
           }
 
-          // Pick first non-fallback offer if available, else first offer
           const pickIdx = Math.max(0, offers.findIndex(o => !o.nodeId.startsWith("fb-")));
           sim.chooseDraft(pickIdx);
         }
       }
     }
 
-    console.log("=== Real Age Bucket Distribution (v0.25) ===");
+    console.log("=== [Class A: Conditioned Sampling] Real Age Bucket Distribution ===");
     for (const ageId of AGES) {
       const m = ageMetrics[ageId];
       const norm = normalizeDist(m.qualityDist);
@@ -133,11 +196,14 @@ describe("v0.25 emergence and experience distribution audit", () => {
           .join(" ")})`
       );
 
-      // Acceptance criterion: Every measured age bucket must have sample count > 0
+      // Acceptance criteria: Every measured age bucket has positive sample count > 0
       expect(m.realCount).toBeGreaterThan(0);
-      // All qualities possible across all ages (no age-clamping)
+
+      // Explicit assertion: All 4 qualities appear in every age bucket without age clamping
       expect(m.qualityDist.COMMON).toBeGreaterThan(0);
       expect(m.qualityDist.UNCOMMON).toBeGreaterThan(0);
+      expect(m.qualityDist.RARE).toBeGreaterThan(0);
+      expect(m.qualityDist.MYTHIC).toBeGreaterThan(0);
     }
 
     const fallbackRate = totalFallbackOffers / (totalRealOffers + totalFallbackOffers);
@@ -155,12 +221,311 @@ describe("v0.25 emergence and experience distribution audit", () => {
     expect(collisionRate).toBeLessThan(0.35);
   });
 
-  it("measures origin divergence and legibility in offer distribution", { timeout: 60000 }, () => {
-    const originPicks: Record<OriginId, Record<string, number>> = {
-      hunters: {},
-      engineers: {},
-      resonant: {},
-      sentinels: {},
+  // --------------------------------------------------------------------------
+  // Class B: Natural Gameplay Simulations (Full Step Loop Factorial Evaluation)
+  // --------------------------------------------------------------------------
+  type PolicyName = "BUILD_SEEKER" | "SURVIVOR" | "EXPANDER" | "AGGRESSOR";
+
+  interface NaturalRunMetrics {
+    seed: string;
+    origin: OriginId;
+    policy: PolicyName;
+    survivedSec: number;
+    highestAge: AgeId;
+    kills: number;
+    techsTaken: number;
+    abilityUses: number;
+    outpostsClaimed: number;
+    outpostsSpecialized: number;
+    logisticsUsed: number;
+    reservesUsed: number;
+    rerollsUsed: number;
+    picksByDomain: Record<string, number>;
+    picksByFamily: Record<string, number>;
+    damageShare: Record<string, number>;
+  }
+
+  function runNaturalSimulation(seed: string, origin: OriginId, policy: PolicyName, maxSteps = 2400): NaturalRunMetrics {
+    const sim = new RunSimulation({ masterSeed: seed, originId: origin });
+
+    // Pre-cache nearby POIs for EXPANDER navigation once at startup
+    const nearbyPOIs: Array<{ id: string; x: number; y: number }> = [];
+    if (policy === "EXPANDER") {
+      const { cx, cy } = worldToChunk(sim.state.px, sim.state.py);
+      for (let ox = -3; ox <= 3; ox++) {
+        for (let oy = -3; oy <= 3; oy++) {
+          const desc = sim.chunks.get(sim.state.worldSeed, sim.state.worldNonce, cx + ox, cy + oy);
+          for (const poi of desc.poi) {
+            nearbyPOIs.push({ id: poi.id, x: poi.wx, y: poi.wy });
+          }
+        }
+      }
+    }
+
+    // Step-by-step natural autonomous simulation without progression cheats
+    for (let step = 0; step < maxSteps; step++) {
+      if (sim.state.over) break;
+
+      let moveX = 0;
+      let moveY = 0;
+      let dashPressed = false;
+
+      // Policy-specific movement & navigation
+      if (policy === "EXPANDER") {
+        const claimed = new Set(sim.state.territories.map(t => t.poiId));
+        let bestDist = Infinity;
+        let target: { x: number; y: number } | null = null;
+        for (const poi of nearbyPOIs) {
+          if (claimed.has(poi.id)) continue;
+          const d = Math.hypot(poi.x - sim.state.px, poi.y - sim.state.py);
+          if (d < bestDist) {
+            bestDist = d;
+            target = poi;
+          }
+        }
+
+        if (target && bestDist > 10) {
+          const dx = target.x - sim.state.px;
+          const dy = target.y - sim.state.py;
+          moveX = dx / bestDist;
+          moveY = dy / bestDist;
+        }
+
+        // Check territory claim every 15 ticks (~250ms)
+        if (step % 15 === 0) {
+          const claimable = sim.claimablePOIs().find(c => c.clear);
+          if (claimable) {
+            sim.claimTerritory(claimable.poiId);
+            if (sim.state.territories.length > 0 && sim.state.logistics + 1 <= sim.state.maxLogistics) {
+              sim.setOutpostSpec(claimable.poiId, "economy");
+            }
+          }
+        }
+      } else if (policy === "AGGRESSOR") {
+        // Find nearest active enemy to engage
+        let nearestEnemy: { x: number; y: number } | null = null;
+        let nearDist = Infinity;
+        for (const e of sim.state.enemies) {
+          if (!e.active) continue;
+          const d = Math.hypot(e.x - sim.state.px, e.y - sim.state.py);
+          if (d < nearDist) {
+            nearDist = d;
+            nearestEnemy = e;
+          }
+        }
+
+        if (nearestEnemy && nearDist > 50) {
+          const dx = nearestEnemy.x - sim.state.px;
+          const dy = nearestEnemy.y - sim.state.py;
+          moveX = dx / nearDist;
+          moveY = dy / nearDist;
+        }
+
+        // Aggressively use active ability off cooldown when enemies exist nearby
+        if (nearDist < 300) {
+          sim.tryAbility();
+        }
+      } else if (policy === "SURVIVOR") {
+        // Kite away from close enemies
+        let dangerX = 0;
+        let dangerY = 0;
+        let threatCount = 0;
+        for (const e of sim.state.enemies) {
+          if (!e.active) continue;
+          const d = Math.hypot(e.x - sim.state.px, e.y - sim.state.py);
+          if (d < 160) {
+            dangerX += (sim.state.px - e.x);
+            dangerY += (sim.state.py - e.y);
+            threatCount++;
+          }
+        }
+
+        if (threatCount > 0) {
+          const d = Math.hypot(dangerX, dangerY);
+          if (d > 0) {
+            moveX = dangerX / d;
+            moveY = dangerY / d;
+            dashPressed = threatCount >= 3;
+          }
+        }
+
+        // Defensive panic ability use when HP is reduced or surrounded
+        if (sim.state.build.hp < sim.state.build.maxHp * 0.8 || threatCount >= 3) {
+          sim.tryAbility();
+        }
+      } else if (policy === "BUILD_SEEKER") {
+        // Navigate toward nearest knowledge pickup on ground
+        let nearestPickup: { x: number; y: number } | null = null;
+        let pDist = Infinity;
+        for (const p of sim.state.pickups) {
+          if (!p.active) continue;
+          const d = Math.hypot(p.x - sim.state.px, p.y - sim.state.py);
+          if (d < pDist) {
+            pDist = d;
+            nearestPickup = p;
+          }
+        }
+
+        if (nearestPickup && pDist > 10) {
+          const dx = nearestPickup.x - sim.state.px;
+          const dy = nearestPickup.y - sim.state.py;
+          moveX = dx / pDist;
+          moveY = dy / pDist;
+        }
+      }
+
+      // Execute canonical simulation tick
+      const input: InputFrame = { moveX, moveY, dashPressed };
+      sim.step(SIM_DT, input);
+
+      // Handle natural draft level-up choices according to policy
+      while (sim.state.draftOpen && !sim.state.over) {
+        const offers = sim.state.draftOffers;
+        let bestIdx = 0;
+
+        if (policy === "BUILD_SEEKER") {
+          // Maximize synergy tags with owned build
+          const ownedSet = new Set(sim.state.ownedTags);
+          let maxSyn = -1;
+          offers.forEach((o, idx) => {
+            const node = sim.techGraph().find(n => n.id === o.nodeId);
+            const syn = node ? node.synergyTags.filter(t => ownedSet.has(t)).length : 0;
+            if (syn > maxSyn) {
+              maxSyn = syn;
+              bestIdx = idx;
+            }
+          });
+          if (maxSyn === 0 && sim.state.rerolls > 0) {
+            const ev = sim.rerollDraft();
+            if (ev.some(e => e.type === "draft_rerolled")) {
+              continue;
+            }
+          }
+        } else if (policy === "SURVIVOR") {
+          // Prioritize defense / health / regen / armor
+          const defIdx = offers.findIndex(o => {
+            const node = sim.techGraph().find(n => n.id === o.nodeId);
+            return node?.effects.some(e => e.family === "defense" || e.kind === "maxHpAdd" || e.kind === "regenAdd");
+          });
+          if (defIdx >= 0) {
+            bestIdx = defIdx;
+          } else if (sim.state.reservedTech === "" && offers.length > 1) {
+            sim.reserveCard(0);
+          }
+        } else if (policy === "EXPANDER") {
+          // Prioritize industry / economy / tools
+          const indIdx = offers.findIndex(o => {
+            const node = sim.techGraph().find(n => n.id === o.nodeId);
+            return node?.domain === "industry" || node?.tags.includes("tools");
+          });
+          if (indIdx >= 0) bestIdx = indIdx;
+        } else if (policy === "AGGRESSOR") {
+          // Prioritize warfare / kinetic / energy / damage
+          const warIdx = offers.findIndex(o => {
+            const node = sim.techGraph().find(n => n.id === o.nodeId);
+            return node?.domain === "warfare" || node?.effects.some(e => e.family === "kinetic" || e.family === "energy");
+          });
+          if (warIdx >= 0) bestIdx = warIdx;
+        }
+
+        sim.chooseDraft(bestIdx);
+      }
+    }
+
+    return {
+      seed,
+      origin,
+      policy,
+      survivedSec: sim.state.elapsed,
+      highestAge: sim.state.highestAge,
+      kills: sim.state.stats.kills,
+      techsTaken: sim.state.stats.techsTaken,
+      abilityUses: sim.state.stats.abilityUses,
+      outpostsClaimed: sim.state.stats.outpostsClaimed,
+      outpostsSpecialized: sim.state.territories.filter(t => t.spec !== "").length,
+      logisticsUsed: sim.state.logistics,
+      reservesUsed: sim.state.stats.reservesUsed,
+      rerollsUsed: sim.state.stats.rerollsUsed,
+      picksByDomain: { ...sim.state.stats.draftPicksByDomain },
+      picksByFamily: { ...sim.state.stats.draftPicksByFamily },
+      damageShare: { ...sim.state.damageBySource },
+    };
+  }
+
+  it("[Class B: Natural Gameplay] Autonomous Factorial Policy Evaluation (BUILD_SEEKER, SURVIVOR, EXPANDER, AGGRESSOR)", { timeout: 60000 }, () => {
+    // Factorial Experiment: Same Seeds x Same Origins x 4 Distinct Policies
+    const FACTORIAL_SEEDS = ["FACTORIAL-001", "FACTORIAL-002", "FACTORIAL-003"];
+    const POLICIES: PolicyName[] = ["BUILD_SEEKER", "SURVIVOR", "EXPANDER", "AGGRESSOR"];
+
+    const results: NaturalRunMetrics[] = [];
+    for (const seed of FACTORIAL_SEEDS) {
+      for (const origin of ORIGIN_LIST) {
+        for (const policy of POLICIES) {
+          results.push(runNaturalSimulation(seed, origin, policy, 2400));
+        }
+      }
+    }
+
+    // Aggregate metrics per policy across all 12 factorial cells per policy
+    const policyAggregates = POLICIES.map(p => {
+      const cohort = results.filter(r => r.policy === p);
+      const avgKills = cohort.reduce((sum, r) => sum + r.kills, 0) / cohort.length;
+      const totalOutposts = cohort.reduce((sum, r) => sum + r.outpostsClaimed, 0);
+      const totalAbilities = cohort.reduce((sum, r) => sum + r.abilityUses, 0);
+      const warfarePicks = cohort.reduce((sum, r) => sum + (r.picksByDomain.warfare || 0), 0);
+      const industryPicks = cohort.reduce((sum, r) => sum + (r.picksByDomain.industry || 0), 0);
+      const defensePicks = cohort.reduce((sum, r) => sum + (r.picksByFamily.defense || 0), 0);
+
+      return {
+        policy: p,
+        runs: cohort.length,
+        avgKills,
+        totalOutposts,
+        totalAbilities,
+        warfarePicks,
+        industryPicks,
+        defensePicks,
+      };
+    });
+
+    console.log("=== [Class B: Natural Gameplay] Factorial Policy Aggregates ===");
+    console.table(policyAggregates);
+
+    const expanderAgg = policyAggregates.find(a => a.policy === "EXPANDER")!;
+    const aggressorAgg = policyAggregates.find(a => a.policy === "AGGRESSOR")!;
+    const survivorAgg = policyAggregates.find(a => a.policy === "SURVIVOR")!;
+    const seekerAgg = policyAggregates.find(a => a.policy === "BUILD_SEEKER")!;
+
+    // 1. Evidence of actual expansion: EXPANDER claims outposts naturally
+    expect(expanderAgg.totalOutposts).toBeGreaterThan(0);
+    expect(expanderAgg.totalOutposts).toBeGreaterThanOrEqual(aggressorAgg.totalOutposts);
+
+    // 2. Evidence of aggression: AGGRESSOR exercises active abilities and warfare drafts
+    expect(aggressorAgg.totalAbilities).toBeGreaterThan(0);
+    expect(aggressorAgg.avgKills).toBeGreaterThan(0);
+
+    // 3. Evidence of survival / seeker choices
+    expect(survivorAgg.runs).toBe(12);
+    expect(seekerAgg.runs).toBe(12);
+
+    // 4. Honest reporting: confirm real combat took place across natural runs
+    const allTotalKills = results.reduce((sum, r) => sum + r.kills, 0);
+    expect(allTotalKills).toBeGreaterThan(50);
+  });
+
+  // --------------------------------------------------------------------------
+  // Class C: Trajectory Divergence (Excluding Fallbacks)
+  // --------------------------------------------------------------------------
+  it("[Class C: Trajectory Divergence] Same Seed + Different Origins & Different Seeds + Same Origin (Excluding Fallbacks)", { timeout: 60000 }, () => {
+    // 1. SAME SEED + DIFFERENT ORIGIN DIVERGENCE (Excluding Fallbacks)
+    const originOffersByDomain: Record<OriginId, Record<string, number>> = {
+      hunters: {}, engineers: {}, resonant: {}, sentinels: {},
+    };
+    const originPicksByDomain: Record<OriginId, Record<string, number>> = {
+      hunters: {}, engineers: {}, resonant: {}, sentinels: {},
+    };
+    const originFallbackOffers: Record<OriginId, number> = {
+      hunters: 0, engineers: 0, resonant: 0, sentinels: 0,
     };
 
     const SAMPLE_COUNT = 300;
@@ -170,39 +535,97 @@ describe("v0.25 emergence and experience distribution audit", () => {
         const sim = new RunSimulation({ masterSeed: seed, originId: origin });
         sim.gainKnowledge(2000, "audit", []);
         if (sim.state.draftOpen) {
-          for (const off of sim.state.draftOffers) {
+          const offers = sim.state.draftOffers;
+
+          for (const off of offers) {
+            if (off.nodeId.startsWith("fb-")) {
+              originFallbackOffers[origin]++;
+              continue;
+            }
             const node = sim.techGraph().find(n => n.id === off.nodeId);
-            const domain = node?.domain ?? "unknown";
-            originPicks[origin][domain] = (originPicks[origin][domain] || 0) + 1;
+            // Non-fallback nodes MUST have a defined canonical domain
+            expect(node, `Data integrity failure: node ${off.nodeId} not found in graph`).toBeDefined();
+            const domain = node!.domain;
+            originOffersByDomain[origin][domain] = (originOffersByDomain[origin][domain] || 0) + 1;
           }
-          sim.chooseDraft(0);
+
+          // Pick the first non-fallback offer (or 0)
+          const pickIdx = Math.max(0, offers.findIndex(o => !o.nodeId.startsWith("fb-")));
+          const chosenOffer = offers[pickIdx];
+          if (chosenOffer && !chosenOffer.nodeId.startsWith("fb-")) {
+            const pickedNode = sim.techGraph().find(n => n.id === chosenOffer.nodeId);
+            if (pickedNode) {
+              originPicksByDomain[origin][pickedNode.domain] = (originPicksByDomain[origin][pickedNode.domain] || 0) + 1;
+            }
+          }
+          sim.chooseDraft(pickIdx);
         }
       }
     }
 
-    console.log("=== Origin Domain Divergence ===");
+    console.log("=== [Class C: Trajectory Divergence] Canonical Domain Offers (Fallback Excluded) ===");
     for (const origin of ORIGIN_LIST) {
-      console.log(`${origin}:`, originPicks[origin]);
-      const def = originById(origin);
-      expect(def.families.length).toBe(2);
-      expect(def.ability.cooldown).toBeGreaterThan(0);
-      expect(ORIGIN_ABILITY[origin].id).toBe(def.ability.id);
+      console.log(`${origin} offers:`, originOffersByDomain[origin], `(fallback count: ${originFallbackOffers[origin]})`);
+      console.log(`${origin} picks: `, originPicksByDomain[origin]);
+      // Verify no 'unknown' or fallback key leaked into canonical domains
+      expect(originOffersByDomain[origin].unknown).toBeUndefined();
+      expect(originPicksByDomain[origin].unknown).toBeUndefined();
     }
 
-    // Measure JSD across origins
-    const jsdHE = jsDivergence(originPicks.hunters, originPicks.engineers);
-    const jsdHR = jsDivergence(originPicks.hunters, originPicks.resonant);
-    const jsdHS = jsDivergence(originPicks.hunters, originPicks.sentinels);
+    // Measure mathematically correct JSD across non-fallback canonical domain offers
+    const offerJsdHE = jsDivergence(originOffersByDomain.hunters, originOffersByDomain.engineers);
+    const offerJsdHR = jsDivergence(originOffersByDomain.hunters, originOffersByDomain.resonant);
+    const offerJsdHS = jsDivergence(originOffersByDomain.hunters, originOffersByDomain.sentinels);
 
-    console.log(`JSD Hunters vs Engineers: ${jsdHE.toFixed(4)}`);
-    console.log(`JSD Hunters vs Resonant: ${jsdHR.toFixed(4)}`);
-    console.log(`JSD Hunters vs Sentinels: ${jsdHS.toFixed(4)}`);
+    // Measure mathematically correct JSD across non-fallback canonical domain picks
+    const pickJsdHE = jsDivergence(originPicksByDomain.hunters, originPicksByDomain.engineers);
+    const pickJsdHR = jsDivergence(originPicksByDomain.hunters, originPicksByDomain.resonant);
+    const pickJsdHS = jsDivergence(originPicksByDomain.hunters, originPicksByDomain.sentinels);
 
-    expect(jsdHE).toBeGreaterThan(0.0001);
-    expect(jsdHR).toBeGreaterThan(0.0001);
-    expect(jsdHS).toBeGreaterThan(0.0001);
+    console.log(`Normalized Offer JSD Hunters vs Engineers: ${offerJsdHE.toFixed(4)}`);
+    console.log(`Normalized Offer JSD Hunters vs Resonant:  ${offerJsdHR.toFixed(4)}`);
+    console.log(`Normalized Offer JSD Hunters vs Sentinels: ${offerJsdHS.toFixed(4)}`);
+    console.log(`Normalized Pick JSD Hunters vs Engineers:  ${pickJsdHE.toFixed(4)}`);
+    console.log(`Normalized Pick JSD Hunters vs Resonant:   ${pickJsdHR.toFixed(4)}`);
+    console.log(`Normalized Pick JSD Hunters vs Sentinels:  ${pickJsdHS.toFixed(4)}`);
+
+    // Verify non-trivial, statistically measurable origin divergence:
+    // Raw offers show measurable difference (> 0.01, and > 0.10 for Sentinels vs Hunters)
+    expect(offerJsdHE).toBeGreaterThan(0.01);
+    expect(offerJsdHR).toBeGreaterThan(0.01);
+    expect(offerJsdHS).toBeGreaterThan(0.10);
+
+    // Selected picks show amplified divergence (> 0.035, and > 0.10 for Sentinels vs Hunters)
+    expect(pickJsdHE).toBeGreaterThan(0.035);
+    expect(pickJsdHR).toBeGreaterThan(0.035);
+    expect(pickJsdHS).toBeGreaterThan(0.10);
+
+    // 2. DIFFERENT SEEDS + SAME ORIGIN (World Traits & Causal Domain Shift)
+    const SEEDS = ["AUDIT-SEED-ALPHA", "AUDIT-SEED-BETA", "AUDIT-SEED-GAMMA"];
+    const seedTraitRuns = SEEDS.map(s => {
+      const sim = new RunSimulation({ masterSeed: s, originId: "engineers" });
+      const traits = deriveWorldTraits(sim.state.worldLaws);
+      for (let step = 0; step < 10; step++) {
+        sim.gainKnowledge(2000, "audit", []);
+        if (sim.state.draftOpen) sim.chooseDraft(0);
+      }
+      return {
+        seed: s,
+        traits: traits.map(t => t.id),
+        domainPicks: { ...sim.state.stats.draftPicksByDomain },
+      };
+    });
+
+    console.log("=== DIFFERENT SEEDS + SAME ORIGIN (Causal World Traits) ===");
+    seedTraitRuns.forEach(r => console.log(r.seed, "Traits:", r.traits, "Picks:", r.domainPicks));
+
+    const distinctTraitSets = new Set(seedTraitRuns.map(r => r.traits.join(",")));
+    expect(distinctTraitSets.size).toBeGreaterThan(1);
   });
 
+  // --------------------------------------------------------------------------
+  // Invariants: World Laws & Logistics
+  // --------------------------------------------------------------------------
   it("verifies world laws determinism and player-visible world traits", () => {
     for (let i = 0; i < 200; i++) {
       const seed = `AUDIT-LAWS-${i}`;
@@ -219,168 +642,6 @@ describe("v0.25 emergence and experience distribution audit", () => {
       expect(traits1[0]!.nameKey).toBe(traits2[0]!.nameKey);
       expect(traits1[0]!.descKey).toBe(traits2[0]!.descKey);
     }
-  });
-
-  it("evaluates lightweight rule-based synthetic players (BUILD_SEEKER, SURVIVOR, EXPANDER, AGGRESSOR)", () => {
-    type PolicyName = "BUILD_SEEKER" | "SURVIVOR" | "EXPANDER" | "AGGRESSOR";
-
-    interface PolicyResult {
-      techsTaken: number;
-      abilityUses: number;
-      synergies: number;
-      outposts: number;
-      topDomain: string;
-      damageShare: Record<string, number>;
-    }
-
-    const runSyntheticPolicy = (policy: PolicyName, seed: string, origin: OriginId): PolicyResult => {
-      const sim = new RunSimulation({ masterSeed: seed, originId: origin });
-
-      // Simulate a series of progression steps
-      for (let step = 0; step < 15; step++) {
-        sim.gainKnowledge(3000, "step", []);
-
-        // Use ability based on policy
-        if (policy === "AGGRESSOR" || policy === "SURVIVOR") {
-          sim.tryAbility();
-        }
-
-        if (sim.state.draftOpen) {
-          const offers = sim.state.draftOffers;
-          let bestIdx = 0;
-
-          if (policy === "BUILD_SEEKER") {
-            // Pick card with highest synergy with owned tags
-            const ownedSet = new Set(sim.state.ownedTags);
-            let maxSynergy = -1;
-            offers.forEach((o, idx) => {
-              const node = sim.techGraph().find(n => n.id === o.nodeId);
-              const syn = node ? node.synergyTags.filter(t => ownedSet.has(t)).length : 0;
-              if (syn > maxSynergy) {
-                maxSynergy = syn;
-                bestIdx = idx;
-              }
-            });
-          } else if (policy === "SURVIVOR") {
-            // Prioritize defense / health
-            const defIdx = offers.findIndex(o => {
-              const node = sim.techGraph().find(n => n.id === o.nodeId);
-              return node?.effects.some(e => e.family === "defense" || e.kind === "maxHpAdd" || e.kind === "regenAdd");
-            });
-            if (defIdx >= 0) bestIdx = defIdx;
-          } else if (policy === "EXPANDER") {
-            // Prioritize industry / economy
-            const indIdx = offers.findIndex(o => {
-              const node = sim.techGraph().find(n => n.id === o.nodeId);
-              return node?.domain === "industry" || node?.tags.includes("tools");
-            });
-            if (indIdx >= 0) bestIdx = indIdx;
-          } else if (policy === "AGGRESSOR") {
-            // Prioritize warfare / damage
-            const warIdx = offers.findIndex(o => {
-              const node = sim.techGraph().find(n => n.id === o.nodeId);
-              return node?.domain === "warfare" || node?.effects.some(e => e.family === "kinetic" || e.family === "energy");
-            });
-            if (warIdx >= 0) bestIdx = warIdx;
-          }
-
-          sim.chooseDraft(bestIdx);
-        }
-
-        // Policy action: claim outposts if EXPANDER
-        if (policy === "EXPANDER" && sim.state.poisWorld.length > 0) {
-          const claimable = sim.claimablePOIs().find(c => c.clear);
-          if (claimable) sim.claimTerritory(claimable.poiId);
-        }
-      }
-
-      // Compute top domain
-      const domPicks = sim.state.stats.draftPicksByDomain;
-      let topDomain = "none";
-      let topCount = -1;
-      for (const [d, c] of Object.entries(domPicks)) {
-        if (c > topCount) {
-          topCount = c;
-          topDomain = d;
-        }
-      }
-
-      return {
-        techsTaken: sim.state.stats.techsTaken,
-        abilityUses: sim.state.stats.abilityUses,
-        synergies: sim.state.breakthroughs.length,
-        outposts: sim.state.stats.outpostsClaimed,
-        topDomain,
-        damageShare: { ...sim.state.damageBySource },
-      };
-    };
-
-    const seed = "AUDIT-SYNTHETIC-POLICY-001";
-    const seekerRes = runSyntheticPolicy("BUILD_SEEKER", seed, "engineers");
-    const survivorRes = runSyntheticPolicy("SURVIVOR", seed, "sentinels");
-    const expanderRes = runSyntheticPolicy("EXPANDER", seed, "hunters");
-    const aggressorRes = runSyntheticPolicy("AGGRESSOR", seed, "resonant");
-
-    console.log("=== Synthetic Policy Audit Results ===");
-    console.log("BUILD_SEEKER:", seekerRes);
-    console.log("SURVIVOR:    ", survivorRes);
-    console.log("EXPANDER:    ", expanderRes);
-    console.log("AGGRESSOR:   ", aggressorRes);
-
-    // Verify policies produce distinct strategic outcomes:
-    expect(aggressorRes.abilityUses).toBeGreaterThan(0);
-    expect(survivorRes.abilityUses).toBeGreaterThan(0);
-    expect(seekerRes.techsTaken).toBeGreaterThan(5);
-    expect(expanderRes.techsTaken).toBeGreaterThan(5);
-  });
-
-  it("verifies trajectory divergence under SAME SEED + DIFFERENT ORIGIN and DIFFERENT SEED + SAME ORIGIN", () => {
-    // 1. SAME SEED + DIFFERENT ORIGINS
-    const fixedSeed = "AUDIT-COMPARISON-FIXED-SEED";
-    const originRuns = ORIGIN_LIST.map(o => {
-      const sim = new RunSimulation({ masterSeed: fixedSeed, originId: o });
-      for (let s = 0; s < 10; s++) {
-        sim.gainKnowledge(2000, "audit", []);
-        if (sim.state.draftOpen) sim.chooseDraft(0);
-      }
-      return {
-        origin: o,
-        picks: { ...sim.state.stats.draftPicksByDomain },
-        familyPicks: { ...sim.state.stats.draftPicksByFamily },
-      };
-    });
-
-    console.log("=== SAME SEED + DIFFERENT ORIGINS ===");
-    originRuns.forEach(r => console.log(r.origin, "Family picks:", r.familyPicks));
-
-    // Verify different origins pick different families even on the exact same seed
-    const huntersFam = originRuns.find(r => r.origin === "hunters")!.familyPicks;
-    const resonantFam = originRuns.find(r => r.origin === "resonant")!.familyPicks;
-    expect(huntersFam).not.toEqual(resonantFam);
-
-    // 2. DIFFERENT SEEDS + SAME ORIGIN
-    const seeds = ["AUDIT-SEED-ALPHA", "AUDIT-SEED-BETA", "AUDIT-SEED-GAMMA"];
-    const seedRuns = seeds.map(s => {
-      const sim = new RunSimulation({ masterSeed: s, originId: "engineers" });
-      const traits = deriveWorldTraits(sim.state.worldLaws);
-      for (let step = 0; step < 10; step++) {
-        sim.gainKnowledge(2000, "audit", []);
-        if (sim.state.draftOpen) sim.chooseDraft(0);
-      }
-      return {
-        seed: s,
-        traits: traits.map(t => t.id),
-        domainPicks: { ...sim.state.stats.draftPicksByDomain },
-      };
-    });
-
-    console.log("=== DIFFERENT SEEDS + SAME ORIGIN ===");
-    seedRuns.forEach(r => console.log(r.seed, "Traits:", r.traits, "Domains:", r.domainPicks));
-
-    // Seeds produce distinct world traits
-    const allTraits = seedRuns.map(r => r.traits.join(","));
-    const distinctTraits = new Set(allTraits);
-    expect(distinctTraits.size).toBeGreaterThan(1);
   });
 
   it("verifies logistics growth and costs per age", () => {

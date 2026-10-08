@@ -8,6 +8,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // Current pipeline output first; older summaries kept as back-compat fallback.
 // v0.23 historical evidence is read-only fallback — never overwritten.
 const CANDIDATES = [
+  "latest-v026-experience-human.md",
   "latest-v0231-interaction-human.md",
   "latest-v023-frontier-human.md",
   "latest-v0221-human-revalidation.md",
