@@ -117,3 +117,20 @@ for (const lang of ["en","th"] as const) {
     await page.screenshot({path:`test-results/browser/radial-overview-${lang}.png`});
   });
 }
+
+for (const lang of ["en", "th"] as const) {
+  test(`Chronicle translates acquired technology instead of exposing IDs (${lang})`, async ({ page }) => {
+    await startRun(page, "CHRONICLE-NAMES", { lang });
+    await page.keyboard.press("T");
+    await expect(page.locator(".techmap-btn-zoom-in")).toHaveAttribute("title", lang === "th" ? "ขยาย" : "Zoom in");
+    await page.keyboard.press("Escape");
+    await page.evaluate(() => (window as any).__seedE2E.grant(1000));
+    await expect(page.locator("#draft-screen .card")).toHaveCount(3);
+    const title = await page.locator("#draft-screen .card h3").first().innerText();
+    await page.locator("#draft-screen .card .card-select").first().click();
+    await resolveDrafts(page);
+    await page.evaluate(() => (window as any).__seedE2E.kill());
+    await expect(page.locator(".chron-history")).toContainText(title);
+    expect(await page.locator(".chron-history").innerText()).not.toMatch(/web:|application-|weave-|stone-tools/);
+  });
+}

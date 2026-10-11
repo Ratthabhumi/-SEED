@@ -196,7 +196,7 @@ export class TechMapView {
     const btnCurrent = document.createElement("button");
     btnCurrent.className = "btn techmap-btn-current techmap-no-pan";
     btnCurrent.textContent = t("ui.current");
-    btnCurrent.title = "Focus current civilization frontier";
+    btnCurrent.title = t("ui.focusCurrent");
     btnCurrent.addEventListener("click", () => this.focusCurrent());
     controls.appendChild(btnCurrent);
     const btnCenter = document.createElement("button");
@@ -208,28 +208,28 @@ export class TechMapView {
     const btnOverview = document.createElement("button");
     btnOverview.className = "btn techmap-btn-overview techmap-btn-fit techmap-no-pan";
     btnOverview.textContent = t("ui.overview");
-    btnOverview.title = "Macro overview of all Age lanes";
+    btnOverview.title = t("ui.overviewHint");
     btnOverview.addEventListener("click", () => this.fit());
     controls.appendChild(btnOverview);
 
     const btnReset = document.createElement("button");
     btnReset.className = "btn techmap-btn-reset techmap-no-pan";
     btnReset.textContent = "100%";
-    btnReset.title = "Reset zoom to 100%";
+    btnReset.title = t("ui.resetZoom");
     btnReset.addEventListener("click", () => this.reset());
     controls.appendChild(btnReset);
 
     const btnZoomOut = document.createElement("button");
     btnZoomOut.className = "btn techmap-btn-zoom-out techmap-no-pan";
     btnZoomOut.textContent = "−";
-    btnZoomOut.title = "Zoom out";
+    btnZoomOut.title = t("ui.zoomOut");
     btnZoomOut.addEventListener("click", () => this.zoomOut());
     controls.appendChild(btnZoomOut);
 
     const btnZoomIn = document.createElement("button");
     btnZoomIn.className = "btn techmap-btn-zoom-in techmap-no-pan";
     btnZoomIn.textContent = "+";
-    btnZoomIn.title = "Zoom in";
+    btnZoomIn.title = t("ui.zoomIn");
     btnZoomIn.addEventListener("click", () => this.zoomIn());
     controls.appendChild(btnZoomIn);
 

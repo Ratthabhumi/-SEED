@@ -838,7 +838,7 @@ export class QaSession {
         this.recorder.perfSnapshot("end", ctx);
       }
     }
-    this.recorder.finish(reason, this.wallNow());
+    this.recorder.finish(reason, performance.now());
     this.persistReports(reason, true);
     this.refreshPanel();
   }

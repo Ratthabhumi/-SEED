@@ -1,3 +1,4 @@
+import { historyTechName } from "../ui/historyTechName";
 import { effectSummary } from "../ui/techEffects";
 // GameScene — ADAPTER (ADR 0003). Owns no canonical gameplay state.
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
@@ -548,6 +549,8 @@ export class GameScene extends Phaser.Scene {
         worldgen: WORLDGEN_VERSION,
         content: CONTENT_VERSION,
         saveSchema: SAVE_SCHEMA_VERSION,
+        buildSha: import.meta.env.SEED_BUILD_SHA,
+        buildDirty: import.meta.env.SEED_BUILD_DIRTY,
       }),
       ageOrder: () => AGES as readonly string[],
     };
@@ -2476,7 +2479,7 @@ export class GameScene extends Phaser.Scene {
       hist.className = "chron-history";
       for (const h of s.history.slice(-14)) {
         const line = document.createElement("div");
-        line.textContent = `${this.fmtTime(h.t)} · ${h.kind} · ${h.label}`;
+        line.textContent = `${this.fmtTime(h.t)} · ${h.kind === "tech" ? t("chronicle.techs") : h.kind} · ${h.kind === "tech" ? historyTechName(h.label, this.sim.techGraph()) : h.label}`;
         hist.appendChild(line);
       }
       panel.appendChild(hist);

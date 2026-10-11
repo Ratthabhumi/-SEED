@@ -2,7 +2,9 @@
 
 > Milestone: v0.26.1 — Playtest Readiness & Evidence Truth  
 > Date: 2026-10-08  
-> Status: Authoritative runtime reconciliation against codebase HEAD (`fix/v0261-playtest-readiness-20261008`)
+> Status: Historical content-8 reconciliation (2026-10-08); not current HEAD.
+> Current content-9 classifications and dated evidence: [quality audit](content9-quality-audit-20261011.md).
+> Numeric fallback/JSD/collision and bot-count claims in sections 2–4 below are historical, not content-9 results.
 
 ---
 
