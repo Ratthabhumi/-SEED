@@ -57,8 +57,8 @@ button, input { font-family: inherit; }
 .panel-xl { width: min(96vw, 1180px); }
 .panel-full { width: min(96vw, 1380px); max-height: 92vh; }
 
-.panel h1 { font-size: var(--font-title); line-height: 1.6; margin: 0 0 10px; }
-.panel h2 { font-size: var(--font-heading); line-height: 1.6; margin: 0 0 8px; }
+.panel h1 { font-size: var(--font-title); line-height: 1.7; margin: 0 0 10px; }
+.panel h2 { font-size: var(--font-heading); line-height: 1.7; margin: 0 0 8px; }
 .panel .btn { margin-top: 6px; }
 
 /* Wayfinding compass + boss bar + onboarding hint */
@@ -191,7 +191,7 @@ button, input { font-family: inherit; }
 }
 .card:hover { border-color: var(--accent); transform: translateY(-2px); }
   .card .key { color: var(--muted); font-size: var(--font-caption); }
-  .card h3 { margin: 0; font-size: var(--font-heading); line-height: 1.6; }
+  .card h3 { margin: 0; font-size: var(--font-heading); line-height: 1.7; }
   .card p { margin: 0; color: var(--muted); font-size: var(--font-body); line-height: 1.7; }
   .card .rarity { font-size: var(--font-caption); text-transform: uppercase; letter-spacing: 1px; }
   .rarity-common { color: #9aa7b5; } .rarity-uncommon { color: #53e0c8; }
@@ -329,7 +329,7 @@ button, input { font-family: inherit; }
 #qa-panel.qa-hidden { display: none !important; }
 .qa-title { font-weight: 800; color: #53e0c8; font-size: var(--font-body); }
 .qa-title2 { font-weight: 700; color: var(--accent); font-size: var(--font-caption); margin-top: 8px; }
-.qa-sub { color: var(--muted); font-size: var(--font-micro); line-height: 1.6; }
+.qa-sub { color: var(--muted); font-size: var(--font-micro); line-height: 1.7; }
 .qa-list { margin: 6px 0; }
 .qa-sec { color: var(--muted); font-size: var(--font-micro); margin-top: 6px; }
 .qa-row { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -503,7 +503,7 @@ button, input { font-family: inherit; }
 .techmap-node {
   position: absolute; pointer-events: auto; box-sizing: border-box;
   overflow: hidden;
-  font-size: var(--font-caption); line-height: 1.4; padding: 8px 12px; border-radius: 8px; text-align: left;
+  font-size: var(--font-caption); line-height: 1.7; padding: 8px 12px; border-radius: 8px; text-align: left;
   background: #111a2a; border: 1.5px solid #2a3d58; color: var(--text); cursor: pointer;
   display: flex; align-items: center; gap: 8px; transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -531,7 +531,7 @@ button, input { font-family: inherit; }
 .techmap-side { width: 350px; min-width: 320px; overflow-y: auto; font-size: var(--font-body); line-height: 1.7; }
 .techmap-side h3 { margin: 6px 0 6px; font-size: var(--font-heading); color: var(--accent); }
 .techmap-meta { color: var(--muted); font-size: var(--font-caption); }
-.techmap-desc { color: var(--text); font-size: var(--font-caption); line-height: 1.6; margin-top: 8px; }
+.techmap-desc { color: var(--text); font-size: var(--font-caption); line-height: 1.7; margin-top: 8px; }
 .techmap-req { font-size: var(--font-caption); color: var(--text); margin-top: 6px; }
 .techmap-req-title { font-size: var(--font-caption); color: var(--muted); margin-top: 10px; font-weight: 700; }
 .techmap-pin-btn { margin-top: 12px; width: 100%; min-height: 48px; font-size: var(--font-body); font-weight: 700; }
@@ -638,3 +638,67 @@ button, input { font-family: inherit; }
 
 /* Optional outpost decision remains scrollable at large Thai/UI text scales. */
 #spec-screen .panel { max-height: calc(100dvh - 40px); overflow-y: auto; }
+
+/* Decision workspaces use available width; only the decision body scrolls. */
+#ui #draft-screen { justify-content: flex-start; gap: 10px; }
+#draft-screen > h2 { margin: 0; flex: 0 0 auto; }
+#ui #draft-screen .cards-wrapper {
+  width: min(100%, 1240px); height: auto; max-height: none;
+  flex: 1 1 auto; min-height: 0; overflow: auto; padding: 4px 6px;
+  scrollbar-gutter: stable;
+}
+#draft-screen .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+#draft-screen .card { width: auto; min-width: 0; min-height: 0; box-sizing: border-box; padding: 16px; }
+#draft-screen .card h3 { line-height: 1.8; }
+#draft-screen .card-select { margin-top: auto; }
+#draft-screen .card-preview {
+  height: 82px; display: flex; align-items: center; justify-content: center; gap: 26px;
+  border-radius: 10px; color: #ffd66b; font-size: 48px;
+  background: radial-gradient(ellipse, #294851, #101b2e); border: 1px solid #345265;
+}
+#draft-screen .card-preview img { width: 52px; height: 52px; image-rendering: pixelated; }
+#draft-screen .card-effects { color: #e5fff7; font-weight: 700; }
+#draft-screen .card-plan { line-height: 1.8; font-size: var(--font-caption); }
+#draft-screen .card-plan summary { cursor: pointer; color: #9fd8ff; min-height: 32px; }
+#draft-screen .card-plan summary:focus-visible { outline: 2px solid var(--accent); }
+#draft-screen .draft-agency { flex: 0 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+#draft-screen .draft-hints { width: min(100%, 1240px); display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 20px; }
+#draft-screen .draft-hint { font-size: var(--font-caption); line-height: 1.8; }
+#draft-screen .draft-stays { font-size: var(--font-body); line-height: 1.8; }
+#ui #pause-screen .pause-panel {
+  width: min(100%, 1120px); max-height: calc(100dvh - 40px); box-sizing: border-box;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px;
+  text-align: left; scrollbar-gutter: stable;
+}
+#pause-screen .pause-panel > h2 { grid-column: 1 / -1; text-align: center; margin: 0; }
+#pause-screen .pause-sec { margin: 0; min-width: 0; }
+#pause-screen .pause-sec p { margin: 0; }
+#pause-screen .pause-sec:first-of-type { grid-column: 1 / -1; }
+#pause-screen .settings-row, #pause-screen .lang-row { flex-wrap: wrap; }
+#pause-screen .settings-row { gap: 8px; }
+#pause-screen .lang-row .btn { width: auto; flex: 0 0 auto; }
+@media (max-width: 760px) {
+  #draft-screen .cards { grid-template-columns: 1fr; }
+  #ui #pause-screen .pause-panel { grid-template-columns: 1fr; padding: 16px; }
+  #draft-screen .draft-hints, #draft-screen .draft-stays { display: none; }
+  #draft-screen .card-preview { height: 64px; }
+}
+@media (max-height: 760px) {
+  #draft-screen .card-preview { height: 56px; }
+  #draft-screen .draft-hints, #draft-screen .draft-stays { display: none; }
+}
+
+/* Bounded map workspace: its own container cannot query itself for stacking. */
+.techmap-wrap { box-sizing: border-box; max-width: calc(100vw - 24px); }
+.techmap-controls { flex-wrap: wrap; max-width: 100%; }
+#civmap-screen .panel { max-height: calc(100dvh - 40px); overflow-y: auto; box-sizing: border-box; }
+#ui[data-density="compact"] .techmap-viewport { min-height: min(320px, 42dvh); max-height: none; }
+@media (max-width: 780px) {
+  .techmap-wrap { padding: 12px; }
+  .techmap-body { flex-direction: column; }
+  .techmap-side { width: auto; min-width: 0; max-height: 28dvh; }
+  .techmap-viewport { min-height: min(320px, 42dvh); max-height: none; }
+  .techmap-controls { margin-left: 0; }
+  .techmap-title-group { min-width: 0; flex-wrap: wrap; }
+  .techmap-pin-group { min-width: 0; flex-wrap: wrap; }
+}

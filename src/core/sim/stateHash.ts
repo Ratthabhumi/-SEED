@@ -83,6 +83,9 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
       s.draftOffers.map((o) => `${o.nodeId}:${o.quality}:${o.modifierIds.join(",")}`)],
     // v021: draft agency shapes future drafts — canonical.
     agency: [s.reservedTech, s.rerolls, s.pinnedTarget],
+    logistics: [s.logistics, s.maxLogistics],
+    tech: s.techNodes.map((n) => [n.id, n.age, n.domain, n.prerequisites, n.exclusions, n.effects, n.tags, n.synergyTags, n.weight, n.rarity, n.web]),
+    laws: s.worldLaws,
     // v021: age-mission counters.
     mission: [s.elitesAge, s.raidsSurvived, s.signalSecured ? 1 : 0, s.missionDoneCache ? 1 : 0],
     o: [[...s.owned].sort(), [...s.ownedTags].sort(), [...s.breakthroughs].sort()],
@@ -97,8 +100,9 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
       r6(s.guardianAng), r6(s.orbitAng)],
     world: [[...s.chunksWorld].sort(), [...s.poisWorld].sort()],
     // v021: territory / raid / squad / ability / history (all canonical).
+    // Append new territory fields to preserve existing snapshot reader indices.
     terr: [...s.territories].sort((a, b) => (a.poiId < b.poiId ? -1 : 1)).map((t) =>
-      [t.poiId, t.poiType, r6(t.x), r6(t.y), t.spec, t.tier, r6(t.hp), t.disabled ? 1 : 0, r6(t.heldSince), r6(t.repairT)].join(",")),
+      [t.poiId, t.poiType, r6(t.x), r6(t.y), t.spec, t.tier, r6(t.hp), t.disabled ? 1 : 0, r6(t.heldSince), r6(t.repairT), r6(t.maxHp), t.garrisoned ? 1 : 0].join(",")),
     raid: s.raid ? [s.raid.poiId, r6(s.raid.tMinus)] : [],
     raidAt: r6(s.lastRaidAt),
     squad: [s.squadMode, r6(s.focusX), r6(s.focusY), r6(s.abilityCd), r6(s.overdriveT),

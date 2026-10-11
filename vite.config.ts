@@ -1,10 +1,17 @@
 import { defineConfig } from "vite";
+import { readBuildProvenance } from "./scripts/build-provenance.mjs";
 import { qaSinkPlugin } from "./scripts/qa-sink.mjs";
 
 // Minimal env typing without @types/node (vite/client only provides browser types).
 declare const process: { env: Record<string, string | undefined> };
 
+const provenance = readBuildProvenance();
+
 export default defineConfig({
+  define: {
+    "import.meta.env.SEED_BUILD_SHA": JSON.stringify(provenance.buildSha),
+    "import.meta.env.SEED_BUILD_DIRTY": JSON.stringify(provenance.buildDirty),
+  },
   base: "./",
   build: {
     outDir: "dist",

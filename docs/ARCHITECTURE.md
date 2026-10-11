@@ -62,3 +62,27 @@ e2e/    smoke.spec.ts (Playwright, production build)
 - Cosmetic VFX degrades first; simulation accuracy never scales with FPS.
 - Status: targets defined, p50/p95 instrumentation shipped (F3), hardware
   measurement NOT YET performed — see PERFORMANCE_BUDGET.md.
+
+
+## Content 9: bounded civilization web and location rules
+
+See ADR 0020. RunState.techNodes owns the materialized graph; snapshots cover
+its gameplay fields and World Laws. The renderer adds no coordinates to it.
+One eligibility predicate serves offers, draft consumption, reserve reinsertion,
+map availability and reroll alternatives. Four foundations extend one root;
+authored cross-domain packages and choice-triggered frontier expansion are
+bounded to 128 nodes, depth 10 and eight semantic slots per domain/depth.
+World-rule domain bias affects frontier composition directly, while origin and
+acquired tags seed a dedicated stream independent of the draft RNG.
+
+Stable polar presentation reuses semantic depth/slot without mutating the graph.
+Existing age milestones remain; age gates are not rewritten. Unsupported
+modifier labels are withheld. Cards show resolved quality effects, rather than
+pretending that modifier names add unimplemented powers.
+
+Biome rules change research and supply specialization value using cached
+canonical coordinates. Reallocation removes specialization/tier and returns
+its committed logistics; land and damage persist and Knowledge is not refunded.
+The one-time Signal flag prevents cycling the exemption. Canonical upgrade
+validation supplies exact UI costs/rejection reasons. Geometry stays worldgen 2;
+content advances to 9, and the persistent save schema stays 1.

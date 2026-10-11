@@ -4,7 +4,7 @@ import { layoutTechGraph, NODE_WIDTH, NODE_HEIGHT } from "../../src/game/tech/Te
 import { AGES } from "../../src/core/tech/graph";
 import { RunSimulation } from "../../src/core/sim/RunSimulation";
 
-describe("TechGraphLayout (Dagre adapter)", () => {
+describe("TechGraphLayout (stable radial web)", () => {
   const seed = "EPOCH-GOLDEN-001";
   const graph = generateTechGraph(seed, 0);
 
@@ -104,7 +104,7 @@ describe("TechGraphLayout (Dagre adapter)", () => {
     expect(snap).not.toContain("dagre");
   });
 
-  it("age lanes preserve left-to-right progression order", () => {
+  it("semantic depth-ring bounds preserve outward progression order", () => {
     const layout = layoutTechGraph(graph.nodes);
     expect(layout.lanes.length).toBe(AGES.length);
     for (let i = 0; i < layout.lanes.length - 1; i++) {
@@ -123,8 +123,10 @@ describe("TechGraphLayout (Dagre adapter)", () => {
     ];
     for (const { vw, vh } of viewports) {
       const padding = 56;
-      const scale = Math.max(0.3, Math.min(1.0, Math.min((vw - padding) / layout.width, (vh - padding) / layout.height)));
-      expect(scale).toBeGreaterThanOrEqual(0.3);
+      const scale = Math.max(0.02, Math.min(1.0, Math.min((vw - padding) / layout.width, (vh - padding) / layout.height)));
+      expect(scale).toBeGreaterThanOrEqual(0.02);
+      expect(layout.width * scale).toBeLessThanOrEqual(vw - padding + 1);
+      expect(layout.height * scale).toBeLessThanOrEqual(vh - padding + 1);
       expect(scale).toBeLessThanOrEqual(1.0);
     }
   });
@@ -134,7 +136,7 @@ describe("TechGraphLayout (Dagre adapter)", () => {
     const vw = 1280;
     const vh = 720;
     const padding = 56;
-    const scale = Math.max(0.3, Math.min(1.0, Math.min((vw - padding) / layout.width, (vh - padding) / layout.height)));
+    const scale = Math.max(0.02, Math.min(1.0, Math.min((vw - padding) / layout.width, (vh - padding) / layout.height)));
     const panX = (vw - layout.width) / (2 * scale);
     const panY = (vh - layout.height) / (2 * scale);
 

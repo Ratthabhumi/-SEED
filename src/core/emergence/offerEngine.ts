@@ -1,3 +1,4 @@
+import { eligibleTech } from "../tech/web";
 // v0.25 Tech Offer Engine — deterministic, two-stage decoupled offer generation
 // Stage 1: WHAT TECH APPEARS — Gumbel-Top-k over eligible TechNodes (quality-independent).
 // Stage 2: HOW SPECIAL THAT OFFER INSTANCE IS — quality sampled across all qualities without age clamping.
@@ -78,6 +79,7 @@ export interface TechOfferContext {
     originId: string;
     expansionFamily: string;
     pinnedTarget: string;
+    pinnedPathIds?: ReadonlySet<string>;
     draftChoices: string[];
     reservedTech: string;
     history: Array<{ kind: string; label: string; t: number }>;
@@ -208,6 +210,7 @@ export function computeOfferScore(
       originId: string;
       expansionFamily: string;
       pinnedTarget: string;
+      pinnedPathIds?: ReadonlySet<string>;
       draftChoices: string[];
       reservedTech: string;
       history: Array<{ kind: string; label: string; t: number }>;
@@ -263,7 +266,7 @@ export function computeOfferScore(
   score += w.weights.underusedPathBoost * underusedPathBoost(node.domain, domainCounts);
   
   // Pinned target bonus
-  if (ctx.sim.pinnedTarget && ctx.sim.pinnedTarget === node.id) score *= 2.0;
+  if (ctx.sim.pinnedTarget && (ctx.sim.pinnedTarget === node.id || ctx.sim.pinnedPathIds?.has(node.id))) score *= 2.0;
   
   // NOTE: Quality is intentionally NOT factored into Stage 1 node selection.
   return score;
@@ -284,14 +287,8 @@ export function generateOffers(
   
   // Build available pool
   const allNodes = sim.techGraph();
-  let pool = allNodes.filter((n: TechNode) => {
-    if (sim.owned.includes(n.id)) return false;
-    if (n.prerequisites.some((p: string) => !sim.owned.includes(p))) return false;
-    if (n.exclusions.some((e: string) => sim.owned.includes(e))) return false;
-    if (n.effects.some((e: { family?: string }) => e.family && !activeFamilies.has(e.family))) return false;
-    const ageIdx = ["stone", "bronze", "iron", "industrial", "atomic", "space"].indexOf(n.age);
-    return ageIdx <= sim.ageIndex + 1;
-  });
+  const owned = new Set(sim.owned);
+  let pool = allNodes.filter((n) => eligibleTech(n, owned, sim.ageIndex, activeFamilies));
   
   // Apply POI candidate filter if provided
   if (candidateFilter) {
@@ -317,7 +314,7 @@ export function generateOffers(
       laws,
       activeFamilies,
       recentOffers,
-      recentPicks: recentPicks.length > 0 ? recentPicks : sim.history.filter(h => h.kind === "tech_selected").map(h => h.label),
+      recentPicks: recentPicks.length > 0 ? recentPicks : sim.history.filter(h => h.kind === "tech").map(h => h.label),
       recentDomainCounts,
       config,
     });

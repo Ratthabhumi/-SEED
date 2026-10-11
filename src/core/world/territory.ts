@@ -108,9 +108,9 @@ export function outpostUpgradeCost(ageIndex: number): number {
 }
 
 /** Research: +10% knowledge per active research tier (additive tiers). */
-export function territoryKnowledgeBonus(ts: readonly Territory[]): number {
+export function territoryKnowledgeBonus(ts: readonly Territory[], multiplier: (t: Territory) => number = () => 1): number {
   let tiers = 0;
-  for (const t of ts) if (!t.disabled && t.spec === "research") tiers += t.tier;
+  for (const t of ts) if (!t.disabled && t.spec === "research") tiers += t.tier * multiplier(t);
   return 0.1 * tiers;
 }
 
@@ -122,12 +122,12 @@ export function militaryBonusSlots(ts: readonly Territory[]): number {
 }
 
 /** Economy: +1.5 hp/s per tier while the player is near an active post. */
-export function economyRegenAt(ts: readonly Territory[], px: number, py: number): number {
+export function economyRegenAt(ts: readonly Territory[], px: number, py: number, multiplier: (t: Territory) => number = () => 1): number {
   let regen = 0;
   for (const t of ts) {
     if (t.disabled || t.spec !== "economy") continue;
     const d = Math.hypot(t.x - px, t.y - py);
-    if (d <= 800) regen += 1.5 * t.tier;
+    if (d <= 800) regen += 1.5 * t.tier * multiplier(t);
   }
   return regen;
 }

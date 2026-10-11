@@ -79,7 +79,8 @@ export function buildSanitizedMarkdown(snap) {
   L.push(`- package: ${snap.versions?.packageVersion ?? "?"} / worldgen ${snap.versions?.worldgen ?? "?"} / content ${snap.versions?.content ?? "?"} / save ${snap.versions?.saveSchema ?? "?"}`);
   L.push(`- endReason: ${snap.endReason || "NOT FINISHED"}`);
   if (snap.wallStart && snap.wallEnd) {
-    L.push(`- wallDuration: ${f2((snap.wallEnd - snap.wallStart) / 1000)}s`);
+    const duration = snap.wallEnd - snap.wallStart;
+    L.push(duration >= 0 ? `- wallDuration: ${f2(duration / 1000)}s` : "- wallDuration: UNKNOWN (historical clock-unit mismatch; not repaired by inference)");
   }
   L.push(`- viewport: ${snap.environment?.viewport ?? "?"} / refresh: ${snap.environment?.refreshHz ?? "?"}`);
   L.push(``);

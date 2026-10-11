@@ -2,7 +2,9 @@
 
 > Milestone: v0.26.1 — Playtest Readiness & Evidence Truth  
 > Date: 2026-10-08  
-> Status: Authoritative runtime reconciliation against codebase HEAD (`fix/v0261-playtest-readiness-20261008`)
+> Status: Historical content-8 reconciliation (2026-10-08); not current HEAD.
+> Current content-9 classifications and dated evidence: [quality audit](content9-quality-audit-20261011.md).
+> Numeric fallback/JSD/collision and bot-count claims in sections 2–4 below are historical, not content-9 results.
 
 ---
 
@@ -34,7 +36,7 @@ Each researched concept or subsystem is audited against the actual repository so
 | **Enemy Ecology / Infighting** | `SCAFFOLD_ONLY` | `src/core/emergence/enemyEcology.ts` | **NO** | **NO** | N/A | N/A | Design concept from research. NOT imported or executed in `RunSimulation.step()`. |
 | **Procedural World Events (FATE system)** | `SCAFFOLD_ONLY` | `src/core/emergence/events.ts` | **NO** | **NO** | N/A | N/A | Design concept from research. NOT imported or executed in `RunSimulation.step()`. |
 | **Audio Polish / SFX** | `PARTIAL` | `src/game/audio/sfx.ts` | **SimEvent** | **YES** | Basic sound trigger checks | `PENDING_PLAYTEST` | Minimal Web Audio synthesizer placeholder sounds. Comprehensive juice, ZzFX redesign, and volume mix deferred to v0.27. |
-| **Dagre Graph Layout & Panzoom UI** | `LIVE_BUT_HUMAN_UNVALIDATED` | `src/game/tech/TechGraphLayout.ts`, `src/game/tech/TechMapView.ts`, `src/game/scenes/GameScene.ts` | Reads Sim | **YES** | `e2e/techMap.spec.ts` | `PENDING_PLAYTEST` | Procedural graph layout with smooth pan/zoom in Tech Map modal ('T'). Readability and clarity for real players must be tested. |
+| **Radial Graph Layout & Panzoom UI (content 9)** | `LIVE_BUT_HUMAN_UNVALIDATED` | `src/game/tech/TechGraphLayout.ts`, `src/game/tech/TechMapView.ts`, `src/game/scenes/GameScene.ts` | Reads Sim | **YES** | `e2e/techMap.spec.ts` | `PENDING_PLAYTEST` | Bounded stable polar layout with smooth pan/zoom in Tech Map modal ('T'). Readability and clarity for real players must be tested. |
 | **Kenney Pixel Assets & Noto Sans Thai** | `LIVE_BUT_HUMAN_UNVALIDATED` | `src/game/assets/seedAssets.ts`, `src/styles.css` (`@fontsource/noto-sans`, `@fontsource/noto-sans-thai`), `src/i18n/` | N/A | **YES** | `tests/i18n/parity.test.ts`, `scripts/verify-third-party.mjs` | `PENDING_PLAYTEST` | Licensed Kenney sprites & Noto Sans / Thai fonts active with full EN/TH key parity. Line-height 1.7+ enforced; real Thai speaker UX review pending. |
 | **Synthetic Factorial Evaluation** | `LIVE_AND_VERIFIED` | `tests/emergence/distribution.audit.test.ts` (Class B) | **YES** | **NO** | Vitest automated suite (48 factorial runs) | N/A | Automated testing tool: 4 autonomous decision policies step canonical simulation up to 40s canonical time. Proves API capability, NOT human fun. |
 | **Pathfinding (A* / Navmesh)** | `REJECTED_WITH_RATIONALE` | N/A | N/A | N/A | N/A | N/A | Spatial queries and flocking are implemented; hardware performance targets remain unmeasured (docs/PERFORMANCE_BUDGET.md). |
@@ -79,3 +81,54 @@ The previous v0.26 research ledger contained several non-existent file paths tha
    - Synthetic players in Class B run up to 40 seconds of canonical simulation time (2,400 steps @ 60 Hz).
    - They execute actions via direct simulation APIs (`sim.claimTerritory()`, `sim.tryAbility()`).
    - While EXPANDER claims 54 outposts and AGGRESSOR uses 20 abilities, this verifies **simulation rule capability**, NOT human player onboarding, UI usability, or game enjoyment.
+
+## 5. Content 9 corrective runtime ledger — 2026-10-11
+
+Historical measurements above describe content 8; they do not certify content 9.
+The current correction follows [market research](market-and-quality-20261011.md)
+and [ADR 0020](../ADR/0020-civilization-playability.md). Human verdict PENDING.
+
+| Decision | Canonical runtime | Presentation | Verification boundary |
+|---|---|---|---|
+| Recover full logistics allocation | RunSimulation.dismantleOutpost/outpostUpgradeStatus | Civilization Map confirmed return of specialization | Full Industrial 6/6 -> refund -> T2 -> Atomic regression; browser cancel/confirm verified |
+| Geography changes location choice | biomeRules + territory bonuses + cached siteMultiplier | Site roles, exact bonuses, ground silhouettes | Canonical research/supply regression; human preference pending |
+| Real branching choice supply | tech/generator.ts + tech/web.ts + RunState.techNodes | Stable four-sector map | 8 × 4 × 36 staged cohort; 0/3456 fallback vs 2466/3456 baseline; not natural pacing |
+| Unified choice validity | eligibleTech + rerollAlternatives | Disabled unavailable reroll, truthful effects | Non-consuming unavailable case, reserve/pin, deterministic traces |
+| Honest quality/modifiers | Existing quality scaling; unsupported modifiers withheld | Localized actual effectiveEffects | EN/TH parity and browser visual inspection verified; human review pending |
+
+Composition contract:
+- Template-based: six authored milestones, selected existing side modules, eight
+  family-compatible starting applications and six two-domain effect packages.
+- Randomized by seed: authored module subsets and ordinary weighted/quality offers.
+- Generative: selected parent lazily creates bounded legal continuations/joins
+  from implemented primitives; IDs and slots remain stable after reveal.
+- Origin: active family determines usable starter applications and offer affinity;
+  origin also seeds frontier composition. No useless inactive-family offer.
+- World rules: domain weights causally select cross-domain frontier composition.
+- Player choice: parent, acquired tags, age and resulting build affect subsequent
+  graph generation and offers. No runtime LLM or unsupported invented powers.
+- Ascension: fresh child-world graph/streams; existing bounded Legacy inheritance.
+- Persistence: settings/archive save schema 1 remains usable; live run state is
+  not a save-game format. Content 8 traces are intentionally not byte-identical
+  to content 9. Worldgen remains 2 because chunk/POI geometry is unchanged.
+- Scale: 128 nodes, level 10, eight slots per domain/level, at most two nodes per
+  choice. No virtualization for this bounded graph; large unlimited graphs are
+  outside this contract. Hardware frame-time budgets still require measurement.
+
+The conditioned comparison shares the current simulation/offer engine in both
+arms, with the frozen generator and World Laws version 8 in the baseline arm.
+It compares staged choice supply; it is not an exact full-build A/B gameplay
+certification or a claim that graph changes alone cause every metric difference.
+
+Final frontier refinement: generated joins now require actual purchased nodes
+in both domains (free markers are insufficient); one invested domain generates
+only its own continuation. The conditioned cohort retained 0/3456 fallback
+and 1152/1152 alternative availability, with a maximum of 117 nodes. Six authored
+mixed packages remain templates requiring the two starting markers and age.
+
+Final standalone Analyze passed all six cases: Class A sampled 6000 staged
+drafts / 18000 offers, 0% fallback and 100% reroll candidate availability;
+colliding fingerprint groups 8.17%, duplicate draft sample frequency 15.32%.
+Class C offer JSD H/E .3498, H/R .3039, H/S .7699; first-pick JSD .3407,
+.3305, .7841. These are first-draft/heuristic measurements, not human build
+trajectories. Class B retained all 48 policy traces and unchanged assertions.

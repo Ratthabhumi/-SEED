@@ -63,14 +63,14 @@ describe("progressive DAG shape", () => {
     }
   });
 
-  it("side content forms depth-2 mini-paths (no wide frontier)", () => {
+  it("side content uses domain foundations and explicit two-domain joins (content 9)", () => {
     for (const seed of [...GOLDEN_SEEDS, ...SPREAD]) {
       const g = generateTechGraph(seed, 0);
       const byId = new Map(g.nodes.map((n) => [n.id, n]));
       const spineIds = new Set(CRITICAL_SPINE.map((s) => s.id));
       const sides = g.nodes.filter((n) => !spineIds.has(n.id) && !n.id.endsWith("-anomaly"));
       // Exactly one prerequisite per side node (a chain link, not a fan).
-      for (const n of sides) expect(n.prerequisites, `${seed}:${n.id}`).toHaveLength(1);
+      for (const n of sides) expect(n.prerequisites, `${seed}:${n.id}`).toHaveLength(n.id.startsWith("weave-") ? 2 : 1);
       // Every age with side content has depth ≥ 2 (a specialization exists).
       for (const age of ["stone", "bronze", "iron", "industrial", "atomic", "space"]) {
         const inAge = sides.filter((n) => n.age === age);
@@ -101,19 +101,19 @@ describe("progressive DAG shape", () => {
         for (const p of n?.prerequisites ?? []) expect(owned.has(p), `${seed}:${id} needs ${p}`).toBe(true);
         // Depth-2 specializations stay hidden behind their foundation.
         const deep = !spineIds.has(n?.prerequisites[0] ?? "");
-        expect(deep, `${seed}:${id}`).toBe(false);
+        expect(!deep || n?.prerequisites.every((p) => owned.has(p)), `${seed}:${id}`).toBe(true);
       }
     }
   });
 
-  it("normal available frontier is bounded (2–4 meaningful techs)", () => {
+  it("initial applications are bounded and active-family compatible", () => {
     for (const seed of SPREAD) {
       for (const o of ORIGINS) {
         const sim = simFor(seed, o.id);
         const count = sim.generatedOptionsCount();
         // Bronze spine (damage, no family gate) is always draftable at start.
         expect(count, `${seed}:${o.id}`).toBeGreaterThanOrEqual(1);
-        expect(count, `${seed}:${o.id}`).toBeLessThanOrEqual(4);
+        expect(count, `${seed}:${o.id}`).toBeLessThanOrEqual(9);
       }
     }
   });

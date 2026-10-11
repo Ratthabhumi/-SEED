@@ -13,6 +13,8 @@ export interface TechEffect {
 }
 
 export interface TechNode {
+  /** Semantic depth/branch slot, not renderer coordinates. Stable when expanded. */
+  web?: { depth: number; slot: number; kind: "root" | "foundation" | "milestone" | "authored" | "weave" | "frontier" };
   id: string;
   titleKey: string;
   descriptionKey: string;

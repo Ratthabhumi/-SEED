@@ -52,7 +52,9 @@
   //   tech score. Authoritative origin identity legibility and deterministic player-visible
   //   World Traits derived from domainBias and combatBias.
 export const WORLDGEN_VERSION = 2;
-export const CONTENT_VERSION = 8;
+// Content 9: biome specialization tradeoffs, reversible logistics, and tech web.
+// Chunk/POI geometry and the persistent settings/archive schema stay compatible.
+export const CONTENT_VERSION = 9;
 export const SAVE_SCHEMA_VERSION = 1;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;

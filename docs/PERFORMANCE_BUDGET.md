@@ -14,9 +14,13 @@
 - Degradation order: particles → decor density → spawn cap (clamped, never
   rubber-banding difficulty). Collision quality NEVER degrades with FPS.
 
-## Measurement status: NOT YET MEASURED
+## Historical measurement status before 2026-10-11: NOT YET MEASURED
 
-No human hardware run has been recorded. The next step is the manual playtest
+At the time of this historical note, no human hardware run had been recorded. The next step is the manual playtest
 gate (EPOCH-GOLDEN-001, Stone → Space → Ascension) documenting hardware,
 browser, resolution, FPS p50/p95, sim p95, maxima, and saturation. Until then,
 do not claim these targets are met.
+
+## Initial human telemetry, 2026-10-11 (targets remain unverified)
+
+Session9bbc4e64c35275c8a56ca785 reports a2560×1305 viewport, estimated36Hz refresh, frame p50/p95/p99=29.86/37.41/41.72ms, simulation=.49/.65/.70ms and minimum22FPS. It is not the required stress workload or isolated render profiling. Old provenance was stamped at submission and wall duration is invalid; retain these limitations. The60FPS/render p95<8ms target is not established. See content9-quality-audit-20261011.md and the pilot checklist for follow-up. No performance budget is relaxed.

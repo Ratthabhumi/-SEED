@@ -4,7 +4,7 @@
 // Plain JavaScript (Node + Vite config import it directly — no TS syntax here).
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { execFileSync } from "node:child_process";
+import { readBuildProvenance, reconcileBuildProvenance } from "./build-provenance.mjs";
 import { createHash } from "node:crypto";
 
 export const QA_SINK_MAX_BYTES = 2 * 1024 * 1024;
@@ -75,14 +75,7 @@ export function storeQaReport(
     names.sJson = names.sJson.replace(/\.json$/, `-${id}-${seq}.json`);
     names.sMd = names.sMd.replace(/\.md$/, `-${id}-${seq}.md`);
   }
-  // Capture provenance on the server, not from untrusted browser payloads.
-  try {
-    data.buildSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: rootDir, encoding: "utf8", windowsHide: true }).trim();
-    data.buildDirty = execFileSync("git", ["status", "--porcelain", "--", "src", "scripts", "vite.config.ts", "package.json", "package-lock.json"], { cwd: rootDir, encoding: "utf8", windowsHide: true }).trim().length > 0;
-  } catch {
-    data.buildSha = "UNKNOWN";
-    data.buildDirty = "UNKNOWN";
-  }
+  Object.assign(data, reconcileBuildProvenance(data, readBuildProvenance(rootDir)));
   const jsonText = JSON.stringify(data, null, 2);
   const files = [names.json, names.md, names.sJson, names.sMd];
   write(join(dir, names.json), jsonText);

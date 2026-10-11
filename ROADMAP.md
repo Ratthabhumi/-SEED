@@ -301,3 +301,19 @@ A milestone is declared complete when:
 - [docs/THIRD_PARTY_LICENSES.md](docs/THIRD_PARTY_LICENSES.md): Legal ledger and full license notices.
 - [assets/ASSET_MANIFEST.json](assets/ASSET_MANIFEST.json): Machine-readable asset index.
 - [SESSION_HANDOFF.md](SESSION_HANDOFF.md): Workstream continuity and session state.
+
+## 13. Content 9 playability correction — 2026-10-11
+
+Continue the v0.26.1 corrective workstream before choosing v0.27. Human evidence
+remains INTERRUPTED_BY_BUG. The first optional-picker checkpoint is d3814a6.
+The current branch adds capacity reallocation, meaningful biome specialization,
+responsive decisions, and a bounded technology web (ADR 0020).
+
+Implemented does not mean accepted: require unchanged statistical assertions,
+canonical determinism/Ascension tests, EN/TH browser evidence, package checks
+and exact-SHA CI 4/4. Human fun/replay verdicts stay PENDING until a new complete
+uninterrupted run. Do not expand ecology/director/FATE or publish a release.
+
+The web is capped at 128 nodes and generation level 10. Once all compatible
+advances are exhausted, truthful repeatable fallback bonuses and Skip remain;
+Reroll is disabled without alternatives. No infinite-content promise.

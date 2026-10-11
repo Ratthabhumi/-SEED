@@ -1,3 +1,4 @@
+import { WINDOWS_TEST_HOST } from "../../scripts/testHost";
 import { describe, it, expect } from "vitest";
 import { RunSimulation } from "../../src/core/sim/RunSimulation";
 import { activeFamilies, lockedFamilies, ORIGINS, DEFAULT_ORIGIN } from "../../src/core/progression/origins";
@@ -216,7 +217,7 @@ for (const o of ORIGINS) {
       expect(sim.state.territories.length, `origin ${o.id} claimed territory`).toBeGreaterThan(0);
       expect(sim.state.history.length, `origin ${o.id} build history`).toBeGreaterThan(10);
     }
-  }, 240000);
+  }, WINDOWS_TEST_HOST ? 600000 : 240000);
 });
 
 describe("synergy plan truth", () => {
@@ -357,7 +358,9 @@ describe("ascension legacy prestige", () => {
     expect(s.xp).toBe(0);
     expect(s.knowledgeTotal).toBe(0);
     expect(s.ageIndex).toBe(0);
-    expect(s.owned).toEqual(["spine-tools"]);
+    // Content 9 opens four structural domains; no purchased application survives.
+    expect(s.owned).toEqual(["spine-tools", "foundation-science", "foundation-warfare", "foundation-industry", "foundation-culture"]);
+    expect(sim.techGraph().filter((n) => n.web?.kind === "foundation").every((n) => n.effects.length === 0)).toBe(true);
     expect(s.weaponStage).toEqual({ kinetic: 0, energy: 0, defense: 0, field: 0 });
     expect(s.originId).toBe("sentinels");
     expect(s.legacies).toEqual(["affinity-energy"]);

@@ -95,7 +95,7 @@ export async function openPause(page: Page, retries = 5): Promise<void> {
 export async function assertNoRawKeys(page: Page): Promise<void> {
   const hits = await page.evaluate(() => {
     const els = Array.from(document.querySelectorAll("button, h1, h2, h3, .toast-title, .hud-objective, .techmap-title"));
-    const re = /\b(ui|tutorial|age|domain|family|rarity|tech|poi|chronicle|qa|squad|ability|gate|mission|objective)\.[A-Za-z0-9_.]+/;
+    const re = /\b(ui|tutorial|age|domain|family|rarity|quality|modifier|effect|web|biome|tech|poi|chronicle|qa|squad|ability|gate|mission|objective)\.[A-Za-z0-9_.]+/i;
     return els
       .map((el) => (el.textContent ?? "").trim())
       .filter((t) => t.length > 0 && re.test(t));

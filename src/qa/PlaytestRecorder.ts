@@ -112,6 +112,8 @@ export interface QaEnvironment {
 }
 
 export interface QaVersions {
+  buildSha?: string;
+  buildDirty?: boolean | "UNKNOWN";
   packageVersion: string;
   worldgen: number;
   content: number;
@@ -119,6 +121,8 @@ export interface QaVersions {
 }
 
 export interface RecorderSnapshot {
+  buildSha: string;
+  buildDirty: boolean | "UNKNOWN";
   sessionId: string;
   seed: string;
   versions: QaVersions;
@@ -358,6 +362,8 @@ export class PlaytestRecorder {
       simMarks: [...this.simMarks],
       humanComment: this.humanComment,
       endReason: this.endReason,
+      buildSha: this.versions.buildSha ?? "UNKNOWN",
+      buildDirty: this.versions.buildDirty ?? "UNKNOWN",
       wallStart: this.wallStart,
       wallEnd: this.wallEnd,
     };

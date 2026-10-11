@@ -15,11 +15,13 @@ import { WORLDGEN_VERSION } from "../seed/versions";
 import { xpForLevel } from "./fixedStep";
 import { applyTechEffect, defaultEffectTarget, scaleKnowledge } from "./progression";
 import { worldToChunk } from "../world/chunks";
+import { biomeSpecializationMultiplier } from "../world/biomeRules";
 import { ChunkCache } from "./chunkCache";
 import { nearestEnemySpatial, cellKey } from "./spatial";
 import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from "./stateHash";
 import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
+import { eligibleTech, expandTechWeb } from "../tech/web";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CONTENT_VERSION } from "../seed/versions";
@@ -78,7 +80,8 @@ export class RunSimulation {
   readonly chunks = new ChunkCache();
   /** Gameplay RNG streams. Public-readonly so tests can prove isolation. */
   readonly streams: RunRngStreams;
-  private graph: TechNode[];
+  private get graph(): TechNode[] { return this.state.techNodes; }
+  private set graph(nodes: TechNode[]) { this.state.techNodes = nodes; }
   private masterSeed: string;
   private difficultyMul: number;
   // Derived-query structures (never hashed, never canonical).
@@ -95,6 +98,7 @@ export class RunSimulation {
     this.streams = initRunRng(this.state.worldSeed);
     this.graph = generateTechGraph(this.state.worldSeed, 0).nodes;
     this.grantNode("spine-tools");
+    for (const n of this.graph) if (n.id.startsWith("foundation-")) this.grantNode(n.id);
   }
 
   // ------------------------------------------------------------ construction
@@ -153,7 +157,7 @@ export class RunSimulation {
       })),
       pickups: Array.from({ length: MAX_PICKUP }, () => ({ active: false, x: 0, y: 0, value: 1 })),
       mines: Array.from({ length: MAX_MINES }, () => ({ active: false, x: 0, y: 0, dmg: 10, radius: 60, life: 0 })),
-      chunksWorld: [], poisWorld: [],
+      techNodes: [], chunksWorld: [], poisWorld: [],
       bossSpawned: false, ascendReady: false, bossIndex: -1, stronghold: null, over: false,
       stats: {
         kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0,
@@ -224,6 +228,7 @@ export class RunSimulation {
     });
     this.graph = generateTechGraph(s.worldSeed, asc).nodes;
     this.grantNode("spine-tools");
+    for (const n of this.graph) if (n.id.startsWith("foundation-")) this.grantNode(n.id);
     this.logHistory("ascension", `world-${asc}`);
     ev.push({ type: "legacy_granted", id: legacy.id });
     ev.push({ type: "ascended", worldSeed: s.worldSeed, ascension: asc });
@@ -283,18 +288,7 @@ export class RunSimulation {
     const s = this.state;
     const owned = new Set(s.owned);
     const active = new Set(activeFamilies(s.originId, s.expansionFamily));
-    return this.graph.filter((n) => {
-      if (owned.has(n.id)) return false;
-      if (!n.prerequisites.every((p) => owned.has(p))) return false;
-      if (n.exclusions.some((e) => owned.has(e))) return false;
-      // Origin gating (ADR-0006): a node whose family-bound effect would do
-      // nothing for this world's active families is never offered.
-      for (const e of n.effects) {
-        if (e.family && !active.has(e.family)) return false;
-      }
-      const rank = AGES.indexOf(n.age);
-      return rank <= s.ageIndex + 1;
-    });
+    return this.graph.filter((n) => eligibleTech(n, owned, s.ageIndex, active));
   }
 
   /** Read-only tech graph for the Tech Map UI (same nodes the sim drafts). */
@@ -374,6 +368,7 @@ export class RunSimulation {
         originId: s.originId,
         expansionFamily: s.expansionFamily,
         pinnedTarget: s.pinnedTarget,
+        pinnedPathIds: this.pinnedPathIds(),
         draftChoices: s.draftOffers.map(o => o.nodeId),
         reservedTech: s.reservedTech,
         history: s.history,
@@ -382,7 +377,7 @@ export class RunSimulation {
       laws: s.worldLaws,
       activeFamilies: new Set(activeFamilies(s.originId, s.expansionFamily)),
       recentOffers: s.recentDraftOffers,
-      recentPicks: s.history.filter(h => h.kind === "tech_selected").map(h => h.label),
+      recentPicks: s.history.filter(h => h.kind === "tech").map(h => h.label),
       rng: this.streams.draft,
     }, undefined, 3, filter);
     
@@ -433,22 +428,9 @@ export class RunSimulation {
       MYTHIC: 2.0,
     };
     
-    // Sample modifiers based on quality (deterministic from nodeId + quality)
-    const modifierPool: TechModifierId[] = [
-      "overcharged", "extended", "efficient", "volatile",
-      "piercing", "splash", "homing", "chain",
-      "reinforced", "regenerating", "warded", "adaptive",
-      "swift", "silent", "massive", "precise",
-    ];
-    
-    // Deterministic modifier selection
-    const modCount = quality === "MYTHIC" ? 3 : quality === "RARE" ? 2 : quality === "UNCOMMON" ? 1 : 0;
+    // No modifier label is generated until its gameplay rule is implemented.
     const modifierIds: TechModifierId[] = [];
-    for (let i = 0; i < modCount; i++) {
-      const idx = (fnv1a32(`${node.id}:${quality}:${i}`) >>> 0) % modifierPool.length;
-      modifierIds.push(modifierPool[idx]);
-    }
-    
+
     // Apply quality multiplier to effect values
     const mult = qualityMods[quality];
     const effectiveEffects = node.effects.map((e) => ({
@@ -519,15 +501,13 @@ export class RunSimulation {
     if (!offer) {
       return ev;
     }
+    const node = this.resolveTechNode(offer.nodeId);
+    if (!node || (!node.id.startsWith("fb-") && !eligibleTech(node, new Set(s.owned), s.ageIndex, new Set(activeFamilies(s.originId, s.expansionFamily))))) return ev;
     s.draftOpen = false;
     s.draftOffers = [];
     s.draftContext = "level";
     
     // Resolve the TechNode (handles both graph nodes and fallback nodes)
-    const node = this.resolveTechNode(offer.nodeId);
-    if (!node) {
-      return ev;
-    }
     
     // Bookkeeping: owned, tags, synergyTags, weaponEvolve (same as grantNode but without base effects)
     const first = !s.owned.includes(node.id);
@@ -537,6 +517,9 @@ export class RunSimulation {
     }
     for (const tg of node.tags) if (!s.ownedTags.includes(tg)) s.ownedTags.push(tg);
     for (const st of node.synergyTags) if (!s.ownedTags.includes(st)) s.ownedTags.push(st);
+    if (first) this.graph.push(...expandTechWeb(this.graph, node, s.worldSeed, {
+      originId: s.originId, ownedTags: s.ownedTags, owned: s.owned, ageIndex: s.ageIndex, laws: s.worldLaws,
+    }));
     for (const e of node.effects) {
       if (e.kind === "weaponEvolve") {
         const active = new Set(activeFamilies(s.originId, s.expansionFamily));
@@ -613,6 +596,17 @@ export class RunSimulation {
    * returned instead. Same seed + same decisions always yields the same
    * result on every path.
    */
+  private rerollAlternatives(): TechNode[] {
+    const s = this.state;
+    const shown = new Set(s.draftOffers.map((o) => o.nodeId));
+    return this.availableNodes().filter((n) => n.id !== s.reservedTech && !shown.has(n.id));
+  }
+
+  canRerollDraft(): boolean {
+    const s = this.state;
+    return s.draftOpen && !s.over && s.rerolls > 0 && this.rerollAlternatives().length > 0;
+  }
+
   rerollDraft(): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
@@ -623,10 +617,7 @@ export class RunSimulation {
     );
     // Alternative check mirrors the open pool buildDraft() draws from
     // (reroll intentionally drops POI filters, as before — same pool).
-    const prevShown = new Set(prevOffers.map((o) => o.nodeId));
-    const candidates = this.availableNodes().filter(
-      (n) => n.id !== s.reservedTech && !prevShown.has(n.id),
-    );
+    const candidates = this.rerollAlternatives();
     if (candidates.length === 0) {
       ev.push({ type: "draft_reroll_unavailable" });
       return ev;
@@ -830,7 +821,7 @@ export class RunSimulation {
     const t = territoryById(s.territories, poiId);
     if (s.over || !t || t.spec !== "" || t.disabled) return false;
     const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
-    const firstSignal = t.poiType === "signal" &&
+    const firstSignal = !s.signalSecured && t.poiType === "signal" &&
       !s.territories.some((other) => other.poiType === "signal" && other.spec !== "");
     return s.logistics + cost <= s.maxLogistics || firstSignal;
   }
@@ -859,19 +850,50 @@ export class RunSimulation {
    * cost (v0.23.1 opportunity cost) AND logistics cost (v0.24).
    * All preconditions checked BEFORE any mutation.
    */
+  outpostUpgradeStatus(poiId: string): { allowed: boolean; reason: "ready" | "invalid" | "hold" | "knowledge" | "logistics"; knowledgeCost: number; logisticsCost: number } {
+    const s = this.state;
+    const t = territoryById(s.territories, poiId);
+    const knowledgeCost = outpostUpgradeCost(s.ageIndex);
+    const logisticsCost = t?.spec ? calculateLogisticsCost(t.spec, 2, s.ageIndex) - calculateLogisticsCost(t.spec, 1, s.ageIndex) : 0;
+    const reason = s.over || !t || t.disabled || !t.spec || t.tier !== 1 ? "invalid"
+      : s.elapsed - t.heldSince < TIER2_HOLD_SEC ? "hold"
+      : s.knowledgeTotal < knowledgeCost ? "knowledge"
+      : s.logistics + logisticsCost > s.maxLogistics ? "logistics" : "ready";
+    return { allowed: reason === "ready", reason, knowledgeCost, logisticsCost };
+  }
+
+  /** Reallocate committed capacity. Land remains claimed; benefits and tier are lost. */
+  dismantleOutpost(poiId: string): SimEvent[] {
+    const s = this.state;
+    const t = territoryById(s.territories, poiId);
+    if (s.over || !t || !t.spec || s.raid?.poiId === poiId) return [];
+    const released = calculateLogisticsCost(t.spec, t.tier, s.ageIndex);
+    const wasGarrisoned = t.garrisoned;
+    s.logistics = Math.max(0, s.logistics - released);
+    t.spec = "";
+    t.tier = 1;
+    t.garrisoned = false;
+    t.heldSince = s.elapsed;
+    // Do not heal, revive, award Knowledge, or reset the Signal mission flag.
+    const cap = squadCap(militaryBonusSlots(activeTerritories(s.territories)));
+    let active = 0;
+    for (const ally of s.squad) if (ally.active && ++active > cap) ally.active = false;
+    if (wasGarrisoned && s.squad.filter((ally) => ally.active).length < cap) {
+      const returning = s.squad.find((ally) => !ally.active && ally.hp > 0);
+      if (returning) { returning.active = true; returning.x = s.px - 30; returning.y = s.py; }
+    }
+    this.logHistory("dismantle", `${released}@${t.poiType}`);
+    return [{ type: "outpost_dismantled", poiId, released }];
+  }
+
   upgradeOutpost(poiId: string): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
-    if (s.over) return ev;
-    const t = territoryById(s.territories, poiId);
-    if (!t || t.disabled || t.spec === "" || t.tier !== 1) return ev;
-    if (s.elapsed - t.heldSince < TIER2_HOLD_SEC) return ev;
-    const knowledgeCost = outpostUpgradeCost(s.ageIndex);
-    if (s.knowledgeTotal < knowledgeCost) return ev;
-    const logisticsCost = calculateLogisticsCost(t.spec, 2, s.ageIndex) - calculateLogisticsCost(t.spec, 1, s.ageIndex);
-    if (s.logistics + logisticsCost > s.maxLogistics) return ev;
-    s.knowledgeTotal -= knowledgeCost;
-    s.logistics += logisticsCost;
+    const status = this.outpostUpgradeStatus(poiId);
+    if (!status.allowed) return ev;
+    const t = territoryById(s.territories, poiId)!;
+    s.knowledgeTotal -= status.knowledgeCost;
+    s.logistics += status.logisticsCost;
     t.tier = 2;
     t.hp = t.maxHp;
     this.logHistory("upgrade", `${t.spec}@${t.poiType}`);
@@ -1022,7 +1044,7 @@ export class RunSimulation {
   private updateTerritories(dt: number, ev: SimEvent[]): void {
     const s = this.state;
     const b = s.build;
-    const regen = economyRegenAt(activeTerritories(s.territories), s.px, s.py);
+    const regen = economyRegenAt(activeTerritories(s.territories), s.px, s.py, (t) => this.siteMultiplier(t.x, t.y, "economy"));
     if (regen > 0) b.hp = Math.min(b.maxHp, b.hp + regen * dt);
     for (const t of s.territories) {
       if (!t.disabled) continue;
@@ -1196,9 +1218,19 @@ export class RunSimulation {
   }
 
   /** Effective knowledge multiplier: build multiplier × research outposts. */
-  private knowledgeMult(): number {
+  siteBiome(x: number, y: number) {
     const s = this.state;
-    return s.build.knowledgeMul * (1 + territoryKnowledgeBonus(activeTerritories(s.territories)));
+    const { cx, cy } = worldToChunk(x, y);
+    return this.chunks.get(s.worldSeed, s.worldNonce, cx, cy).biome;
+  }
+
+  siteMultiplier(x: number, y: number, spec: OutpostSpec): number {
+    return biomeSpecializationMultiplier(this.siteBiome(x, y), spec);
+  }
+
+  knowledgeMult(): number {
+    const s = this.state;
+    return s.build.knowledgeMul * (1 + territoryKnowledgeBonus(activeTerritories(s.territories), (t) => this.siteMultiplier(t.x, t.y, "research")));
   }
 
   /** Single canonical knowledge scaling (exactly-once, outpost-aware). */

@@ -1,7 +1,8 @@
-// Seeded Tech DAG generator: authored spine + seeded side branches.
+// Seeded technology web: automatic milestones, authored applications and joins.
 import { createStreamRng } from "../seed/streams";
 import type { TechGraph, TechNode, AgeId, Domain, Rarity } from "./graph";
 import { CRITICAL_SPINE } from "./graph";
+import { attachWebMetadata, WEB_DOMAINS, WEB_WEAVES } from "./web";
 
 interface SideTemplate {
   suffix: string;
@@ -90,27 +91,43 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     prevSpine = s.id;
   }
 
-  // 2. Seeded side branches: pick 3-4 templates per age, wired as TWO
-  // deterministic mini-paths (v0.23.1 progressive frontier):
-  //   SPINE -> FOUNDATION A -> SPECIALIZATION A (+CAPSTONE when 4 nodes)
-  //         -> FOUNDATION B (-> SPECIALIZATION B when 4 nodes)
-  // Owning the spine opens only the two foundations — never the whole age.
-  // Node ids, counts, and weights match the old wide frontier exactly; only
-  // the prerequisite EDGES changed (CONTENT_VERSION 5 -> 6).
+  // Four structural domains share one central root and open at run start.
+  // Markers grant no stats; age milestones retain their compatibility IDs.
+  for (const domain of WEB_DOMAINS) {
+    nodes.push({ id: `foundation-${domain}`, titleKey: `web.${domain}.name`, descriptionKey: `web.${domain}.description`,
+      age: "stone", domain, prerequisites: ["spine-tools"], exclusions: [], rarity: "common", weight: 0,
+      tags: [domain], synergyTags: [], effects: [] });
+  }
+
+  // Actual starting applications preserve origin identity through active-family
+  // compatibility. Structural domain markers themselves grant no free bonuses.
+  const starters: Array<{ family: NonNullable<TechNode["effects"][number]["family"]>; domain: Domain; effects: TechNode["effects"] }> = [
+    { family: "kinetic", domain: "warfare", effects: [{kind:"damageMul",value:.06},{kind:"cooldownMul",value:-.04}] },
+    { family: "energy", domain: "science", effects: [{kind:"knowledgeMul",value:.06},{kind:"pickupMul",value:.06}] },
+    { family: "field", domain: "industry", effects: [{kind:"moveMul",value:.04},{kind:"knowledgeMul",value:.06}] },
+    { family: "defense", domain: "culture", effects: [{kind:"maxHpAdd",value:12},{kind:"regenAdd",value:.3}] },
+  ];
+  for (const starter of starters) starter.effects.forEach((effect, i) => nodes.push({
+    id: `application-${starter.family}-${i}`, titleKey: `web.application.${starter.family}.${i}.name`,
+    descriptionKey: `web.${starter.domain}.description`, age: "stone", domain: starter.domain,
+    prerequisites: [`foundation-${starter.domain}`], exclusions: [], rarity: "common", weight: 80,
+    effects: [{ ...effect, family: starter.family }], tags: [starter.domain], synergyTags: [starter.family],
+  }));
+
+  // Seed-selected authored modules require their domain foundation, not an
+  // age spine or a potentially incompatible weapon-family ancestor.
   const ages: AgeId[] = ["stone", "bronze", "iron", "industrial", "atomic", "space"];
   for (const age of ages) {
     const pool = [...SIDE_TEMPLATES[age]];
     rng.shuffleInPlace(pool);
     const count = age === "space" ? 3 : 3 + (rng.nextFloat() < 0.5 ? 1 : 0);
     const chosen = pool.slice(0, Math.min(count, pool.length));
-    const spineForAge = CRITICAL_SPINE.find((c) => c.age === age)?.id ?? "spine-tools";
-    // Positional split (no extra RNG): first half is chain A, rest chain B.
-    const aCount = Math.ceil(chosen.length / 2);
     for (let i = 0; i < chosen.length; i++) {
       const t = chosen[i] as SideTemplate;
       const id = `${age}-${t.suffix}`;
-      const chainHead = i === 0 || i === aCount;
-      const prevId = chainHead ? spineForAge : `${age}-${(chosen[i - 1] as SideTemplate).suffix}`;
+      // Generic domain foundations avoid incompatible family parents making
+      // otherwise legal content permanently unreachable for an origin.
+      const prevId = `foundation-${t.domain}`;
       nodes.push({
         id,
         titleKey: t.titleKey,
@@ -126,6 +143,18 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
         synergyTags: [...t.synergyTags],
       });
     }
+  }
+
+  // Six authored cross-domain joins; real packages, not random noun strings.
+  for (let i = 0; i < ages.length; i++) {
+    const a = WEB_DOMAINS[rng.nextInt(0, 3)]!;
+    const b = WEB_DOMAINS[(WEB_DOMAINS.indexOf(a) + 1 + rng.nextInt(0, 2)) % 4]!;
+    const pair = [a,b].sort((x,y) => WEB_DOMAINS.indexOf(x) - WEB_DOMAINS.indexOf(y)).join("-");
+    const composition = WEB_WEAVES[pair];
+    nodes.push({ id: `weave-${ages[i]}-${a}-${b}`, age: ages[i]!, domain: a,
+      titleKey: `web.weave.${pair}.name`, descriptionKey: "web.weave.description", tags: [...composition.tags], synergyTags: [a, b],
+      prerequisites: [`foundation-${a}`, `foundation-${b}`], exclusions: [], rarity: "uncommon", weight: 55,
+      effects: composition.effects.map((e) => ({ ...e })) });
   }
 
   // 3. Seeded anomaly branch: 1 extra mythic node in atomic/space for highland seeds.
@@ -148,5 +177,6 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     });
   }
 
+  attachWebMetadata(nodes);
   return { masterSeed, ascension, nodes };
 }
