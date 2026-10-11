@@ -1,0 +1,3 @@
+# Canonical bytes for hashed editable vector assets and generated theme CSS.
+assets/**/*.svg text eol=lf
+src/styles/tokens.css text eol=lf

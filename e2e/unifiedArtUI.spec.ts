@@ -7,7 +7,7 @@ for(const lang of ["en","th"] as const) test("Title and Archive responsive matri
   await page.setViewportSize({width:width!,height:height!});
   await page.evaluate(scale=>document.documentElement.style.setProperty("--ui-scale",String(scale)),scale);
   const start=page.locator("#start-btn"); await expect(start).toBeInViewport();
-  const summary=page.locator("#archive-panel summary");await summary.click();
+  const summary=page.locator("#archive-panel summary");await summary.focus();await page.keyboard.press("Space");
   for(const buy of await page.locator("[data-archive-id]").all()){await buy.scrollIntoViewIfNeeded();await expect(buy).toBeInViewport();}
   expect(await page.locator(".title-layout").evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
   expect(await page.locator("#archive-panel").evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
@@ -34,7 +34,7 @@ for(const lang of ["en","th"] as const) test("canonical repair progress, pause, 
  await page.evaluate(()=>(window as any).__seedE2E.stageActorReview());await page.waitForTimeout(150);await page.screenshot({path:"test-results/browser/unified-mixed-actors-"+lang+".png"});
  await page.evaluate(()=>(window as any).__seedE2E.stageActorReview(true));await page.waitForTimeout(150);await page.screenshot({path:"test-results/browser/unified-dense-actors-"+lang+".png"});
  await page.locator("canvas").first().evaluate(el=>(el as HTMLElement).style.filter="grayscale(1)");await page.screenshot({path:"test-results/browser/unified-grayscale-"+lang+".png"});await page.locator("canvas").first().evaluate(el=>(el as HTMLElement).style.filter="");
- await page.evaluate(()=>document.documentElement.dataset.contrast="high");await page.screenshot({path:"test-results/browser/unified-high-contrast-"+lang+".png"});
+ await page.evaluate(key=>{const saved=JSON.parse(localStorage.getItem(key)!);saved.settings.contrast="high";localStorage.setItem(key,JSON.stringify(saved));document.documentElement.dataset.contrast="high";},SAVE_KEY);await page.waitForTimeout(150);await page.screenshot({path:"test-results/browser/unified-high-contrast-"+lang+".png"});
  const perf=await page.evaluate(()=>(window as any).__seedE2E.performanceSamples());expect(perf.pools.enemyActors).toBeLessThanOrEqual(650);expect(perf.pools.allyActors).toBeLessThanOrEqual(128);
  await page.keyboard.press("Escape");await page.screenshot({path:"test-results/browser/unified-pause-"+lang+".png"});await page.keyboard.press("Escape");
  await page.keyboard.press("t");await page.screenshot({path:"test-results/browser/unified-techmap-"+lang+".png"});await page.keyboard.press("Escape");await page.keyboard.press("m");await page.screenshot({path:"test-results/browser/unified-civmap-"+lang+".png"});await page.keyboard.press("Escape");await page.evaluate(()=>(window as any).__seedE2E.kill());await page.screenshot({path:"test-results/browser/unified-chronicle-"+lang+".png"});
