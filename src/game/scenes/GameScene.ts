@@ -1,4 +1,4 @@
-import { historyTechName } from "../ui/historyTechName";
+import { historyTechName, currentWorldHistoryStart } from "../ui/historyTechName";
 import { effectSummary } from "../ui/techEffects";
 // GameScene — ADAPTER (ADR 0003). Owns no canonical gameplay state.
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
@@ -2477,9 +2477,11 @@ export class GameScene extends Phaser.Scene {
       panel.appendChild(el("h2", "", "ui.buildHistory"));
       const hist = document.createElement("div");
       hist.className = "chron-history";
-      for (const h of s.history.slice(-14)) {
+      const currentStart = currentWorldHistoryStart(s.history);
+      for (let i = Math.max(0, s.history.length - 14); i < s.history.length; i++) {
+        const h = s.history[i]!;
         const line = document.createElement("div");
-        line.textContent = `${this.fmtTime(h.t)} · ${h.kind === "tech" ? t("chronicle.techs") : h.kind} · ${h.kind === "tech" ? historyTechName(h.label, this.sim.techGraph()) : h.label}`;
+        line.textContent = `${this.fmtTime(h.t)} · ${h.kind === "tech" ? t("chronicle.techs") : h.kind} · ${h.kind === "tech" ? historyTechName(h.label, this.sim.techGraph(), i < currentStart) : h.label}`;
         hist.appendChild(line);
       }
       panel.appendChild(hist);

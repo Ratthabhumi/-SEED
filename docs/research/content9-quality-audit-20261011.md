@@ -88,7 +88,7 @@ Class A audits eligible offers/fingerprints; Class B runs 48 short canonical tra
 | F finite exhaustion | Intentional bound | Terminal fallback remains valid; skip/close paths and real-node focus covered. |
 | G localization | Remaining English map tooltips found | Localized five tooltips; EN/TH parity and actual DOM regression. |
 | H responsive surfaces | Existing wide/narrow/scale/keyboard checks | Retain screenshots; no visual quality claim from key parity alone. |
-| I Chronicle IDs | Demonstrated EN/TH browser failure at 83a3a2f | Translate current graph/fallback names; old-world unresolved graph entries show an honest localized previous-world label. Canonical IDs remain in telemetry. |
+| I Chronicle IDs | Demonstrated EN/TH browser failure at 83a3a2f | Translate current graph/fallback names; old-world entries (including reused IDs) show an honest localized previous-world label. Canonical IDs remain in telemetry. |
 | J run-end evidence | Real report has -13.68s wall duration; save-time SHA can relabel an old bundle | End timestamp uses monotonic milliseconds. Freeze SHA/dirty at Vite build/startup; save-time comparison marks changed/missing provenance dirty/unknown. No retroactive clean certification. |
 
 The initial clock regression failed; both initial Chronicle regressions exposed raw IDs. The first expanded check failed only because a new unit fixture lacked document; corrected fixture supplies a document double. Full final checks must pass before engineering verification.
