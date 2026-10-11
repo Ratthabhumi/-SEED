@@ -184,3 +184,5 @@ Delivery boundary: initial local unfiltered check was NOT green; corrected focus
 
 Exact-SHA CI e470d710fc4ca4927096805c71d1c103a999fe7a run 38130807280: verify Node 22/24 and Analyze passed; full browser suite had 56 passed, one pre-existing skip, one failure in the retained readability contract. The persistent-draft instruction was 16px; corrected to body text (18px at 100%) without changing the assertion or reducing Thai line-height. Revalidate affected readability/desktop cases, commit normally and require all four jobs at the new SHA.
 Local readability retest passed 1/1; desktop EN/TH retest passed 2/2 after the 18px correction. Updated Thai draft evidence/hash. All gameplay and tests are unchanged in this final corrective commit.
+
+CI artifact audit found zero attached ZIPs despite passing upload steps: workflow used seed-web-{version}.zip while make-zip writes seed-web-v{version}.zip. Corrected the path and made missing files an upload failure. Final delivery must include two actual Node 22/24 ZIP artifacts as well as exact-SHA CI 4/4. Gameplay code is unchanged by this packaging correction.

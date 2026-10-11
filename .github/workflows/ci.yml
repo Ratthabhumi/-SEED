@@ -26,7 +26,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: seed-web-${{ steps.version.outputs.version }}-node${{ matrix.node }}
-          path: release/seed-web-${{ steps.version.outputs.version }}.zip
+          path: release/seed-web-v${{ steps.version.outputs.version }}.zip
+          if-no-files-found: error
           retention-days: 14
 
   e2e:
