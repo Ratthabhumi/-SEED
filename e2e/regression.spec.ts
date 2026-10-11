@@ -123,7 +123,7 @@ test("ascension smoke: child world, run stats retained, world reset", async ({ p
   await page.evaluate(() => window.__seedE2E?.readyAscend());
   // Resolve any legitimate blocking draft first (real modal sequencing).
   await resolveDrafts(page);
-  await page.getByRole("button", { name: "ASCEND to the Next World" }).click();
+  await page.getByRole("button", { name: "Enter a new world" }).click();
   // Legacy prestige choice, then child-world origin choice.
   await expect(page.locator("#legacy-screen")).toBeVisible();
   expect(await page.locator("#legacy-screen .card").count()).toBe(3);
@@ -133,6 +133,8 @@ test("ascension smoke: child world, run stats retained, world reset", async ({ p
   await expect(page.locator("#origin-screen")).toBeVisible();
   expect(await page.locator("#origin-screen .card").count()).toBe(2);
   await page.locator("#origin-screen .card").first().click();
+  await expect(page.locator("#child-intro-screen")).toBeVisible();
+  await page.locator("#child-intro-screen button").click();
   await page.waitForTimeout(800);
   const after: { runElapsed: number; world: string; asc: number; age: number } = await page.evaluate(() => {
     const snap = JSON.parse(window.__seedE2E?.snapshot() ?? "{}");

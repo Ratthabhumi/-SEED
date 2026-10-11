@@ -54,7 +54,8 @@
 export const WORLDGEN_VERSION = 2;
 // Content 9: biome specialization tradeoffs, reversible logistics, and tech web.
 // Chunk/POI geometry and the persistent settings/archive schema stay compatible.
-export const CONTENT_VERSION = 9;
+// Content 10: child-only conditions and child-seeded laws. World-one laws retain c9.
+export const CONTENT_VERSION = 10;
 export const SAVE_SCHEMA_VERSION = 1;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;

@@ -197,6 +197,11 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(`|---|---|---|---|---|---|---|`);
   if (snap.perfCheckpoints.length === 0) L.push(`| (no perf snapshots) | | | | | | |`);
   for (const p of snap.perfCheckpoints) L.push(perfRow(p));
+  const measuredRender = snap.perfCheckpoints.filter(p => p.rendererSamples !== undefined);
+  if (measuredRender.length) {
+    L.push(``, `Renderer CPU submit p50/p95/p99 (not GPU completion):`);
+    for (const p of measuredRender) L.push(`- ${p.label}: n=${p.rendererSamples}, ${f2(p.rendererCpuSubmitP50 ?? 0)}/${f2(p.rendererCpuSubmitP95 ?? 0)}/${f2(p.rendererCpuSubmitP99 ?? 0)}ms`);
+  }
   L.push(``);
   L.push(`## Peak Entity Counts`);
   L.push(``);

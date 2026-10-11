@@ -53,3 +53,9 @@ describe("performance sampler", () => {
     expect(ps.snapshot("late", 9999, 9999)?.samples).toBeLessThanOrEqual(2400);
   });
 });
+
+it('keeps unmeasured historical renderer values absent and aggregates only measured CPU submit', () => {
+ const ps = new PerformanceSampler(); ps.push(sample()); expect(ps.snapshot('old',0,0)?.rendererSamples).toBeUndefined();
+ ps.push({...sample(),rendererCpuSubmitMs:2}); ps.push({...sample(),rendererCpuSubmitMs:4}); ps.push(sample());
+ const stats=ps.snapshot('measured',1,1); expect(stats?.rendererSamples).toBe(2); expect(stats?.rendererCpuSubmitP50).toBe(4); expect(stats?.rendererCpuSubmitP95).toBe(4);
+});

@@ -1,5 +1,10 @@
 # Session Handoff
 
+## Current review experiment — 2026-10-11
+
+Branch: feat/content9-ascension-guidance-20261011, based on clean Content9 a09babd. Separate Draft PR against the Content9 branch; PR1 remains unchanged. Versions: worldgen2/content10/save1. Recovered report229 and genuine negative child-arrival feedback are in docs/playtests/content9-ascension-human-20261011.md. Raw evidence is privately preserved. Latest audit: docs/research/content10-ascension-guidance-audit-20261011.md; human follow-up: docs/playtests/ASCENSION_AB_CHECKLIST.md. Checkpoint tests394 PASS; standalone analyze6 PASS; focused browser6 PASS; exact-head delivery receipt and CI remain pending until publication. The older canonical/QA sections below are historical baselines, not certification of this experiment.
+
+
 ## Latest human playtest evidence
 
 <!-- QA-ENGAGEMENT-START -->
@@ -311,7 +316,7 @@
 
 <!-- QA-ENGAGEMENT-END -->
 
-## CURRENT CANONICAL STATE — READ THIS FIRST
+## Historical canonical state — 2026-10-08
 
 - Codex review continuation (2026-10-08): retained the existing branch and baseline; corrected readiness blockers listed below. The prior CI run certifies `efb9f81` only; verify the correction commit's exact-SHA CI before calling the corrected build ready.
 
@@ -506,3 +511,17 @@ Delivery follow-up: Draft PR#1 is open against the parent softlock branch. Local
 Ascension review follow-up: canonical IDs can recur across worlds. Chronicle now uses the latest child-root/Ascension history boundary, so older entries never borrow a same-ID node name from the new world. Focused regressions cover ID reuse and FIFO boundary trimming; canonical history stays unchanged. Final head supersedes earlier follow-up CI runs.
 
 CI fixture finding: exact-source push run38136149735 had58browser passes/one capture-only skip/one failure (TH2560×1272 draft absent); parallel PR run38136152333 passed59browser tests. The responsive fixture assumed grant(30) always reaches the next level, despite prior picks, pickups and higher XP thresholds. It now stages the current canonical XP deficit normalized by the build Knowledge multiplier; outpost bonuses can only increase the result. All layout assertions and timeouts remain unchanged; no gameplay or balance change. Final CI must rerun on the corrective head.
+
+## 2026-10-11 — separate Ascension and goal-guidance experiment
+
+Base: clean Content9 a09babd; new branch feat/content9-ascension-guidance-20261011. Existing PR1 stays Draft/unmerged. Raw observed world2 report229 and 452 files preserved privately with hashes BEFORE edits. Negative feedback preserved separately; no end/rating/post120 invented.
+
+Implemented canonical pure path guidance; actual inherited-effect arrival; two child-only research/raid conditions and a shared claim objective; simple EN/TH terms; keyboard choice/modal flow; Chronicle display translations; renderer CPU-submit instrumentation. ADR0022 explains content10/worldgen2/save1 and world-one c9 laws compatibility. First full check passed391tests; final checks/CI still pending at this checkpoint. See content10 audit, terminology guide, recovered human report and ASCENSION_AB_CHECKLIST. Human fun/replay and representative performance remain pending.
+
+Browser regression exposed stale pin header; refreshPinState now updates the live header and progress. Combo goals have native pin controls. Guidance progress traverses owned ancestors too so denominators do not shrink as prerequisites are acquired.
+
+Final browser fixture correction: canonical snapshot.lvl[6] holds offers (lvl[5] is draftOpen). The full map/pin/choice assertions are retained; completing-card checks use the actual pending offer.
+
+Final follow-up: historical EN browser copy assertions updated without reducing behavior/layout checks; broken combo prerequisite alternatives rejected with a regression. Wall-clock frame telemetry replaces Phaser-smoothed delta for measurement only. Targeted browser6/6 PASS; software SwiftShader short-run evidence and reviewed screenshots are in docs/playtests/content10-evidence. Both worlds miss total60FPS target; dense/human hardware certification remains pending. PR2 is Draft against Content9; no merge/tag or PR1 change. Final exact-head CI/artifact receipt is linked from PR2 after publication.
+
+CI follow-up:6fb36f9 PR run38149414529 passed62 browser cases;3 responsive matrix cases still referenced the previous Thai reroll text. Updated that expectation and the intentionally skipped visual-capture selector to the new Thai label. Assertions/layout contracts retained; functional source unchanged. Exact-source final CI pending this test-only commit.

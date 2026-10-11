@@ -242,9 +242,12 @@ export class TechMapView {
       const pinLabel = document.createElement("span");
       pinLabel.className = "techmap-pin";
       const targetNode = this.sim.techGraph().find((n) => n.id === s.pinnedTarget);
-      const titleStr = targetNode ? t(targetNode.titleKey as EnKeys) : s.pinnedTarget;
+      const titleStr = targetNode ? t(targetNode.titleKey as EnKeys) : t((this.sim.pathGuidance().titleKey || "path.invalid") as EnKeys);
       pinLabel.textContent = `${t("ui.buildPlan")}: ${titleStr}`;
       pinGroup.appendChild(pinLabel);
+      const guidance = this.sim.pathGuidance();
+      const progress = document.createElement("span"); progress.className = "techmap-goal-progress";
+      progress.textContent = `${t("path.progressLabel")}: ${guidance.have}/${guidance.need}`; pinGroup.appendChild(progress);
 
       const unpinBtn = document.createElement("button");
       unpinBtn.className = "btn techmap-no-pan";
@@ -601,6 +604,7 @@ export class TechMapView {
       this.onPin(nodeId);
     }
     this.refreshPinState();
+    (this.sideEl?.querySelector<HTMLElement>(`[data-combo-id="${nodeId}"]`) ?? this.sideEl?.querySelector<HTMLElement>(".techmap-pin-btn"))?.focus();
   }
 
   public refreshPinState(): void {
@@ -625,6 +629,7 @@ export class TechMapView {
       }
     }
 
+    this.screenEl?.querySelector(".techmap-head")?.replaceWith(this.createHeader());
     this.renderSidebarContent();
   }
 
@@ -690,6 +695,14 @@ export class TechMapView {
         this.triggerPin(isPinned ? "" : sel.id);
       });
       this.sideEl.appendChild(pinBtn);
+    }
+
+    const goalsTitle = document.createElement("h3"); goalsTitle.textContent = t("path.goal"); this.sideEl.appendChild(goalsTitle);
+    for (const b of BREAKTHROUGHS) {
+      const g = this.sim.pathGuidance(b.id);
+      const goalBtn = document.createElement("button"); goalBtn.className = "btn techmap-combo-goal techmap-no-pan"; goalBtn.dataset.comboId = b.id;
+      goalBtn.textContent = `${t(b.titleKey)} · ${g.have}/${g.need}${s.pinnedTarget === b.id ? " ✓" : ""}`;
+      goalBtn.addEventListener("click", () => this.triggerPin(s.pinnedTarget === b.id ? "" : b.id)); this.sideEl.appendChild(goalBtn);
     }
 
     // Current build summary section

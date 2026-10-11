@@ -8,6 +8,8 @@
 //   input → player movement → age/mission → director/spawn + raids → enemy
 //   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
 //   collisions → mines → pickups/economy → territory upkeep → chunks/POI
+import { childKnowledgeFactor, childRaidInterval, childResearchBonusScale } from "../progression/childWorld";
+import { pathGuidance } from "../tech/pathGuidance";
 import { fnv1a32 } from "../seed/hash";
 import { initRunRng, type RunRngStreams } from "../seed/runRng";
 import { deriveAscensionSeed } from "../seed/streams";
@@ -104,7 +106,7 @@ export class RunSimulation {
   // ------------------------------------------------------------ construction
   private freshWorldState(masterSeed: string, ascension: number, originId: string): RunState {
     const worldSeed = ascension === 0 ? masterSeed : deriveAscensionSeed(masterSeed, ascension);
-    const worldLaws = generateWorldLaws(masterSeed, WORLDGEN_VERSION, CONTENT_VERSION);
+    const worldLaws = generateWorldLaws(ascension === 0 ? masterSeed : worldSeed, WORLDGEN_VERSION, ascension === 0 ? 9 : CONTENT_VERSION);
     const maxLogistics = calculateMaxLogistics(0);
     return {
       masterSeed, worldSeed,
@@ -311,6 +313,11 @@ export class RunSimulation {
    * prerequisites (tech target), or unowned nodes carrying tags a pinned
    * breakthrough still needs. Bounded draft weighting only — never a guarantee.
    */
+  pathGuidance(target = this.state.pinnedTarget) {
+    const s = this.state;
+    return pathGuidance(this.graph, { target, owned: s.owned, tags: s.ownedTags, unlocked: s.breakthroughs, ageIndex: s.ageIndex, families: new Set(activeFamilies(s.originId, s.expansionFamily)) });
+  }
+
   pinnedPathIds(): Set<string> {
     const s = this.state;
     const out = new Set<string>();
@@ -972,7 +979,7 @@ export class RunSimulation {
     const s = this.state;
     const targets = s.territories.filter((t) => !t.disabled && t.spec !== "");
     if (!s.raid) {
-      if (targets.length > 0 && s.elapsed - s.lastRaidAt >= RAID_INTERVAL) {
+      if (targets.length > 0 && s.elapsed - s.lastRaidAt >= childRaidInterval(s.ascension, RAID_INTERVAL)) {
         const pick = targets[this.streams.event.nextInt(0, targets.length)] as (typeof targets)[number];
         s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false };
         ev.push({ type: "raid_incoming", poiId: pick.poiId, seconds: RAID_WARN_SEC });
@@ -1195,6 +1202,7 @@ export class RunSimulation {
     const s = this.state;
     const active = activeTerritories(s.territories);
     return {
+      ascension: s.ascension,
       ageKills: s.ageKills,
       territoriesClaimed: s.territories.length,
       elitesAge: s.elitesAge,
@@ -1228,9 +1236,11 @@ export class RunSimulation {
     return biomeSpecializationMultiplier(this.siteBiome(x, y), spec);
   }
 
+  researchBonusScale(): number { return childResearchBonusScale(this.state.ascension); }
+
   knowledgeMult(): number {
     const s = this.state;
-    return s.build.knowledgeMul * (1 + territoryKnowledgeBonus(activeTerritories(s.territories), (t) => this.siteMultiplier(t.x, t.y, "research")));
+    return s.build.knowledgeMul * childKnowledgeFactor(s.ascension, territoryKnowledgeBonus(activeTerritories(s.territories), (t) => this.siteMultiplier(t.x, t.y, "research")));
   }
 
   /** Single canonical knowledge scaling (exactly-once, outpost-aware). */

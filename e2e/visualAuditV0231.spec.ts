@@ -140,7 +140,7 @@ test("capture v0231 visual evidence set (TH)", async ({ page }) => {
   await expect(page.locator("#draft-screen")).toBeVisible({ timeout: 15000 });
   await shot("04_draft_cards_th.png");
   await page.locator("#draft-screen .card-reserve").first().click();
-  await page.locator("#draft-screen").getByRole("button", { name: /^สุ่มใหม่/ }).click();
+  await page.locator("#draft-screen").getByRole("button", { name: /^สุ่มตัวเลือกใหม่/ }).click();
   const badge = page.locator("#draft-screen .card-new");
   const toast = page.locator(".toast");
   await expect(async () => {

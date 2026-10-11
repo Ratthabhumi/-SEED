@@ -111,7 +111,7 @@ test("contested site blocks claim; clearing unblocks; logistics gates the second
   expect(specResult).toEqual([]); // zero mutation, rejected
   
   // UI must explain the Logistics constraint
-  await expect(page.locator(".territory-bar")).toContainText("LOGISTICS", { timeout: 20000 });
+  await expect(page.locator(".territory-bar")).toContainText("OUTPOST CAPACITY FULL", { timeout: 20000 });
   
   // Signal exemption: first Signal specialization should succeed even at full Logistics
   // (Tested separately; here we verify the core logistics gating works)

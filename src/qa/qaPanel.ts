@@ -72,6 +72,8 @@ export interface QaFrameData {
   fps: number;
   frameMs: number;
   simMsAvg: number;
+  rendererCpuSubmitMs?: number;
+  childCondition?: string;
   queries: number;
   buckets: number;
   chunkHits: number;
@@ -350,6 +352,7 @@ export class QaSession {
           origin: f.originId,
           legacies: f.legacies.join("+") || "-",
           knowledge: f.knowledgeTotal,
+          condition: f.childCondition ?? "not-recorded",
         });
         this.recorder.perfSnapshot("post-ascension", ctx);
         this.postAscWall = this.wallNow();
@@ -441,6 +444,7 @@ export class QaSession {
       fps: f.fps,
       frameMs: f.frameMs,
       simMs: f.simMsAvg,
+      rendererCpuSubmitMs: f.rendererCpuSubmitMs,
       enemies: f.enemies,
       projs: f.projs,
       pickups: f.pickups,
