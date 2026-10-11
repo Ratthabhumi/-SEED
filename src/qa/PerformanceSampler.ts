@@ -4,6 +4,8 @@ export interface PerfSampleInput {
   fps: number;
   frameMs: number;
   simMs: number;
+  /** CPU submit bracket, not GPU completion; omitted in historical reports. */
+  rendererCpuSubmitMs?: number;
   enemies: number;
   projs: number;
   pickups: number;
@@ -29,6 +31,10 @@ export interface CheckpointStats {
   simP50: number;
   simP95: number;
   simP99: number;
+  rendererSamples?: number;
+  rendererCpuSubmitP50?: number;
+  rendererCpuSubmitP95?: number;
+  rendererCpuSubmitP99?: number;
   enemiesMax: number;
   projsMax: number;
   pickupsMax: number;
@@ -93,6 +99,7 @@ export class PerformanceSampler {
     if (win.length === 0) return null;
     const frames = win.map((s) => s.frameMs).sort((a, b) => a - b);
     const sims = win.map((s) => s.simMs).sort((a, b) => a - b);
+    const renderers = win.map(s => s.rendererCpuSubmitMs).filter((n): n is number => n !== undefined && Number.isFinite(n) && n >= 0).sort((a,b) => a-b);
     const last = win[win.length - 1] as Stored;
     return {
       label,
@@ -106,6 +113,7 @@ export class PerformanceSampler {
       simP50: percentile(sims, 50),
       simP95: percentile(sims, 95),
       simP99: percentile(sims, 99),
+      ...(renderers.length ? { rendererSamples: renderers.length, rendererCpuSubmitP50: percentile(renderers, 50), rendererCpuSubmitP95: percentile(renderers, 95), rendererCpuSubmitP99: percentile(renderers, 99) } : {}),
       enemiesMax: win.reduce((m, s) => Math.max(m, s.enemies), 0),
       projsMax: win.reduce((m, s) => Math.max(m, s.projs), 0),
       pickupsMax: win.reduce((m, s) => Math.max(m, s.pickups), 0),

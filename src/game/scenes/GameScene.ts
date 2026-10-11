@@ -1,3 +1,4 @@
+import { childCondition } from "../../core/progression/childWorld";
 import { historyTechName, currentWorldHistoryStart } from "../ui/historyTechName";
 import { effectSummary } from "../ui/techEffects";
 // GameScene — ADAPTER (ADR 0003). Owns no canonical gameplay state.
@@ -120,6 +121,10 @@ export class GameScene extends Phaser.Scene {
   // Rolling performance samples (bounded) — real p50/p95, never EMA-as-p95.
   private simSamples: number[] = [];
   private frameSamples: number[] = [];
+  private renderSamples: number[] = [];
+  private renderStart = 0;
+  private onPreRender = () => { this.renderStart = performance.now(); };
+  private onPostRender = () => { if (this.renderStart) this.pushSample(this.renderSamples, performance.now() - this.renderStart); };
   private fpsEMA = 60;
   /** Tech Map / Civ Map overlay open (pauses stepping like a modal). */
   private techMapOpen = false;
@@ -204,6 +209,9 @@ export class GameScene extends Phaser.Scene {
     this.lastGroundKey = "";
     this.simSamples = [];
     this.frameSamples = [];
+    this.renderSamples = [];
+    this.game.events.on(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
+    this.game.events.on(Phaser.Core.Events.POST_RENDER, this.onPostRender);
 
     this.ground = this.add.graphics().setDepth(-10);
     this.gfx = this.add.graphics().setDepth(0);
@@ -272,7 +280,7 @@ export class GameScene extends Phaser.Scene {
         }
         if (this.blockingModal) {
           // Optional specialization and timed beats dismiss; binding choices remain.
-          if (this.modalT > 0 || this.blockingModal.id === "spec-screen") this.closeBlocking();
+          if (this.modalT > 0 || (this.blockingModal.id === "spec-screen" || this.blockingModal.id === "child-intro-screen")) this.closeBlocking();
           return;
         }
         const s = this.sim.state;
@@ -321,6 +329,7 @@ export class GameScene extends Phaser.Scene {
           this.handleEvents(ev);
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
+        performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
           // Test-only shortcut for the boss-kill trigger; ascend() itself
           // (child world, fresh streams, stat separation) runs the real path.
@@ -623,6 +632,8 @@ export class GameScene extends Phaser.Scene {
       fps: this.fpsEMA,
       frameMs: this.frameSamples.length > 0 ? (this.frameSamples[this.frameSamples.length - 1] as number) : 0,
       simMsAvg: this.simSamples.length > 0 ? simSum / this.simSamples.length : 0,
+      rendererCpuSubmitMs: this.renderSamples[this.renderSamples.length - 1],
+      childCondition: childCondition(s.ascension),
       queries: this.sim.queryCount,
       buckets: this.sim.spatialBucketCount,
       chunkHits: this.sim.chunks.hits,
@@ -741,6 +752,8 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onShutdown(): void {
+    this.game.events.off(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
+    this.game.events.off(Phaser.Core.Events.POST_RENDER, this.onPostRender);
     this.techMapView?.destroy();
     this.techMapView = null;
     this.tutorial?.dispose();
@@ -1041,6 +1054,7 @@ export class GameScene extends Phaser.Scene {
   private missionStateOf(s: RunSimulation["state"]): import("../../core/progression/missions").MissionState {
     const active = activeTerritories(s.territories);
     return {
+      ascension: s.ascension,
       ageKills: s.ageKills,
       territoriesClaimed: s.territories.length,
       elitesAge: s.elitesAge,
@@ -1108,13 +1122,11 @@ export class GameScene extends Phaser.Scene {
   /** Human label for a pinned target (tech name or breakthrough title). */
   private planLabel(id: string): string {
     const s = this.sim.state;
-    const node = s.owned.includes(id)
-      ? undefined
-      : this.sim.techGraph().find((n) => n.id === id);
+    const node = this.sim.techGraph().find((n) => n.id === id);
     if (node) return t(node.titleKey as EnKeys);
     const b = BREAKTHROUGHS.find((x) => x.id === id);
     if (b) return t(b.titleKey);
-    return id;
+    return t("path.invalid");
   }
 
   /** Squad order / origin ability entry points (Q/E/R/F). */
@@ -1222,7 +1234,7 @@ export class GameScene extends Phaser.Scene {
   /** REAL per-outpost mechanical bonus text (same derivation as the sim). */
   private outpostBonusText(spec: OutpostSpec, tier: 1 | 2, x?: number, y?: number): string {
     const multiplier = x === undefined || y === undefined ? 1 : this.sim.siteMultiplier(x, y, spec);
-    if (spec === "research") return `+${Number((tier * 10 * multiplier).toFixed(2))}% ${t("ui.knowledge")}`;
+    if (spec === "research") return `+${Number((tier * 10 * multiplier * this.sim.researchBonusScale()).toFixed(2))}% ${t("ui.knowledge")}`;
     if (spec === "economy") return `+${(1.5 * tier * multiplier).toFixed(2)} HP/s`;
     return `+1 ${t("ui.squad")}`;
   }
@@ -1396,7 +1408,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** Tech Map (T): the SAME deterministic graph the sim drafts, made visible with Dagre and Panzoom. */
-  private toggleTechMap(): void {
+  private toggleTechMap(fromDraft = false): void {
     const s = this.sim.state;
     if (s.over) return;
     if (this.civMapOpen) this.toggleCivMap();
@@ -1405,13 +1417,15 @@ export class GameScene extends Phaser.Scene {
       this.techMapView = null;
       document.getElementById("techmap-screen")?.remove();
       this.techMapOpen = false;
-      this.surfaces.resumeContext();
+      if (s.draftOpen) { document.getElementById("draft-screen")?.remove(); this.openDraft(); }
+      else this.surfaces.resumeContext();
       return;
     }
-    if (s.draftOpen || this.blockingModal) return;
+    if ((s.draftOpen && !fromDraft) || this.blockingModal) return;
+    if (s.draftOpen) { const draft = document.getElementById("draft-screen"); if (draft) draft.hidden = true; }
     this.techMapOpen = true;
     this.surfaces.suspendContext();
-    this.techMapSel = "";
+    this.techMapSel = s.pinnedTarget;
     this.qa?.noteSimEvent("techmap_open", "open");
     this.tutorial?.onTechMapOpened();
     this.renderTechMap();
@@ -1962,6 +1976,18 @@ export class GameScene extends Phaser.Scene {
     const heading = el("h2", "", s.draftContext === "poi" ? "ui.poiFound" : "ui.chooseTech");
     heading.id = "draft-heading";
     screen.appendChild(heading);
+    const guidance = this.sim.pathGuidance();
+    if (guidance.status !== "none") {
+      const goal = el("section", "draft-goal");
+      goal.appendChild(el("strong", "", undefined, `${t("path.goal")}: ${guidance.titleKey ? t(guidance.titleKey as EnKeys) : t("path.invalid")}`));
+      if (guidance.status === "active") {
+        goal.appendChild(el("p", "", undefined, `${t("path.progressLabel")}: ${guidance.have}/${guidance.need}`));
+        goal.appendChild(el("p", "", undefined, guidance.next.length ? `${t("path.next")}: ${guidance.next.slice(0,3).map(id => this.planLabel(id)).join(" · ")}` : t("path.noneNext")));
+        for (const blocker of guidance.blockers) goal.appendChild(el("p", "", `path.${blocker}` as EnKeys));
+        if (!s.draftOffers.some(o => guidance.relations[o.nodeId] && guidance.relations[o.nodeId] !== "unrelated")) goal.appendChild(el("p", "goal-no-relevant", "path.noRelevant"));
+      } else goal.appendChild(el("p", "", guidance.status === "complete" ? "path.completeStatus" : "path.invalid"));
+      const mapBtn = button("path.openMap", () => this.toggleTechMap(true)); mapBtn.id = "draft-goal-map"; goal.appendChild(mapBtn); screen.appendChild(goal);
+    }
     // Scrollable wrapper for cards to handle overflow at high UI scales
     const cardsWrapper = el("div", "cards-wrapper");
     const cards = el("div", "cards");
@@ -1992,6 +2018,7 @@ export class GameScene extends Phaser.Scene {
       if (!n) return;
       const c = el("div", "card");
       c.appendChild(el("div", "key", undefined, `[${i + 1}]`));
+      if (guidance.status === "active") { const relation = guidance.relations[n.id] ?? "unrelated"; c.dataset.pathRelation = relation; c.appendChild(el("p", "card-path-reason", `path.${relation}` as EnKeys)); }
       const h = document.createElement("h3");
       h.textContent = t(n.titleKey as EnKeys) + (n.web?.kind === "frontier" ? ` ${n.web.depth}.${n.web.slot + 1}` : "");
       const d = document.createElement("p");
@@ -2172,7 +2199,7 @@ export class GameScene extends Phaser.Scene {
 
   private pickCard(i: number): void {
     const s = this.sim.state;
-    if (!s.draftOpen || s.over) return;
+    if (!s.draftOpen || s.over || this.techMapOpen || this.blockingModal) return;
     const ev = this.sim.chooseDraft(i);
     sfx.select();
     this.handleEvents(ev);
@@ -2481,7 +2508,17 @@ export class GameScene extends Phaser.Scene {
       for (let i = Math.max(0, s.history.length - 14); i < s.history.length; i++) {
         const h = s.history[i]!;
         const line = document.createElement("div");
-        line.textContent = `${this.fmtTime(h.t)} · ${h.kind === "tech" ? t("chronicle.techs") : h.kind} · ${h.kind === "tech" ? historyTechName(h.label, this.sim.techGraph(), i < currentStart) : h.label}`;
+        const historyKind = ('history.' + h.kind) as EnKeys;
+        let label = '';
+        if (h.kind === 'tech') label = historyTechName(h.label, this.sim.techGraph(), i < currentStart);
+        else if (h.kind === 'age') label = t(('age.' + h.label) as EnKeys);
+        else if (h.kind === 'breakthrough') { const b = BREAKTHROUGHS.find(b => b.id === h.label); if (b) label = t(b.titleKey); }
+        else if (h.kind === 'expansion') label = t(('family.' + h.label) as EnKeys);
+        else if (['claim','outpost-lost','outpost-repaired'].includes(h.kind)) label = t(('poi.' + h.label + '.name') as EnKeys);
+        else if (['outpost','upgrade','dismantle','garrison'].includes(h.kind)) { const site = h.label.split('@')[1]; if (site) label = t(('poi.' + site + '.name') as EnKeys); }
+        else if (h.kind === 'ascension') label = '#' + ((Number(h.label.replace('world-','')) || 0) + 1);
+        const kindText = h.kind === 'tech' ? t('chronicle.techs') : t(historyKind);
+        line.textContent = this.fmtTime(h.t) + ' · ' + (kindText === historyKind ? t('history.event') : kindText) + (label ? ' · ' + label : '');
         hist.appendChild(line);
       }
       panel.appendChild(hist);
@@ -2554,6 +2591,13 @@ export class GameScene extends Phaser.Scene {
       screen.addEventListener("click", () => this.closeBlocking());
     }
     if (build) build(screen);
+    if (id !== "spec-screen") {
+      screen.setAttribute("role", "dialog"); screen.setAttribute("aria-modal", "true");
+      const heading = screen.querySelector("h2"); if (heading) { heading.id = `${id}-heading`; screen.setAttribute("aria-labelledby", heading.id); }
+      const controls = () => Array.from(screen.querySelectorAll<HTMLElement>("button:not(:disabled),[role=button][tabindex]"));
+      controls()[0]?.focus();
+      screen.addEventListener("keydown", e => { if (e.key !== "Tab") return; const c = controls(); if (!c.length) return; const i = c.indexOf(document.activeElement as HTMLElement); if ((e.shiftKey && i <= 0) || (!e.shiftKey && i === c.length - 1)) { e.preventDefault(); c[e.shiftKey ? c.length - 1 : 0]?.focus(); } });
+    }
   }
 
   private closeBlocking(): void {
@@ -2649,13 +2693,15 @@ export class GameScene extends Phaser.Scene {
       for (const o of offers) {
         const c = el("div", "card");
         c.setAttribute("role", "button");
+        c.tabIndex = 0;
+        c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } });
         const h = document.createElement("h3");
         h.textContent = t(o.nameKey);
         const d = document.createElement("p");
         const reqTxt = o.requiredFamily
           ? ` ${t("ui.legacyRequires")} ${t(`family.${o.requiredFamily}` as EnKeys)}.`
           : "";
-        d.textContent = t(o.descKey) + reqTxt;
+        d.textContent = effectSummary(o.effects) + reqTxt;
         c.appendChild(h);
         c.appendChild(d);
         // Close-then-show: navigating modals must not queue behind themselves.
@@ -2692,6 +2738,8 @@ export class GameScene extends Phaser.Scene {
       for (const o of choices) {
         const c = el("div", "card");
         c.setAttribute("role", "button");
+        c.tabIndex = 0;
+        c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } });
         const h = document.createElement("h3");
         h.textContent = t(o.nameKey);
         const d = document.createElement("p");
@@ -2717,6 +2765,8 @@ export class GameScene extends Phaser.Scene {
       for (const f of families) {
         const c = el("div", "card");
         c.setAttribute("role", "button");
+        c.tabIndex = 0;
+        c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } });
         const h = document.createElement("h3");
         h.textContent = t(`family.${f}` as EnKeys);
         const d = document.createElement("p");
@@ -2745,6 +2795,26 @@ export class GameScene extends Phaser.Scene {
     this.lastGroundKey = "";
     this.refreshGround(true);
     this.refreshHUD();
+    if (ev.some(e => e.type === "ascended")) { this.frameSamples = []; this.simSamples = []; this.renderSamples = []; this.showChildIntro(); }
+  }
+
+  private showChildIntro(): void {
+    const s = this.sim.state;
+    const condition = childCondition(s.ascension);
+    if (condition === "none") return;
+    this.showBlocking("child-intro-screen", 0, screen => {
+      const panel = el("div", "panel panel-lg child-intro");
+      const body = el("div", "child-intro-body"); panel.appendChild(body);
+      body.appendChild(el("h2", "", "child.title"));
+      body.appendChild(el("p", "", "child.reset"));
+      body.appendChild(el("h3", "", "child.inherited"));
+      for (const id of s.legacies) { const def = legacyDefById(id); if (def) body.appendChild(el("p", "", undefined, `${t(def.nameKey)}: ${effectSummary(def.effects)}`)); }
+      body.appendChild(el("h3", "", `child.${condition}.title` as EnKeys));
+      body.appendChild(el("p", "", `child.${condition}.desc` as EnKeys));
+      body.appendChild(el("p", "", "child.objective"));
+      panel.appendChild(button("child.begin", () => this.closeBlocking(), "btn primary"));
+      screen.appendChild(panel);
+    });
   }
 
   // ------------------------------------------------------------- events→fx

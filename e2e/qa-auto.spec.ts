@@ -38,11 +38,13 @@ test("qa auto-finalize posts target-complete and shows completion", async ({ pag
   await page.evaluate(() => (window as unknown as { __seedE2E?: { readyAscend: () => void } }).__seedE2E?.readyAscend());
   // Resolve any legitimate blocking draft first (real modal sequencing).
   await resolveDrafts(page);
-  await page.getByRole("button", { name: "ASCEND to the Next World" }).click();
+  await page.getByRole("button", { name: "Enter a new world" }).click();
   await expect(page.locator("#legacy-screen")).toBeVisible();
   await page.locator("#legacy-screen .card").first().click();
   await expect(page.locator("#origin-screen")).toBeVisible();
   await page.locator("#origin-screen .card").first().click();
+  await expect(page.locator("#child-intro-screen")).toBeVisible();
+  await page.locator("#child-intro-screen button").click();
   await page.waitForTimeout(500);
 
   // Fast-forward 150 sim-seconds past the 120s post-Ascension target.

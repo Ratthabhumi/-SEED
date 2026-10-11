@@ -132,3 +132,7 @@ colliding fingerprint groups 8.17%, duplicate draft sample frequency 15.32%.
 Class C offer JSD H/E .3498, H/R .3039, H/S .7699; first-pick JSD .3407,
 .3305, .7841. These are first-draft/heuristic measurements, not human build
 trajectories. Class B retained all 48 policy traces and unchanged assertions.
+
+## Content10 child-world experiment — 2026-10-11
+
+See [causal audit](content10-ascension-guidance-audit-20261011.md) and ADR0022. Canonical path advice and two child-only conditions are implemented; language comprehension, replay desire and representative performance remain human-unvalidated. Historical Content8/9 cohorts above remain evidence of conditioned supply, not natural progression or enjoyment.
