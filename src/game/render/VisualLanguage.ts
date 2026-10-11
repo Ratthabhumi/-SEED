@@ -1,6 +1,7 @@
 // Visual language tokens — pure, framework-free, contract-tested.
 // Shape + outline + fill identity for every gameplay entity. Color reinforces,
 // never carries identity alone. See docs/VISUAL_LANGUAGE.md.
+import { phaserColors } from "../../theme/tokens";
 import type { EnemyFamily, EliteAffix } from "../../core/director/director";
 import type { Archetype } from "../../core/combat/weapons";
 import type { POIType } from "../../core/world/poi";
@@ -153,19 +154,19 @@ export function enemyTrim(ageIndex: number): EnemyTrim {
 export const VL = {
   outlineDark: 0x0a0d13,
   outlineLight: 0xfff6d8,
-  eliteRing: 0xffd166,
+  eliteRing: phaserColors.action,
   eliteRingInner: 0xffffff,
   hostileOutline: 0x1a0505,
   friendlyCore: 0xfff6d8,
-  knowledge: 0x53e0c8,
+  knowledge: phaserColors.friendly,
   knowledgeCore: 0xd8fff6,
-  beacon: 0x53e0c8,
-  boss: 0xff2222,
+  beacon: phaserColors.friendly,
+  boss: phaserColors.hostile,
   bossInner: 0xffffff,
   playerCore: 0xffe08a,
   playerMid: 0xff9a3c,
   playerNotch: 0x1a1405,
-  summon: 0x7fb8ff,
-  danger: 0xff3333,
-  aimTick: 0xffb03c,
+  summon: phaserColors.research,
+  danger: phaserColors.hostile,
+  aimTick: phaserColors.warning,
 } as const;

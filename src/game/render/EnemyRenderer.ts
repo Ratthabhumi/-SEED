@@ -23,6 +23,7 @@ export interface EnemyDrawOpts {
   hpBar?: boolean;
   /** World age: iron+ adds plating, atomic+ adds energy trim (family kept). */
   ageIndex?: number;
+  spriteBody?: boolean;
 }
 
 /** Ranged aim tell: fires when shootT hits 0 (sim), so <0.5s reads as "aiming". */
@@ -137,9 +138,11 @@ export function drawEnemy(
   const fill = e.flash > 0 ? 0xffffff : opts.bodyColor;
   const r = e.radius;
   if (e.boss) {
-    drawBoss(g, e.x, e.y, r, bossHpFraction(e.hp, e.maxHp), opts, e.flash > 0);
+    if (!opts.spriteBody) drawBoss(g, e.x, e.y, r, bossHpFraction(e.hp, e.maxHp), opts, e.flash > 0);
+    else drawHpBar(g,e.x,e.y-r-22,r*2.4,bossHpFraction(e.hp,e.maxHp));
     return;
   }
+  if (!opts.spriteBody) {
   familyBody(g, e.family, e.x, e.y, r, opts.facing, fill);
   // Age extras layer over the family silhouette (never instead of it).
   const trim = enemyTrim(opts.ageIndex ?? 0);
@@ -153,6 +156,7 @@ export function drawEnemy(
   if (trim.energy) {
     g.fillStyle(0x53e0c8, 0.95);
     g.fillCircle(e.x, e.y - r - 4, 2.5);
+  }
   }
   if (e.family === "ranged" && e.shootT < AIM_TELL_SEC && e.flash <= 0) {
     // Pre-fire aiming tell along the facing (toward player).

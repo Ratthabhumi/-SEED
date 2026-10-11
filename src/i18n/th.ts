@@ -576,4 +576,6 @@ export const th: Record<EnKeys, string> = {
   "ui.inactive": "ยังไม่ใช้งาน",
   "ui.active": "ใช้งานแล้ว",
   "ui.archiveReturn": "กลับไปเลือกพลังในคลังถาวร",
+  "repair.progress": "กำลังซ่อมฐาน",
+  "repair.remaining": "เหลือ {seconds} วินาที",
 };

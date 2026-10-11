@@ -1,0 +1,26 @@
+# Living Frontier actor coverage and direction
+
+Editable original SVG in assets/original/actors; exact MIT copies in assets/seed/actors. All working-prototype pending human visual acceptance. Texture1152×64: six equipment Ages ×three64px anchored gait poses; pivot32,32. Ten textures≈2.81MiB raw RGBA before overhead. Cached once, no new dependency.
+
+| Actor | Role/silhouette | Renderer / size | States | Status |
+|---|---|---|---|---|
+| hunters | hooded scout, asymmetric bow/cape | ActorRenderer48px | idle/gait/facing/dash/hit/ability tint/six Age equipment | prototype |
+| engineers | helmet, broad shoulders, wrench | same | same | prototype |
+| resonant | split robe, forked staff | same | same | prototype |
+| sentinels | shield, protective helmet | same | same | prototype |
+| chaser | six-legged mandible beetle | radius×3, pool650 | gait/facing/hit/age armor | prototype |
+| ranged | winged organism, dorsal cannon | same | same; original aim tell retained | prototype |
+| tank | wide armored crawler | same | same | prototype |
+| swarm | narrow winged creature | same | same | prototype |
+| boss | crown-tusk siege organism, own asset | canonical boss radius×3 | gait/facing/hit/HP; canonical hazards retained | prototype |
+| elites | actual four family sprites | same | five canonical affix glyphs | bespoke animation partial |
+| guardians | articulated defensive drone |26px, ally pool128 | orbit/gait | prototype |
+| command squad | current world Origin equipment |28px, ally pool128 | gait/facing, canonical orders | prototype |
+
+Orthographic top-down,2.5px dark outline at64px, upper-left cream highlights, slate interiors, restrained gold/teal devices and desaturated coral enemy shells. Differences use equipment, wing span, armor mass, mandibles and asymmetry. Age layers: bronze guards→iron plates→industrial packs→atomic cells→space exosuit. Hitboxes unchanged.
+
+Production character bodies are sprites only. PlayerRenderer/EnemyRenderer spriteBody mode retains functional dash/hurt/aim/affix/HP indicators; geometry body fallback remains only for legacy VisualLab. Mandatory missing art throws diagnostic on load. Guardians/squad no longer draw circle summon bodies in GameScene. Projectiles/pickups/mines/orbit blades/area telegraphs intentionally retain functional graphics.
+
+Remaining art: independent authored attack/dash/death sequences, enemy attack timing, bespoke elites, squad role variants, full six-age environmental art and human silhouette/scale approval. Gait and event tint do not certify full production animation. Original source/manifest hashes and bundled MIT license provide provenance; no reference-game assets copied.
+
+Animation limitation: tank and boss currently use rigid facing/hit/equipment poses; their three gait frames repeat. Authored walking, attack and death animation remains production work.
