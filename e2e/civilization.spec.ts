@@ -30,7 +30,7 @@ test("tech map shows the real graph and pinning reaches the HUD", async ({ page 
   await page.locator(".techmap-node.available").first().dispatchEvent("click");
   await expect(page.locator(".techmap-side")).toContainText("Requires:");
   await page.getByRole("button", { name: "PIN PATH" }).click();
-  await expect(page.locator(".hud-goals")).toContainText("BUILD PLAN");
+  await expect(page.locator(".hud-goals")).toContainText("Technology goal:");
   await page.keyboard.press("T");
   await expect(page.locator("#techmap-screen")).toHaveCount(0);
   expect(errors).toEqual([]);
@@ -44,9 +44,9 @@ test("draft agency: reserve, reroll, skip, owned-stays note", async ({ page }) =
   await page.evaluate(() => (window as unknown as { __seedE2E: E2E }).__seedE2E.grant(100000));
   await expect(page.locator("#draft-screen")).toBeVisible();
   await expect(page.locator(".draft-stays")).toContainText("remain active");
-  await expect(page.getByRole("button", { name: /^RESERVE/ }).first()).toBeVisible();
-  await page.getByRole("button", { name: /^RESERVE/ }).first().click();
-  await page.getByRole("button", { name: /^REROLL/ }).click();
+  await expect(page.getByRole("button", { name: /^Save for later/ }).first()).toBeVisible();
+  await page.getByRole("button", { name: /^Save for later/ }).first().click();
+  await page.getByRole("button", { name: /^New choices/ }).click();
   await expect(page.locator("#draft-screen .card")).toHaveCount(3);
   await page.getByRole("button", { name: "SKIP" }).click();
   await page.waitForTimeout(500);

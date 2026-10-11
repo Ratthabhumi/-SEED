@@ -2,7 +2,7 @@
 
 ## Current review experiment — 2026-10-11
 
-Branch: feat/content9-ascension-guidance-20261011, based on clean Content9 a09babd. Separate Draft PR against the Content9 branch; PR1 remains unchanged. Versions: worldgen2/content10/save1. Recovered report229 and genuine negative child-arrival feedback are in docs/playtests/content9-ascension-human-20261011.md. Raw evidence is privately preserved. Latest audit: docs/research/content10-ascension-guidance-audit-20261011.md; human follow-up: docs/playtests/ASCENSION_AB_CHECKLIST.md. Checkpoint tests393 PASS; exact-head delivery receipt and CI remain pending until publication. The older canonical/QA sections below are historical baselines, not certification of this experiment.
+Branch: feat/content9-ascension-guidance-20261011, based on clean Content9 a09babd. Separate Draft PR against the Content9 branch; PR1 remains unchanged. Versions: worldgen2/content10/save1. Recovered report229 and genuine negative child-arrival feedback are in docs/playtests/content9-ascension-human-20261011.md. Raw evidence is privately preserved. Latest audit: docs/research/content10-ascension-guidance-audit-20261011.md; human follow-up: docs/playtests/ASCENSION_AB_CHECKLIST.md. Checkpoint tests394 PASS; standalone analyze6 PASS; focused browser6 PASS; exact-head delivery receipt and CI remain pending until publication. The older canonical/QA sections below are historical baselines, not certification of this experiment.
 
 
 ## Latest human playtest evidence
@@ -521,3 +521,5 @@ Implemented canonical pure path guidance; actual inherited-effect arrival; two c
 Browser regression exposed stale pin header; refreshPinState now updates the live header and progress. Combo goals have native pin controls. Guidance progress traverses owned ancestors too so denominators do not shrink as prerequisites are acquired.
 
 Final browser fixture correction: canonical snapshot.lvl[6] holds offers (lvl[5] is draftOpen). The full map/pin/choice assertions are retained; completing-card checks use the actual pending offer.
+
+Final follow-up: historical EN browser copy assertions updated without reducing behavior/layout checks; broken combo prerequisite alternatives rejected with a regression. Wall-clock frame telemetry replaces Phaser-smoothed delta for measurement only. Targeted browser6/6 PASS; software SwiftShader short-run evidence and reviewed screenshots are in docs/playtests/content10-evidence. Both worlds miss total60FPS target; dense/human hardware certification remains pending. PR2 is Draft against Content9; no merge/tag or PR1 change. Final exact-head CI/artifact receipt is linked from PR2 after publication.

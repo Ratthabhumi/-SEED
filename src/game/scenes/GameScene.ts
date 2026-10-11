@@ -121,6 +121,7 @@ export class GameScene extends Phaser.Scene {
   // Rolling performance samples (bounded) — real p50/p95, never EMA-as-p95.
   private simSamples: number[] = [];
   private frameSamples: number[] = [];
+  private lastFrameAt = 0;
   private renderSamples: number[] = [];
   private renderStart = 0;
   private onPreRender = () => { this.renderStart = performance.now(); };
@@ -208,7 +209,7 @@ export class GameScene extends Phaser.Scene {
     this.deathPersisted = false;
     this.lastGroundKey = "";
     this.simSamples = [];
-    this.frameSamples = [];
+    this.frameSamples = []; this.lastFrameAt = 0;
     this.renderSamples = [];
     this.game.events.on(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
     this.game.events.on(Phaser.Core.Events.POST_RENDER, this.onPostRender);
@@ -2795,7 +2796,7 @@ export class GameScene extends Phaser.Scene {
     this.lastGroundKey = "";
     this.refreshGround(true);
     this.refreshHUD();
-    if (ev.some(e => e.type === "ascended")) { this.frameSamples = []; this.simSamples = []; this.renderSamples = []; this.showChildIntro(); }
+    if (ev.some(e => e.type === "ascended")) { this.frameSamples = []; this.lastFrameAt = 0; this.simSamples = []; this.renderSamples = []; this.showChildIntro(); }
   }
 
   private showChildIntro(): void {
@@ -3043,8 +3044,15 @@ export class GameScene extends Phaser.Scene {
   update(_time: number, deltaMs: number): void {
     const dt = Math.min(Math.max(deltaMs / 1000, 0), 0.25);
     const frameT0 = performance.now();
-    this.fpsEMA += (1 / Math.max(dt, 1e-4) - this.fpsEMA) * 0.05;
-    this.pushSample(this.frameSamples, deltaMs);
+    // Phaser delta may be smoothed; performance evidence uses wall-clock frames.
+    // Canonical stepping below continues to use the engine delta unchanged.
+    const frameAt = performance.now();
+    if (this.lastFrameAt > 0) {
+      const frameMs = frameAt - this.lastFrameAt;
+      this.pushSample(this.frameSamples, frameMs);
+      this.fpsEMA += (1000 / Math.max(frameMs, 0.1) - this.fpsEMA) * 0.05;
+    }
+    this.lastFrameAt = frameAt;
 
     const s = this.sim.state;
     // Map overlays pause stepping (informational screens, not decisions).

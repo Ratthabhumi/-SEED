@@ -56,3 +56,24 @@ Historical conditioned cohort remains: 8 seeds ×4 Origins ×36 picks; Content 8
 ## Performance and readiness
 
 CPU-render submit, simulation step and actual browser frame intervals must be reported separately with viewport, age and environment. Targets remain 16.7ms/frame, sim p95<4ms, renderer p95<8ms. Automated headless/browser measurements do not certify player hardware or dense long-session performance. Human fun/replay/comprehension all pending. No observed new P0/P1 is waived; automated checks and exact-source CI determine engineering status only.
+
+## Delivery validation and measured limits (2026-10-11)
+
+Prepublication browser checks found and corrected real stale map-header rendering. The first published browser CI exposed fixture array/case errors; these were corrected without deleting assertions. The next exact-source run38146017490 passed59 browser cases but failed6 historical copy assertions (old RESERVE/REROLL/BUILD PLAN/LOGISTICS labels). Those assertions now check the new player-facing labels with their original visibility, click and layout contracts. Local targeted browser6/6 passed, including EN/TH pin-to-choice, two actual child transitions, keyboard and exhausted-alternative behavior. Full final CI is the publication gate; final exact SHA is recorded in the PR delivery receipt.
+
+A final graph review also rejects combo providers whose prerequisite chains are permanently excluded or absent. Recoverable age/family gates remain visible. A regression retains a valid alternative and rejects the misleading indirect step.
+
+### Performance evidence
+
+The initial overlapping local runs produced large renderer-submit spikes and cannot establish a child regression. A serial run removed those spikes, but revealed that the old frame sampler used Phaser's smoothed delta. Presentation telemetry now measures performance.now between scene updates; canonical engine-delta stepping is unchanged. The serial production-build rerun below had no concurrent automated tests. CDP identifies ANGLE Vulkan **SwiftShader software rendering**, not a hardware GPU. GPU completion remains unmeasured.
+
+| World / Stone age | Actual frame p50/p95/p99 ms | Sim-step p50/p95/p99 ms | CPU-render submit p50/p95/p99 ms | Frame / sim / render samples |
+| --- | --- | --- | --- | --- |
+| Parent |57.50 /68.90 /72.40 |.10 /.30 /1.30 |4.70 /6.40 /8.70 |128 /200 /129 |
+| First child |58.30 /65.30 /75.40 |.10 /.30 /.50 |4.00 /5.60 /8.30 |126 /240 /127 |
+
+Environment: local Windows Playwright Chromium,1920x1080, PERF-CHILD, release build from ce0abd1 plus wall-clock telemetry changes (dirty candidate), child staged through actual Ascend UI. This is a short early-world sample, not natural late-age/dense stress or human hardware certification. Separate simulation and CPU-submit p95 meet their budgets **in this sample only**; total frame budget fails in both worlds. No evidence here justifies changing combat, spawn caps or balance. Software rendering/scheduling is an investigated environment limitation, not proof of where every unmeasured millisecond was spent. 60FPS remains unverified and is not waived.
+
+Raw sanitized numeric evidence: [renderer-serial.json](../playtests/content10-evidence/renderer-serial.json). Visually reviewed screenshots: child-intro-th, frontier-intro-en, recommended-draft-th, no-relevant-combo in the same directory. At200% /1280x720 the introduction keeps its heading and action visible; its body intentionally scrolls to accommodate readable text. The3-card Thai draft shows concrete effects and one truthful goal-completing card at1920x1080. At720px height, long goal/details use bounded internal scrolling. These checks are visual/automated evidence, not a novice comprehension verdict.
+
+Final supported statuses: EVIDENCE_RECOVERED, ASCENSION_ROOT_CAUSE_AUDITED, PINNED_GUIDANCE_IMPLEMENTED, CHILD_WORLD_EXPERIMENT_VERIFIED (canonical/browser), HUMAN_REVALIDATION_PENDING. Localization remains PARTIAL; full-language comprehension and representative performance prevent release certification. No new observed gameplay P0/P1 remains in the tested paths; performance budget attainment and real child replay desire remain open validation items.

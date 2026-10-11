@@ -67,14 +67,27 @@ export function pathGuidance(nodes: readonly TechNode[], ctx: PathContext): Path
     out.missingTags = combo!.requires.filter(t => !tags.has(t));
     out.need = combo!.requires.length;
     out.have = out.need - out.missingTags.length;
+    // OR routes cannot justify a recommendation through a permanently broken
+    // prerequisite chain. Age/family gates remain recoverable, so retain them.
+    const reachable = (id: string, seen = new Set<string>()): boolean => {
+      if (owned.has(id)) return true;
+      if (seen.has(id)) return false;
+      const node = byId.get(id);
+      if (!node || node.exclusions.some(parent => owned.has(parent))) return false;
+      const next = new Set(seen).add(id);
+      return node.prerequisites.every(parent => reachable(parent, next));
+    };
     for (const node of nodes) {
       if (owned.has(node.id)) continue;
       if (![...node.tags, ...node.synergyTags].some(t => out.missingTags.includes(t))) continue;
-      // Permanently excluded providers cannot justify an indirect recommendation.
-      if (node.exclusions.some(id => owned.has(id))) continue;
+      if (!reachable(node.id)) continue;
       direct.add(node.id);
       for (const parent of node.prerequisites) visit(parent, indirect);
     }
+    if (out.missingTags.some(tag => ![...direct].some(id => {
+      const node = byId.get(id)!;
+      return [...node.tags, ...node.synergyTags].includes(tag);
+    }))) addBlocker("missing");
   }
   const relevant = [...direct, ...indirect]
     .map(id => byId.get(id))
