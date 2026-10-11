@@ -97,7 +97,7 @@ export function finalizeReport(
   }
 
   console.log("");
-  console.log("-SEED PLAYTEST EVIDENCE FINALIZED");
+  console.log(`-SEED PLAYTEST EVIDENCE FINALIZED — report ${snap.reportSequence ?? "unknown"}; ${snap.humanComment ? "includes human feedback" : "telemetry snapshot"}`);
   console.log("");
   console.log(outPath);
   console.log("SESSION_HANDOFF.md updated");

@@ -23,9 +23,9 @@ const watcher = startReportWatcher({
   rootDir: ROOT,
 });
 
-const child = spawn("npx", ["vite", "--port", "5173", "--strictPort", "--host", "127.0.0.1"], {
+const child = spawn(process.execPath, [join(ROOT, "node_modules", "vite", "bin", "vite.js"), "--port", "5173", "--strictPort", "--host", "127.0.0.1"], {
   stdio: "inherit",
-  shell: process.platform === "win32",
+  shell: false,
   env: process.env,
 });
 

@@ -127,6 +127,8 @@ export class GameScene extends Phaser.Scene {
   private onPreRender = () => { this.renderStart = performance.now(); };
   private onPostRender = () => { if (this.renderStart) this.pushSample(this.renderSamples, performance.now() - this.renderStart); };
   private fpsEMA = 60;
+  private fpsHud: HTMLElement | null = null;
+  private fpsHudT = 0;
   /** Tech Map / Civ Map overlay open (pauses stepping like a modal). */
   private techMapOpen = false;
   private techMapSel = "";
@@ -778,6 +780,11 @@ export class GameScene extends Phaser.Scene {
     const hud = el("div", "hud");
     // Top-left: ONE actionable macro objective + compass (§11/20).
     const topLeft = el("div", "hud-top-left");
+    this.fpsHud = el("div", "hud-fps");
+    this.fpsHud.id = "fps-hud";
+    this.fpsHud.textContent = "FPS: —";
+    topLeft.appendChild(this.fpsHud);
+    this.fpsHudT = 0;
     const age = el("div", "hud-objective");
     topLeft.appendChild(age);
     const compass = el("div", "nav-compass");
@@ -3053,6 +3060,12 @@ export class GameScene extends Phaser.Scene {
       this.fpsEMA += (1000 / Math.max(frameMs, 0.1) - this.fpsEMA) * 0.05;
     }
     this.lastFrameAt = frameAt;
+    this.fpsHudT -= dt;
+    if (this.fpsHudT <= 0 && this.fpsHud) {
+      this.fpsHudT = 0.5;
+      const recent = [...this.frameSamples].sort((a,b)=>a-b);
+      this.fpsHud.textContent = `FPS: ${recent.length ? Math.round(1000 / Math.max(0.1, percentile(recent, 50))) : "—"}`;
+    }
 
     const s = this.sim.state;
     // Map overlays pause stepping (informational screens, not decisions).

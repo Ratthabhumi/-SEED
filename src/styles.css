@@ -716,3 +716,6 @@ button, input { font-family: inherit; }
 .child-intro {display:flex; flex-direction:column; overflow:hidden; gap:12px;}
 .child-intro-body {min-height:0; overflow:auto; text-align:left; scrollbar-gutter:stable;}
 .child-intro > .btn {flex:0 0 auto; align-self:center;}
+
+/* Lightweight wall-clock FPS; fixed type size survives UI scale preferences. */
+.hud-fps {font: 700 18px/1.8 "Noto Sans",sans-serif; color:#fff; background:#08121ee8; border:1px solid #67788b; border-radius:6px; padding:0 8px; width:max-content; pointer-events:none;}
