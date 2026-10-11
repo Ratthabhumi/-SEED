@@ -1,5 +1,6 @@
 // Title screen: seed input + language + animated backdrop. DOM for text (Thai-safe).
 import Phaser from "phaser";
+import { ACTOR_ASSETS } from "../assets/actorAssets";
 import { ARCHIVE_REWARDS, purchaseArchive } from "../../core/progression/archiveLedger";
 import { t, setLang, getLang } from "../../i18n/i18n";
 import { uiRoot, clearUI, el, button, applyUiScale } from "../ui";
@@ -24,6 +25,7 @@ export class TitleScene extends Phaser.Scene {
     const save = loadSave(localStorage);
     setLang(save.settings.lang);
     applyUiScale(save.settings.uiScale);
+    document.documentElement.dataset.contrast = save.settings.contrast;
     sfx.setVolume(save.settings.volume);
 
     // COSMETIC-ONLY Math.random: title starfield never touches sim/worldgen state.
@@ -36,11 +38,14 @@ export class TitleScene extends Phaser.Scene {
 
     clearUI();
     const root = uiRoot();
-    const screen = el("div", "screen");
-    const panel = el("div", "panel");
+    const screen = el("div", "screen title-screen");
+    const layout = el("main", "title-layout");
+    const panel = el("section", "panel title-play");
+    const content = el("div", "title-content");
+    panel.append(content);
 
     const logo = el("div", "logo", undefined, "-SEED");
-    panel.appendChild(logo);
+    content.appendChild(logo);
     // Civilization Origin: two starting weapon families (ADR-0006 Decision 1).
     // ONE shared selector — QA mode reuses it (no duplicated start UI).
     let pickedOrigin: OriginId = DEFAULT_ORIGIN;
@@ -75,15 +80,15 @@ export class TitleScene extends Phaser.Scene {
         this.scene.start("game");
       });
       gate.appendChild(startQa);
-      panel.insertBefore(gate, panel.firstChild);
+      content.insertBefore(gate, content.firstChild);
     }    const sub = el("div", "title-th", undefined, getLang() === "th" ? "เมล็ดพันธุ์แห่งอารยธรรม" : "-SEED");
-    panel.appendChild(sub);
+    content.appendChild(sub);
     const tag = el("div", "logo-sub", "app.tagline");
-    panel.appendChild(tag);
+    content.appendChild(tag);
 
     const seedRow = el("div", "seed-row");
     const input = document.createElement("input");
-    input.id = "seed-input";
+    input.id = "seed-input"; input.setAttribute("aria-label", t("ui.seedPlaceholder"));
     input.placeholder = t("ui.seedPlaceholder");
     input.maxLength = 64;
     input.spellcheck = false;
@@ -93,7 +98,7 @@ export class TitleScene extends Phaser.Scene {
       input.value = generateRandomSeed();
     });
     seedRow.appendChild(dice);
-    panel.appendChild(seedRow);
+    content.appendChild(seedRow);
 
     // Shared Origin selector (normal + QA flows read pickedOrigin).
     const formatOriginDesc = (o: typeof ORIGINS[0]) =>
@@ -101,16 +106,22 @@ export class TitleScene extends Phaser.Scene {
     const descLine = document.createElement("div");
     descLine.className = "logo-sub";
     descLine.textContent = formatOriginDesc(ORIGINS[0]!);
-    const oRow = el("div", "btn-row");
+    const oRow = el("div", "origin-grid");
     const oBtns: HTMLButtonElement[] = [];
     for (const o of ORIGINS) {
       const b = document.createElement("button");
-      b.className = "btn" + (o.id === pickedOrigin ? " active" : "");
+      b.className = "btn origin-choice" + (o.id === pickedOrigin ? " active" : "");
       // Stable hook for automation; the selector itself stays shared.
       if (isQAMode(window.location.search)) b.id = `qa-origin-${o.id}`;
       b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
+      b.setAttribute("aria-pressed", String(o.id === pickedOrigin));
+      const portrait = document.createElement("img"); portrait.src = ACTOR_ASSETS[o.id]; portrait.alt = ""; portrait.className = "origin-portrait";
+      // Strip is cropped to the first anchored pose, never squashed into a portrait.
+      const crop = el("span", "origin-portrait-crop"); crop.append(portrait); b.prepend(crop);
       b.addEventListener("click", () => {
         sfx.unlock(); sfx.select();
+        for (const x of oBtns) x.setAttribute("aria-pressed", "false");
+        b.setAttribute("aria-pressed", "true");
         pickedOrigin = o.id;
         for (const x of oBtns) x.classList.remove("active");
         b.classList.add("active");
@@ -119,8 +130,9 @@ export class TitleScene extends Phaser.Scene {
       oRow.appendChild(b);
       oBtns.push(b);
     }
-    panel.appendChild(oRow);
-    panel.appendChild(descLine);
+    content.appendChild(oRow);
+    content.appendChild(descLine);
+    content.appendChild(seedRow);
 
     const start = button("ui.startGame", () => {
       sfx.unlock(); sfx.select();
@@ -131,7 +143,7 @@ export class TitleScene extends Phaser.Scene {
     }, "btn primary");
     start.id = "start-btn";
     start.style.width = "100%";
-    panel.appendChild(start);
+    const footer = el("div", "title-actions"); footer.appendChild(start); panel.appendChild(footer);
     const archive = document.createElement("details"); archive.id = "archive-panel";
     const summary = document.createElement("summary"); archive.appendChild(summary);
     const choices = el("div", "archive-choices"); archive.appendChild(choices);
@@ -158,7 +170,7 @@ export class TitleScene extends Phaser.Scene {
         label.append(choice, t("meta.energyStart")); choices.append(label);
       }
     };
-    renderArchive(); panel.append(archive);
+    renderArchive(); layout.append(archive);
 
     const row = el("div", "btn-row");
     row.appendChild(button("ui.settings", () => this.showSettings()));
@@ -173,9 +185,9 @@ export class TitleScene extends Phaser.Scene {
       this.scene.restart();
     });
     row.appendChild(langBtn);
-    panel.appendChild(row);
+    footer.appendChild(row);
 
-    screen.appendChild(panel);
+    layout.prepend(panel); screen.appendChild(layout);
     root.appendChild(screen);
   }
 

@@ -44,9 +44,13 @@ import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
 import { drawEnemy } from "../render/EnemyRenderer";
+import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
+import { ActorRenderer } from "../render/ActorRenderer";
+import { repairPresentation } from "../render/repairPresentation";
+import { phaserColors } from "../../theme/tokens";
 import { drawPlayer } from "../render/PlayerRenderer";
 import {
-  drawFriendlyProj, drawHostileProj, drawBeam, drawAura, drawOrbit, drawSummon, drawMine, drawKnowledge,
+  drawFriendlyProj, drawHostileProj, drawBeam, drawAura, drawOrbit, drawMine, drawKnowledge,
 } from "../render/ProjectileRenderer";
 import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRenderer";
 import { nearestInterest, drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
@@ -71,6 +75,12 @@ export class GameScene extends Phaser.Scene {
   private archiveEarned = 0;
   private archiveStorageOK = true;
 
+  private enemyActors!: ActorRenderer;
+  private allyActors!: ActorRenderer;
+  private repairLabel!: Phaser.GameObjects.Text;
+  private lastAbilityArtT = -10;
+  private artLastX = 0;
+  private artLastY = 0;
   private gfx!: Phaser.GameObjects.Graphics;
   private ground!: Phaser.GameObjects.Graphics;
   private playerArc!: Phaser.GameObjects.Arc;
@@ -103,8 +113,6 @@ export class GameScene extends Phaser.Scene {
   private prevFocusId = "";
   private prevDominion = -1;
   /** Transient impact presentation (never canonical): death rings + damage numbers. */
-  private scoutArt: Phaser.GameObjects.Image | null = null;
-  private miteArt: Phaser.GameObjects.Image[] = [];
   private landmarkArt: Phaser.GameObjects.Image[] = [];
   private reducedEffects=false;
   private arcs: Array<{x1:number;y1:number;x2:number;y2:number;until:number;relay:boolean}> = [];
@@ -150,6 +158,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
+    for (const [id,url] of Object.entries(ACTOR_ASSETS)) this.load.svg("actor-"+id,url,{width:1152,height:64});
     this.load.svg("frontier-scout", SEED_ASSETS.frontier.scout, {width:64,height:64});
     this.load.svg("frontier-mite", SEED_ASSETS.frontier.mite, {width:64,height:64});
     this.load.svg("frontier-observatory", SEED_ASSETS.frontier.observatory, {width:96,height:96});
@@ -227,8 +236,14 @@ export class GameScene extends Phaser.Scene {
     this.latch = new InputLatch();
     this.paused = false;
     this.deathPersisted = false;
-    this.scoutArt = this.add.image(0,0,"frontier-scout").setDisplaySize(44,44).setDepth(4);
-    this.miteArt = []; this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
+    ActorRenderer.frames(this);
+    this.enemyActors = new ActorRenderer(this,650,2);
+    this.allyActors = new ActorRenderer(this,128,4);
+    this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
+    this.lastAbilityArtT=-10;
+    document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
+    this.artLastX=this.sim.state.px; this.artLastY=this.sim.state.py;
+    this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
     this.lastGroundKey = "";
     this.simSamples = [];
     this.frameSamples = []; this.lastFrameAt = 0;
@@ -353,7 +368,7 @@ export class GameScene extends Phaser.Scene {
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
-        performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:this.miteArt.length,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
+        performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:0,enemyActors:this.enemyActors.size,allyActors:this.allyActors.size,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
           // Test-only shortcut for the boss-kill trigger; ascend() itself
           // (child world, fresh streams, stat separation) runs the real path.
@@ -511,6 +526,21 @@ export class GameScene extends Phaser.Scene {
           signalSecured: this.sim.state.signalSecured,
           territories: this.sim.state.territories,
         }),
+        stageActorReview: (dense = false) => {
+          const s=this.sim.state; s.ageIndex=3;s.ageElapsed=0;s.build.hp=s.build.maxHp=1e9;
+          for(const e of s.enemies)e.active=false;
+          const families=["chaser","ranged","tank","swarm"] as const;
+          for(let i=0;i<(dense?120:5);i++){const e=s.enemies[i]!;const angle=i*2.399963;const distance=dense?90+(i%10)*22:130;Object.assign(e,{active:true,x:s.px+Math.cos(angle)*distance,y:s.py+Math.sin(angle)*distance,hp:300,maxHp:300,shield:0,family:families[i%4],speed:0,dmg:0,radius:i===4&&!dense?36:14,xp:0,elite:i%5===0,affix:i%5===0?"armored":"",flash:0,shootT:5,boss:i===4&&!dense,hitCd:0,siege:false});}
+        },
+        stageRepair: () => {
+          const s=this.sim.state; for(const e of s.enemies)e.active=false; s.build.hp=s.build.maxHp=1e9; s.spawnT=s.eliteT=s.mineT=999;
+          s.territories=[{poiId:"repair-test",poiType:"ruin",x:s.px+100,y:s.py,spec:"research",tier:1,hp:0,maxHp:300,disabled:true,garrisoned:false,heldSince:0,repairT:0}];
+          this.refreshGround(true); return s.territories[0];
+        },
+        actorAssetUrls: () => ACTOR_ASSETS,
+        repairState: () => ({territories:this.sim.state.territories,label:this.repairLabel.text,visible:this.repairLabel.visible,px:this.sim.state.px,py:this.sim.state.py}),
+        moveRepairOutside: () => {this.sim.state.px=this.sim.state.territories[0]!.x+CLAIM_REACH_RADIUS+20;},
+        moveRepairInside: () => {this.sim.state.px=this.sim.state.territories[0]!.x;},
         stageAllocationRegression: () => {
           const s = this.sim.state;
           s.ageIndex = 3; s.elapsed = 703; s.maxLogistics = s.logistics = 6;
@@ -2802,6 +2832,8 @@ export class GameScene extends Phaser.Scene {
         c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } });
         const h = document.createElement("h3");
         h.textContent = t(o.nameKey);
+        const portrait = document.createElement("img"); portrait.src=ACTOR_ASSETS[o.id]; portrait.alt=""; portrait.className="origin-portrait";
+        const crop=el("span","origin-portrait-crop"); crop.append(portrait); c.append(crop);
         const d = document.createElement("p");
         d.textContent = `${t(o.descKey)} (${o.families.map((f) => t(`family.${f}` as EnKeys)).join("+")})`;
         c.appendChild(h);
@@ -2945,6 +2977,7 @@ export class GameScene extends Phaser.Scene {
           this.qa?.noteSimEvent("outpost_lost", e.poiId);
           break;
         case "outpost_repaired":
+          { const restored=s.territories.find(t=>t.poiId===e.poiId); if(restored)this.floatTextAt(restored.x,restored.y,t("ui.outpostRepaired"),"#53E0C8"); }
           toast("ui.outpostRepaired");
           sfx.select();
           this.qa?.noteSimEvent("outpost_repaired", e.poiId);
@@ -2967,6 +3000,7 @@ export class GameScene extends Phaser.Scene {
           this.qa?.noteSimEvent("squad_command", e.mode);
           break;
         case "ability_used": {
+          this.lastAbilityArtT = performance.now()/1000;
           const abil = ORIGIN_ABILITY[originById(this.sim.state.originId).id];
           toast("ui.ability", t(abil.nameKey));
           sfx.select();
@@ -3299,7 +3333,8 @@ export class GameScene extends Phaser.Scene {
         focus = e;
       }
     }
-    let miteCount = 0;
+    this.enemyActors.begin();
+    this.allyActors.begin();
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
       drawEnemy(g, e, {
@@ -3309,16 +3344,14 @@ export class GameScene extends Phaser.Scene {
         highContrast: hc,
         hpBar: e.elite || e.boss || e.flash > 0 || e === focus,
         ageIndex: s.ageIndex,
+        spriteBody: true,
       });
-      if (e.family === "chaser" && !e.boss && miteCount < 64) {
-        let art = this.miteArt[miteCount++];
-        if (!art) { art = this.add.image(0,0,"frontier-mite").setDepth(2); this.miteArt.push(art); }
-        art.setVisible(true).setPosition(e.x,e.y).setDisplaySize(e.radius*2.8,e.radius*2.8).setRotation(Math.atan2(s.py-e.y,s.px-e.x)+Math.PI/2);
-        art.setTint(e.flash>0 ? 0xffffff : 0xffdddd);
-      }
+      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,Math.atan2(s.py-e.y,s.px-e.x),s.elapsed,true,e.flash>0?0xffbbbb:0xffffff,s.ageIndex);
     }
-    for (let i=miteCount;i<this.miteArt.length;i++) this.miteArt[i]!.setVisible(false);
-    if (this.scoutArt) this.scoutArt.setPosition(s.px,s.py).setRotation(this.playerFacing+Math.PI/2).setTint(s.iframe>0?0x9fd8ff:0xffffff);
+    this.enemyActors.end();
+    const moving = s.px!==this.artLastX || s.py!==this.artLastY;
+    this.artLastX=s.px; this.artLastY=s.py;
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,48,this.playerFacing,s.elapsed,moving || s.dashT>0,now-this.lastHurtT<0.25?0xffaaaa:s.iframe>0?0x9fd8ff:now-this.lastAbilityArtT<0.35?0xffe4a3:0xffffff,s.ageIndex);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
       if (p.friendly) drawFriendlyProj(g, p);
@@ -3346,7 +3379,7 @@ export class GameScene extends Phaser.Scene {
     if (guardians > 0) {
       for (let i = 0; i < guardians; i++) {
         const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-        drawSummon(g, s.px + Math.cos(a) * 80, s.py + Math.sin(a) * 80, 7, dst.color, s.px, s.py);
+        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true);
       }
     }
     if (s.beamFlash) {
@@ -3363,11 +3396,33 @@ export class GameScene extends Phaser.Scene {
       highContrast: hc,
       originId: s.originId,
       ageIndex: s.ageIndex,
+      spriteBody: true,
     });
     // Command squad renders as origin-identified allies with mode glyph.
     for (const a of s.squad) {
       if (!a.active || !vis(a.x, a.y)) continue;
-      drawSummon(g, a.x, a.y, 7, 0x9fd8ff, s.px, s.py);
+      this.allyActors.draw(actorFor(s.originId),a.x,a.y,28,Math.atan2(s.py-a.y,s.px-a.x),s.elapsed,true,0xbbeeff,s.ageIndex);
+    }
+    this.allyActors.end();
+    for (const site of s.territories) {
+      if (!site.disabled || !vis(site.x,site.y)) continue;
+      g.lineStyle(hc?4:3,phaserColors.damaged,1);
+      g.lineBetween(site.x-14,site.y-14,site.x+14,site.y+14);
+      g.lineBetween(site.x+14,site.y-14,site.x-14,site.y+14);
+    }
+    const repair = repairPresentation(s.territories,s.px,s.py,vis);
+    this.repairLabel.setVisible(!!repair);
+    if (repair) {
+      const {site,inRange,progress,percent,remaining}=repair;
+      g.lineStyle(hc?3:2,phaserColors.damaged,0.8);g.strokeCircle(site.x,site.y,32);
+      if(inRange) {g.lineStyle(2,phaserColors.repairing,0.25);g.strokeCircle(site.x,site.y,CLAIM_REACH_RADIUS);}
+      g.fillStyle(phaserColors.canvas,1);g.fillRect(site.x-64,site.y+40,128,10);
+      g.fillStyle(phaserColors.repairing,1);g.fillRect(site.x-62,site.y+42,124*progress,6);
+      const label=inRange ? t("repair.progress")+" — "+percent+"%\n"+t("repair.remaining").replace("{seconds}",remaining.toFixed(1)) : t("ui.repairHint");
+      if(this.repairLabel.text!==label)this.repairLabel.setText(label);
+      const labelX=Math.max(cam.scrollX+this.repairLabel.width/2+12,Math.min(cam.scrollX+cam.width-this.repairLabel.width/2-12,site.x));
+      const labelY=Math.max(cam.scrollY+12,Math.min(cam.scrollY+cam.height-this.repairLabel.height-12,site.y+55));
+      this.repairLabel.setPosition(labelX,labelY);
     }
     // Transient impact: death rings + floating damage numbers.
     for (const burst of this.reducedEffects ? [] : this.bursts) {

@@ -58,7 +58,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
       }
       if (entry.id.startsWith("seed-frontier-")) {
         expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toBe("-SEED contributors");
-        expect(entry.status).toBe("working-prototype"); expect(entry.vendorSourcePath).toMatch(/^assets\/original\/frontier\//);
+        expect(entry.status).toBe("working-prototype"); expect(entry.vendorSourcePath).toMatch(/^assets\/original\/(frontier|actors)\//);
       } else { expect(entry.sourceLicense).toBe("CC0"); expect(entry.author).toBe("Kenney"); }
 
       const diskPath = path.join(root, entry.projectPath);

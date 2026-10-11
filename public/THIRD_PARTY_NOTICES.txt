@@ -24,3 +24,5 @@ Build-time-only (not shipped in the game bundle beyond normal bundling):
 
 Original Living Frontier scout, mite and observatory SVG artwork:
 Copyright (c) 2026 -SEED contributors. MIT License; licenses/SEED-MIT.txt.
+
+Original Living Frontier actors (2026-10-12), copyright -SEED contributors, MIT. Bundled license: licenses/SEED-MIT.txt.

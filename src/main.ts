@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { colors } from "./theme/tokens";
 import "./styles.css";
 import "@fontsource/noto-sans";
 import "@fontsource/noto-sans-thai";
@@ -12,7 +13,7 @@ const visualLab = isVisualMode(window.location.search);
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: "app",
-  backgroundColor: "#0b0e14",
+  backgroundColor: colors.canvas,
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,

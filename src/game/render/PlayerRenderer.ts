@@ -14,6 +14,8 @@ export interface PlayerDrawOpts {
   highContrast: boolean;
   originId: string;
   ageIndex: number;
+  /** Production body supplied by ActorRenderer. Legacy lab fallback only. */
+  spriteBody?: boolean;
 }
 
 function drawOriginGlyph(
@@ -72,6 +74,8 @@ export function drawPlayer(
   g: Phaser.GameObjects.Graphics, x: number, y: number, r: number, opts: PlayerDrawOpts,
 ): void {
   const outlineW = opts.highContrast ? 5 : 3;
+  const a = opts.facing;
+  if (!opts.spriteBody) {
   // Dark halo guarantees contrast on any biome.
   g.fillStyle(VL.outlineDark, 0.9);
   g.fillCircle(x, y, r + outlineW + 1);
@@ -81,7 +85,6 @@ export function drawPlayer(
   g.fillStyle(opts.iframe ? 0x9fd8ff : VL.playerCore, 1);
   g.fillCircle(x, y, Math.max(2, r - 4));
   // Directional notch (chevron toward facing).
-  const a = opts.facing;
   const nx = x + Math.cos(a) * (r - 2);
   const ny = y + Math.sin(a) * (r - 2);
   g.fillStyle(VL.playerNotch, 1);
@@ -90,6 +93,7 @@ export function drawPlayer(
     nx + Math.cos(a + 2.6) * 6, ny + Math.sin(a + 2.6) * 6,
     nx + Math.cos(a - 2.6) * 6, ny + Math.sin(a - 2.6) * 6,
   );
+  }
   if (opts.dashing) {
     // Motion chevrons trailing behind the dash.
     g.lineStyle(3, VL.outlineLight, 0.9);
@@ -104,6 +108,8 @@ export function drawPlayer(
     g.lineStyle(3, VL.danger, 1);
     g.strokeCircle(x, y, r + outlineW + 4);
   }
-  drawOriginGlyph(g, x, y, r, opts.originId);
-  drawAgeTrim(g, x, y, r, opts.ageIndex, opts.time);
+  if (!opts.spriteBody) {
+    drawOriginGlyph(g, x, y, r, opts.originId);
+    drawAgeTrim(g, x, y, r, opts.ageIndex, opts.time);
+  }
 }

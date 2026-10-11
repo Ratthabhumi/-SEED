@@ -107,3 +107,5 @@ Ensures no unlisted asset, mismatched package version, or ambiguous license ente
 ## Original Living Frontier vector slice
 
 Scout, mite and observatory were authored in this repository; original files under assets/original/frontier are copied unchanged into assets/seed/frontier. MIT copyright2026 -SEED contributors; full LICENSE copied to public/licenses/SEED-MIT.txt and bundled with notice. File hashes and dimensions are recorded in the asset manifest. Status remains working-prototype. No borrowed commercial artwork or generated-provider assets.
+
+Original actor family: ten editable SVG strips, -SEED contributors, MIT. assets/original/actors and assets/seed/actors; byte/SHA receipt in ASSET_MANIFEST.json. No external actor images.

@@ -575,6 +575,8 @@ export const en = {
   "ui.inactive": "Inactive",
   "ui.active": "Active",
   "ui.archiveReturn": "Return to Archive",
+  "repair.progress": "Repairing Outpost",
+  "repair.remaining": "{seconds}s remaining",
 } as const;
 
 export type EnKeys = keyof typeof en;
