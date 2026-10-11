@@ -1,6 +1,7 @@
 // localStorage persistence with schema versioning + runtime validation.
 // Corrupt OR schema-valid-but-nonsense data must fail safe — never throw, never
 // let a bad value (e.g. lang "xx") reach the runtime.
+import { cleanLedger, defaultLedger, type ArchiveLedger } from "../progression/archiveLedger";
 import { SAVE_SCHEMA_VERSION } from "../seed/versions";
 import { AGES } from "../tech/graph";
 
@@ -19,6 +20,7 @@ export interface Settings {
   contrast: Contrast;
   uiScale: UiScale;
   tutorialCompleted: boolean;
+  reducedEffects: boolean;
 }
 
 export interface BestStats {
@@ -29,6 +31,7 @@ export interface SaveData {
   schema: number;
   settings: Settings;
   archive: string[];
+  meta: ArchiveLedger;
   best: BestStats;
   history: string[];
 }
@@ -45,8 +48,10 @@ export function defaultSave(): SaveData {
       contrast: "normal",
       uiScale: 1,
       tutorialCompleted: false,
+      reducedEffects: false,
     },
     archive: [],
+    meta: defaultLedger(),
     best: { bestTimeSec: 0, bestKills: 0, bestAge: "stone", bestAscension: 0, runs: 0 },
     history: [],
   };
@@ -65,7 +70,7 @@ function cleanSettings(raw: unknown): Settings {
   const uiScale: UiScale =
     r.uiScale === 1.25 || r.uiScale === 1.5 || r.uiScale === 2 ? (r.uiScale as UiScale) : 1;
   const tutorialCompleted = typeof r.tutorialCompleted === "boolean" ? r.tutorialCompleted : false;
-  return { lang, volume, shake, contrast, uiScale, tutorialCompleted };
+  return { lang, volume, shake, contrast, uiScale, tutorialCompleted, reducedEffects: r.reducedEffects === true };
 }
 
 function cleanBest(raw: unknown): BestStats {
@@ -95,11 +100,12 @@ export function loadSave(storage: Pick<Storage, "getItem">): SaveData {
     if (!raw) return defaultSave();
     const parsed = JSON.parse(raw) as Partial<SaveData>;
     if (typeof parsed !== "object" || parsed === null) return defaultSave();
-    if (parsed.schema !== SAVE_SCHEMA_VERSION) return defaultSave();
+    if (parsed.schema !== SAVE_SCHEMA_VERSION && parsed.schema !== 1) return defaultSave();
     return {
       schema: SAVE_SCHEMA_VERSION,
       settings: cleanSettings(parsed.settings),
       archive: cleanStrings(parsed.archive, 64),
+      meta: cleanLedger(parsed.schema === 1 ? undefined : parsed.meta),
       best: cleanBest(parsed.best),
       history: cleanStrings(parsed.history, 50),
     };
@@ -108,10 +114,11 @@ export function loadSave(storage: Pick<Storage, "getItem">): SaveData {
   }
 }
 
-export function storeSave(storage: Pick<Storage, "setItem">, data: SaveData): void {
+export function storeSave(storage: Pick<Storage, "setItem">, data: SaveData): boolean {
   try {
     storage.setItem(SAVE_KEY, JSON.stringify(data));
+    return true;
   } catch {
-    // quota errors are non-fatal
+    return false; // quota errors are non-fatal
   }
 }

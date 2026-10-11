@@ -1,5 +1,6 @@
 // Title screen: seed input + language + animated backdrop. DOM for text (Thai-safe).
 import Phaser from "phaser";
+import { ARCHIVE_REWARDS, purchaseArchive } from "../../core/progression/archiveLedger";
 import { t, setLang, getLang } from "../../i18n/i18n";
 import { uiRoot, clearUI, el, button, applyUiScale } from "../ui";
 import { loadSave, storeSave } from "../../core/save/save";
@@ -131,6 +132,33 @@ export class TitleScene extends Phaser.Scene {
     start.id = "start-btn";
     start.style.width = "100%";
     panel.appendChild(start);
+    const archive = document.createElement("details"); archive.id = "archive-panel";
+    const summary = document.createElement("summary"); archive.appendChild(summary);
+    const choices = el("div", "archive-choices"); archive.appendChild(choices);
+    const renderArchive = () => {
+      const saved = loadSave(localStorage);
+      summary.textContent = t("meta.title") + ' · ' + t("meta.insight") + ': ' + saved.meta.insight;
+      choices.replaceChildren();
+      for (const option of ARCHIVE_REWARDS) {
+        const row = el("div", "archive-item");
+        row.append(el("h3", "", option.titleKey), el("p", "", option.descKey));
+        const buy = button("meta.buy", () => {
+          const fresh = loadSave(localStorage); fresh.meta = purchaseArchive(fresh.meta, option.id);
+          if (storeSave(localStorage, fresh)) renderArchive(); else row.append(el("p", "", "meta.storage"));
+        });
+        buy.dataset.archiveId = option.id;
+        const owned = saved.meta.purchased.includes(option.id);
+        buy.textContent = owned ? t("meta.owned") : t("meta.buy") + ' · ' + option.cost + ' ' + t("meta.insight");
+        buy.disabled = owned || saved.meta.insight < option.cost; row.append(buy); choices.append(row);
+      }
+      if (saved.meta.purchased.includes("energy-kit")) {
+        const label = document.createElement("label"); const choice = document.createElement("input");
+        choice.type = "checkbox"; choice.checked = saved.meta.energyStart; choice.id = "archive-energy-start";
+        choice.addEventListener("change", () => { const fresh = loadSave(localStorage); fresh.meta.energyStart = choice.checked; if (!storeSave(localStorage, fresh)) { choice.checked = saved.meta.energyStart; label.append(t("meta.storage")); } });
+        label.append(choice, t("meta.energyStart")); choices.append(label);
+      }
+    };
+    renderArchive(); panel.append(archive);
 
     const row = el("div", "btn-row");
     row.appendChild(button("ui.settings", () => this.showSettings()));

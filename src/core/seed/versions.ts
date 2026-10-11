@@ -56,7 +56,8 @@ export const WORLDGEN_VERSION = 2;
 // Chunk/POI geometry and the persistent settings/archive schema stay compatible.
 // Content 10: child-only conditions and child-seeded laws. World-one laws retain c9.
 export const CONTENT_VERSION = 10;
-export const SAVE_SCHEMA_VERSION = 1;
+// Schema2 migrates v1 settings/archive/history without granting retrospective currency.
+export const SAVE_SCHEMA_VERSION = 2;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;
 

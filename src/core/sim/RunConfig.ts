@@ -6,4 +6,6 @@ export interface RunConfig {
   difficultyMul?: number;
   /** Civilization origin id (validated against ORIGINS; default hunters). */
   originId?: string;
+  archivePerks?: readonly string[];
+  archiveEnergyStart?: boolean;
 }

@@ -97,6 +97,10 @@ export class RunSimulation {
     this.masterSeed = config.masterSeed;
     this.difficultyMul = config.difficultyMul ?? 1;
     this.state = this.freshWorldState(config.masterSeed, 0, originById(config.originId ?? "").id);
+    // Root-attempt archive benefits, separate from child-world inheritance.
+    if (config.archivePerks?.includes("survival-kit")) { this.state.build.maxHp += 15; this.state.build.hp += 15; }
+    if (config.archivePerks?.includes("choice-kit")) this.state.rerolls = 2;
+    if (config.archivePerks?.includes("energy-kit") && config.archiveEnergyStart && !activeFamilies(this.state.originId, "").includes("energy")) this.state.expansionFamily = "energy";
     this.streams = initRunRng(this.state.worldSeed);
     this.graph = generateTechGraph(this.state.worldSeed, 0).nodes;
     this.grantNode("spine-tools");

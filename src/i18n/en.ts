@@ -538,6 +538,23 @@ export const en = {
   "history.stronghold": "Enemy stronghold found",
   "history.boss": "Boss appeared",
   "history.event": "Civilization event",
+  "meta.title": "Archive",
+  "meta.insight": "Insight",
+  "meta.survival": "Survival kit",
+  "meta.survivalDesc": "Start each attempt with +15 maximum HP. One purchase.",
+  "meta.energy": "Energy option",
+  "meta.energyDesc": "Choose an energy core at the start if your Origin lacks one.",
+  "meta.choice": "Extra choice",
+  "meta.choiceDesc": "One extra redraw in the first Age of each attempt.",
+  "meta.buy": "Unlock",
+  "meta.owned": "Unlocked",
+  "meta.energyStart": "Start with energy core",
+  "meta.attempt": "Attempt",
+  "meta.world": "World",
+  "meta.earned": "Insight earned",
+  "meta.storage": "Could not save. Your current play continues; archive progress is not confirmed.",
+  "settings.reduced": "Reduced effects",
+
 } as const;
 
 export type EnKeys = keyof typeof en;

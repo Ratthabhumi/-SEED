@@ -719,3 +719,5 @@ button, input { font-family: inherit; }
 
 /* Lightweight wall-clock FPS; fixed type size survives UI scale preferences. */
 .hud-fps {font: 700 18px/1.8 "Noto Sans",sans-serif; color:#fff; background:#08121ee8; border:1px solid #67788b; border-radius:6px; padding:0 8px; width:max-content; pointer-events:none;}
+
+.archive-choices {display:grid;gap:12px;margin-top:12px;} .archive-item {border:1px solid #394c62;padding:12px;border-radius:8px;} #archive-panel summary {cursor:pointer;padding:12px;font-weight:700;} .archive-item p {line-height:1.8;}

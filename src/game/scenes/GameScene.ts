@@ -5,6 +5,7 @@ import { effectSummary } from "../ui/techEffects";
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
 import Phaser from "phaser";
+import { beginAttempt, attemptReward, settleAttempt } from "../../core/progression/archiveLedger";
 import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
@@ -66,6 +67,9 @@ export class GameScene extends Phaser.Scene {
   private latch = new InputLatch();
   private paused = false;
   private deathPersisted = false;
+  private attemptId = 0;
+  private archiveEarned = 0;
+  private archiveStorageOK = true;
 
   private gfx!: Phaser.GameObjects.Graphics;
   private ground!: Phaser.GameObjects.Graphics;
@@ -201,7 +205,12 @@ export class GameScene extends Phaser.Scene {
   private startRun(seed: string): void {
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
-    this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw });
+    const savedArchive = loadSave(localStorage);
+    const begun = beginAttempt(savedArchive.meta); savedArchive.meta = begun.ledger;
+    this.archiveStorageOK = storeSave(localStorage, savedArchive);
+    this.attemptId = this.archiveStorageOK ? begun.id : 0; this.archiveEarned = 0;
+    this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw,
+      archivePerks: savedArchive.meta.purchased, archiveEnergyStart: savedArchive.meta.energyStart });
     this.surfaces.reset();
     this.blockingModal = null;
     this.modalT = 0;
@@ -2459,7 +2468,12 @@ export class GameScene extends Phaser.Scene {
     if (isRecord) save.best.bestAge = s.runHighestAge;
     if (!save.history.includes(this.masterSeed)) save.history.unshift(this.masterSeed);
     save.history = save.history.slice(0, 50);
-    storeSave(localStorage, save);
+    if (this.attemptId && !new URLSearchParams(window.location.search).has("e2e")) {
+      const terminal = settleAttempt(save.meta, this.attemptId, attemptReward(s.runElapsed, AGES.indexOf(s.runHighestAge), s.stats.bosses > 0));
+      save.meta = terminal.ledger; this.archiveEarned = terminal.earned;
+    }
+    this.archiveStorageOK = storeSave(localStorage, save);
+    if (!this.archiveStorageOK) this.archiveEarned = 0;
   }
 
   private showChronicle(): void {
@@ -2470,6 +2484,8 @@ export class GameScene extends Phaser.Scene {
     const screen = el("div", "screen");
     const panel = el("div", "panel panel-lg");
     panel.appendChild(el("h2", "", "ui.died"));
+    panel.appendChild(el("p", "archive-result", undefined, `${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${s.ascension+1} · ${t("meta.earned")}: +${this.archiveEarned}`));
+    if (!this.archiveStorageOK) panel.appendChild(el("p", "", "meta.storage"));
     panel.appendChild(el("div", "", "ui.runChronicle"));
     const dl = document.createElement("dl");
     dl.className = "chron";
@@ -3064,7 +3080,7 @@ export class GameScene extends Phaser.Scene {
     if (this.fpsHudT <= 0 && this.fpsHud) {
       this.fpsHudT = 0.5;
       const recent = [...this.frameSamples].sort((a,b)=>a-b);
-      this.fpsHud.textContent = `FPS: ${recent.length ? Math.round(1000 / Math.max(0.1, percentile(recent, 50))) : "—"}`;
+      this.fpsHud.textContent = `FPS: ${recent.length ? Math.round(1000 / Math.max(0.1, percentile(recent, 50))) : "—"} · ${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${this.sim.state.ascension+1}`;
     }
 
     const s = this.sim.state;
