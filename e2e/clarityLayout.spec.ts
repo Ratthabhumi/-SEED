@@ -64,8 +64,14 @@ async function setScale(page: Page, label: "100%" | "125%" | "150%" | "200%"): P
 }
 
 async function openDraft(page: Page): Promise<void> {
-  // One draft is enough for layout; fat grants queue dozens (xp curve).
-  await page.evaluate(() => window.__seedE2E?.grant(30));
+  // Stage the current level deficit: fixed 30 can be insufficient after earlier picks/pickups.
+  await page.evaluate(() => {
+    const hook = window.__seedE2E!;
+    const state = JSON.parse(hook.snapshot()) as {lvl:number[];b:number[]};
+    const deficit = Math.max(0, state.lvl[2]! - state.lvl[1]!);
+    // b[7] is the canonical build Knowledge multiplier; outposts only add bonuses.
+    hook.grant(Math.ceil(deficit / state.b[7]!) + 1);
+  });
   await expect(page.locator("#draft-screen")).toBeVisible({ timeout: 15000 });
 }
 
