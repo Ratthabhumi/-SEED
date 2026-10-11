@@ -16,3 +16,13 @@ Pending final local/browser/CI verification; no green verdict before results. Sc
 
 ## Remaining production art / human checklist
 ART_PRODUCTION_PARTIAL and HUMAN_VISUAL_REVIEW_PENDING: authored attack/dash/death frame sequences, bespoke elites/squad roles and full environment ages remain. Human must inspect4Origin previews, grayscale silhouettes, busy mixed combat, terrain contrast and repair area/readability, keyboard/200%Thai. Then new clean canonical human playtest (no E2E staging), real hardware FPS, Archive attempt2 and boss/Ascension. Do not infer HUMAN_FUN_PASS from CI, target-complete telemetry, or valid assets.
+
+Animation limitation: tank and boss currently use rigid facing/hit/equipment poses; their three gait frames repeat. Authored walking, attack and death animation remains production work.
+
+## Verification and limits
+- Focused asset/theme/canonical repair tests:17/17; analyze:6/6. Typecheck, provenance31 assets, production build, ZIP and release:verify17 checks passed locally.
+- Local full check exceeded the existing180s frontier-policy timeout (726.7s on this machine); canonical policy outcomes matched baseline. Preserved scratch/unified-check.log, stopped only that verified runner tree. No test thresholds weakened. Exact-head Node22/24 CI full checks passed at c9f3cb5; final pushed head still requires all four jobs.
+- First browser run: existing evolution4/4 and new canonical repair2/2 passed; two title matrix tests exposed a test fixture schema error. Corrected the schema2 meta fixture; partitioned all48 viewport/scale/language combinations into per-viewport tests under the existing cap, plus separate native funded-purchase cases. Assertions and product rules unchanged.
+- Reviewed actual TH390px/200% title and TH1280px repair captures: Start accessible; independent content/Archive scrolling; repair13%/8.6s visible. Goal labels were ellipsized even at normal scale; now wrap above their bars.
+- Baseline/child frame p95:222.2/268.2ms; c9f3cb5 comparison104.3/101.1ms. Renderer CPU submission p95:37.1/45.8ms versus15/12.3ms. Same harness, different ambient load/entity counts: exploratory comparison only, no causal improvement or60FPS certification. Raw actor texture estimate2.81MiB excludes engine overhead.
+- ART_PRODUCTION_PARTIAL; HUMAN_VISUAL_REVIEW_PENDING. No HUMAN_FUN_PASS. Required human retest: all four Origins and six equipment Ages, tank/boss animation limitations, crowded/grayscale/high-contrast readability, small-screen Archive scrolling and repair pause/exit/restoration. Hardware performance budgets remain unverified.

@@ -1,9 +1,9 @@
 import {test,expect} from "@playwright/test";
 import {prepareSave,startRun,SAVE_KEY,assertNoRawKeys} from "./helpers";
 const sizes=[[1920,1080],[1366,768],[1280,720],[1024,768],[390,844],[844,390]];
-for(const lang of ["en","th"] as const) test("Title and Archive responsive matrix "+lang,async({page})=>{
+for(const lang of ["en","th"] as const) for(const [width,height] of sizes) test(`Title and Archive responsive matrix ${lang} ${width}x${height}`,async({page})=>{
  await prepareSave(page,{lang}); await page.goto("/?e2e");
- for(const [width,height] of sizes) for(const scale of [1,1.25,1.5,2]) {
+ for(const scale of [1,1.25,1.5,2]) {
   await page.setViewportSize({width:width!,height:height!});
   await page.evaluate(scale=>document.documentElement.style.setProperty("--ui-scale",String(scale)),scale);
   const start=page.locator("#start-btn"); await expect(start).toBeInViewport();
@@ -16,7 +16,10 @@ for(const lang of ["en","th"] as const) test("Title and Archive responsive matri
   if((width===1280&&scale===1)||(width===1920&&scale===1)||(width===390&&scale===2))await page.screenshot({path:`test-results/browser/unified-title-${lang}-${width}-${scale}.png`});
   await summary.click();await expect(start).toBeInViewport();
  }
- await page.setViewportSize({width:1280,height:720});await page.evaluate(key=>{const s=JSON.parse(localStorage.getItem(key)!);s.meta.insight=12;localStorage.setItem(key,JSON.stringify(s));},SAVE_KEY);
+ });
+for(const lang of ["en","th"] as const) test("Archive funded native purchases "+lang,async({page})=>{
+ await prepareSave(page,{lang});await page.goto("/?e2e");
+ await page.setViewportSize({width:1280,height:720});await page.evaluate(key=>{const s=JSON.parse(localStorage.getItem(key)!);s.schema=2;s.meta={insight:12,purchased:[],nextAttempt:1,lastSettled:0,energyStart:false};localStorage.setItem(key,JSON.stringify(s));},SAVE_KEY);
  await page.getByRole("button",{name:lang==="en"?"ไทย":"English",exact:true}).click();
  await page.locator("#archive-panel summary").click();
  for(const id of ["survival-kit","energy-kit","choice-kit"]){const buy=page.locator('[data-archive-id="'+id+'"]');await buy.scrollIntoViewIfNeeded();await buy.focus();await page.keyboard.press("Enter");await expect(buy).toBeDisabled();}

@@ -22,3 +22,5 @@ Orthographic top-down,2.5px dark outline at64px, upper-left cream highlights, sl
 Production character bodies are sprites only. PlayerRenderer/EnemyRenderer spriteBody mode retains functional dash/hurt/aim/affix/HP indicators; geometry body fallback remains only for legacy VisualLab. Mandatory missing art throws diagnostic on load. Guardians/squad no longer draw circle summon bodies in GameScene. Projectiles/pickups/mines/orbit blades/area telegraphs intentionally retain functional graphics.
 
 Remaining art: independent authored attack/dash/death sequences, enemy attack timing, bespoke elites, squad role variants, full six-age environmental art and human silhouette/scale approval. Gait and event tint do not certify full production animation. Original source/manifest hashes and bundled MIT license provide provenance; no reference-game assets copied.
+
+Animation limitation: tank and boss currently use rigid facing/hit/equipment poses; their three gait frames repeat. Authored walking, attack and death animation remains production work.

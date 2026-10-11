@@ -423,11 +423,11 @@ button, input { font-family: inherit; }
   overflow-wrap: break-word;
 }
 .age-card-title { font-size: var(--font-body-strong); font-weight: 800; color: var(--accent); }
-.gate-row { display: flex; align-items: center; gap: 8px; font-size: var(--font-body); margin-top: 6px; }
+.gate-row { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 8px; font-size: var(--font-body); margin-top: 6px; }
 .gate-mark { font-weight: 800; width: 18px; color: var(--color-hostile); font-size: var(--font-body); }
 .gate-row.done .gate-mark { color: var(--color-friendly); }
-.gate-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gate-bar { flex: 1; min-width: 56px; height: 10px; background: #141c2a; border-radius: 5px; overflow: hidden; }
+.gate-label { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.gate-bar { grid-column: 2; min-width: 56px; height: 10px; background: #141c2a; border-radius: 5px; overflow: hidden; }
 .gate-fill { height: 100%; background: var(--color-research); }
 .gate-row.done .gate-fill { background: var(--color-friendly); }
 .gate-sub { font-size: var(--font-caption); color: var(--muted); padding-left: 26px; }
