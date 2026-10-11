@@ -21,6 +21,8 @@ for(const lang of ["en","th"] as const) test("Archive funded native purchases "+
  await prepareSave(page,{lang});await page.goto("/?e2e");
  await page.setViewportSize({width:1280,height:720});await page.evaluate(key=>{const s=JSON.parse(localStorage.getItem(key)!);s.schema=2;s.meta={insight:12,purchased:[],nextAttempt:1,lastSettled:0,energyStart:false};localStorage.setItem(key,JSON.stringify(s));},SAVE_KEY);
  await page.getByRole("button",{name:lang==="en"?"ไทย":"English",exact:true}).click();
+ await page.getByRole("button",{name:lang==="en"?"English":"ไทย",exact:true}).click();
+ await expect(page.locator("html")).toHaveAttribute("lang",lang);
  await page.locator("#archive-panel summary").click();
  for(const id of ["survival-kit","energy-kit","choice-kit"]){const buy=page.locator('[data-archive-id="'+id+'"]');await buy.scrollIntoViewIfNeeded();await buy.focus();await page.keyboard.press("Enter");await expect(buy).toBeDisabled();}
  await page.locator("#archive-energy-start").check();await page.screenshot({path:"test-results/browser/unified-archive-owned-"+lang+".png"});
