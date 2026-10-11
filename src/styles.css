@@ -663,7 +663,8 @@ button, input { font-family: inherit; }
 #draft-screen .card-plan summary:focus-visible { outline: 2px solid var(--accent); }
 #draft-screen .draft-agency { flex: 0 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 #draft-screen .draft-hints { width: min(100%, 1240px); display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 20px; }
-#draft-screen .draft-hint, #draft-screen .draft-stays { font-size: var(--font-caption); line-height: 1.8; }
+#draft-screen .draft-hint { font-size: var(--font-caption); line-height: 1.8; }
+#draft-screen .draft-stays { font-size: var(--font-body); line-height: 1.8; }
 #ui #pause-screen .pause-panel {
   width: min(100%, 1120px); max-height: calc(100dvh - 40px); box-sizing: border-box;
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px;
