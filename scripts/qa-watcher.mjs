@@ -9,7 +9,7 @@ import { applyHandoffSection } from "./qa-handoff.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-export const TERMINAL_REASONS = new Set(["target-complete", "player-died", "human-ended"]);
+export const TERMINAL_REASONS = new Set(["target-complete", "player-died", "human-ended", "victory-finished"]);
 
 /**
  * Returns a stable identity string for a report snapshot.
