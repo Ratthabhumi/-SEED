@@ -2,6 +2,7 @@
 // Declutter rule: background = large soft low-contrast shapes; nothing
 // gameplay-sized. Undiscovered POIs are beacon destinations, not debug rings.
 import type Phaser from "phaser";
+import { frontierDecoration } from "./frontierDecoration";
 import { deriveUint32 } from "../../core/seed/hash";
 import { CHUNK_SIZE } from "../../core/world/chunks";
 import type { ChunkDescriptor } from "../../core/world/chunks";
@@ -61,6 +62,17 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
       } else {
         g.strokeEllipse(gx + 150, gy + 340, 220, 130);
         g.strokeEllipse(gx + 380, gy + 150, 170, 110);
+      }
+      if (desc.biome === "verdant") {
+        // Flat grass silhouettes, deliberately passable and below actor contrast.
+        for (const p of frontierDecoration(a.worldSeed,ccx,ccy)) {
+          g.fillStyle(style.groundAlt,0.48);
+          g.fillTriangle(p.x-p.size,p.y+5,p.x,p.y-p.size/2,p.x+p.size,p.y+5);
+          g.lineStyle(2,style.ground,0.6);g.lineBetween(p.x,p.y+5,p.x,p.y-p.size/3);
+        }
+        // Worn ground leads to actual sites; decorative, not a travel-cost promise.
+        g.lineStyle(18,style.groundAlt,0.25);
+        for (const poi of desc.poi) g.lineBetween(gx+CHUNK_SIZE/2,gy+CHUNK_SIZE/2,poi.wx,poi.wy);
       }
       // Civ layer per age (ADR-0006 Phase 9): sparse procedural marks BELOW
       // gameplay contrast. Seeded positions; bounded counts; never dots/discs.

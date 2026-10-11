@@ -1,0 +1,68 @@
+{
+  "classification": "LOCAL_BROWSER_MEASUREMENT",
+  "limitations": "Short sparse software-rendered trace. CPU submission is not GPU completion; no stress-load or hardware60FPS certification.",
+  "parent": {
+    "samples": 69,
+    "frameMs": [
+      75.7,
+      87.8,
+      94.4
+    ],
+    "simMs": [
+      0.1,
+      0.4,
+      2.7
+    ],
+    "rendererCpuSubmitMs": [
+      5.2,
+      7.6,
+      8.5
+    ],
+    "sceneObjects": 8,
+    "pools": {
+      "mites": 1,
+      "landmarks": 1,
+      "vfx": 0,
+      "arcs": 0
+    },
+    "rendererType": 2,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "age": 0,
+    "ascension": 0
+  },
+  "child": {
+    "samples": 59,
+    "frameMs": [
+      79.9,
+      100.6,
+      104.7
+    ],
+    "simMs": [
+      0,
+      0.2,
+      0.3
+    ],
+    "rendererCpuSubmitMs": [
+      6.1,
+      9.1,
+      15.9
+    ],
+    "sceneObjects": 13,
+    "pools": {
+      "mites": 2,
+      "landmarks": 5,
+      "vfx": 0,
+      "arcs": 0
+    },
+    "rendererType": 2,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "age": 0,
+    "ascension": 1
+  }
+}

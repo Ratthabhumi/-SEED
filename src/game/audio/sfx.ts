@@ -2,6 +2,8 @@
 export class Sfx {
   private ctx: AudioContext | null = null;
   private volume = 0.6;
+  private voices=new Set<OscillatorNode>();
+  private lastTone=new Map<string,number>();
 
   setVolume(v: number): void {
     this.volume = Math.min(1, Math.max(0, v));
@@ -21,14 +23,19 @@ export class Sfx {
     if (!this.ctx) return;
     try {
       const t0 = this.ctx.currentTime;
+      const key=freq+":"+type;
+      if(this.voices.size>=8 || t0-(this.lastTone.get(key)??-Infinity)<0.05 || this.volume===0)return;
+      this.lastTone.set(key,t0);
       const o = this.ctx.createOscillator();
       const g = this.ctx.createGain();
       o.type = type;
       o.frequency.setValueAtTime(freq, t0);
       if (slide !== 0) o.frequency.exponentialRampToValueAtTime(Math.max(20, freq + slide), t0 + dur);
-      g.gain.setValueAtTime(gain * this.volume, t0);
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.linearRampToValueAtTime(Math.min(0.12,gain)*this.volume,t0+0.004);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       o.connect(g).connect(this.ctx.destination);
+      this.voices.add(o);o.onended=()=>{this.voices.delete(o);o.disconnect();g.disconnect();};
       o.start(t0);
       o.stop(t0 + dur + 0.02);
     } catch {
@@ -36,6 +43,7 @@ export class Sfx {
     }
   }
 
+  energy():void {this.tone(900,0.08,"sine",0.06,180);}
   hit(): void { this.tone(220, 0.07, "square", 0.10, -80); }
   kill(): void { this.tone(330, 0.12, "sawtooth", 0.12, -180); }
   pickup(): void { this.tone(660, 0.08, "sine", 0.10, 220); }

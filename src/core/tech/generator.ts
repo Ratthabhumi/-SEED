@@ -177,6 +177,10 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     });
   }
 
+  nodes.push(
+    {id:"conduction-lattice",titleKey:"tech.conduction.name",descriptionKey:"tech.conduction.description",age:"bronze",domain:"science",tags:["conduction"],synergyTags:["conduction"],prerequisites:["foundation-science"],exclusions:[],rarity:"uncommon",weight:55,effects:[{kind:"chainAdd",value:1,family:"energy"}]},
+    {id:"outpost-relay",titleKey:"tech.relay.name",descriptionKey:"tech.relay.description",age:"bronze",domain:"industry",tags:["relay"],synergyTags:["relay"],prerequisites:["foundation-industry"],exclusions:[],rarity:"uncommon",weight:55,effects:[{kind:"relayAdd",value:1}]}
+  );
   attachWebMetadata(nodes);
   return { masterSeed, ascension, nodes };
 }

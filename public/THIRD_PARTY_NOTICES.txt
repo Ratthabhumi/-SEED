@@ -21,3 +21,6 @@ Full license texts are included in licenses/.
 
 Build-time-only (not shipped in the game bundle beyond normal bundling):
 - Vite, TypeScript, Vitest — MIT License (see their npm pages).
+
+Original Living Frontier scout, mite and observatory SVG artwork:
+Copyright (c) 2026 -SEED contributors. MIT License; licenses/SEED-MIT.txt.

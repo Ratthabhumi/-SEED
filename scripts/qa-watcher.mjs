@@ -9,7 +9,7 @@ import { applyHandoffSection } from "./qa-handoff.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-export const TERMINAL_REASONS = new Set(["target-complete", "player-died", "human-ended"]);
+export const TERMINAL_REASONS = new Set(["target-complete", "player-died", "human-ended", "victory-finished"]);
 
 /**
  * Returns a stable identity string for a report snapshot.
@@ -97,7 +97,7 @@ export function finalizeReport(
   }
 
   console.log("");
-  console.log("-SEED PLAYTEST EVIDENCE FINALIZED");
+  console.log(`-SEED PLAYTEST EVIDENCE FINALIZED — report ${snap.reportSequence ?? "unknown"}; ${snap.humanComment ? "includes human feedback" : "telemetry snapshot"}`);
   console.log("");
   console.log(outPath);
   console.log("SESSION_HANDOFF.md updated");

@@ -56,8 +56,10 @@ describe("Asset Pipeline and Manifest Verification", () => {
       for (const field of requiredFields) {
         expect(entry, `Entry ${entry.id} must have field ${field}`).toHaveProperty(field);
       }
-      expect(entry.sourceLicense).toBe("CC0");
-      expect(entry.author).toBe("Kenney");
+      if (entry.id.startsWith("seed-frontier-")) {
+        expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toBe("-SEED contributors");
+        expect(entry.status).toBe("working-prototype"); expect(entry.vendorSourcePath).toMatch(/^assets\/original\/frontier\//);
+      } else { expect(entry.sourceLicense).toBe("CC0"); expect(entry.author).toBe("Kenney"); }
 
       const diskPath = path.join(root, entry.projectPath);
       expect(fs.existsSync(diskPath), `Asset file must exist on disk: ${entry.projectPath}`).toBe(true);
@@ -134,7 +136,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
       expect(vendorSha).toBe(a.vendorSourceSha256);
       expect(prodSha).toBe(vendorSha);
       expect(a.modified).toBe(false);
-      expect(a.status).toBe("production-selected");
+      expect(a.status).toBe(a.id.startsWith("seed-frontier-") ? "working-prototype" : "production-selected");
     }
   });
 

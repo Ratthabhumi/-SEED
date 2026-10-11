@@ -318,3 +318,5 @@ describe("zero-friction QA watcher and auto-finalization", () => {
     expect(md).not.toContain("Human Fun / Replay Verdict: HUMAN_FUN_PASS");
   });
 });
+
+it("voluntary canonical victory is terminal evidence without duplicating a settlement",()=>{const report={...snap(),endReason:"victory-finished"};const detector=new ReportDetector();expect(isTerminalReport(report as never)).toBe(true);expect(detector.shouldFinalize(report as never)).toBe(true);expect(detector.shouldFinalize(report as never)).toBe(false);});

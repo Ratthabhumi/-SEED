@@ -25,7 +25,12 @@ import claimGlow from "../../../assets/seed/vfx/claim_glow.png";
 import breakthroughSpark from "../../../assets/seed/vfx/breakthrough_spark.png";
 import raidAlert from "../../../assets/seed/vfx/raid_alert.png";
 
+import scout from "../../../assets/seed/frontier/scout.svg";
+import mite from "../../../assets/seed/frontier/mite.svg";
+import observatory from "../../../assets/seed/frontier/observatory.svg";
+
 export const SEED_ASSETS = {
+  frontier: {scout,mite,observatory},
   prompts: {
     q: promptQ,
     e: promptE,

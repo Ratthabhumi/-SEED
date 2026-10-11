@@ -22,6 +22,7 @@ export interface EffectTarget {
   bonusOrbit: number;
   bonusMines: number;
   beamUnlocked: boolean;
+  chainUnlocked: boolean; relayUnlocked: boolean; relayChain: boolean;
   regen: number;
   knowledgeMul: number;
 }
@@ -30,7 +31,7 @@ export function defaultEffectTarget(): EffectTarget {
   return {
     damageMul: 1, maxHp: 100, hp: 100, speed: 220, pickupR: 90, cooldownMul: 1,
     bonusProjectiles: 0, bonusGuardians: 0, bonusAura: 0, bonusOrbit: 0,
-    bonusMines: 0, beamUnlocked: false, regen: 0, knowledgeMul: 1,
+    bonusMines: 0, beamUnlocked: false, chainUnlocked: false, relayUnlocked: false, relayChain: false, regen: 0, knowledgeMul: 1,
   };
 }
 
@@ -47,6 +48,9 @@ export function applyTechEffect(t: EffectTarget, e: TechEffect): void {
     case "auraAdd": t.bonusAura += e.value; break;
     case "orbitAdd": t.bonusOrbit += e.value; break;
     case "mineAdd": t.bonusMines += e.value; break;
+    case "chainAdd": t.chainUnlocked = true; break;
+    case "relayAdd": t.relayUnlocked = true; break;
+    case "relayChain": t.relayChain = true; break;
     case "beamAdd": t.beamUnlocked = true; break;
     case "regenAdd": t.regen += e.value; break;
     case "dashCdMul": break; // reserved
@@ -58,4 +62,9 @@ export function applyTechEffect(t: EffectTarget, e: TechEffect): void {
 /** Exactly-once knowledge scaling. Pure — the simulation adds the result. */
 export function scaleKnowledge(baseAmount: number, knowledgeMul: number): number {
   return Math.max(0, baseAmount) * Math.max(0, knowledgeMul);
+}
+
+/** Non-mutating preview through the same effect application as a real selection. */
+export function previewTechEffects(current:EffectTarget,effects:readonly TechEffect[]):EffectTarget {
+  const next={...current};for(const effect of effects)applyTechEffect(next,effect);return next;
 }

@@ -131,3 +131,7 @@ To guarantee that vendored CC0 assets never look like an uncurated "asset flip":
 5. **Bundle & Manifest Hygiene**:
    - Only audited, production-selected assets are indexed in `assets/ASSET_MANIFEST.json` and bundled.
    - Byte-level SHA256 integrity is continuously verified against original vendor source files.
+
+## Living Frontier working slice
+
+Original MIT SVG source under assets/original/frontier; exact copies under assets/seed/frontier, hashes in the manifest. Scout silhouette: gold hood, cream face and teal pack; chaser: crimson segmented mite; ruin/research base: weathered lens observatory. Dark outlines and cream highlights separate actors from muted green ground. 64px actors, 96px landmark sources; 44px player, radius-scaled enemy, 70px landmark in game. Retain canonical hit circles, warning geometry and family glyphs. Pools cap at64 mites and48 landmarks, with geometric fallback beyond. Presentation only; no new collision. This family is a working prototype for human review, not approved production art. Do not expand other biomes until readability and performance are measured. Future age variants should change equipment silhouettes (camp/forge/rail/reactor/orbit), not merely tint.
