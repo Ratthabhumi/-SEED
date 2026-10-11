@@ -519,3 +519,5 @@ Base: clean Content9 a09babd; new branch feat/content9-ascension-guidance-202610
 Implemented canonical pure path guidance; actual inherited-effect arrival; two child-only research/raid conditions and a shared claim objective; simple EN/TH terms; keyboard choice/modal flow; Chronicle display translations; renderer CPU-submit instrumentation. ADR0022 explains content10/worldgen2/save1 and world-one c9 laws compatibility. First full check passed391tests; final checks/CI still pending at this checkpoint. See content10 audit, terminology guide, recovered human report and ASCENSION_AB_CHECKLIST. Human fun/replay and representative performance remain pending.
 
 Browser regression exposed stale pin header; refreshPinState now updates the live header and progress. Combo goals have native pin controls. Guidance progress traverses owned ancestors too so denominators do not shrink as prerequisites are acquired.
+
+Final browser fixture correction: canonical snapshot.lvl[6] holds offers (lvl[5] is draftOpen). The full map/pin/choice assertions are retained; completing-card checks use the actual pending offer.
