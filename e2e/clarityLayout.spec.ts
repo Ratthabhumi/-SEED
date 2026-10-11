@@ -157,7 +157,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     await expect(page.locator("#pause-screen")).toContainText("โซนอันตราย");
     await page.keyboard.press("Escape");
     await openDraft(page);
-    await expect(page.locator("#draft-screen")).toContainText("สุ่มใหม่");
+    await expect(page.locator("#draft-screen")).toContainText("สุ่มตัวเลือกใหม่");
     await closeDraft(page);
   });
 
