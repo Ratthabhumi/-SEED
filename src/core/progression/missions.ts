@@ -55,6 +55,7 @@ export const AGE_MISSIONS: Record<Exclude<AgeId, "stone">, AgeMission> = {
 
 /** Minimal mission-readable state (structural — any object with these fields). */
 export interface MissionState {
+  ascension?: number;
   ageKills: number;
   territoriesClaimed: number;
   elitesAge: number;
@@ -87,7 +88,10 @@ export function stepHave(kind: MissionKind, ms: MissionState): number {
 }
 
 export function missionProgress(targetAge: Exclude<AgeId, "stone">, ms: MissionState): MissionStepProgress[] {
-  return AGE_MISSIONS[targetAge].steps.map((st) => {
+  const steps = targetAge === "bronze" && (ms.ascension ?? 0) > 0
+    ? [...AGE_MISSIONS.bronze.steps, { kind: "claim" as const, need: 1, labelKey: "mission.child.claim" as const }]
+    : AGE_MISSIONS[targetAge].steps;
+  return steps.map((st) => {
     const have = Math.min(stepHave(st.kind, ms), st.need);
     return { kind: st.kind, need: st.need, have, done: have >= st.need, labelKey: st.labelKey };
   });
