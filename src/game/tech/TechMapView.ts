@@ -1,8 +1,9 @@
+import { effectSummary } from "../ui/techEffects";
 /**
  * TechMapView — Presentation component for the civilization Technology Tree.
  *
  * Architecture boundaries:
- * - Uses TechGraphLayout (Dagre) for deterministic presentation coordinates.
+ * - Uses TechGraphLayout (stable radial sectors) for deterministic presentation coordinates.
  * - Uses @panzoom/panzoom ONLY on the presentation canvas.
  * - Presentation-only: canonical simulation state is never mutated here.
  * - Defensive fallback: if Panzoom fails to initialize, falls back to a static scrollable view.
@@ -198,6 +199,11 @@ export class TechMapView {
     btnCurrent.title = "Focus current civilization frontier";
     btnCurrent.addEventListener("click", () => this.focusCurrent());
     controls.appendChild(btnCurrent);
+    const btnCenter = document.createElement("button");
+    btnCenter.className = "btn techmap-btn-center techmap-no-pan";
+    btnCenter.textContent = t("ui.center");
+    btnCenter.addEventListener("click", () => this.focusCurrent(true));
+    controls.appendChild(btnCenter);
 
     const btnOverview = document.createElement("button");
     btnOverview.className = "btn techmap-btn-overview techmap-btn-fit techmap-no-pan";
@@ -272,35 +278,24 @@ export class TechMapView {
     const defs = document.createElementNS(svgNS, "defs");
     svg.appendChild(defs);
 
-    // Render age lane background bands and headers
+    // Age rings provide orientation; domain branches expand in four directions.
     for (const lane of this.layoutResult.lanes) {
-      const laneRect = document.createElementNS(svgNS, "rect");
-      laneRect.setAttribute("x", String(lane.minX - 16));
-      laneRect.setAttribute("y", "0");
-      laneRect.setAttribute("width", String(lane.maxX - lane.minX + 32));
-      laneRect.setAttribute("height", String(this.layoutResult.height));
-      laneRect.setAttribute("class", `techmap-lane-bg techmap-lane-${lane.age}`);
-      svg.appendChild(laneRect);
-
-      // High-contrast age lane header pill
-      const pillWidth = Math.min(lane.maxX - lane.minX + 24, 220);
-      const pillX = (lane.minX + lane.maxX) / 2 - pillWidth / 2;
-      const pillRect = document.createElementNS(svgNS, "rect");
-      pillRect.setAttribute("x", String(pillX));
-      pillRect.setAttribute("y", "8");
-      pillRect.setAttribute("width", String(pillWidth));
-      pillRect.setAttribute("height", "36");
-      pillRect.setAttribute("rx", "8");
-      pillRect.setAttribute("class", `techmap-lane-pill techmap-lane-pill-${lane.age}`);
-      svg.appendChild(pillRect);
-
-      const laneText = document.createElementNS(svgNS, "text");
-      laneText.setAttribute("x", String((lane.minX + lane.maxX) / 2));
-      laneText.setAttribute("y", "32");
-      laneText.setAttribute("text-anchor", "middle");
-      laneText.setAttribute("class", `techmap-lane-title techmap-lane-title-${lane.age}`);
-      laneText.textContent = t(`age.${lane.age}` as EnKeys);
-      svg.appendChild(laneText);
+      const ring = document.createElementNS(svgNS, "circle");
+      ring.setAttribute("cx", String(this.layoutResult.width / 2));
+      ring.setAttribute("cy", String(this.layoutResult.height / 2));
+      ring.setAttribute("r", String(lane.maxX));
+      ring.setAttribute("fill", "none");
+      ring.setAttribute("stroke", "#33465b");
+      ring.setAttribute("stroke-width", "2");
+      ring.setAttribute("stroke-dasharray", "10 18");
+      svg.appendChild(ring);
+      const label = document.createElementNS(svgNS, "text");
+      label.setAttribute("x", String(this.layoutResult.width / 2));
+      label.setAttribute("y", String(this.layoutResult.height / 2 - lane.maxX + 34));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("class", "techmap-lane-title");
+      label.textContent = `${t("web.depth")} ${AGES.indexOf(lane.age) + 1}`;
+      svg.appendChild(label);
     }
 
     // Render connecting edges
@@ -330,8 +325,7 @@ export class TechMapView {
     if (pts.length === 2) {
       const p0 = pts[0]!;
       const p1 = pts[1]!;
-      const dx = (p1.x - p0.x) / 2;
-      return `M ${p0.x} ${p0.y} C ${p0.x + dx} ${p0.y}, ${p1.x - dx} ${p1.y}, ${p1.x} ${p1.y}`;
+      return `M ${p0.x} ${p0.y} L ${p1.x} ${p1.y}`;
     }
     // Spline through Dagre routed points
     let d = `M ${pts[0]!.x} ${pts[0]!.y}`;
@@ -359,7 +353,7 @@ export class TechMapView {
       // FUTURE = inside the visible window but prerequisites unmet; LOCKED =
       // beyond the window (or family-gated). Never symbol/color alone: every
       // node carries an explicit localized state word in its accessible name.
-      const inWindow = AGES.indexOf(n.age) <= s.ageIndex + 1;
+      const inWindow = AGES.indexOf(n.age) <= s.ageIndex + 1 && n.effects.every((e) => !e.family || activeFamilies(s.originId, s.expansionFamily).includes(e.family));
       const stateKey = (isOwned ? "tech.state.owned"
         : isAvailable ? "tech.state.now"
         : inWindow ? "tech.state.future" : "tech.state.locked") as EnKeys;
@@ -396,7 +390,7 @@ export class TechMapView {
       // Node title
       const label = document.createElement("span");
       label.className = "techmap-node-label";
-      label.textContent = t(n.titleKey as EnKeys);
+      label.textContent = t(n.titleKey as EnKeys) + (n.web?.kind === "frontier" ? ` ${n.web.depth}.${n.web.slot + 1}` : "");
       btn.appendChild(label);
 
       if (star) {
@@ -418,7 +412,7 @@ export class TechMapView {
     // CURRENT-mode neighborhood: available frontier + prerequisite layer +
     // future (children) layer. Everything else dims — never hidden, so the
     // graph shape stays legible while the frontier dominates.
-    this.currentFocusIds = new Set<string>();
+    this.currentFocusIds = new Set<string>(["spine-tools"]);
     const byId = new Map(this.layoutResult.nodes.map((x) => [x.node.id, x.node]));
     const children = new Map<string, string[]>();
     for (const x of byId.values()) {
@@ -451,8 +445,12 @@ export class TechMapView {
     if (!this.canvasEl || !this.viewportEl) return;
 
     try {
+      // Panzoom asynchronously applies startX/startY after initialization.
+      // Seed that reset with our frame so it cannot erase the initial focus.
+      const start = this.currentFrame();
       this.panzoom = Panzoom(this.canvasEl, {
-        minScale: 0.3,
+        startScale: start.scale, startX: start.x, startY: start.y,
+        minScale: 0.02,
         maxScale: 2.5,
         excludeClass: "techmap-no-pan",
       });
@@ -482,18 +480,17 @@ export class TechMapView {
   }
 
   /** Focus the player's active civilization frontier at readable 1.0 scale. */
-  public focusCurrent(): void {
-    if (!this.panzoom || !this.viewportEl) return;
-    this.viewMode = "current";
-    this.applyModeDim();
+  private currentFrame(centerRoot = false): { scale: number; x: number; y: number; recent: string } {
+    if (!this.viewportEl) return { scale: 1, x: 0, y: 0, recent: "spine-tools" };
     const vw = this.viewportEl.clientWidth || 800;
     const vh = this.viewportEl.clientHeight || 500;
     const s = this.sim.state;
 
     // Find frontier nodes: available to draft, recently owned, or starting stone node
     const frontierNodes: LayoutNode[] = [];
+    const recent = centerRoot ? "spine-tools" : [...s.owned].reverse().find((id) => this.layoutResult.nodeMap.has(id) && !id.startsWith("spine-") && !id.startsWith("foundation-")) ?? "spine-tools";
     for (const node of this.layoutResult.nodes) {
-      if (s.owned.includes(node.id) || s.draftOffers.some((c) => c.nodeId === node.id)) {
+      if (node.id === recent || (recent === "spine-tools" && node.node.web?.kind === "foundation")) {
         frontierNodes.push(node);
       }
     }
@@ -520,11 +517,20 @@ export class TechMapView {
       targetCenterY = (minY + maxY) / 2;
     }
 
-    const scale = 1.0;
-    const panX = (vw / 2) - targetCenterX;
-    const panY = (vh / 2) - targetCenterY;
-    this.panzoom.zoom(scale, { animate: true });
-    this.panzoom.pan(panX, panY, { animate: true });
+    const scale = recent === "spine-tools" ? Math.min(1, (vw - 48) / 700, (vh - 48) / 580) : 1;
+    const panX = (vw / 2 - this.layoutResult.width / 2) / scale + this.layoutResult.width / 2 - targetCenterX;
+    const panY = (vh / 2 - this.layoutResult.height / 2) / scale + this.layoutResult.height / 2 - targetCenterY;
+    return { scale, x: panX, y: panY, recent };
+  }
+
+  public focusCurrent(centerRoot = false): void {
+    if (!this.panzoom || !this.viewportEl) return;
+    this.viewMode = "current";
+    const frame = this.currentFrame(centerRoot);
+    this.currentFocusIds.add(frame.recent);
+    this.applyModeDim();
+    this.panzoom.zoom(frame.scale, { animate: true });
+    this.panzoom.pan(frame.x, frame.y, { animate: true });
   }
 
   public fit(): void {
@@ -538,7 +544,7 @@ export class TechMapView {
     if (bw <= 0 || bh <= 0) return;
 
     const padding = 56;
-    const scale = Math.max(0.3, Math.min(1.0, Math.min((vw - padding) / bw, (vh - padding) / bh)));
+    const scale = Math.max(0.02, Math.min(1.0, Math.min((vw - padding) / bw, (vh - padding) / bh)));
     const panX = (vw - bw) / (2 * scale);
     const panY = (vh - bh) / (2 * scale);
 
@@ -642,7 +648,7 @@ export class TechMapView {
 
       const desc = document.createElement("div");
       desc.className = "techmap-desc";
-      desc.textContent = t(sel.descriptionKey as EnKeys);
+      desc.textContent = t(sel.descriptionKey as EnKeys) + " · " + effectSummary(sel.effects);
       this.sideEl.appendChild(desc);
 
       // Requirements
@@ -701,7 +707,7 @@ export class TechMapView {
         const bb = BREAKTHROUGHS.find((x) => x.id === id);
         return bb ? t(bb.titleKey) : id;
       }).join(", ") || "—"}` +
-      (s.reservedTech !== "" ? ` · ${t("ui.reserve")}: ${sel ? t(sel.titleKey as EnKeys) : s.reservedTech}` : "");
+      (s.reservedTech !== "" ? ` · ${t("ui.reserve")}: ${byId.has(s.reservedTech) ? t(byId.get(s.reservedTech)!.titleKey as EnKeys) : s.reservedTech}` : "");
     this.sideEl.appendChild(ob);
 
     const domains = ["warfare", "industry", "science", "culture"] as const;

@@ -1,7 +1,7 @@
-// Presentation adapter for the procedural Tech DAG layout using Dagre.
+// Presentation adapter for the procedural technology web layout.
 // Strict boundary: presentation only, never mutates canonical TechNode,
 // never stored in RunState, never hashed in stateHash.
-import dagre from "@dagrejs/dagre";
+import { WEB_DEPTH_CAP } from "../../core/tech/web";
 import type { TechNode, AgeId, Domain } from "../../core/tech/graph";
 import { AGES } from "../../core/tech/graph";
 
@@ -43,7 +43,7 @@ export const NODE_WIDTH = 176;
 export const NODE_HEIGHT = 68;
 
 /**
- * Effective node footprint for a UI scale — THE box Dagre lays out AND the
+ * Effective node footprint for a UI scale — THE box the radial adapter lays out AND the
  * box nodes render in (inline px + border-box + hidden overflow). One function
  * owns both sides, so layout can never disagree with rendering (§15).
  * Monotonic in scale; deterministic; LANG-independent (labels wrap/ellipsize
@@ -56,7 +56,7 @@ export function techNodeBox(uiScale: number): { w: number; h: number } {
 
 /**
  * Compute deterministic 2D presentation coordinates for the Tech DAG.
- * Left-to-Right layout matches civilization progression (Stone → Space).
+ * Center-out domain sectors. Semantic metadata is independent of the renderer.
  */
 export function layoutTechGraph(
   nodes: readonly TechNode[],
@@ -71,106 +71,38 @@ export function layoutTechGraph(
 ): TechGraphLayoutResult {
   const w = options?.nodeWidth ?? NODE_WIDTH;
   const h = options?.nodeHeight ?? NODE_HEIGHT;
-  const nodeSep = options?.nodeSep ?? 24;
-  const rankSep = options?.rankSep ?? 64;
-  const marginX = options?.marginX ?? 40;
-  const marginY = options?.marginY ?? 40;
-
-  const g = new dagre.graphlib.Graph({ multigraph: false, compound: false });
-  g.setGraph({
-    rankdir: "LR",
-    nodesep: nodeSep,
-    ranksep: rankSep,
-    marginx: marginX,
-    marginy: marginY,
-  });
-  g.setDefaultEdgeLabel(() => ({}));
-
-  // Sort input deterministically by age order then id so layout is 100% stable
-  const sorted = [...nodes].sort((a, b) => {
-    const ageDiff = AGES.indexOf(a.age) - AGES.indexOf(b.age);
-    if (ageDiff !== 0) return ageDiff;
-    return a.id.localeCompare(b.id);
-  });
-
-  for (const n of sorted) {
-    g.setNode(n.id, { width: w, height: h });
-  }
-
-  for (const n of sorted) {
-    for (const prereqId of n.prerequisites) {
-      // Only set edge if prerequisite exists in the graph
-      if (g.hasNode(prereqId)) {
-        g.setEdge(prereqId, n.id);
-      }
-    }
-  }
-
-  dagre.layout(g);
-
+  // Fixed extent keeps existing coordinates stable as the bounded web expands.
+  const step = Math.max(w * 3.2, h * 5);
+  const center = (WEB_DEPTH_CAP + 1) * step;
+  const width = center * 2;
+  const sectors: Record<Domain, number> = { science: -3 * Math.PI / 4, warfare: -Math.PI / 4, industry: 3 * Math.PI / 4, culture: Math.PI / 4 };
+  const sorted = [...nodes].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const counts = new Map<string, number>();
   const layoutNodes: LayoutNode[] = [];
   const nodeMap = new Map<string, LayoutNode>();
-
   for (const n of sorted) {
-    const dagreNode = g.node(n.id);
-    const cx = dagreNode ? dagreNode.x : marginX;
-    const cy = dagreNode ? dagreNode.y : marginY;
-    const ln: LayoutNode = {
-      id: n.id,
-      x: cx - w / 2,
-      y: cy - h / 2,
-      width: w,
-      height: h,
-      centerX: cx,
-      centerY: cy,
-      age: n.age,
-      domain: n.domain,
-      node: n,
-    };
-    layoutNodes.push(ln);
-    nodeMap.set(n.id, ln);
+    const depth = n.web?.depth ?? (n.prerequisites.length ? AGES.indexOf(n.age) + 1 : 0);
+    const key = `${n.domain}:${depth}`;
+    const slot = n.web?.slot ?? counts.get(key) ?? 0;
+    counts.set(key, slot + 1);
+    const spread = slot === 0 ? 0 : Math.ceil(slot / 2) * (slot % 2 ? 1 : -1);
+    // At depth >=2, adjacent slot chord exceeds the rendered box diagonal.
+    const angle = sectors[n.domain] + spread * Math.PI / 18;
+    const radius = depth === 1 ? step * .55 : depth * step;
+    const cx = center + Math.cos(angle) * radius;
+    const cy = center + Math.sin(angle) * radius;
+    const ln: LayoutNode = { id: n.id, x: cx - w / 2, y: cy - h / 2, width: w, height: h,
+      centerX: cx, centerY: cy, age: n.age, domain: n.domain, node: n };
+    layoutNodes.push(ln); nodeMap.set(n.id, ln);
   }
-
-  const layoutEdges: LayoutEdge[] = [];
-  for (const e of g.edges()) {
-    const edgeData = g.edge(e);
-    const pts = edgeData?.points ? edgeData.points.map((p: { x: number; y: number }) => ({ x: p.x, y: p.y })) : [];
-    layoutEdges.push({
-      from: e.v,
-      to: e.w,
-      points: pts,
-    });
+  const edges: LayoutEdge[] = [];
+  for (const n of sorted) for (const p of n.prerequisites) {
+    const from = nodeMap.get(p); const to = nodeMap.get(n.id);
+    if (from && to) edges.push({ from: p, to: n.id, points: [
+      { x: from.centerX, y: from.centerY }, { x: to.centerX, y: to.centerY },
+    ] });
   }
-
-  // Calculate age lane horizontal bounds
-  const lanes: AgeLane[] = [];
-  for (const age of AGES) {
-    const ageNodes = layoutNodes.filter((ln) => ln.age === age);
-    if (ageNodes.length > 0) {
-      let minX = Number.POSITIVE_INFINITY;
-      let maxX = Number.NEGATIVE_INFINITY;
-      for (const an of ageNodes) {
-        if (an.x < minX) minX = an.x;
-        if (an.x + an.width > maxX) maxX = an.x + an.width;
-      }
-      lanes.push({
-        age,
-        minX: minX - rankSep / 4,
-        maxX: maxX + rankSep / 4,
-      });
-    }
-  }
-
-  const graphData = g.graph();
-  const totalWidth = (graphData?.width ?? 1200) + marginX;
-  const totalHeight = (graphData?.height ?? 800) + marginY;
-
-  return {
-    width: Math.max(totalWidth, 800),
-    height: Math.max(totalHeight, 600),
-    nodes: layoutNodes,
-    nodeMap,
-    edges: layoutEdges,
-    lanes,
-  };
+  // Legacy lane metadata now describes ordered age-ring radii.
+  const lanes = AGES.map((age, i) => ({ age, minX: i * step, maxX: (i + 1) * step }));
+  return { width, height: width, nodes: layoutNodes, nodeMap, edges, lanes };
 }

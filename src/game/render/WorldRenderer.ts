@@ -46,6 +46,22 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
       const py = gy + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-y", 300);
       g.fillStyle(style.groundAlt, 0.55);
       g.fillEllipse(px + 100, py + 100, 300, 220);
+      // Low-contrast, deterministic terrain silhouettes distinguish geography
+      // without making decorative terrain look like collision obstacles.
+      g.lineStyle(3, style.groundAlt, 0.55);
+      if (desc.biome === "arid") {
+        for (let i = 0; i < 3; i++) g.strokeEllipse(gx + 200, gy + 100 + i * 120, 320, 55);
+      } else if (desc.biome === "tundra") {
+        g.lineBetween(gx + 50, gy + 100, gx + 190, gy + 210);
+        g.lineBetween(gx + 190, gy + 210, gx + 400, gy + 170);
+      } else if (desc.biome === "badlands") {
+        g.lineBetween(gx + 60, gy + 400, gx + 140, gy + 280);
+        g.lineBetween(gx + 140, gy + 280, gx + 290, gy + 350);
+        g.lineBetween(gx + 290, gy + 350, gx + 450, gy + 240);
+      } else {
+        g.strokeEllipse(gx + 150, gy + 340, 220, 130);
+        g.strokeEllipse(gx + 380, gy + 150, 170, 110);
+      }
       // Civ layer per age (ADR-0006 Phase 9): sparse procedural marks BELOW
       // gameplay contrast. Seeded positions; bounded counts; never dots/discs.
       const du = deriveUint32(a.worldSeed, `civ:${ccx},${ccy}`);

@@ -1,0 +1,12 @@
+{
+  "source": "precommit content-9 working tree; synthetic browser staging, not human playtest",
+  "files": {
+    "postfix-draft-200-th.png": "7364ce639ef61e71092117cc6a31fbfb700f7da5e79fe5e372d9c50e80f39d48",
+    "postfix-draft-mobile-th.png": "99c324e01be1eed0da9e5f30a7ca943f37e160cfcd9bb7c6c636ae0b11e9a292",
+    "postfix-draft-responsive-th.png": "43e105a25a1174f8ad0e89d6ce0cdc9da301891a76bac75a56c14f4a85c38d70",
+    "postfix-pause-responsive-th.png": "40e549a6cc2f1bd5c70cf7bdad29e8ffd8f8a3a7796d32d13742838f0138d9b3",
+    "postfix-radial-current-th.png": "e9ff0d86acfe401fbfde197b1944e79c981fd4378c52c5fa5bc5ad3b3829aa83",
+    "postfix-radial-mobile-th.png": "3d7daa2f29a0ef96175c3ebc58054612202ae74f8a0797e04496fe8583963f11",
+    "postfix-radial-overview-th.png": "97e623f2e9ce416c7151545007f50db1a6a3edd70a36a731cef37c46723497eb"
+  }
+}

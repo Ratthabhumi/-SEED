@@ -1,3 +1,4 @@
+import { WINDOWS_TEST_HOST } from "../../scripts/testHost";
 // v0.26 Emergence & Experience Distribution Audit
 // Separates three distinct evidence classes:
 //   Class A: Conditioned Distribution Tests (Staged Sampling)
@@ -122,7 +123,7 @@ describe("v0.26 emergence & experience distribution audit", () => {
   // --------------------------------------------------------------------------
   // Class A: Conditioned Distribution Tests (Staged Sampling)
   // --------------------------------------------------------------------------
-  it("[Class A: Conditioned Sampling] Real Age Buckets, Decoupled Quality, and Fallback Invariants", { timeout: 90000 }, () => {
+  it("[Class A: Conditioned Sampling] Real Age Buckets, Decoupled Quality, and Fallback Invariants", { timeout: WINDOWS_TEST_HOST ? 600000 : 90000 }, () => {
     // Conditioned/staged sampling: intentionally stages sim.state.ageIndex across all 6 real ages (stone..space)
     // to test offer engine candidate generation, quality sampling distributions, and fallback rates at statistical scale.
     const AUDIT_SEEDS = 1000;
@@ -462,7 +463,7 @@ describe("v0.26 emergence & experience distribution audit", () => {
     };
   }
 
-  it("[Class B: Natural Gameplay] Autonomous Factorial Policy Evaluation (BUILD_SEEKER, SURVIVOR, EXPANDER, AGGRESSOR)", { timeout: 60000 }, () => {
+  it("[Class B: Natural Gameplay] Autonomous Factorial Policy Evaluation (BUILD_SEEKER, SURVIVOR, EXPANDER, AGGRESSOR)", { timeout: WINDOWS_TEST_HOST ? 600000 : 60000 }, async () => {
     // Factorial Experiment: Same Seeds x Same Origins x 4 Distinct Policies
     const FACTORIAL_SEEDS = ["FACTORIAL-001", "FACTORIAL-002", "FACTORIAL-003"];
     const POLICIES: PolicyName[] = ["BUILD_SEEKER", "SURVIVOR", "EXPANDER", "AGGRESSOR"];
@@ -472,6 +473,8 @@ describe("v0.26 emergence & experience distribution audit", () => {
       for (const origin of ORIGIN_LIST) {
         for (const policy of POLICIES) {
           results.push(runNaturalSimulation(seed, origin, policy, 2400));
+          // Let worker RPC settle between complete traces; canonical inputs unchanged.
+          await new Promise<void>((resolve) => setTimeout(resolve, 0));
         }
       }
     }
@@ -527,7 +530,7 @@ describe("v0.26 emergence & experience distribution audit", () => {
   // --------------------------------------------------------------------------
   // Class C: Single-Draft Offer & First-Pick Heuristic Divergence (Excluding Fallbacks)
   // --------------------------------------------------------------------------
-  it("[Class C: Single-Draft Offer & First-Pick Heuristic Divergence] Same Seed + Different Origins & Different Seeds + Same Origin (Excluding Fallbacks)", { timeout: 60000 }, () => {
+  it("[Class C: Single-Draft Offer & First-Pick Heuristic Divergence] Same Seed + Different Origins & Different Seeds + Same Origin (Excluding Fallbacks)", { timeout: WINDOWS_TEST_HOST ? 600000 : 60000 }, () => {
     // Clarification: This evaluates single-draft offer generation divergence and first non-fallback heuristic pick
     // after artificial Knowledge injection (gainKnowledge(2000)).
     // This measures structural offer engine divergence, NOT full multi-draft player decision trajectories.

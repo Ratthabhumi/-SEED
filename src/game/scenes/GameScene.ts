@@ -1,3 +1,4 @@
+import { effectSummary } from "../ui/techEffects";
 // GameScene — ADAPTER (ADR 0003). Owns no canonical gameplay state.
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
@@ -14,6 +15,7 @@ import { classifySite, frontierObjective, type FrontierObjective, type FrontierS
 import { dominionProgress } from "../../core/progression/ages";
 import { worldToChunk, CHUNK_SIZE, ACTIVE_RADIUS_CHUNKS } from "../../core/world/chunks";
 import { BIOME_STYLE, CIV_LAYER, ENEMY_LINEAGE } from "../../content/content";
+import { OUTPOST_MAXHP } from "../../core/world/territory";
 import type { AgeId } from "../../core/tech/graph";
 import { AGES } from "../../core/tech/graph";
 import { BREAKTHROUGHS, breakthroughProgress, nearestBreakthroughs, completingBreakthrough, tagDisplayKey } from "../../core/tech/synergy";
@@ -475,6 +477,27 @@ export class GameScene extends Phaser.Scene {
           signalSecured: this.sim.state.signalSecured,
           territories: this.sim.state.territories,
         }),
+        stageAllocationRegression: () => {
+          const s = this.sim.state;
+          s.ageIndex = 3; s.elapsed = 703; s.maxLogistics = s.logistics = 6;
+          s.knowledgeTotal = 1000;
+          s.build.hp = s.build.maxHp = 1e9;
+          s.territories = Array.from({ length: 3 }, (_, i) => ({
+            poiId: `allocation-${i}`, poiType: "ruin" as const, x: s.px + i * 100, y: s.py,
+            spec: "military" as const, tier: 1 as const, hp: 180, maxHp: OUTPOST_MAXHP,
+            disabled: false, garrisoned: false, heldSince: 0, repairT: 0,
+          }));
+          for (const e of s.enemies) e.active = false;
+          this.refreshHUD();
+          this.toggleCivMap();
+        },
+        stageNoAlternativeDraft: () => {
+          const s = this.sim.state;
+          s.owned = this.sim.techGraph().map((n) => n.id);
+          const ev: SimEvent[] = [];
+          this.sim.gainKnowledge(100, "e2e", ev);
+          this.handleEvents(ev);
+        },
         queueSpecRegression: (poiId: string) => {
           this.showBlocking("spec-regression-beat", 60);
           this.showSpecPicker(poiId);
@@ -1164,7 +1187,8 @@ export class GameScene extends Phaser.Scene {
       // BEFORE confirmation: current tier → next, current bonus → new bonus,
       // exact Knowledge cost. Unaffordable stays visible but disabled.
       const cost = outpostUpgradeCost(s.ageIndex);
-      const afford = s.knowledgeTotal >= cost;
+      const upgradeStatus = this.sim.outpostUpgradeStatus(up.poiId);
+      const afford = upgradeStatus.allowed;
       const b = document.createElement("button");
       b.className = "btn terr-up-btn";
       b.disabled = !afford;
@@ -1177,7 +1201,8 @@ export class GameScene extends Phaser.Scene {
       const line = document.createElement("div");
       line.className = "context-purpose";
       line.textContent = afford
-        ? `T1 → T2 · ${this.outpostBonusText(up.spec, 1)} → ${this.outpostBonusText(up.spec, 2)} · ${t("ui.upgradeCost")}: ${cost} ${t("ui.knowledge")}`
+        ? `T1 → T2 · ${this.outpostBonusText(up.spec, 1, up.x, up.y)} → ${this.outpostBonusText(up.spec, 2, up.x, up.y)} · ${t("ui.upgradeCost")}: ${cost} ${t("ui.knowledge")}`
+        : upgradeStatus.reason === "logistics" ? `${t("ui.upgradeNeedLogistics")} (+${upgradeStatus.logisticsCost})`
         : `${t("ui.upgradeNeedKnowledge")} (${t("ui.upgradeCost")}: ${cost} ${t("ui.knowledge")})`;
       bar.appendChild(line);
     }
@@ -1192,9 +1217,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** REAL per-outpost mechanical bonus text (same derivation as the sim). */
-  private outpostBonusText(spec: OutpostSpec, tier: 1 | 2): string {
-    if (spec === "research") return `+${tier * 10}% ${t("ui.knowledge")}`;
-    if (spec === "economy") return `+${(1.5 * tier).toFixed(1)} HP/s`;
+  private outpostBonusText(spec: OutpostSpec, tier: 1 | 2, x?: number, y?: number): string {
+    const multiplier = x === undefined || y === undefined ? 1 : this.sim.siteMultiplier(x, y, spec);
+    if (spec === "research") return `+${Number((tier * 10 * multiplier).toFixed(2))}% ${t("ui.knowledge")}`;
+    if (spec === "economy") return `+${(1.5 * tier * multiplier).toFixed(2)} HP/s`;
     return `+1 ${t("ui.squad")}`;
   }
 
@@ -1312,6 +1338,8 @@ export class GameScene extends Phaser.Scene {
       const logisticsInfo = el("div", "logistics-info");
       logisticsInfo.textContent = `${t("ui.logisticsLine")} ${s.logistics}/${s.maxLogistics}`;
       panel.appendChild(logisticsInfo);
+      const site = s.territories.find((t) => t.poiId === poiId);
+      if (site) panel.appendChild(el("p", "site-biome", `biome.${this.sim.siteBiome(site.x, site.y)}.role` as EnKeys));
       
       const row = el("div", "btn-row");
       for (const sp of specs) {
@@ -1326,7 +1354,7 @@ export class GameScene extends Phaser.Scene {
         icon.alt = sp.id;
         b.appendChild(icon);
         const txt = document.createElement("span");
-        txt.textContent = `${t(sp.name)} — ${t(sp.desc)} — ${t("ui.logisticsCost")}: ${cost}`;
+        txt.textContent = `${t(sp.name)} — ${this.outpostBonusText(sp.id, 1, site?.x, site?.y)} — ${t("ui.logisticsCost")}: ${cost}`;
         b.appendChild(txt);
         if (!canAfford) {
           b.title = t("ui.insufficientLogistics");
@@ -1469,9 +1497,15 @@ export class GameScene extends Phaser.Scene {
       list.appendChild(d);
     }
     for (const terr of s.territories) {
-      const d = document.createElement("div");
+      const d = document.createElement("button");
+      d.type = "button";
       const tracked = this.trackedPoiId === terr.poiId;
-      if (tracked) d.className = "civmap-tracked";
+      d.className = "btn civmap-site" + (tracked ? " civmap-tracked" : "");
+      d.addEventListener("click", () => {
+        this.trackedPoiId = terr.poiId;
+        const root = detail as unknown as { __refresh?: () => void };
+        root.__refresh?.();
+      });
       const specKey = terr.spec === "" ? null : (`ui.spec${terr.spec[0]?.toUpperCase()}${terr.spec.slice(1)}` as EnKeys);
       const raidMark = s.raid && s.raid.poiId === terr.poiId ? ` ⚠ ${t("ui.raidIncoming")} ${Math.ceil(s.raid.tMinus)}s` : "";
       d.textContent = `${tracked ? "◎ " : "◈ "}${t(`poi.${terr.poiType}.name` as EnKeys)} · ` +
@@ -1521,7 +1555,8 @@ export class GameScene extends Phaser.Scene {
     const rows: Array<[string, string]> = [
       [t("ui.siteState"), `${stateTxt}${raided && s.raid ? ` (${Math.ceil(s.raid.tMinus)}s)` : ""}`],
       [specTxt, `T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}`],
-      [t("ui.siteBonus"), terr.spec === "" ? "—" : this.outpostBonusText(terr.spec, terr.tier)],
+      [t("ui.siteBonus"), terr.spec === "" ? "—" : this.outpostBonusText(terr.spec, terr.tier, terr.x, terr.y)],
+      [t("ui.siteBiome"), t(`biome.${this.sim.siteBiome(terr.x, terr.y)}.role` as EnKeys)],
       [t("ui.siteHeld"), this.fmtTime(Math.max(0, s.elapsed - terr.heldSince))],
     ];
     for (const [k, v] of rows) {
@@ -1539,16 +1574,22 @@ export class GameScene extends Phaser.Scene {
       detail.appendChild(rep);
     }
     const actions = el("div", "btn-row");
+    if (terr.spec === "" && !terr.disabled) actions.appendChild(button("ui.outpostSpec", () => {
+      this.toggleCivMap();
+      this.showSpecPicker(terr.poiId);
+    }));
     // UPGRADE only when eligible; cost + benefit stated before confirmation.
     const holdOk = s.elapsed - terr.heldSince >= TIER2_HOLD_SEC;
     if (!terr.disabled && terr.spec !== "" && terr.tier === 1) {
       const cost = outpostUpgradeCost(s.ageIndex);
-      const afford = s.knowledgeTotal >= cost;
+      const upgradeStatus = this.sim.outpostUpgradeStatus(terr.poiId);
+      const afford = upgradeStatus.allowed;
       const up = document.createElement("button");
       up.className = "btn";
       up.disabled = !afford;
       up.textContent = afford
         ? `⬆ ${t("ui.upgrade")}: T1 → T2 · ${t("ui.upgradeCost")} ${cost}`
+        : upgradeStatus.reason === "logistics" ? `${t("ui.upgradeNeedLogistics")} (+${upgradeStatus.logisticsCost})`
         : `⬆ ${t("ui.upgradeNeedKnowledge")} (${cost})`;
       if (afford && holdOk) {
         up.addEventListener("click", () => {
@@ -1562,6 +1603,17 @@ export class GameScene extends Phaser.Scene {
         up.textContent = `⬆ ${t("ui.upgradeNeedHold")}`;
       }
       actions.appendChild(up);
+    }
+    if (terr.spec !== "") {
+      const dismantle = button("ui.dismantle", () => {
+        if (!confirm(t("ui.dismantleConfirm"))) return;
+        this.handleEvents(this.sim.dismantleOutpost(terr.poiId));
+        const root = detail as unknown as { __refresh?: () => void };
+        root.__refresh?.();
+      });
+      dismantle.id = "outpost-dismantle-btn";
+      dismantle.disabled = s.raid?.poiId === terr.poiId;
+      actions.appendChild(dismantle);
     }
     const track = document.createElement("button");
     track.className = "btn";
@@ -1901,7 +1953,12 @@ export class GameScene extends Phaser.Scene {
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "draft-screen";
-    screen.appendChild(el("h2", "", s.draftContext === "poi" ? "ui.poiFound" : "ui.chooseTech"));
+    screen.setAttribute("role", "dialog");
+    screen.setAttribute("aria-modal", "true");
+    screen.setAttribute("aria-labelledby", "draft-heading");
+    const heading = el("h2", "", s.draftContext === "poi" ? "ui.poiFound" : "ui.chooseTech");
+    heading.id = "draft-heading";
+    screen.appendChild(heading);
     // Scrollable wrapper for cards to handle overflow at high UI scales
     const cardsWrapper = el("div", "cards-wrapper");
     const cards = el("div", "cards");
@@ -1917,7 +1974,7 @@ export class GameScene extends Phaser.Scene {
         childrenOf.set(p, arr);
       }
     }
-const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
+    const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     // Also include fallback cards (they're valid TechNodes but not in the graph)
     const fb = fallbackCards(s.level);
     for (const f of fb) graphById.set(f.id, f);
@@ -1933,9 +1990,20 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       const c = el("div", "card");
       c.appendChild(el("div", "key", undefined, `[${i + 1}]`));
       const h = document.createElement("h3");
-      h.textContent = t(n.titleKey as EnKeys);
+      h.textContent = t(n.titleKey as EnKeys) + (n.web?.kind === "frontier" ? ` ${n.web.depth}.${n.web.slot + 1}` : "");
       const d = document.createElement("p");
-      d.textContent = t(n.descriptionKey as EnKeys);
+      d.className = "card-effects";
+      d.textContent = effectSummary(offer.effectiveEffects);
+      const preview = document.createElement("div");
+      preview.className = `card-preview domain-${n.domain}`;
+      preview.setAttribute("aria-hidden", "true");
+      const previewIcon = domainIcon[n.domain] ?? SEED_ASSETS.icons.research;
+      const art = document.createElement("img");
+      art.src = previewIcon;
+      art.alt = "";
+      preview.appendChild(art);
+      preview.appendChild(document.createTextNode(n.domain === "warfare" ? "✦" : n.domain === "industry" ? "⚙" : n.domain === "culture" ? "◇" : "✧"));
+      c.appendChild(preview);
       // Phase 4: legible plan — DOMAIN + synergy progress on every card.
       const dom = el("div", "card-domain", `domain.${n.domain}` as EnKeys);
       const iconSrc = domainIcon[n.domain];
@@ -1980,7 +2048,12 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       c.appendChild(h);
       c.appendChild(d);
       c.appendChild(dom);
-      if (syn.textContent !== "") c.appendChild(syn);
+      const plan = document.createElement("details");
+      plan.className = "card-plan";
+      const planTitle = document.createElement("summary");
+      planTitle.textContent = t("ui.buildPlan");
+      plan.appendChild(planTitle);
+      if (syn.textContent !== "") plan.appendChild(syn);
       // Leads-to: the strategic consequence of this choice (names, not icons).
       const leads = (childrenOf.get(n.id) ?? [])
         .map((id) => graphById.get(id))
@@ -1990,8 +2063,9 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
         const l = document.createElement("div");
         l.className = "card-leads";
         l.textContent = `▸ ${t("ui.leadsTo")}: ${leads.map((g) => t(g.titleKey as EnKeys)).join(" · ")}`;
-        c.appendChild(l);
+        plan.appendChild(l);
       }
+      c.appendChild(plan);
       c.appendChild(q);
       // Reroll-changed marker: icon-adjacent text, never color-only.
       if (this.rerollNewIds.has(offer.nodeId)) {
@@ -2007,7 +2081,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       selectBtn.dataset.testid = "card-select";
       try {
         selectBtn.textContent = t("ui.select");
-        selectBtn.setAttribute("aria-label", `${t("ui.selectCard")} ${i + 1}`);
+        selectBtn.setAttribute("aria-label", t("ui.selectCard").replace("{0}", String(i + 1)));
       } catch {
         selectBtn.textContent = "SELECT";
         selectBtn.setAttribute("aria-label", `Select card ${i + 1}`);
@@ -2032,10 +2106,12 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     });
     const agency = el("div", "draft-agency");
     const reroll = document.createElement("button");
+    reroll.id = "draft-reroll-btn";
     reroll.type = "button";
     reroll.className = "btn";
-    reroll.disabled = s.rerolls <= 0;
-    reroll.textContent = `${t("ui.reroll")} (${s.rerolls})`;
+    reroll.disabled = !this.sim.canRerollDraft();
+    reroll.textContent = s.rerolls > 0 && !this.sim.canRerollDraft()
+      ? t("draft.rerollEmpty") : `${t("ui.reroll")} (${s.rerolls})`;
     reroll.addEventListener("click", () => {
       // Capture visible ids first: NEW markers are computed presentation-side
       // from the before/after difference (never canonical state).
@@ -2048,6 +2124,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
       document.getElementById("draft-screen")?.remove();
     });
     const skip = document.createElement("button");
+    skip.id = "draft-skip-btn";
     skip.type = "button";
     skip.className = "btn";
     skip.textContent = t("ui.skip");
@@ -2062,7 +2139,7 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     const hints = el("div", "draft-hints");
     const skipGain = Math.floor(scaleKnowledge(
       10 + s.level * 2,
-      s.build.knowledgeMul * (1 + territoryKnowledgeBonus(activeTerritories(s.territories))),
+      this.sim.knowledgeMult(),
     ));
     const hintLines: Array<[string, string]> = [
       ["◈", `${t("ui.reserve")}: ${t("draft.reserveHint")}`],
@@ -2079,7 +2156,15 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     this.rerollNewIds.clear();
     const stays = el("div", "draft-stays", "ui.ownedStays");
     screen.appendChild(stays);
+    screen.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const controls = Array.from(screen.querySelectorAll<HTMLElement>("button:not([disabled]), summary"));
+      const first = controls[0]; const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    });
     root.appendChild(screen);
+    screen.querySelector<HTMLButtonElement>(".card-select")?.focus();
   }
 
   private pickCard(i: number): void {
@@ -2209,6 +2294,16 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
     screen.appendChild(panel);
     root.appendChild(screen);
     this.surfaces.suspendContext();
+    primary.querySelector<HTMLButtonElement>("button")?.focus();
+    screen.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const scope = screen.querySelector(".confirm-nested") ?? panel;
+      const controls = Array.from(scope.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      if (!controls.length) return;
+      event.preventDefault();
+      const index = controls.indexOf(document.activeElement as HTMLButtonElement);
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length]?.focus();
+    });
   }
 
   /**
@@ -2705,6 +2800,9 @@ const graphById = new Map(this.sim.techGraph().map((g) => [g.id, g]));
           toast("ui.upgrade");
           sfx.age();
           this.qa?.noteSimEvent("outpost_upgraded", e.poiId);
+          break;
+        case "outpost_dismantled":
+          this.qa?.noteSimEvent("outpost_dismantled", `${e.poiId}:${e.released}`);
           break;
         case "outpost_lost":
           toast("ui.outpostLost");

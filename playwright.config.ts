@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  // Browser runs must never erase durable human-playtest evidence.
+  outputDir: "./test-results/browser",
   // Slow-office-machine accommodation (i5-10210U + software WebGL): some
   // real-time gameplay tests need >60s wall-clock there. Assertions unchanged;
   // a genuine hang still fails at this cap. CI (fast) is unaffected.

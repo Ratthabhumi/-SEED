@@ -69,6 +69,7 @@ export interface RunStats {
 }
 
 export interface RunState {
+  techNodes: TechNode[];
   // Identity
   masterSeed: string;
   worldSeed: string;

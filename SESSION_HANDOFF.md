@@ -127,3 +127,57 @@ npm run qa:human
 - Final focused Chromium: 8/8 PASS (6 new softlock cases + 2 frontier cases), including Thai 200% at 1280×720. Thai screenshots visually inspected.
 - Initial full browser sweep: 45 PASS, 2 failures repaired and verified by the focused rerun, 1 pre-existing capture-only skip (`SEED_CAPTURE=1`). Final full-suite certification remains the exact-SHA CI job.
 - One concurrent check attempt timed out in the existing 60-second factorial audit plus worker RPC; after browser work stopped, unchanged `npm run check` passed in 20.38s. No timeout/acceptance threshold relaxed. Existing large-bundle warning and NO_COLOR/FORCE_COLOR warnings remain; hardware performance was not measured.
+
+
+## 2026-10-11 — Civilization playability workstream
+
+Branch: feat/civilization-playability-20261011, based on d3814a6.
+Status: IMPLEMENTED_PENDING_VALIDATION. No new human fun/replay pass.
+
+User supplied four screenshots and reported unresolved technology/map/UI work.
+Atomic's T2 upgrade mission is genuinely blocked at full 6/6 logistics; the old
+Later/Escape modal fix remains. Added explicit confirmed capacity reallocation,
+shared upgrade/reroll validation, biome-specific research/supply tradeoffs,
+responsive pause/draft workspaces and truthful localized effect previews.
+Unsupported modifiers are withheld instead of claiming powers they never apply.
+
+Implemented bounded four-domain technology web: one root, authored joins,
+choice-triggered deterministic expansion, stable polar layout, shared eligibility
+and canonical graph hashing. CONTENT_VERSION 9; worldgen 2/save schema 1.
+This is bounded compositional content, not an infinite-content claim.
+
+Evidence and retest: docs/playtests/civilization-playability-20261011.md.
+Research: docs/research/market-and-quality-20261011.md.
+Raw human reports were backed up privately with hashes. Playwright's output
+folder is isolated from human archives. Regression fixtures retain the exact
+content-8 generator for a conditioned before/after choice-supply comparison.
+Existing natural distribution thresholds are preserved. Test workers are bounded
+to one to limit startup/memory pressure on office hardware. Windows watchdogs
+are 600s after the exact d3814a6 baseline itself timed out (192.93s Class B);
+Linux caps and numerical acceptance criteria remain unchanged (ADR 0020).
+
+Required before readiness: complete check, analyze, browser regressions/visual
+inspection, zip/release:verify, source review, focused commit/push and exact-SHA
+GitHub CI 4/4. No main merge/tag or v0.27 start. Fresh human playtest remains
+required after those gates pass.
+
+Local validation boundary so far: complete check typechecked and ran all 367
+tests; 366 passed, one obsolete root-only Ascension expectation failed. The
+content-9 reset expectation was corrected explicitly. Final frontier refinement
+requires two purchased domains; targeted rerun passed 27 selected cases (16
+unselected by name filter), including the reset, refund, joins, determinism and
+cohort. Final cohort max is 117 nodes. Complete final-source suite certification
+will be the unfiltered exact-SHA Node 22/24 CI checks; do not call the initial
+local check green. Standalone Analyze passed 6/6; production build passed. Final browser/package gates remain pending.
+
+Final-source TypeScript PASS; standalone Analyze 6/6 PASS with no worker RPC
+errors. Statistical thresholds unchanged. Browser validation also covers the
+mobile radial workspace; headings/node labels/sidebar use line-height >=1.7.
+
+Browser first pass: 22/26 passed. Four failures were diagnosed: territory snapshot positional compatibility (new fields now appended), excess Thai pause paragraph margins (removed without reducing line-height), and EN/TH mobile fixtures leaving two queued drafts (drain now explicitly verifies closure). Final rerun is required after rebuilding. Local browser pass also verified Later/Esc/FIFO, affordability, first/second Signal, reallocation cancel/confirm, no-alternative reroll, 200% Thai toolbar, map pan/zoom/pin and repeated open/close.
+
+Browser second pass: 10/11 passed, including the corrected snapshot and both mobile languages. Thai pause still overflowed because full-width section-button rules also stacked scale/language buttons; scoped wrapping-row widths now correct this root cause. Visual inspection found empty map focus after fallback rewards: focus now chooses only IDs in the actual layout and tests require visible graph content. Smaller UI-only XP fixtures preserve decision/queue assertions without staging unnecessary levels. Final rebuilt browser rerun pending.
+
+Final local acceptance: source TypeScript and production build PASS. Browser coverage completed through focused reruns: desktop EN/TH pause/draft, Thai 200%, full-logistics reallocation, terminal-reroll/map focus, mobile EN/TH actual visible graph, radial EN/TH. Existing Later/Esc/FIFO/Signal and pan/zoom/pin regressions passed earlier; final unfiltered browser suite is a CI gate. Screenshots inspected and hashed separately as synthetic evidence. Precommit ZIP/release:verify passed all 17 artifact checks (46 files, 2.6 MB extracted). After commit, rebuild/package clean HEAD and verify its exact-SHA CI 4/4 before the next human run.
+
+Delivery boundary: initial local unfiltered check was NOT green; corrected focused unit cases and Analyze passed. Final unfiltered check runs on both Node 22 and 24 in GitHub CI. The final task response/Actions run and ignored scratch/playability-delivery-receipt.json record delivery SHA/CI/artifact evidence; fetch and verify rather than infer a live CI result from this precommit handoff. Human fun/replay and hardware frame-time budget remain unvalidated. Rollback source reference: d3814a6b7e94182a05be66e341eb36c0914eabc0 (content 8); no main merge/tag/v0.27.

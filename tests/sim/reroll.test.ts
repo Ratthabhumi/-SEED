@@ -113,25 +113,18 @@ describe("reroll meaningful-change contract", () => {
   });
 
   it("no alternative → reroll not consumed, explicit unavailable result", () => {
-    // Find a trace whose whole real pool is already on screen (tiny frontier).
-    let sim: RunSimulation | null = null;
-    const seeds = ["EPOCH-REROLL-10", "EPOCH-REROLL-11", "EPOCH-REROLL-12", "EPOCH-REROLL-13"];
-    for (const seed of seeds) {
-      const cand = testSim(seed);
-      openDraft(cand);
-      const pool = new Set(poolReal(cand));
-      const shown = new Set(shownReal(cand));
-      if ([...pool].every((id) => shown.has(id))) {
-        sim = cand;
-        break;
-      }
-    }
-    expect(sim, "expected a seed with an exhausted tiny pool").not.toBeNull();
-    const s = sim?.state;
-    if (!sim || !s) throw new Error("unreachable");
+    // Content 9 starts with a rich pool. Stage its finite exhausted boundary,
+    // rather than relying on content-8 tiny-start seeds. Mutation assertions stay.
+    const sim = testSim("EPOCH-REROLL-EMPTY");
+    sim.state.owned = sim.techGraph().map((n) => n.id);
+    openDraft(sim);
+    const s = sim.state;
+    expect(sim.canRerollDraft()).toBe(false);
+    const beforeSnapshot = sim.snapshot();
     const beforeChoices = shownIds(sim);
     const ev = sim.rerollDraft();
     expect(ev).toHaveLength(1);
+    expect(sim.snapshot()).toBe(beforeSnapshot);
     expect(ev[0]?.type).toBe("draft_reroll_unavailable");
     // Zero mutation: uses kept, choices identical, still open.
     expect(s.rerolls).toBe(1);

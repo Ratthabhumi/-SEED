@@ -1,12 +1,22 @@
 // Tech DAG validator: acyclic, reachable spine, viable choices.
 import type { TechGraph } from "./graph";
 import { CRITICAL_SPINE, AGES } from "./graph";
+import { WEB_NODE_CAP, WEB_DEPTH_CAP, WEB_SLOT_CAP } from "./web";
 
 export interface ValidationResult { ok: boolean; errors: string[]; }
 
 export function validateTechGraph(g: TechGraph): ValidationResult {
   const errors: string[] = [];
   const byId = new Map(g.nodes.map((n) => [n.id, n]));
+  if (byId.size !== g.nodes.length) errors.push("duplicate node id");
+  if (g.nodes.some((n) => n.web)) {
+    if (g.nodes.filter((n) => !n.prerequisites.length).length !== 1) errors.push("web must have one root");
+    if (g.nodes.length > WEB_NODE_CAP) errors.push("web exceeds node cap");
+    for (const n of g.nodes) {
+      if (!n.web || n.web.depth > WEB_DEPTH_CAP || n.web.slot >= WEB_SLOT_CAP) errors.push(`web bounds invalid ${n.id}`);
+      for (const e of n.effects) if (!Number.isFinite(e.value)) errors.push(`invalid effect ${n.id}`);
+    }
+  }
 
   // Prereq existence.
   for (const n of g.nodes) {
