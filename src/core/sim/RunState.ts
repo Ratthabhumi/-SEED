@@ -152,6 +152,7 @@ export interface RunState {
   // Draft provenance for UI titles ("level" vs "poi").
   draftContext: "level" | "poi";
   // Timers / angles (transient but canonical — recreated identically per run)
+  relayCd: number;
   spawnT: number; eliteT: number; mineT: number; auraT: number;
   weaponCd: Record<WeaponFamily, number>;
   guardianAng: number; orbitAng: number;

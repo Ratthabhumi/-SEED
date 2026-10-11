@@ -555,6 +555,26 @@ export const en = {
   "meta.storage": "Could not save. Your current play continues; archive progress is not confirmed.",
   "settings.reduced": "Reduced effects",
 
+  "tech.conduction.name": "Conduction lattice",
+  "tech.conduction.description": "Energy attacks chain once per strike to two additional enemies within 120 units, at half damage per jump.",
+  "tech.relay.name": "Outpost relay",
+  "tech.relay.description": "Up to three active specialized bases pulse every 2s: 8 damage × your multiplier, range 180.",
+  "breakthrough.relay": "Resonant frontier",
+  "breakthrough.relay.description": "Earn both Conduction and Relay: base pulses now jump to two more enemies.",
+  "effect.chainAdd": "Energy attacks: two jumps at half damage",
+  "effect.relayAdd": "Base pulses: 8 damage × multiplier / 2s / 180 range / 3 bases",
+  "effect.relayChain": "Base pulses gain two jumps",
+  "tag.conduction": "Conduction",
+  "tag.relay": "Relay",
+  "ui.finishAttempt": "Finish victorious attempt → Archive",
+  "ui.victory": "Civilization secured",
+  "ui.sitePreview": "Site preview",
+  "ui.hostiles": "Nearby hostiles",
+  "ui.range": "Direct distance",
+  "ui.beforeAfter": "Current → After upgrade",
+  "ui.inactive": "Inactive",
+  "ui.active": "Active",
+  "ui.archiveReturn": "Return to Archive",
 } as const;
 
 export type EnKeys = keyof typeof en;

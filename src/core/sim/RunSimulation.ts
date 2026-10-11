@@ -148,7 +148,7 @@ export class RunSimulation {
       abilityCd: 0, overdriveT: 0,
       history: [],
       recentDraftOffers: [],
-      spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
+      relayCd: 0, spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
       guardianAng: 0, orbitAng: 0, beamFlash: null,
       enemies: Array.from({ length: MAX_ENEMIES }, () => ({
@@ -446,7 +446,7 @@ export class RunSimulation {
     const mult = qualityMods[quality];
     const effectiveEffects = node.effects.map((e) => ({
       ...e,
-      value: typeof e.value === "number" ? e.value * mult : e.value,
+      value: ["chainAdd","relayAdd","relayChain"].includes(e.kind) ? e.value : typeof e.value === "number" ? e.value * mult : e.value,
     }));
     
     // Score breakdown for telemetry/debug
@@ -831,8 +831,13 @@ export class RunSimulation {
     const s = this.state;
     const t = territoryById(s.territories, poiId);
     if (s.over || !t || t.spec !== "" || t.disabled) return false;
+    return this.canAffordSpecialization(t.poiType,spec);
+  }
+
+  private canAffordSpecialization(poiType:POIType,spec:OutpostSpec):boolean {
+    const s=this.state;
     const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
-    const firstSignal = !s.signalSecured && t.poiType === "signal" &&
+    const firstSignal = !s.signalSecured && poiType === "signal" &&
       !s.territories.some((other) => other.poiType === "signal" && other.spec !== "");
     return s.logistics + cost <= s.maxLogistics || firstSignal;
   }
@@ -1240,6 +1245,21 @@ export class RunSimulation {
     return biomeSpecializationMultiplier(this.siteBiome(x, y), spec);
   }
 
+  /** Read-only pre-claim facts; same affordability rule as specialization validation. */
+  outpostPreview(x:number,y:number,poiType:POIType) {
+    if(!Number.isFinite(x)||!Number.isFinite(y))return null;
+    const s=this.state;
+    return {
+      biome:this.siteBiome(x,y),
+      distance:Math.hypot(x-s.px,y-s.py),
+      hostiles:this.queryRadius(x,y,CLAIM_CLEAR_RADIUS,[]).length,
+      researchPercent:10*this.siteMultiplier(x,y,"research")*this.researchBonusScale(),
+      economyRegen:1.5*this.siteMultiplier(x,y,"economy"),
+      militarySlots:1,
+      options:(["research","military","economy"] as const).map(spec=>({spec,cost:calculateLogisticsCost(spec,1,s.ageIndex),affordable:!s.over&&this.canAffordSpecialization(poiType,spec)}))
+    };
+  }
+
   researchBonusScale(): number { return childResearchBonusScale(this.state.ascension); }
 
   knowledgeMult(): number {
@@ -1362,6 +1382,57 @@ export class RunSimulation {
       ev.push({ type: "boss_warning" });
     }
     return e;
+  }
+
+  /** Voluntary terminal victory, available only after a real boss kill. */
+  finishAttempt(): SimEvent[] {
+    const s=this.state;
+    if (s.over || s.stats.bosses < 1 || s.build.hp <= 0) return [];
+    s.over=true;s.draftOpen=false;s.draftOffers=[];
+    return [{type:"run_completed"}];
+  }
+
+  /** Stable pool order breaks distance ties; each victim is hit once, max two hops.
+   * No projectile recursion and no RNG consumption. Excluded objects remain excluded
+   * even when splitter deaths reuse the pool slot during this attack. */
+  private arcChain(first:SimEnemy,x:number,y:number,damage:number,ev:SimEvent[],source:"chain"|"relay",excluded:readonly SimEnemy[]=[],excludedCount=excluded.length):void {
+    const seen=new Set<SimEnemy>([first]);
+    for(let i=0;i<excludedCount;i++)seen.add(excluded[i]!);
+    for(let hop=0;hop<2;hop++){
+      let target:SimEnemy|null=null;let best=120*120;
+      for(const e of this.state.enemies){
+        if(!e.active || seen.has(e))continue;
+        const d=(e.x-x)**2+(e.y-y)**2;
+        if(d<=best && (target===null || d<best)){target=e;best=d;}
+      }
+      if(!target)break;
+      const nx=target.x,ny=target.y;seen.add(target);damage*=.5;
+      ev.push({type:"energy_arc",x1:x,y1:y,x2:nx,y2:ny,source});
+      this.hurtEnemy(target,damage,source,ev);x=nx;y=ny;
+    }
+  }
+
+  private updateRelays(dt:number,ev:SimEvent[]):void {
+    const s=this.state;
+    if(!s.build.relayUnlocked)return;
+    s.relayCd=Math.max(0,s.relayCd-dt);
+    if(s.relayCd>0)return;
+    s.relayCd=2;let count=0;
+    for(const terr of s.territories){
+      if(terr.disabled || !terr.spec || terr.hp<=0)continue;
+      if(count++>=3)break;
+      let target:SimEnemy|null=null;let best=180*180;
+      for(const e of s.enemies){
+        if(!e.active)continue;const d=(e.x-terr.x)**2+(e.y-terr.y)**2;
+        if(d<=best && (target===null || d<best)){target=e;best=d;}
+      }
+      if(!target)continue;
+      const x=target.x,y=target.y,damage=8*s.build.damageMul;
+      ev.push({type:"energy_arc",x1:terr.x,y1:terr.y,x2:x,y2:y,source:"relay"});
+      // Chain candidates are evaluated before the primary target can split/reuse.
+      if(s.build.relayChain)this.arcChain(target,x,y,damage,ev,"relay");
+      this.hurtEnemy(target,damage,"relay",ev);
+    }
   }
 
   private hurtEnemy(e: SimEnemy, dmg: number, src: string, ev: SimEvent[], kx = 0, ky = 0): void {
@@ -1613,6 +1684,7 @@ export class RunSimulation {
     if (!tgt) return;
     const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
     const lim = Math.min(hit.length, 10);
+    if(fam==="energy" && s.build.chainUnlocked)this.arcChain(tgt,tgt.x,tgt.y,st.damage*s.build.damageMul,ev,"chain",hit,lim);
     for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * s.build.damageMul, fam, ev);
     s.beamFlash = { x2: tgt.x, y2: tgt.y, t: 0.12 };
   }
@@ -1621,6 +1693,8 @@ export class RunSimulation {
     const s = this.state;
     const hit = this.queryRadius(s.px, s.py, radius, this.scratch);
     const lim = Math.min(hit.length, 30);
+    const first=hit[0];
+    if(first && fam==="energy" && s.build.chainUnlocked)this.arcChain(first,first.x,first.y,dmg,ev,"chain",hit,lim);
     for (let i = 0; i < lim; i++) {
       this.hurtEnemy(hit[i] as SimEnemy, dmg, fam, ev);
       if (s.over) return;
@@ -1892,6 +1966,7 @@ export class RunSimulation {
     if (s.over) return ev;
     // Territory upkeep (repair presence, economy aura) every step.
     this.updateTerritories(dt, ev);
+    this.updateRelays(dt, ev);
     if (s.over) return ev;
     for (const p of s.projs) {
       if (!p.active) continue;
@@ -1908,6 +1983,7 @@ export class RunSimulation {
           const e = hit[0] as SimEnemy;
           const d = Math.max(1, Math.hypot(e.x - p.x, e.y - p.y));
           const kb = 14;
+          if (p.src === "energy" && s.build.chainUnlocked) this.arcChain(e,e.x,e.y,p.dmg,ev,"chain");
           this.hurtEnemy(e, p.dmg, p.src, ev, ((e.x - p.x) / d) * kb, ((e.y - p.y) / d) * kb);
           p.active = false;
         }

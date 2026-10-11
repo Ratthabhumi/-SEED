@@ -7,7 +7,7 @@ export interface TechEffect {
   kind:
     | "damageMul" | "maxHpAdd" | "moveMul" | "pickupMul" | "cooldownMul"
     | "projectileAdd" | "auraAdd" | "orbitAdd" | "summonAdd" | "mineAdd"
-    | "beamAdd" | "regenAdd" | "dashCdMul" | "knowledgeMul" | "weaponEvolve";
+    | "chainAdd" | "relayAdd" | "relayChain" | "beamAdd" | "regenAdd" | "dashCdMul" | "knowledgeMul" | "weaponEvolve";
   value: number;
   family?: "kinetic" | "energy" | "defense" | "field";
 }

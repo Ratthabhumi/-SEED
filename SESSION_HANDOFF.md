@@ -1,3 +1,14 @@
+## Living Frontier implementation checkpoint — 2026-10-12
+Work branch: feat/visual-gameplay-evolution-20261011, based on PR2 head781687a. PR2/PR1/main remain untouched. Commits00f22e6 preserve real Content10 human evidence,1b22aab adds FPS/QA launcher,235be2c adds Archive; current milestone adds original vector slice, site previews, acquired combat behaviors/fusion, bounded feedback and responsive pause.
+
+Delivered: schema2 migration with safe v1 fallback; idempotent defeat/voluntary boss-victory rewards; three optional one-time purchases; Attempt distinct from World. Content11 adds Conduction, Relay and acquired-tag fusion; all new flags/timers hashed/reset on child. Worldgen2 geometry unchanged; Verdant decorative terrain has no collision. MIT original assets have manifest hashes and bundled license; working prototype only. Site risk uses the exact canonical spatial query and first-Signal affordability exemption. Reduced Effects/Shake and max8 synthesized audio voices. Pause fits EN1920×1080 and TH1280×720 at100%;200% safely scrolls. Actual browser captures reviewed; no human fun verdict inferred.
+
+Verification: npm run check passes407 tests, provenance and build; new browser suite4/4 passes. Existing playability cases11/11 passed in the preceding combined run; it exposed the new TH fit failure, subsequently fixed and rerun. Publication requires final check/analyze/ZIP/release verification plus exact pushed-SHA CI4/4 and two ZIP artifacts. Record authoritative CI completion in the PR/task without claiming green in advance. No merges, tags, public release or v0.27.
+
+Evidence/design: docs/LIVING_FRONTIER_REVIEW.md, docs/ADR/0023-visual-gameplay-and-archive-slice.md, docs/frontier-style-board.svg, docs/playtests/frontier-policy-sanitized.json and frontier-performance-sanitized.json. Human terminal report296 and feedback revision297 share one session/wallEnd; console identifies sequence. Raw evidence copied with hashes under scratch/visual-evolution-evidence-20261011, never overwritten. Old INTERRUPTED_BY_BUG preserved. Tiny canonical policy cohort:1 victory,5 defeats,2 time limits; no target human win rate claimed.
+
+Next gate: fresh human defeat → Archive purchase → Attempt2 and optional boss finish/World2, actual hardware stress performance, visual readability/style and fun feedback. The latest sparse local software-rendered trace misses frame and child renderer-CPU targets; no60FPS certificate or relaxed budget. See exact measured values and limitations in the review. Physical obstacles and expanded art families are deferred for validated navigation/style/performance. No additional market research performed per user request; existing research inputs retain their boundaries.
+
 # Session Handoff
 
 ## Current review experiment — 2026-10-11

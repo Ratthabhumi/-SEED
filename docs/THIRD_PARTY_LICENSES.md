@@ -103,3 +103,7 @@ Automated verification script:
 npm run verify:third-party
 ```
 Ensures no unlisted asset, mismatched package version, or ambiguous license enters the project release.
+
+## Original Living Frontier vector slice
+
+Scout, mite and observatory were authored in this repository; original files under assets/original/frontier are copied unchanged into assets/seed/frontier. MIT copyright2026 -SEED contributors; full LICENSE copied to public/licenses/SEED-MIT.txt and bundled with notice. File hashes and dimensions are recorded in the asset manifest. Status remains working-prototype. No borrowed commercial artwork or generated-provider assets.

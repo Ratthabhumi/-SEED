@@ -12,6 +12,7 @@ export interface Breakthrough {
 }
 
 export const BREAKTHROUGHS: Breakthrough[] = [
+  {id:"resonant-frontier",requires:["conduction","relay"],titleKey:"breakthrough.relay",descriptionKey:"breakthrough.relay.description",effects:[{kind:"relayChain",value:1}]},
   {
     id: "metallurgy", requires: ["fire", "tools"],
     titleKey: "breakthrough.metallurgy", descriptionKey: "breakthrough.metallurgy.description",
@@ -47,7 +48,7 @@ export function checkBreakthroughs(ownedTags: Set<string>, unlocked: Set<string>
 /** Tags with localized display names (used by synergy progress UI). */
 const DISPLAY_TAGS = [
   "fire", "tools", "ballistics", "rotary", "medicine",
-  "breeding", "tesla", "reactor", "fort", "armor",
+  "conduction", "relay", "breeding", "tesla", "reactor", "fort", "armor",
 ] as const;
 
 /** i18n key for a tag, or null when the tag has no display name. */

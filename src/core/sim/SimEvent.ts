@@ -7,6 +7,8 @@ import type { OutpostSpec } from "../world/territory";
 import type { SquadMode } from "../combat/squad";
 
 export type SimEvent =
+  | { type: "energy_arc"; x1:number; y1:number; x2:number; y2:number; source:"chain"|"relay" }
+  | { type: "run_completed" }
   | { type: "outpost_dismantled"; poiId: string; released: number }
   | { type: "draft_opened"; context: "level" | "poi" }
   | { type: "tech_selected"; techId: string; quality?: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC"; modifierIds?: string[] }

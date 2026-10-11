@@ -55,7 +55,8 @@ export const WORLDGEN_VERSION = 2;
 // Content 9: biome specialization tradeoffs, reversible logistics, and tech web.
 // Chunk/POI geometry and the persistent settings/archive schema stay compatible.
 // Content 10: child-only conditions and child-seeded laws. World-one laws retain c9.
-export const CONTENT_VERSION = 10;
+// Content11: acquired Conduction/Relay behavior and tag-gated fusion. No geometry change.
+export const CONTENT_VERSION = 11;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

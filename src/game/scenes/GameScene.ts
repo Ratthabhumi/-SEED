@@ -1,6 +1,6 @@
 import { childCondition } from "../../core/progression/childWorld";
 import { historyTechName, currentWorldHistoryStart } from "../ui/historyTechName";
-import { effectSummary } from "../ui/techEffects";
+import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
 // GameScene — ADAPTER (ADR 0003). Owns no canonical gameplay state.
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
@@ -103,6 +103,11 @@ export class GameScene extends Phaser.Scene {
   private prevFocusId = "";
   private prevDominion = -1;
   /** Transient impact presentation (never canonical): death rings + damage numbers. */
+  private scoutArt: Phaser.GameObjects.Image | null = null;
+  private miteArt: Phaser.GameObjects.Image[] = [];
+  private landmarkArt: Phaser.GameObjects.Image[] = [];
+  private reducedEffects=false;
+  private arcs: Array<{x1:number;y1:number;x2:number;y2:number;until:number;relay:boolean}> = [];
   private bursts: Array<{ x: number; y: number; t: number; max: number; big: boolean }> = [];
   private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
   private floatText: Phaser.GameObjects.Text[] = [];
@@ -145,6 +150,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
+    this.load.svg("frontier-scout", SEED_ASSETS.frontier.scout, {width:64,height:64});
+    this.load.svg("frontier-mite", SEED_ASSETS.frontier.mite, {width:64,height:64});
+    this.load.svg("frontier-observatory", SEED_ASSETS.frontier.observatory, {width:96,height:96});
     this.load.image("seed_hit_impact", SEED_ASSETS.vfx.hitImpact);
     this.load.image("seed_claim_glow", SEED_ASSETS.vfx.claimGlow);
     this.load.image("seed_breakthrough_spark", SEED_ASSETS.vfx.breakthroughSpark);
@@ -163,6 +171,7 @@ export class GameScene extends Phaser.Scene {
     duration = 300,
     blendMode = Phaser.BlendModes.ADD,
   ): void {
+    if (this.reducedEffects) return;
     let img = this.vfxPool.find((item) => !item.visible);
     if (!img) {
       if (this.vfxPool.length >= 16) return;
@@ -218,6 +227,8 @@ export class GameScene extends Phaser.Scene {
     this.latch = new InputLatch();
     this.paused = false;
     this.deathPersisted = false;
+    this.scoutArt = this.add.image(0,0,"frontier-scout").setDisplaySize(44,44).setDepth(4);
+    this.miteArt = []; this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
     this.lastGroundKey = "";
     this.simSamples = [];
     this.frameSamples = []; this.lastFrameAt = 0;
@@ -341,7 +352,8 @@ export class GameScene extends Phaser.Scene {
           this.handleEvents(ev);
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
-        performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
+        resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
+        performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:this.miteArt.length,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
           // Test-only shortcut for the boss-kill trigger; ascend() itself
           // (child world, fresh streams, stat separation) runs the real path.
@@ -1168,6 +1180,8 @@ export class GameScene extends Phaser.Scene {
     const bar = this.hud.terrBar;
     if (!bar) return;
     const s = this.sim.state;
+    const previousPreview=bar.querySelector<HTMLDetailsElement>(".site-preview");
+    const previewFocused=!!previousPreview?.contains(document.activeElement);
     bar.innerHTML = "";
     const purpose = (key: "ui.specPurpose" | "ui.claimPurpose"): void => {
       const p = document.createElement("div");
@@ -1194,6 +1208,19 @@ export class GameScene extends Phaser.Scene {
       this.appendLogisticsLine(bar, s);
     }
     const c = this.sim.claimablePOIs().find((x) => x.clear);
+    const previewSite=c??anySite;
+    if(previewSite){
+      const facts=this.sim.outpostPreview(previewSite.x,previewSite.y,previewSite.poiType);
+      if(facts){
+        const details=el("details","site-preview") as HTMLDetailsElement;
+        details.dataset.poiId=previewSite.poiId;details.open=previousPreview?.dataset.poiId===previewSite.poiId && previousPreview.open;details.appendChild(el("summary","",undefined,t("ui.sitePreview")));
+        details.appendChild(el("p","",undefined,t(("biome."+facts.biome+".role") as EnKeys)));
+        details.appendChild(el("p","",undefined,`${t("ui.hostiles")}: ${facts.hostiles} · ${t("ui.range")}: ${Math.round(facts.distance)}`));
+        for(const option of facts.options) details.appendChild(el("p","",undefined,`${this.outpostBonusText(option.spec,1,previewSite.x,previewSite.y)} · ${t("ui.logisticsCost")}: ${option.cost}`));
+        bar.appendChild(details);
+        if(previewFocused && previousPreview?.dataset.poiId===previewSite.poiId)details.querySelector("summary")?.focus({preventScroll:true});
+      }
+    }
     if (c) {
       // No claim button while hostiles remain: the objective line + C key
       // carry the clear state instead (§9).
@@ -1408,7 +1435,7 @@ export class GameScene extends Phaser.Scene {
       screen.setAttribute("aria-label", t("ui.outpostSpec"));
       screen.setAttribute("aria-describedby", hint.id);
       screen.appendChild(panel);
-      const controls = Array.from(panel.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      const controls = Array.from(panel.querySelectorAll<HTMLElement>("button:not(:disabled),input:not(:disabled),summary"));
       controls[0]?.focus();
       screen.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
@@ -1417,7 +1444,7 @@ export class GameScene extends Phaser.Scene {
           this.closeBlocking();
         } else if (event.key === "Tab") {
           event.preventDefault();
-          const index = controls.indexOf(document.activeElement as HTMLButtonElement);
+          const index = controls.indexOf(document.activeElement as HTMLElement);
           controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length]?.focus();
         }
       });
@@ -2041,6 +2068,7 @@ export class GameScene extends Phaser.Scene {
       const d = document.createElement("p");
       d.className = "card-effects";
       d.textContent = effectSummary(offer.effectiveEffects);
+      c.appendChild(el("p","card-delta",undefined,t("ui.beforeAfter")+": "+effectBeforeAfter(s.build,offer.effectiveEffects)));
       const preview = document.createElement("div");
       preview.className = `card-preview domain-${n.domain}`;
       preview.setAttribute("aria-hidden", "true");
@@ -2261,21 +2289,22 @@ export class GameScene extends Phaser.Scene {
 
     const traits = deriveWorldTraits(this.sim.state.worldLaws);
     if (traits.length > 0) {
-      const traitHeader = document.createElement("div");
+      const traitDetails = document.createElement("details");
+      const traitHeader = document.createElement("summary");
       traitHeader.style.fontWeight = "bold";
       traitHeader.style.marginTop = "6px";
       traitHeader.textContent = t("ui.worldTraits");
-      identitySec.appendChild(traitHeader);
+      traitDetails.appendChild(traitHeader);identitySec.appendChild(traitDetails);
       for (const tr of traits) {
         const trP = document.createElement("p");
         trP.style.margin = "2px 0";
         trP.textContent = `◈ ${t(tr.nameKey)}: ${t(tr.descKey)}`;
-        identitySec.appendChild(trP);
+        traitDetails.appendChild(trP);
       }
     }
 
     // DISPLAY — look and language, no gameplay effect.
-    const display = section("ui.pauseDisplay");
+    const display = section("ui.pauseDisplay");display.classList.add("pause-display");
     const save = loadSave(localStorage);
     const scaleRow = el("div", "settings-row");
     scaleRow.appendChild(el("span", "", "ui.uiScale"));
@@ -2302,6 +2331,12 @@ export class GameScene extends Phaser.Scene {
     scaleRow.appendChild(scales);
     display.appendChild(scaleRow);
 
+    for (const [key,label] of [["reducedEffects","settings.reduced"],["shake","ui.shake"]] as const) {
+      const row=el("label","settings-row",undefined,t(label));
+      const input=document.createElement("input");input.type="checkbox";input.id="pause-"+key;input.checked=save.settings[key];
+      input.addEventListener("change",()=>{save.settings[key]=input.checked;if(key==="reducedEffects")this.reducedEffects=input.checked;storeSave(localStorage,save);});
+      row.appendChild(input);display.appendChild(row);
+    }
     // Language switch mid-run: rebuilds UI only, simulation untouched.
     const langRow = el("div", "settings-row");
     langRow.appendChild(el("span", "", "ui.language"));
@@ -2327,7 +2362,8 @@ export class GameScene extends Phaser.Scene {
 
     // RUN — run-scoped navigation, away from both Resume and Danger.
     const run = section("ui.pauseRun");
-    run.appendChild(button("ui.restart", () => this.restartRun()));
+    if (this.sim.state.stats.bosses>0) run.appendChild(button("ui.finishAttempt",()=>{document.getElementById("pause-screen")?.remove();this.handleEvents(this.sim.finishAttempt());}));
+    const restartButton=button("ui.restart", () => this.restartRun());restartButton.id="pause-restart-btn";run.appendChild(restartButton);
     run.appendChild(button("ui.quitToTitle", () => this.scene.start("title")));
 
     // DANGER ZONE — visually separated; never beside Resume.
@@ -2483,7 +2519,7 @@ export class GameScene extends Phaser.Scene {
     const root = uiRoot();
     const screen = el("div", "screen");
     const panel = el("div", "panel panel-lg");
-    panel.appendChild(el("h2", "", "ui.died"));
+    panel.appendChild(el("h2", "", s.build.hp>0 ? "ui.victory" : "ui.died"));
     panel.appendChild(el("p", "archive-result", undefined, `${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${s.ascension+1} · ${t("meta.earned")}: +${this.archiveEarned}`));
     if (!this.archiveStorageOK) panel.appendChild(el("p", "", "meta.storage"));
     panel.appendChild(el("div", "", "ui.runChronicle"));
@@ -2556,7 +2592,7 @@ export class GameScene extends Phaser.Scene {
       sessionStorage.setItem(TITLE_ORIGIN_KEY, this.sim.state.originId);
       this.scene.restart();
     }, "btn primary"));
-    rowBtn.appendChild(button("ui.quitToTitle", () => this.scene.start("title")));
+    rowBtn.appendChild(button("ui.archiveReturn", () => this.scene.start("title")));
     panel.appendChild(rowBtn);
     screen.appendChild(panel);
     root.appendChild(screen);
@@ -2946,7 +2982,7 @@ export class GameScene extends Phaser.Scene {
         case "age_reached":
           sfx.age();
           toast("ui.ageReached", t(`age.${e.age}` as EnKeys));
-          if (save.settings.shake) this.cameras.main.shake(250, 0.008);
+          if (save.settings.shake && !this.reducedEffects) this.cameras.main.shake(250, 0.008);
           this.lastGroundKey = "";
           this.showAgeTransition(e.age);
           this.qa?.noteSimEvent("age_reached", e.age);
@@ -3010,8 +3046,15 @@ export class GameScene extends Phaser.Scene {
           if (e.boss || e.elite) {
             this.spawnVfx("seed_hit_impact", e.x, e.y, e.boss ? 0.8 : 0.45, 0xffe08a, 220, Phaser.BlendModes.ADD);
           }
-          if (e.boss && save.settings.shake) this.cameras.main.shake(400, 0.012);
+          if (e.boss && save.settings.shake && !this.reducedEffects) this.cameras.main.shake(400, 0.012);
           break;
+        case "energy_arc": {
+          if (this.arcs.length<24) this.arcs.push({...e,until:performance.now()+120,relay:e.source==="relay"});
+          break;
+        }
+        case "run_completed":
+          this.qa?.end("victory-finished");
+          this.persistRunEnd();this.showChronicle();break;
         case "player_died":
           this.qa?.onPlayerDied();
           this.persistRunEnd();
@@ -3019,6 +3062,7 @@ export class GameScene extends Phaser.Scene {
           break;
       }
     }
+    if (ev.some(e=>e.type==="energy_arc")) sfx.energy();
     if (killsThisFrame > 0) sfx.kill();
     void s;
   }
@@ -3188,6 +3232,7 @@ export class GameScene extends Phaser.Scene {
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     // Claimed territories get age-dressing: the map grows a civilization.
     const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
+    let landmarkCount = 0;
     for (let ox = -R; ox <= R; ox++) {
       for (let oy = -R; oy <= R; oy++) {
         const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
@@ -3201,6 +3246,11 @@ export class GameScene extends Phaser.Scene {
             highContrast: this.highContrast(),
           });
           const terr = terrByPoi.get(poi.id);
+          if ((poi.type === "ruin" || terr?.spec === "research") && landmarkCount < 48) {
+            let art = this.landmarkArt[landmarkCount++];
+            if (!art) { art = this.add.image(0,0,"frontier-observatory").setDepth(-5); this.landmarkArt.push(art); }
+            art.setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(70,70).setAlpha(terr?.disabled ? 0.4 : 1);
+          }
           if (terr) {
             drawTerritoryDressing(g, {
               x: poi.wx, y: poi.wy,
@@ -3210,6 +3260,7 @@ export class GameScene extends Phaser.Scene {
         }
       }
     }
+    for (let i=landmarkCount;i<this.landmarkArt.length;i++) this.landmarkArt[i]!.setVisible(false);
   }
 
   private drawFrame(): void {
@@ -3225,6 +3276,8 @@ export class GameScene extends Phaser.Scene {
     const now = performance.now() / 1000;
     const hc = this.highContrast();
     const wopts = { time: now, highContrast: hc };
+    this.arcs=this.arcs.filter(a=>a.until>performance.now());
+    for(const arc of this.arcs){g.lineStyle(3,arc.relay?0xffda76:0x85ecff,0.9);g.lineBetween(arc.x1,arc.y1,arc.x2,arc.y2);}
     // Focused target = nearest foe to the player (HP bar while focused).
     let focus: (typeof s.enemies)[number] | null = null;
     let focusDist = 420;
@@ -3246,6 +3299,7 @@ export class GameScene extends Phaser.Scene {
         focus = e;
       }
     }
+    let miteCount = 0;
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
       drawEnemy(g, e, {
@@ -3256,7 +3310,15 @@ export class GameScene extends Phaser.Scene {
         hpBar: e.elite || e.boss || e.flash > 0 || e === focus,
         ageIndex: s.ageIndex,
       });
+      if (e.family === "chaser" && !e.boss && miteCount < 64) {
+        let art = this.miteArt[miteCount++];
+        if (!art) { art = this.add.image(0,0,"frontier-mite").setDepth(2); this.miteArt.push(art); }
+        art.setVisible(true).setPosition(e.x,e.y).setDisplaySize(e.radius*2.8,e.radius*2.8).setRotation(Math.atan2(s.py-e.y,s.px-e.x)+Math.PI/2);
+        art.setTint(e.flash>0 ? 0xffffff : 0xffdddd);
+      }
     }
+    for (let i=miteCount;i<this.miteArt.length;i++) this.miteArt[i]!.setVisible(false);
+    if (this.scoutArt) this.scoutArt.setPosition(s.px,s.py).setRotation(this.playerFacing+Math.PI/2).setTint(s.iframe>0?0x9fd8ff:0xffffff);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
       if (p.friendly) drawFriendlyProj(g, p);
@@ -3308,7 +3370,7 @@ export class GameScene extends Phaser.Scene {
       drawSummon(g, a.x, a.y, 7, 0x9fd8ff, s.px, s.py);
     }
     // Transient impact: death rings + floating damage numbers.
-    for (const burst of this.bursts) {
+    for (const burst of this.reducedEffects ? [] : this.bursts) {
       const f = burst.t / burst.max;
       g.lineStyle(burst.big ? 4 : 2, burst.big ? 0xff5533 : 0xffe08a, f);
       g.strokeCircle(burst.x, burst.y, (1 - f) * (burst.big ? 90 : 34) + 6);

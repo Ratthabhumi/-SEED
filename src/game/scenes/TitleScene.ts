@@ -234,6 +234,10 @@ export class TitleScene extends Phaser.Scene {
     shakeRow.appendChild(sh);
     panel.appendChild(shakeRow);
 
+    const reducedRow = el("label","settings-row",undefined,t("settings.reduced"));
+    const reduced = document.createElement("input");reduced.type="checkbox";reduced.id="reduced-effects";reduced.checked=save.settings.reducedEffects;
+    reduced.addEventListener("change",()=>{save.settings.reducedEffects=reduced.checked;storeSave(localStorage,save);});
+    reducedRow.appendChild(reduced);panel.appendChild(reducedRow);
     const contrastRow = el("div", "settings-row");
     contrastRow.appendChild(el("span", "", "ui.contrast"));
     const contrasts = el("div", "lang-row");
