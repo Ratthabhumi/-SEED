@@ -38,7 +38,7 @@ Reproduce each query with https://store.steampowered.com/appreviews/APPID?json=1
 
 These are design inferences from official descriptions, not findings from our own controlled competitor playtests. No copied names, code, art, audio, or balance.
 
-Developer sales claims are separate: the [BALL x PIT announcement](https://store.steampowered.com/news/app/2062430/view/1844115010499209), dated September 20, 2026 in the Steam news API, reports 2 million copies. Platform mix, refunds and revenue are unspecified; this is a publisher statement, not an independently audited sales figure. Megabonk's widely repeated million-in-two-weeks figure was not verified from a primary developer announcement in this pass; do not convert its 106,953 reviews into sales.
+Developer sales claims are separate: the [BALL x PIT announcement](https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=2062430&count=20&maxlength=700), dated September 20, 2026 in the Steam news API, reports 2 million copies. Platform mix, refunds and revenue are unspecified; this is a publisher statement, not an independently audited sales figure. Megabonk's widely repeated million-in-two-weeks figure was not verified from a primary developer announcement in this pass; do not convert its 106,953 reviews into sales.
 
 ## C. Position and originality
 

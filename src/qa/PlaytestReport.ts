@@ -53,6 +53,8 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(`## Seed / Versions`);
   L.push(``);
   L.push(`- masterSeed: ${snap.seed}`);
+  L.push(`- buildSha: ${snap.buildSha}`);
+  L.push(`- buildDirty (bundle at startup): ${snap.buildDirty}`);
   L.push(`- package: ${snap.versions.packageVersion}`);
   L.push(`- WORLDGEN_VERSION: ${snap.versions.worldgen}`);
   L.push(`- CONTENT_VERSION: ${snap.versions.content}`);

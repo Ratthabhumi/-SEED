@@ -1,6 +1,7 @@
 // QA harness E2E: ?qa=1 → gate panel → golden-seed start → recorder live →
 // END PLAYTEST → downloadable machine-readable report. Read-only: no cheats.
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
 import { test, expect } from "@playwright/test";
 import { prepareSave } from "./helpers";
 
@@ -40,9 +41,16 @@ test("qa mode: gate start, live panel, report export", async ({ page }) => {
   expect(path).toBeTruthy();
   const data = JSON.parse(fs.readFileSync(path as string, "utf-8")) as {
     seed: string;
+    buildSha: string;
+    buildDirty: boolean;
+    wallStart: number;
+    wallEnd: number;
     checkpoints: Array<{ event: string }>;
   };
   expect(data.seed).toBe("EPOCH-GOLDEN-001");
+  expect(data.buildSha).toBe(execFileSync("git", ["rev-parse", "HEAD"], {encoding:"utf8"}).trim());
+  expect(data.buildDirty).toBe(false);
+  expect(data.wallEnd).toBeGreaterThan(data.wallStart);
   expect(data.checkpoints.map((c) => c.event)).toContain("RUN_START");
 
   expect(errors).toEqual([]);
