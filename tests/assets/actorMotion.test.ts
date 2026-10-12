@@ -1,4 +1,5 @@
 import {it,expect} from 'vitest';
+import {enemyDisplayHeading,enemyDisplayMoving} from '../../src/game/render/enemyTelegraph';
 import {guardianCount} from '../../src/game/render/weaponPresentation';
 import {ActorRenderer} from '../../src/game/render/ActorRenderer';
 import {ActorMotion,facingPolicy} from '../../src/game/render/actorMotion';
@@ -9,6 +10,7 @@ it('upright actor display stays level for four movement headings and six Ages; p
  for(const id of ['hunters','engineers','resonant','sentinels'] as const)for(let age=0;age<6;age++)for(const heading of [0,Math.PI/2,Math.PI,-Math.PI/2]){renderer.begin();renderer.draw(id,0,0,48,heading,1,true,0xffffff,age,{heading,moving:true,flip:heading===Math.PI,back:heading===-Math.PI/2});renderer.end();expect(values.setRotation).toEqual([0]);expect(values.setTexture[1]).toBe(age*3+1+(heading===-Math.PI/2?18:0));expect(values.setFlipX[0]).toBe(heading===Math.PI);}
  renderer.begin();renderer.draw('chaser',0,0,32,Math.PI,1,true);expect(values.setRotation[0]).toBeCloseTo(Math.PI*1.5);expect(values.setFlipX).toEqual([false]);expect(renderer.size).toBe(1);
  renderer.begin();renderer.end();expect(image.visible).toBe(false);expect(facingPolicy('boss')).toBe('upright');
+ const e:any={x:0,y:0,evolution:{id:'rush',phase:'warning',aimX:100,aimY:0}};expect(enemyDisplayHeading(e,0,100)).toBe(0);expect(enemyDisplayMoving(e)).toBe(false);e.evolution.phase='attack';expect(enemyDisplayHeading(e,0,100)).toBe(0);expect(enemyDisplayMoving(e)).toBe(true);e.evolution.phase='recover';expect(enemyDisplayHeading(e,0,100)).toBeCloseTo(Math.PI/2);expect(enemyDisplayMoving(e)).toBe(false);
 });
 it('squad pose comes from real displacement, freezes when paused, settles on hold and resets per world',()=>{
  const motion=new ActorMotion(),ally={};motion.sample(ally,0,0,0);let p=motion.sample(ally,-2,0,0.02);expect(p).toMatchObject({moving:true,flip:true,back:false});p=motion.sample(ally,-2,-4,0.04);expect(p).toMatchObject({moving:true,flip:true,back:true});motion.sample(ally,-2,-4,0.04);expect(p.moving).toBe(true);expect(motion.sample(ally,-2,-4,0.2).moving).toBe(false);motion.reset();expect(motion.sample(ally,999,999,0)).toMatchObject({moving:false,flip:false,back:false});

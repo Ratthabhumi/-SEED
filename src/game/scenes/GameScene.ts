@@ -46,7 +46,7 @@ import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
 import { drawEnemy } from "../render/EnemyRenderer";
 import {eligibleFamilies} from "../../core/director/director";
 import {guardianCount} from "../render/weaponPresentation";
-import {drawEnemyTelegraph} from "../render/enemyTelegraph";
+import {drawEnemyTelegraph,enemyDisplayHeading,enemyDisplayMoving} from "../render/enemyTelegraph";
 import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
 import { ActorRenderer } from "../render/ActorRenderer";
@@ -3369,9 +3369,10 @@ export class GameScene extends Phaser.Scene {
     this.allyActors.begin();
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
+      const facing=enemyDisplayHeading(e,s.px,s.py);
       drawEnemy(g, e, {
         bodyColor: ENEMY_LINEAGE[e.family].color[AGES[s.ageIndex] as AgeId],
-        facing: Math.atan2(s.py - e.y, s.px - e.x),
+        facing,
         time: now,
         highContrast: hc,
         hpBar: e.elite || e.boss || e.flash > 0 || e === focus,
@@ -3379,7 +3380,7 @@ export class GameScene extends Phaser.Scene {
         spriteBody: true,
       });
       drawEnemyTelegraph(g,e,hc);
-      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,Math.atan2(s.py-e.y,s.px-e.x),s.elapsed,true,e.flash>0?0xffbbbb:0xffffff,s.ageIndex);
+      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex);
     }
     this.enemyActors.end();
     const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);

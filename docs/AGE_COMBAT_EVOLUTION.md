@@ -38,3 +38,5 @@ Local focused27/27 and stronger committed-rush/pooling8/8 passed; typecheck/prov
 Additional evidence: corrected movement +24-state-per-language roster14/14 passed locally; first fixed-step attack capture revealed friendly knockback legitimately cancels a committed warning. Suppressed friendly fire only in the isolated encounter capture fixture. Projection/counterplay9/9 passed, including actual Guardian family enablement and bounded count; browser matrix asserts Guardian Age equipment and absence for inactive defense families. Remaining exact final CI receipt is maintained in Draft PR5.
 
 Functional per-enemy warning lines always render; the global localized toast is limited to one per kind/3s to prevent swarm DOM spam. This presentation cooldown resets on restart/world change and does not change canonical attack timing.
+
+Non-humanoid display heading follows committed canonical targets during warning/attack, rather than tracking a player who has sidestepped. Gait stops in warning/recovery; this is truthful pose selection, not certification of authored attack animation.
