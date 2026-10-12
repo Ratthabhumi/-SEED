@@ -44,6 +44,7 @@ import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
 import { drawEnemy } from "../render/EnemyRenderer";
+import {eligibleFamilies} from "../../core/director/director";
 import {drawEnemyTelegraph} from "../render/enemyTelegraph";
 import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
@@ -383,7 +384,7 @@ export class GameScene extends Phaser.Scene {
           for(const f of ['kinetic','energy','defense','field'] as const){s.weaponStage[f]=age;s.weaponCd[f]=0;}
           for(const e of s.enemies)e.active=false;for(const p of s.projs)p.active=false;
           for(let i=0;i<s.squad.length;i++){const a=s.squad[i]!;a.active=i<2;a.x=s.px-60-i*25;a.y=s.py+60;a.inv=0;a.hp=a.maxHp;a.cd=0;}
-          const families=encounter==='rush'?['chaser']:encounter==='burst'?['ranged']:['chaser','ranged','tank','swarm'];
+          const families=encounter==='rush'?['chaser']:encounter==='burst'?['ranged']:eligibleFamilies(age,'ordinary');
           for(let i=0;i<families.length;i++){const e=this.sim.spawnEnemy(families[i] as 'chaser',false,false,i*Math.PI/2,encounter==='rush'?130:encounter==='burst'?290:150,[])!;e.hp=e.maxHp=1e8;if(encounter==='roster'){e.speed=0;e.dmg=0;e.evolution=undefined;e.shootT=999;}else e.evolution!.timer=0;}
           this.actorMotion.reset();
           if(encounter!=='roster'){this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.paused=true;}
