@@ -379,6 +379,7 @@ export class GameScene extends Phaser.Scene {
         actorPresentation: () => this.allyActors.review(),
         stageEvolution: (origin:string,age:number,encounter='roster') => {
           const s=this.sim.state;this.paused=false;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
+          this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);
           s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=s.mineT=999;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
           // Isolated combat fixture: mark local generated POIs discovered, so exploration drafts cannot freeze movement assertions.
           const {cx,cy}=worldToChunk(s.px,s.py);

@@ -24,5 +24,5 @@ export class ActorRenderer {
   }
   end(): void { for(let i=this.count;i<this.images.length;i++)this.images[i]!.setVisible(false); }
   get size(): number { return this.images.length; }
-  review():unknown[] { return this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y})); }
+  review():unknown[] { return this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
 }

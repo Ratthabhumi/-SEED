@@ -40,3 +40,5 @@ Additional evidence: corrected movement +24-state-per-language roster14/14 passe
 Functional per-enemy warning lines always render; the global localized toast is limited to one per kind/3s to prevent swarm DOM spam. This presentation cooldown resets on restart/world change and does not change canonical attack timing.
 
 Non-humanoid display heading follows committed canonical targets during warning/attack, rather than tracking a player who has sidestepped. Gait stops in warning/recovery; this is truthful pose selection, not certification of authored attack animation.
+
+CI caught camera-lag interference after moving the E2E arena10,000u: a squad member was clipped and first roster captures could miss the hero. Test-only staging now positions the invisible anchor and centers the camera immediately; roster asserts actual camera inclusion. Production follow smoothing remains0.14. This strengthens capture validity without weakening assertions.
