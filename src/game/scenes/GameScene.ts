@@ -85,6 +85,7 @@ export class GameScene extends Phaser.Scene {
   private lastAbilityArtT = -10;
   private actorMotion=new ActorMotion();
   private artWorld="";
+  private enemyWarningT={rush:-Infinity,burst:-Infinity};
   private artLastX = 0;
   private artLastY = 0;
   private gfx!: Phaser.GameObjects.Graphics;
@@ -248,7 +249,7 @@ export class GameScene extends Phaser.Scene {
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
     this.lastAbilityArtT=-10;
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
-    this.actorMotion.reset();this.artWorld=this.sim.state.worldNonce;
+    this.actorMotion.reset();this.artWorld=this.sim.state.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;
     this.artLastX=this.sim.state.px; this.artLastY=this.sim.state.py;
     this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
     this.lastGroundKey = "";
@@ -3024,8 +3025,11 @@ export class GameScene extends Phaser.Scene {
           this.qa?.noteSimEvent("squad_command", e.mode);
           break;
         case "enemy_attack_fired": sfx.enemyAttack(e.kind);break;
-        case "enemy_attack_warning":
-          toast(e.kind==="rush"?"combat.rushWarning":"combat.burstWarning");sfx.enemyWarning(e.kind);break;
+        case "enemy_attack_warning": {
+          const now=this.sim.state.runElapsed;
+          if(now-this.enemyWarningT[e.kind]>=3){toast(e.kind==="rush"?"combat.rushWarning":"combat.burstWarning");this.enemyWarningT[e.kind]=now;}
+          sfx.enemyWarning(e.kind);break;
+        }
         case "ability_used": {
           this.lastAbilityArtT = performance.now()/1000;
           const abil = ORIGIN_ABILITY[originById(this.sim.state.originId).id];
@@ -3360,7 +3364,7 @@ export class GameScene extends Phaser.Scene {
         focus = e;
       }
     }
-    if(this.artWorld!==s.worldNonce){this.actorMotion.reset();this.artWorld=s.worldNonce;}
+    if(this.artWorld!==s.worldNonce){this.actorMotion.reset();this.artWorld=s.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;}
     this.enemyActors.begin();
     this.allyActors.begin();
     for (const e of s.enemies) {
