@@ -3,5 +3,6 @@ import { SEED_ASSETS } from "./seedAssets";
 export const DOMAIN_ICONS: Record<string, string | undefined> = {
   warfare: SEED_ASSETS.icons.warfareSword,
   science: SEED_ASSETS.icons.research,
-  industry: SEED_ASSETS.icons.economy,
+  industry: SEED_ASSETS.icons.industryGear,
+  culture: SEED_ASSETS.icons.cultureMonument,
 };

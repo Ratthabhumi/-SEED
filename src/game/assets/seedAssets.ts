@@ -16,6 +16,8 @@ import outpostsV2 from "../../../assets/seed/structures/outposts-v2.png";
 
 import iconResearch from "../../../assets/seed/icons/icon_research.png";
 import warfareSword from "../../../assets/seed/icons/warfare-swords.svg";
+import industryGear from "../../../assets/seed/icons/industry-gear.svg";
+import cultureMonument from "../../../assets/seed/icons/culture-monument.svg";
 import iconMilitary from "../../../assets/seed/icons/icon_military.png";
 import iconEconomic from "../../../assets/seed/icons/icon_economic.png";
 
@@ -50,6 +52,7 @@ export const SEED_ASSETS = {
   },
   icons: {
     warfareSword,
+    industryGear,cultureMonument,
     research: iconResearch,
     military: iconMilitary,
     economy: iconEconomic,

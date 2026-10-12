@@ -53,9 +53,9 @@ Manifest records generated authorship, source/production hashes, alpha-preservin
 slicing/resize, actual dimensions, and art-review-pending status. MIT project assets
 do not change Kenney CC0 provenance. No new runtime dependency.
 
-- Four Origin hero atlases,16 front/back poses each,128px cells,72u displayed hero.
+- Four Origin hero atlases,16 front/back poses each,128px cells,96u displayed hero.
   Actual shot, hurt, dash, death and ability state select different poses. Walk has
-  two stride poses. These are **posed combat states**, not completed multi-frame
+  two stride poses. Squad escorts share their Origin atlas at36u and actual displacement/hurt state. These are **posed combat states**, not completed multi-frame
   attack/death animation sequences or six fully authored equipment eras.
 - Four enemy silhouettes,16 cached frames in one atlas; existing rush/burst,
   elite identity, canonical facing/target and attack warnings remain functional.
@@ -116,7 +116,7 @@ equipment checks; authored hero six-era coverage remains explicitly incomplete.
 The preview launcher uses Node's installed Vite directly, avoiding npx startup;
 its60s readiness limit and stale-server rejection stay unchanged.
 
-Targeted25 tests and Analyze6 passed during implementation. Final frozen-tree
+Targeted25 tests and Analyze6 passed during implementation. Later focused17 passed. Native trace exposed repeated button detachment; cache unchanged mission DOM and preserve keyboard focus. A second fixture failure incorrectly retained manual pause while opening a canonical draft; fix the fixture pause ownership, not production guards. Narrow-toast layout, explicit recipe count and a96u hero follow actual screenshots. Final frozen-tree
 full check, native suite, pushed exact-SHA four-job CI and ZIP receipt are required
 and will be recorded in PR/task. Never promote these earlier partial runs to final
 ENGINEERING_VERIFIED, HUMAN_FUN_PASS, RELEASE_READY or60FPS_VERIFIED.

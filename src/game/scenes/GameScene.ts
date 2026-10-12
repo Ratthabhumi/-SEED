@@ -166,6 +166,7 @@ export class GameScene extends Phaser.Scene {
   /** Tech Map / Civ Map overlay open (pauses stepping like a modal). */
   private techMapOpen = false;
   private heroActions = new HeroActions();
+  private lastAgeCardKey="";
   private verdantTerrain!:VerdantTerrain;
   private techMapSel = "";
   private techMapView: TechMapView | null = null;
@@ -246,6 +247,7 @@ export class GameScene extends Phaser.Scene {
 
   /** Fresh run (and restart path): new simulation, clean adapter state. */
   private startRun(seed: string): void {
+    this.lastAgeCardKey="";
     this.heroActions = new HeroActions();
     this.verdantTerrain = new VerdantTerrain(this);
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
@@ -624,8 +626,21 @@ export class GameScene extends Phaser.Scene {
           s.territories=[{poiId:"repair-test",poiType:"ruin",x:s.px+100,y:s.py,spec:"research",tier:1,hp:0,maxHp:300,disabled:true,garrisoned:false,heldSince:0,repairT:0}];
           this.refreshGround(true); return s.territories[0];
         },
+        stageFamilyReview: (family:"kinetic"|"energy"|"defense"|"field") => {
+          const s=this.sim.state;this.paused=true;this.combatFeedback.reset(s.worldNonce);
+          s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"engineers";
+          s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
+          for(const p of s.projs)p.active=false;for(const m of s.mines)m.active=false;for(const e of s.enemies)e.active=false;
+          for(const a of s.squad)a.cd=999;
+          for(const f of ["kinetic","energy","defense","field"] as const){s.weaponCd[f]=999;s.weaponStage[f]=0;}
+          s.weaponStage[family]=family==="energy"?4:family==="field"?0:3;s.weaponCd[family]=0;
+          const e=this.sim.spawnEnemy("tank",false,false,0,100,[])!;e.speed=e.dmg=0;e.hp=e.maxHp=10000;
+          if(family==="field")Object.assign(s.mines[0],{active:true,x:e.x,y:e.y,radius:60,dmg:40,life:3});
+          this.refreshHUD();return e.hp;
+        },
         stageVerdantReview: () => {
           const s=this.sim.state;this.paused=true;
+          s.build.hp=s.build.maxHp=500;
           for(let r=0;r<9;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++) {
             if(this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y).biome!=="verdant")continue;
             s.px=x*CHUNK_SIZE+CHUNK_SIZE/2;s.py=y*CHUNK_SIZE+CHUNK_SIZE/2;
@@ -636,7 +651,7 @@ export class GameScene extends Phaser.Scene {
         stageBossReview: (pattern:"slam"|"fan"|"cross"="slam") => {
           const s=this.sim.state;this.paused=true;s.ageIndex=5;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
           for(const e of s.enemies)e.active=false;
-          s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=10000;
+          s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
           for(const f of ["kinetic","energy","defense","field"] as const)s.weaponCd[f]=999;
           for(const a of s.squad)a.cd=999;
           const e=this.sim.spawnEnemy("tank",false,true,0,250,[])!;
@@ -659,6 +674,9 @@ export class GameScene extends Phaser.Scene {
           for(const e of s.enemies)e.active=false;
           s.spawnT=s.eliteT=999; s.build.hp=s.build.maxHp=1e9;
           this.refreshHUD();
+        },
+        requestCombinationReviewDraft: () => {
+          this.paused=false;const ev:SimEvent[]=[];this.sim.gainKnowledge(5000,"review",ev);this.handleEvents(ev);
         },
         combinationReview: () => ({route:this.sim.combinationRoute(),offers:this.sim.state.draftOffers.map(o=>o.nodeId),breakthroughs:this.sim.state.breakthroughs,hash:this.sim.hash()}),
         actorAssetUrls: () => ACTOR_ASSETS,
@@ -1150,6 +1168,9 @@ export class GameScene extends Phaser.Scene {
     knowNums.textContent = `${Math.floor(s.knowledgeTotal)} / ${nextNeed}`;
     knowFill.style.width = `${Math.min(100, (s.knowledgeTotal / Math.max(1, nextNeed)) * 100)}%`;
     // Age card: one checklist row per gate (the SAME predicate as the sim).
+    const ageCardKey=JSON.stringify([next,t("ui.nextAge"),s.ownedTags,s.breakthroughs,next<AGES.length?ageGates(next,s.knowledgeTotal,this.missionStateOf(s),this.dominionStateOf(s)):Math.floor(s.knowledgeTotal)]);
+    if(ageCardKey!==this.lastAgeCardKey){
+    this.lastAgeCardKey=ageCardKey;
     const recipeFocused=document.activeElement?.id==="combination-map";
     ageCard.innerHTML = "";
     if (next < AGES.length) {
@@ -1184,7 +1205,9 @@ export class GameScene extends Phaser.Scene {
           ageCard.appendChild(sub);
           if (mstep.kind === "breakthrough" && !mstep.done) {
             const route = this.sim.combinationRoute();
-            const help = el("div", "combination-route", "ui.combinationRoute");
+            const help = el("div", "combination-route");
+            help.appendChild(el("strong","combination-title",undefined,`${t(mstep.labelKey)} ${mstep.have}/${mstep.need}`));
+            help.appendChild(el("p","", "ui.combinationRoute"));
             for (const item of route.ingredients) {
               const key = tagDisplayKey(item.tag);
               help.appendChild(el("div", "combination-ingredient", undefined,
@@ -1210,6 +1233,7 @@ export class GameScene extends Phaser.Scene {
       }
     } else {
       ageCard.textContent = `${t(`age.${ageId}` as EnKeys)} · ${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
+    }
     }
     // Mission one-liner under the top strip (QA structural class retained).
     age.textContent = this.frontierObjectiveText();
@@ -3534,7 +3558,7 @@ export class GameScene extends Phaser.Scene {
     const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
     this.heroActions.sync(s.worldNonce);
-    this.allyActors.draw(actorFor(s.originId),s.px,s.py,72,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,96,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
       if (p.friendly) drawFriendlyProj(g, p,wopts);
@@ -3595,7 +3619,7 @@ export class GameScene extends Phaser.Scene {
     for (const a of s.squad) {
       if (!a.active || !vis(a.x, a.y)) continue;
       const pose=this.actorMotion.sample(a,a.x,a.y,s.elapsed);
-      this.allyActors.draw(actorFor(s.originId),a.x,a.y,28,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xbbeeff,s.ageIndex,pose);
+      this.allyActors.draw(actorFor(s.originId),a.x,a.y,36,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xffffff,s.ageIndex,pose,a.inv>0?"hurt":pose.moving?"walk":"idle");
     }
     this.allyActors.end();
     for (const site of s.territories) {

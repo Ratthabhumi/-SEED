@@ -765,3 +765,10 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 .combination-route button { font-size:.8em; min-height:32px; width:100%; }
 
 .techmap-domain-icon { flex-shrink:0; object-fit:contain; }
+
+.techmap-domain-icon { position:absolute; right:6px; top:6px; width:18px; height:18px; }
+.combination-title { display:block; color:var(--c-text); }
+
+.toast { top:64px; max-width:min(420px,calc(100vw - 48px)); box-sizing:border-box; padding:10px 14px; pointer-events:none; }
+.toast-title { font-size:var(--font-body); }
+@media (max-width:1150px) { .toast { top:12px; max-width:min(380px,calc(100vw - 48px)); } }

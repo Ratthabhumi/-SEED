@@ -10,7 +10,7 @@ for(const lang of ['en','th'] as const)test('upright movement, hold and reset '+
   await page.screenshot({path:'test-results/browser/evolution-upright-'+lang+'-'+key+'.png'});
  }
  await page.keyboard.press('r');await page.waitForTimeout(250);expect(await page.evaluate(()=>(window as any).__seedE2E.evolutionState().squadMode)).toBe('hold');
- expect((await poses()).filter((a:any)=>a.texture.startsWith('actor-')).slice(0,2).every((a:any)=>Number(a.frame)%3===0)).toBe(true);
+ const held=(await poses()).slice(1,3);expect(held).toHaveLength(2);expect(held.every((a:any)=>a.texture==='hero-v2-hunters'&&Number(a.frame)%8===0)).toBe(true);
  await page.keyboard.press('q');await page.keyboard.press('e');await page.waitForTimeout(250);expect((await poses()).every((a:any)=>a.rotation===0)).toBe(true);
  await assertNoRawKeys(page);
  await page.keyboard.press('Escape');await page.locator('#pause-restart-btn').click();await expect(page.locator('.hud')).toBeVisible();

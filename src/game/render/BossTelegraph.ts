@@ -12,7 +12,8 @@ export function drawBossTelegraph(g:Phaser.GameObjects.Graphics,e:SimEnemy):void
     g.lineStyle(4,0xffdfab,1);g.strokeCircle(a.aimX,a.aimY,BOSS_ENCOUNTER.slamRadius*progress);
   } else if(a.pattern==="fan") {
     const angle=Math.atan2(a.aimY-e.y,a.aimX-e.x);
-    for(const o of [-.6,-.4,-.2,.2,.4,.6])g.lineBetween(e.x,e.y,e.x+Math.cos(angle+o)*360,e.y+Math.sin(angle+o)*360);
+    const range=BOSS_ENCOUNTER.shotSpeed*2.2;
+    for(const o of [-.6,-.4,-.2,.2,.4,.6])g.lineBetween(e.x,e.y,e.x+Math.cos(angle+o)*range,e.y+Math.sin(angle+o)*range);
     // Safe central gap also indicated by shape and pale line, not only color.
     g.lineStyle(2,0xe6fff1,.9);g.lineBetween(e.x,e.y,a.aimX,a.aimY);
   } else {

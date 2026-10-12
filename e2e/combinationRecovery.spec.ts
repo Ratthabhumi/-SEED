@@ -9,7 +9,7 @@ for(const lang of ['en','th'] as const)test('combination mission → map → act
   await expect(page.locator('#techmap-screen .combination-route')).toBeVisible();
   await page.screenshot({path:'test-results/browser/combination-map-'+lang+'.png'});
   await page.keyboard.press('Escape');
-  await page.evaluate(()=>(window as any).__seedE2E.grant(100000));
+  await page.evaluate(()=>(window as any).__seedE2E.requestCombinationReviewDraft());
   for(let i=0;i<2;i++){
     const next=await page.evaluate(()=>(window as any).__seedE2E.combinationReview().route.next.id);
     await page.locator(`#draft-screen .card[data-node-id="${next}"] .card-select`).click();

@@ -32,7 +32,9 @@ export class ActorRenderer {
     const upright=facingPolicy(id)==='upright';
     if(enemyPose!==undefined && ["chaser","ranged","tank","swarm"].includes(id)) {
       const row=["chaser","ranged","tank","swarm"].indexOf(id);
-      image.setTexture("enemies-v2",row*4+enemyPose).setPosition(x,y).setOrigin(.5,.65).setDisplaySize(size,size).setRotation(0).setFlipX(Math.cos(facing)<-.15).setTint(tint).setVisible(true);return;
+      const gliding=id==="ranged"&&(enemyPose===1||enemyPose===2);
+      const frame=gliding?(Math.cos(facing)<-.15?2:1):enemyPose;
+      image.setTexture("enemies-v2",row*4+frame).setPosition(x,y).setOrigin(.5,.65).setDisplaySize(size,size).setRotation(0).setFlipX(gliding?false:Math.cos(facing)<-.15).setTint(tint).setVisible(true);return;
     }
     if(id==="boss" && bossPose!==undefined){
       image.setTexture("boss-v2",bossPose).setPosition(x,y).setOrigin(.5,.65).setDisplaySize(size,size).setRotation(0).setFlipX(false).setTint(tint).setVisible(true);return;

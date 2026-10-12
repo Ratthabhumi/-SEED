@@ -35,6 +35,8 @@ out.parent.mkdir(parents=True,exist_ok=True); atlas.save(out,optimize=True)
 manifest=Path('assets/ASSET_MANIFEST.json'); m=json.loads(manifest.read_text())
 a=dict(m['assets'][-1]); a.update(id='seed-hero-v2-'+origin,projectPath=out.as_posix(),vendorSourcePath=raw.as_posix(),sourceFile=raw.as_posix(),sourcePack='-SEED original generated hero family',sourceLicense='MIT',author='-SEED contributors; OpenAI image generation',versionOrRelease='hero-v2-1',modifications='Original generated atlas; deterministic alpha-preserving 4x4 slicing, uniform resize and feet anchoring. Source retained.',presentationTransform='16 authored poses at128px; game hero72u; front/back; not six-age equipment coverage',purpose=origin+' combat pose hero; human acceptance pending',status='art-review-pending',byteSize=out.stat().st_size,vendorSourceSha256=hashlib.sha256(raw.read_bytes()).hexdigest(),productionSha256=hashlib.sha256(out.read_bytes()).hexdigest())
 a['modified']=True
+if origin not in ('boss','enemies','outposts'):
+    a['presentationTransform']=a['presentationTransform'].replace('hero72u','hero96u')
 if origin=='boss':
     a.update(id='seed-boss-v2',modifications='Original generated atlas; alpha-preserving 4x2 slicing, uniform resize and anchoring',presentationTransform='8 posed128px cells; canonical warnings/fire/hurt and upright boss',purpose='Boss artwork; animation and human acceptance pending')
 elif origin in ('enemies','outposts'):
