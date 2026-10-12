@@ -10,7 +10,7 @@ export type EnemyShape = "triangle" | "diamond" | "square" | "tri-cluster";
 export type AffixMarker = "chevrons" | "brackets" | "spokes" | "lobes" | "shield-ring" | "none";
 // Round 2: hostile and pickup silhouettes must differ even in grayscale.
 export type ProjectileToken = "capsule-light" | "arrowhead-spike";
-export type PickupToken = "crystal-shard";
+export type PickupToken = "open-codex";
 export type PoiToken = "beacon" | "ring-dim";
 // Round 2: every POI family owns a unique primary glyph (beacon stays secondary).
 export type PoiGlyph =
@@ -58,7 +58,7 @@ export function hostileProjectileToken(): ProjectileToken {
 }
 
 export function pickupToken(): PickupToken {
-  return "crystal-shard";
+  return "open-codex";
 }
 
 /** Background/civ decoration token — no gameplay token may equal this. */
@@ -158,8 +158,8 @@ export const VL = {
   eliteRingInner: 0xffffff,
   hostileOutline: 0x1a0505,
   friendlyCore: 0xfff6d8,
-  knowledge: phaserColors.friendly,
-  knowledgeCore: 0xd8fff6,
+  knowledge: phaserColors.research,
+  knowledgeCore: phaserColors.text,
   beacon: phaserColors.friendly,
   boss: phaserColors.hostile,
   bossInner: 0xffffff,

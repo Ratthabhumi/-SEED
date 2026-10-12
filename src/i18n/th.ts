@@ -3,6 +3,7 @@ import type {
  EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "ui.knowledgePickupHint": "เก็บตำราความรู้เพื่อปลดล็อกเทคโนโลยีและก้าวสู่ยุคถัดไป",
   "combat.rushWarning": "กำลังพุ่งโจมตี — หลบด้านข้าง แล้วสวนช่วงพัก",
   "combat.burstWarning": "กำลังยิงเป็นชุด — เดินหลบ แล้วเข้าประชิดช่วงพัก",
 

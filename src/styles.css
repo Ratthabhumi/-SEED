@@ -414,6 +414,7 @@ button, input { font-family: inherit; }
 }
 .knowledge-label { font-size: var(--font-caption); letter-spacing: 2px; color: var(--color-friendly); font-weight: 700; text-transform: uppercase; }
 .knowledge-nums { font-size: var(--font-body-strong); font-weight: 700; }
+.knowledge-value { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 
 /* Next Age card (in top-right zone flow) */
 .age-card {

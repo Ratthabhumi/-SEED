@@ -11,6 +11,9 @@ import type { AgeId } from "../../core/tech/graph";
 import type { POIType } from "../../core/world/poi";
 import { VL, poiGlyph } from "./VisualLanguage";
 import { fillPoly, strokePoly } from "./paths";
+import type { OutpostSpec } from "../../core/world/territory";
+import { drawSpecializedOutpost } from "./OutpostVisualRegistry";
+import { phaserColors as colors } from "../../theme/tokens";
 
 export interface GroundDrawArgs {
   getChunk: (cx: number, cy: number) => ChunkDescriptor;
@@ -228,6 +231,16 @@ function drawPoiGlyph(
 
 /** POI marker: unique family glyph (primary) + beacon pillar (secondary). */
 export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
+  if(a.type==="signal"){
+    // A fractured alien monument. Uses the existing site's position and visibility only.
+    g.fillStyle(colors.canvas,.9);g.fillEllipse(a.wx,a.wy+8,56,18);
+    fillPoly(g,[[a.wx-15,a.wy+2],[a.wx-19,a.wy-55],[a.wx-3,a.wy-75],[a.wx+15,a.wy-58],[a.wx+13,a.wy+2]],colors.surface,1);
+    g.lineStyle(2,colors.legacy,.9);
+    g.lineBetween(a.wx-3,a.wy-75,a.wx+15,a.wy-58);g.lineBetween(a.wx+15,a.wy-58,a.wx+13,a.wy+2);
+    g.lineStyle(3,colors.legacy,a.found?.65:.9);
+    g.lineBetween(a.wx-8,a.wy-53,a.wx+5,a.wy-38);g.lineBetween(a.wx+5,a.wy-38,a.wx-6,a.wy-21);
+    g.fillStyle(a.found?colors.friendly:colors.text,1);g.fillTriangle(a.wx-4,a.wy-65,a.wx+4,a.wy-65,a.wx,a.wy-58);
+  }
   if (a.found) {
     g.lineStyle(1, 0x555555, 0.8);
     g.strokeCircle(a.wx, a.wy, 12);
@@ -254,6 +267,8 @@ export interface TerritoryDressingArgs {
   ageIndex: number;
   tier: 1 | 2;
   disabled: boolean;
+  spec: OutpostSpec | "";
+  repairing?: boolean;
 }
 
 /**
@@ -262,6 +277,7 @@ export interface TerritoryDressingArgs {
  * atomic reactor → space energy grid. Pure presentation over territory state.
  */
 export function drawTerritoryDressing(g: Phaser.GameObjects.Graphics, a: TerritoryDressingArgs): void {
+  if(a.spec!==""){drawSpecializedOutpost(g,a);return;}
   const alpha = a.disabled ? 0.25 : 0.8;
   const c = a.disabled ? 0x555555 : 0x53e0c8;
   const R = 26 + a.tier * 4;

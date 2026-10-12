@@ -7,6 +7,9 @@ import type { OutpostSpec } from "../world/territory";
 import type { SquadMode } from "../combat/squad";
 
 export type SimEvent =
+  | { type: "knowledge_collected"; x: number; y: number; gained: number }
+  | { type: "beam_fired"; family: WeaponFamily; tier: number; x1: number; y1: number; x2: number; y2: number }
+  | { type: "energy_impact"; x: number; y: number; hpDamage: number; shieldDamage: number; source: string }
   | { type: "energy_arc"; x1:number; y1:number; x2:number; y2:number; source:"chain"|"relay" }
   | { type: "run_completed" }
   | { type: "outpost_dismantled"; poiId: string; released: number }

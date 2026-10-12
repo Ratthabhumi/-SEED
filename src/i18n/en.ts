@@ -1,5 +1,6 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "ui.knowledgePickupHint": "Collect the open codices: Knowledge unlocks technologies and the next Age.",
   "combat.rushWarning": "Rush incoming — step aside, then punish recovery",
   "combat.burstWarning": "Burst incoming — strafe, then close during reload",
 

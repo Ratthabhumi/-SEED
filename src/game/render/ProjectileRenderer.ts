@@ -1,11 +1,12 @@
 // Weapon / projectile / pickup rendering — presentation only.
 // Strict channels: player-side = round + light core; hostile = angular + dark
-// outline. Knowledge is always the teal shard; mines are ground devices.
+// outline. Knowledge is an open codex; mines are ground devices.
 import type Phaser from "phaser";
 import type { SimProj, SimPickup, SimMine } from "../../core/sim/RunState";
 import {projectileIdentity,projectileRole} from "./ageVisualIdentity";
 import { VL } from "./VisualLanguage";
 import { fillPoly, strokePoly } from "./paths";
+import { drawKnowledgeCodex } from "./knowledgeIdentity";
 
 export interface WeaponDrawOpts {
   time: number;
@@ -120,25 +121,9 @@ export function drawMine(g: Phaser.GameObjects.Graphics, m: SimMine, opts: Weapo
   g.strokeCircle(m.x, m.y, m.radius);
 }
 
-/** Knowledge: vertical elongated crystal + asymmetric facet + halo.
- *  Collectible language only — never directional, never an arrowhead. */
-export function drawKnowledge(g: Phaser.GameObjects.Graphics, k: SimPickup): void {
-  const r = 5 + Math.min(4, k.value * 0.25);
-  const w = r * 0.55;
-  fillPoly(g, [
-    [k.x, k.y - r * 1.35],
-    [k.x + w, k.y - r * 0.25],
-    [k.x + w * 0.7, k.y + r * 0.9],
-    [k.x, k.y + r * 1.25],
-    [k.x - w * 0.7, k.y + r * 0.9],
-    [k.x - w, k.y - r * 0.25],
-  ], VL.knowledge, 1);
-  // Asymmetric sparkle facet (upper-left) — the collectible glint.
-  g.lineStyle(2, VL.knowledgeCore, 1);
-  g.lineBetween(k.x - w * 0.5, k.y - r * 0.55, k.x - w * 0.1, k.y - r * 0.15);
-  // Halo ring — pickups glow, threats never do.
-  g.lineStyle(1, VL.knowledgeCore, 0.55);
-  g.strokeCircle(k.x, k.y, r * 1.15);
-  g.fillStyle(VL.knowledgeCore, 1);
-  g.fillCircle(k.x, k.y, Math.max(1.5, r * 0.3));
+/** Knowledge: an open codex, matching the HUD icon. Cosmetic bob never moves the pickup. */
+export function drawKnowledge(g: Phaser.GameObjects.Graphics, k: SimPickup, time=0, reduced=false): void {
+  const r = 6 + Math.min(4, k.value * 0.25);
+  const y=k.y+(reduced?0:Math.sin(time*3+k.x*.01)*2);
+  drawKnowledgeCodex(g,k.x,y,r);
 }
