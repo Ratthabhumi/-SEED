@@ -1442,12 +1442,21 @@ export class RunSimulation {
     if (!e.active || s.over) return;
     const def = e.affix ? ELITE_AFFIX_DEFS[e.affix as EliteAffix] : null;
     let rest = dmg * (def?.incomingDamageMul ?? 1);
+    const hpBefore = Math.max(0, e.hp);
+    let shieldDamage = 0;
     if (e.shield > 0) {
       const absorbed = Math.min(e.shield, rest);
+      shieldDamage = absorbed;
       e.shield -= absorbed;
       rest -= absorbed;
     }
     e.hp -= rest;
+    // Presentation observes resolved damage, before death can recycle this slot.
+    // No RNG, state, balance or damage-accounting change.
+    if ((src === "energy" || src === "chain" || src === "relay") && (rest > 0 || shieldDamage > 0)) {
+      ev.push({ type: "energy_impact", x: e.x, y: e.y,
+        hpDamage: Math.min(hpBefore, Math.max(0, rest)), shieldDamage, source: src });
+    }
     e.flash = 0.08;
     e.x += kx; e.y += ky;
     this.addDamage(src, Math.min(dmg, Math.max(0, e.hp + rest)));
@@ -1688,10 +1697,14 @@ export class RunSimulation {
     const tgt = this.nearestEnemy(s.px, s.py, range);
     if (!tgt) return;
     const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
+    // Capture aim before damage/death/split can reuse the pooled target object.
+    const targetX = tgt.x, targetY = tgt.y;
+    ev.push({ type: "beam_fired", family: fam, tier: s.weaponStage[fam],
+      x1: s.px, y1: s.py, x2: targetX, y2: targetY });
     const lim = Math.min(hit.length, 10);
     if(fam==="energy" && s.build.chainUnlocked)this.arcChain(tgt,tgt.x,tgt.y,st.damage*s.build.damageMul,ev,"chain",hit,lim);
     for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * s.build.damageMul, fam, ev);
-    s.beamFlash = { x2: tgt.x, y2: tgt.y, t: 0.12 };
+    s.beamFlash = { x2: targetX, y2: targetY, t: 0.12 };
   }
 
   private auraTick(fam: WeaponFamily, radius: number, dmg: number, ev: SimEvent[]): void {
@@ -2049,7 +2062,9 @@ export class RunSimulation {
       }
       if (d < 22) {
         k.active = false;
+        const before = s.knowledgeTotal;
         this.gainKnowledge(k.value, "pickup", ev);
+        ev.push({type:"knowledge_collected",x:k.x,y:k.y,gained:s.knowledgeTotal-before});
       }
     }
 

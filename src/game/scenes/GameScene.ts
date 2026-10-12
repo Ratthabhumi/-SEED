@@ -51,13 +51,15 @@ import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
 import { ActorRenderer } from "../render/ActorRenderer";
 import { repairPresentation } from "../render/repairPresentation";
+import { CombatFeedback, energyCharge } from "../render/CombatFeedback";
+import { KNOWLEDGE_ICON } from "../render/knowledgeIdentity";
 import { phaserColors } from "../../theme/tokens";
 import { drawPlayer } from "../render/PlayerRenderer";
 import {
-  drawFriendlyProj, drawHostileProj, drawBeam, drawAura, drawOrbit, drawMine, drawKnowledge,
+  drawFriendlyProj, drawHostileProj, drawAura, drawOrbit, drawMine, drawKnowledge,
 } from "../render/ProjectileRenderer";
 import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRenderer";
-import { nearestInterest, drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
+import { drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
 import { TechMapView } from "../tech/TechMapView";
 import { SEED_ASSETS } from "../assets/seedAssets";
 import { TutorialDirector } from "../onboarding/TutorialDirector";
@@ -122,6 +124,9 @@ export class GameScene extends Phaser.Scene {
   /** Transient impact presentation (never canonical): death rings + damage numbers. */
   private landmarkArt: Phaser.GameObjects.Image[] = [];
   private reducedEffects=false;
+  private combatFeedback = new CombatFeedback();
+  private knowledgeHintShown=false;
+  private knowledgeCollectUntil=-Infinity;
   private arcs: Array<{x1:number;y1:number;x2:number;y2:number;until:number;relay:boolean}> = [];
   private bursts: Array<{ x: number; y: number; t: number; max: number; big: boolean }> = [];
   private dmgNums: Array<{ x: number; y: number; txt: string; t: number }> = [];
@@ -250,6 +255,9 @@ export class GameScene extends Phaser.Scene {
     this.lastAbilityArtT=-10;
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
     this.actorMotion.reset();this.artWorld=this.sim.state.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;
+    this.combatFeedback.reset(this.sim.state.worldNonce);
+    this.combatFeedback.initialize(this);
+    this.knowledgeHintShown=false;this.knowledgeCollectUntil=-Infinity;
     this.artLastX=this.sim.state.px; this.artLastY=this.sim.state.py;
     this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
     this.lastGroundKey = "";
@@ -393,6 +401,42 @@ export class GameScene extends Phaser.Scene {
           if(encounter!=='roster'){for(const f of ['kinetic','energy','defense','field'] as const)s.weaponCd[f]=999;for(const a of s.squad)a.cd=999;this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.paused=true;}
         },
         advanceEvolution: (seconds:number) => {for(let i=0;i<Math.floor(Math.max(0,Math.min(3,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));},
+        primeSignature: () => {
+          // Isolated real combat, not a synthetic event injection. Call after stageEvolution.
+          const s=this.sim.state;this.paused=true;this.combatFeedback.reset(s.worldNonce);
+          for(const f of ['kinetic','energy','defense','field'] as const)s.weaponCd[f]=999;
+          for(const a of s.squad)a.cd=999;
+          s.weaponCd.energy=0.15;
+          this.refreshHUD();
+        },
+        stageKnowledgeReview: () => {
+          const s=this.sim.state;this.paused=true;
+          for(const k of s.pickups)k.active=false;
+          Object.assign(s.pickups[0]!,{active:true,x:s.px+100,y:s.py+40,value:5});
+          return s.knowledgeTotal;
+        },
+        stageUnchartedNavigation: () => {
+          const s=this.sim.state;this.paused=true;s.ageIndex=4;s.signalSecured=false;
+          s.poisWorld=[];s.stronghold=null;s.raid=null;
+          for(const e of s.enemies)e.active=false;
+          this.updateFrontier();this.updateCompass();
+          return {compass:this.hud.compass?.textContent,known:s.poisWorld.length};
+        },
+        lineUpSignatureTargets: () => {
+          const s=this.sim.state;s.weaponStage.field=0;let i=0;
+          for(const e of s.enemies)if(e.active){e.x=s.px+140+i++*80;e.y=s.py;e.shield=0;e.hp=e.maxHp=1000;e.affix="";}
+        },
+        offerSignatureUpgrade: () => {
+          const s=this.sim.state,node=s.techNodes.find(n=>n.id==="conduction-lattice");
+          if(!node)throw new Error("Signature technology absent from actual graph");
+          s.pendingLevels=1;s.draftOpen=true;
+          s.draftOffers=[{nodeId:node.id,quality:"COMMON",modifierIds:[],effectiveEffects:node.effects.map(e=>({...e}))}];
+          this.paused=false; // Canonical draft now owns the pause and opens the real UI.
+          this.syncDraftUI();
+        },
+        signatureFeedback: () => ({...this.combatFeedback.counts(this.sim.state.elapsed),charge:energyCharge(this.sim.state),
+          arcs:this.arcs.filter(a=>a.until>this.sim.state.elapsed).length,
+          elapsed:this.sim.state.elapsed,hp:this.sim.state.enemies.filter(e=>e.active).map(e=>e.hp),chain:this.sim.state.build.chainUnlocked,reduced:this.reducedEffects,hash:this.sim.hash()}),
         evolutionState: () => ({enemies:this.sim.state.enemies.filter(e=>e.active).map(e=>({family:e.family,x:e.x,y:e.y,evolution:e.evolution})),projs:this.sim.state.projs.filter(p=>p.active).map(p=>({src:p.src,visualTier:p.visualTier,vx:p.vx,vy:p.vy,dmg:p.dmg})),squadMode:this.sim.state.squadMode}),
         performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:0,enemyActors:this.enemyActors.size,allyActors:this.allyActors.size,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
@@ -890,13 +934,16 @@ export class GameScene extends Phaser.Scene {
     // Bottom-center knowledge progress (SECONDARY).
     const know = el("div", "knowledge-card");
     const knowLabel = el("div", "knowledge-label", "ui.knowledge");
+    const codex=document.createElement("img");codex.src=KNOWLEDGE_ICON;codex.alt="";codex.width=24;codex.height=24;
+    codex.className="knowledge-icon";
     const knowNums = el("div", "knowledge-nums");
+    const knowValue=el("div","knowledge-value");knowValue.append(codex,knowNums);
     const knowBar = el("div", "mini-bar");
     const knowFill = document.createElement("div");
     knowFill.className = "mini-fill kn";
     knowBar.appendChild(knowFill);
     know.appendChild(knowLabel);
-    know.appendChild(knowNums);
+    know.appendChild(knowValue);
     know.appendChild(knowBar);
     hud.appendChild(know);
     // Top-right next-age checklist card (PRIMARY objective).
@@ -1992,20 +2039,8 @@ export class GameScene extends Phaser.Scene {
       c.textContent = `◈ ${nm} ${Math.hypot(dx, dy).toFixed(0)}u ${arrowFor(dx, dy)}`;
       return;
     }
-    // Fallback: nearest undiscovered POI (presentation scan; throttled to 1 Hz).
-    const { cx, cy } = worldToChunk(s.px, s.py);
-    const cands: Array<{ x: number; y: number; label: string }> = [];
-    for (let ox = -2; ox <= 2; ox++) {
-      for (let oy = -2; oy <= 2; oy++) {
-        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
-        for (const poi of desc.poi) {
-          if (s.poisWorld.includes(poi.id)) continue;
-          cands.push({ x: poi.wx, y: poi.wy, label: t(`poi.${poi.type}.name` as EnKeys) });
-        }
-      }
-    }
-    const hit = nearestInterest(s.px, s.py, cands);
-    c.textContent = hit ? `◈ ${hit.label} ${hit.dist.toFixed(0)}u ${arrowFor(Math.cos(hit.angleRad), Math.sin(hit.angleRad))}` : "";
+    // No known destination: explain exploration without scanning hidden coordinates.
+    c.textContent = t(s.ageIndex>=4 && !s.signalSecured ? "ui.signalExploreHint" : "ui.exploreHint");
   }
 
   /** Lightweight contextual teaching: one line at a time, auto-dismissed. */
@@ -2938,10 +2973,13 @@ export class GameScene extends Phaser.Scene {
   // ------------------------------------------------------------- events→fx
   private handleEvents(ev: SimEvent[]): void {
     const s = this.sim.state;
+    this.combatFeedback.syncWorld(s.worldNonce);
     this.tutorial?.onSimEvents(ev);
     let killsThisFrame = 0;
+    let knowledgeCollected=0;
     const save = loadSave(localStorage);
     for (const e of ev) {
+      this.combatFeedback.accept(e, s.elapsed, this.reducedEffects);
       switch (e.type) {
         case "draft_opened":
           // UI appears via syncDraftUI (state-driven, exactly-one). Sound here.
@@ -3096,6 +3134,8 @@ export class GameScene extends Phaser.Scene {
           break;
         }
         case "ascended":
+          this.arcs=[];
+          this.knowledgeCollectUntil=-Infinity;
           toast("ui.ascendTitle", `#${e.ascension} · ${e.worldSeed}`);
           break;
         case "player_hurt":
@@ -3115,9 +3155,20 @@ export class GameScene extends Phaser.Scene {
           if (e.boss && save.settings.shake && !this.reducedEffects) this.cameras.main.shake(400, 0.012);
           break;
         case "energy_arc": {
-          if (this.arcs.length<24) this.arcs.push({...e,until:performance.now()+120,relay:e.source==="relay"});
+          if (this.arcs.length<24) this.arcs.push({...e,until:s.elapsed+.12,relay:e.source==="relay"});
           break;
         }
+        case "beam_fired":
+          sfx.beam(e.family === "energy");
+          break;
+        case "knowledge_collected":
+          knowledgeCollected+=e.gained;
+          break;
+        case "energy_impact":
+          // Existing 12-text pool bounds genuine resolved damage feedback.
+          if (!this.reducedEffects && e.hpDamage > 0 && this.cameras.main.worldView.contains(e.x,e.y))
+            this.floatTextAt(e.x,e.y,String(Math.ceil(e.hpDamage)),"#85ecff");
+          break;
         case "run_completed":
           this.qa?.end("victory-finished");
           this.persistRunEnd();this.showChronicle();break;
@@ -3130,6 +3181,11 @@ export class GameScene extends Phaser.Scene {
     }
     if (ev.some(e=>e.type==="energy_arc")) sfx.energy();
     if (killsThisFrame > 0) sfx.kill();
+    if(knowledgeCollected>0){
+      sfx.pickup();this.knowledgeCollectUntil=s.elapsed+.25;
+      if(!this.reducedEffects)this.floatTextAt(s.px,s.py-28,"+"+Number(knowledgeCollected.toFixed(1)),"#85ecff");
+      if(!this.knowledgeHintShown){this.knowledgeHintShown=true;toast("ui.knowledgePickupHint");}
+    }
     void s;
   }
 
@@ -3232,7 +3288,7 @@ export class GameScene extends Phaser.Scene {
     }
     // Ground follows chunk/age/POI discovery; CAMERA moves every frame (R4).
     const { cx, cy } = worldToChunk(s.px, s.py);
-    const terrSig = s.territories.map((t) => `${t.poiId}:${t.spec}:${t.tier}:${t.disabled ? 0 : 1}`).join("|");
+    const terrSig = s.territories.map((t) => `${t.poiId}:${t.spec}:${t.tier}:${t.disabled ? 0 : 1}:${t.disabled && t.repairT>0 ? 1 : 0}`).join("|");
     const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}:t${terrSig}`;
     if (gk !== this.lastGroundKey) {
       this.lastGroundKey = gk;
@@ -3312,15 +3368,16 @@ export class GameScene extends Phaser.Scene {
             highContrast: this.highContrast(),
           });
           const terr = terrByPoi.get(poi.id);
-          if ((poi.type === "ruin" || terr?.spec === "research") && landmarkCount < 48) {
+          if ((!terr && poi.type === "ruin") && landmarkCount < 48) {
             let art = this.landmarkArt[landmarkCount++];
             if (!art) { art = this.add.image(0,0,"frontier-observatory").setDepth(-5); this.landmarkArt.push(art); }
-            art.setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(70,70).setAlpha(terr?.disabled ? 0.4 : 1);
+            art.setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(70,70).setAlpha(1);
           }
           if (terr) {
             drawTerritoryDressing(g, {
               x: poi.wx, y: poi.wy,
               ageIndex: s.ageIndex, tier: terr.tier, disabled: terr.disabled,
+              spec:terr.spec,repairing:terr.disabled && terr.repairT>0,
             });
           }
         }
@@ -3342,7 +3399,7 @@ export class GameScene extends Phaser.Scene {
     const now = performance.now() / 1000;
     const hc = this.highContrast();
     const wopts = { time: now, highContrast: hc, reducedEffects:this.reducedEffects };
-    this.arcs=this.arcs.filter(a=>a.until>performance.now());
+    this.arcs=this.arcs.filter(a=>a.until>s.elapsed);
     for(const arc of this.arcs){g.lineStyle(3,arc.relay?0xffda76:0x85ecff,0.9);g.lineBetween(arc.x1,arc.y1,arc.x2,arc.y2);}
     // Focused target = nearest foe to the player (HP bar while focused).
     let focus: (typeof s.enemies)[number] | null = null;
@@ -3350,7 +3407,7 @@ export class GameScene extends Phaser.Scene {
 
     for (const k of s.pickups) {
       if (!k.active || !vis(k.x, k.y)) continue;
-      drawKnowledge(g, k);
+      drawKnowledge(g, k,s.elapsed,this.reducedEffects);
     }
     for (const m of s.mines) {
       if (!m.active || !vis(m.x, m.y)) continue;
@@ -3420,8 +3477,16 @@ export class GameScene extends Phaser.Scene {
         this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
       }
     }
-    if (s.beamFlash) {
-      drawBeam(g, s.px, s.py, s.beamFlash.x2, s.beamFlash.y2, 6, 0xfff07f);
+    this.combatFeedback.syncWorld(s.worldNonce);
+    this.combatFeedback.draw(g,s.elapsed,this.reducedEffects,vis);
+    if(!this.reducedEffects && this.knowledgeCollectUntil>s.elapsed){
+      const f=(this.knowledgeCollectUntil-s.elapsed)/.25;g.lineStyle(2,phaserColors.research,f*.5);g.strokeCircle(s.px,s.py,12+(1-f)*14);
+    }
+    const charge=this.reducedEffects ? 0 : energyCharge(s);
+    if(charge>0) {
+      const color=est.color;
+      g.lineStyle(2,color,charge*0.7);g.strokeCircle(s.px,s.py,7+charge*6);
+      g.fillStyle(color,charge*0.8);g.fillCircle(s.px,s.py,2+charge*2);
     }
     // Player: unique silhouette (camera still follows the invisible anchor).
     this.playerArc.setPosition(s.px, s.py);

@@ -3,6 +3,9 @@ import type {
  EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "ui.exploreHint": "สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นพบสถานที่สำคัญ",
+  "ui.signalExploreHint": "สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นหาสัญญาณต่างดาว แล้วกำจัดภัยรอบข้างก่อนยึด",
+  "ui.knowledgePickupHint": "เก็บตำราความรู้เพื่อปลดล็อกเทคโนโลยีและก้าวสู่ยุคถัดไป",
   "combat.rushWarning": "กำลังพุ่งโจมตี — หลบด้านข้าง แล้วสวนช่วงพัก",
   "combat.burstWarning": "กำลังยิงเป็นชุด — เดินหลบ แล้วเข้าประชิดช่วงพัก",
 

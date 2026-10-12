@@ -51,7 +51,7 @@ describe("visual language tokens", () => {
     // Round 2: hostile is an arrowhead spike, knowledge a crystal shard —
     // distinguishable without color.
     expect(hostileProjectileToken()).toBe("arrowhead-spike");
-    expect(pickupToken()).toBe("crystal-shard");
+    expect(pickupToken()).toBe("open-codex");
     expect(hostileProjectileToken()).not.toBe(pickupToken());
     expect(poiToken(false)).toBe("beacon");
     expect(poiToken(true)).toBe("ring-dim");

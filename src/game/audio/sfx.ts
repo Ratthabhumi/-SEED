@@ -46,6 +46,9 @@ export class Sfx {
   enemyAttack(kind:"rush"|"burst"):void {this.tone(kind==="rush"?160:360,0.06,"square",0.05,-60);}
   enemyWarning(kind:"rush"|"burst"):void {this.tone(kind==="rush"?240:520,0.16,"triangle",0.08,kind==="rush"?-80:100);}
   energy():void {this.tone(900,0.08,"sine",0.06,180);}
+  beam(energy: boolean): void {
+    this.tone(energy ? 720 : 190, 0.1, energy ? "triangle" : "sawtooth", 0.06, energy ? -480 : -100);
+  }
   hit(): void { this.tone(220, 0.07, "square", 0.10, -80); }
   kill(): void { this.tone(330, 0.12, "sawtooth", 0.12, -180); }
   pickup(): void { this.tone(660, 0.08, "sine", 0.10, 220); }
