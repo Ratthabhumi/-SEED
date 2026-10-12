@@ -1,7 +1,11 @@
 // Thai strings — same keys as en.ts (parity enforced by test). Natural modern Thai gaming tone.
-import type { EnKeys } from "./en";
+import type {
+ EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "combat.rushWarning": "กำลังพุ่งโจมตี — หลบด้านข้าง แล้วสวนช่วงพัก",
+  "combat.burstWarning": "กำลังยิงเป็นชุด — เดินหลบ แล้วเข้าประชิดช่วงพัก",
+
   "app.tagline": "หนึ่งเมล็ด หนึ่งประวัติศาสตร์ จากศิลาสู่ดวงดาว",
   "ui.startGame": "เริ่มการเดินทางใหม่",
   "ui.randomSeed": "สุ่มเมล็ด",

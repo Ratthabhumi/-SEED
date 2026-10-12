@@ -25,6 +25,6 @@
 @media (max-height: 500px) and (min-width: 761px) { .title-layout { gap: 12px; } #ui .title-play, #archive-panel { padding: 8px; } .title-actions { padding-top: 4px; } .title-actions .btn { padding: 4px 12px; } }
 
 .origin-portrait-crop { width: 64px; height: 64px; overflow: hidden; display: block; flex: none; }
-.origin-portrait-crop .origin-portrait { width: 1152px; height: 64px; max-width: none; object-fit: fill; }
+.origin-portrait-crop .origin-portrait { width: 2304px; height: 64px; max-width: none; object-fit: fill; }
 
 #archive-panel:not([open]) { align-self: start; }

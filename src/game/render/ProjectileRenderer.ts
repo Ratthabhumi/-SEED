@@ -3,29 +3,35 @@
 // outline. Knowledge is always the teal shard; mines are ground devices.
 import type Phaser from "phaser";
 import type { SimProj, SimPickup, SimMine } from "../../core/sim/RunState";
+import {projectileIdentity,projectileRole} from "./ageVisualIdentity";
 import { VL } from "./VisualLanguage";
 import { fillPoly, strokePoly } from "./paths";
 
 export interface WeaponDrawOpts {
   time: number;
   highContrast: boolean;
+  reducedEffects?:boolean;
 }
 
-/** Player projectile: capsule along velocity with a light core. */
-export function drawFriendlyProj(g: Phaser.GameObjects.Graphics, p: SimProj): void {
-  const speed = Math.hypot(p.vx, p.vy);
-  if (speed < 1) {
-    g.fillStyle(p.color, 1);
-    g.fillCircle(p.x, p.y, p.radius);
-    return;
-  }
-  const nx = p.vx / speed;
-  const ny = p.vy / speed;
-  const tail = p.radius * 2.2;
-  g.lineStyle(Math.max(3, p.radius * 1.6), p.color, 1);
-  g.lineBetween(p.x - nx * tail, p.y - ny * tail, p.x + nx * tail, p.y + ny * tail);
-  g.fillStyle(VL.friendlyCore, 1);
-  g.fillCircle(p.x, p.y, Math.max(2, p.radius * 0.55));
+/** Source and spawn-tier presentation; canonical coordinates/collision stay untouched. */
+export function drawFriendlyProj(g:Phaser.GameObjects.Graphics,p:SimProj,opts?:WeaponDrawOpts):void {
+ const identity=projectileIdentity(p),role=projectileRole(p);
+ const speed=Math.max(1,Math.hypot(p.vx,p.vy)),nx=p.vx/speed,ny=p.vy/speed,px=-ny,py=nx,r=p.radius;
+ const trail=opts?.reducedEffects?0:Math.min(24,identity.trail);
+ if(trail>0){g.lineStyle(2,p.color,0.5);g.lineBetween(p.x-nx*trail,p.y-ny*trail,p.x,p.y);}
+ if(role==='energy'||role==='ability'){
+  g.fillStyle(p.color,1);g.fillCircle(p.x,p.y,r*0.8);g.lineStyle(2,VL.friendlyCore,1);g.strokeCircle(p.x,p.y,r*0.8);
+  if(identity.form==='plasma'||identity.form==='tracer'){g.lineStyle(1,p.color,0.8);g.strokeCircle(p.x,p.y,r+2);}
+ }else if(identity.form==='shard'){
+  fillPoly(g,[[p.x+nx*r,p.y+ny*r],[p.x+px*r,p.y+py*r],[p.x-nx*r,p.y-ny*r],[p.x-px*r*0.5,p.y-py*r*0.5]],p.color,1);
+  g.lineStyle(2,VL.friendlyCore,1);g.lineBetween(p.x,p.y,p.x+nx*r,p.y+ny*r);
+ }else{
+  const length=identity.form==='tracer'?r*2.5:identity.form==='bullet'?r*1.6:r*1.2;
+  g.lineStyle(Math.max(3,r),p.color,1);g.lineBetween(p.x-nx*length,p.y-ny*length,p.x+nx*r,p.y+ny*r);
+  g.lineStyle(2,VL.friendlyCore,1);g.lineBetween(p.x,p.y,p.x+nx*r,p.y+ny*r);
+  if(identity.form==='arrow'||identity.form==='bolt'){g.lineBetween(p.x-nx*r+px*r,p.y-ny*r+py*r,p.x+nx*r,p.y+ny*r);g.lineBetween(p.x-nx*r-px*r,p.y-ny*r-py*r,p.x+nx*r,p.y+ny*r);}
+ }
+ if(role==='defense'||role==='squad'){g.lineStyle(1,VL.summon,1);g.strokeCircle(p.x,p.y,r+2);}
 }
 
 /** Hostile projectile: aggressive arrowhead/spike along velocity.

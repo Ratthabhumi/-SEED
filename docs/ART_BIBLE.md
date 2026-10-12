@@ -138,3 +138,6 @@ Original MIT SVG source under assets/original/frontier; exact copies under asset
 
 ## Unified actors (2026-10-12)
 See ACTOR_COVERAGE.md and UI_DESIGN_SYSTEM.md. Cached original sprite strips replace production body shapes; functional telegraphs remain separate. Legacy circle/triangle specs apply to the review lab only. Authored attack/death animation and human art approval remain partial.
+
+## Upright directional corrective slice (2026-10-12)
+Four humanoid strips now36 frames (18 front +18 authored back),2304×64; front idle/walk0/1/2 plus back offset18, stable horizontal flip, rotation0. Actual displacement controls gait; simulation time freezes animation on pause. Boss stays upright; insect/drone heading preserved.36-frame sprites keep pivot32,32 and six age equipment layers; cached raw actor pixels≈3.94MiB. Prior universal rotation/gait descriptions are superseded. ActorMotion and AGE_COMBAT_EVOLUTION.md define exact scope; authored attack/death/weapon mounts and expanded era/boss behavior remain partial.

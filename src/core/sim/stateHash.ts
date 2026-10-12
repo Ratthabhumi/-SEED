@@ -47,14 +47,14 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     if (!e.active) continue;
     enemies.push(
       [r6(e.x), r6(e.y), r6(e.hp), r6(e.shield), e.family, e.elite ? e.affix : "", e.boss ? 1 : 0,
-        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), e.siege ? 1 : 0].join(","),
+        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), e.siege ? 1 : 0, e.evolution?[e.evolution.id,e.evolution.phase,r6(e.evolution.timer),r6(e.evolution.aimX),r6(e.evolution.aimY),e.evolution.shots].join(":"):""].join(","),
     );
   }
   enemies.sort();
   const projs: string[] = [];
   for (const p of s.projs) {
     if (!p.active) continue;
-    projs.push([r6(p.x), r6(p.y), r6(p.vx), r6(p.vy), r6(p.dmg), r6(p.radius), r6(p.life), p.friendly ? 1 : 0, p.src, p.color].join(","));
+    projs.push([r6(p.x), r6(p.y), r6(p.vx), r6(p.vy), r6(p.dmg), r6(p.radius), r6(p.life), p.friendly ? 1 : 0, p.src, p.color, p.visualTier??0].join(","));
   }
   projs.sort();
   const picks: string[] = [];
