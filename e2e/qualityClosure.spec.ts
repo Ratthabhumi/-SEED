@@ -36,9 +36,17 @@ test('four weapon families show actual damage and distinct bounded feedback',asy
   await page.evaluate(()=>(window as any).__seedE2E.stageVerdantReview());
   for(const family of ['kinetic','energy','defense','field'] as const){
     const hp=await page.evaluate(f=>(window as any).__seedE2E.stageFamilyReview(f),family);
-    await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(.1));
-    const after=await page.evaluate(()=>(window as any).__seedE2E.signatureFeedback());
-    expect(after.hp[0]).toBeLessThan(hp);expect(after.impacts).toBeGreaterThan(0);
+    // Projectile families need real travel time. Stop at the first resolved hit
+    // so the simulation-timed impact is still alive for the native capture.
+    const after=await page.evaluate(initial=>{
+      const h=(window as any).__seedE2E;
+      let state=h.signatureFeedback();
+      for(let i=0;i<90&&state.hp[0]>=initial;i++){
+        h.advanceEvolution(1/60);state=h.signatureFeedback();
+      }
+      return state;
+    },hp);
+    expect(after.hp[0],family+' actual damage within 1.5 simulation seconds').toBeLessThan(hp);expect(after.impacts).toBeGreaterThan(0);
     await page.waitForTimeout(100);await page.screenshot({path:`test-results/browser/family-v2-${family}.png`});
   }
 });
