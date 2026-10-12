@@ -16,18 +16,26 @@ for(const lang of ['en','th'] as const)test('upright movement, hold and reset '+
  await page.keyboard.press('Escape');await page.locator('#pause-restart-btn').click();await expect(page.locator('.hud')).toBeVisible();
  await page.waitForTimeout(150);expect((await poses()).every((a:any)=>a.rotation===0||a.texture==='actor-guardian')).toBe(true);
 });
-for(const lang of ['en','th'] as const)test('six Age roster and real warned encounters '+lang,async({page})=>{
+for(const lang of ['en','th'] as const)for(let age=0;age<6;age++)test('Age roster '+age+' '+lang,async({page})=>{
  await page.setViewportSize({width:lang==='en'?1920:1280,height:lang==='en'?1080:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
- for(let age=0;age<6;age++)for(const origin of ['hunters','engineers','resonant','sentinels']){
+ for(const origin of ['hunters','engineers','resonant','sentinels']){
   await page.evaluate(({origin,age})=>(window as any).__seedE2E.stageEvolution(origin,age),{origin,age});await page.waitForTimeout(180);
   const actors=await page.evaluate(()=>(window as any).__seedE2E.actorPresentation());const hero=actors[0];expect(hero.texture).toBe('actor-'+origin);expect(hero.rotation).toBe(0);expect(Math.floor(Number(hero.frame)/3)%6).toBe(age);
   await page.screenshot({path:'test-results/browser/evolution-age-'+lang+'-'+origin+'-'+age+'.png'});
  }
+ await assertNoRawKeys(page);
+});
+for(const lang of ['en','th'] as const)test('warned encounter canonical snapshots '+lang,async({page})=>{
+ await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
  for(const [age,kind] of [[0,'rush'],[3,'burst']] as const){
+  // Actual simulation fixed steps, frozen only for deterministic screenshot timing.
   await page.evaluate(({age,kind})=>(window as any).__seedE2E.stageEvolution('hunters',age,kind),{age,kind});
-  await expect.poll(async()=>page.evaluate(()=>(window as any).__seedE2E.evolutionState().enemies[0]?.evolution?.phase)).toBe('warning');
+  const state=()=>page.evaluate(()=>(window as any).__seedE2E.evolutionState());
+  expect((await state()).enemies[0].evolution.phase).toBe('warning');await page.waitForTimeout(100);
   await page.screenshot({path:'test-results/browser/evolution-warning-'+lang+'-'+kind+'.png'});
-  await expect.poll(async()=>page.evaluate(()=>(window as any).__seedE2E.evolutionState().enemies[0]?.evolution?.phase),{timeout:10000}).toBe('recover');
+  await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(0.9));expect((await state()).enemies[0].evolution.phase).toBe('attack');await page.waitForTimeout(100);
+  await page.screenshot({path:'test-results/browser/evolution-attack-'+lang+'-'+kind+'.png'});
+  await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(0.35));expect((await state()).enemies[0].evolution.phase).toBe('recover');await page.waitForTimeout(100);
   await page.screenshot({path:'test-results/browser/evolution-recovery-'+lang+'-'+kind+'.png'});
  }
  await assertNoRawKeys(page);

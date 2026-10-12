@@ -1,7 +1,8 @@
 import type {ActorId} from '../assets/actorAssets';
 export type FacingPolicy = 'upright' | 'heading';
-export const facingPolicy = (id:ActorId):FacingPolicy => ['hunters','engineers','resonant','sentinels','boss'].includes(id)?'upright':'heading';
-export const humanoid = (id:ActorId):boolean => ['hunters','engineers','resonant','sentinels'].includes(id);
+const HUMANOIDS=new Set<ActorId>(['hunters','engineers','resonant','sentinels']);
+export const humanoid = (id:ActorId):boolean => HUMANOIDS.has(id);
+export const facingPolicy = (id:ActorId):FacingPolicy => humanoid(id)||id==='boss'?'upright':'heading';
 export interface MotionPose { heading:number; moving:boolean; flip:boolean; back:boolean; }
 interface Sample extends MotionPose {x:number;y:number;t:number;lastMove:number;}
 /** Read-only adapter history. Fixed-step time keeps paused poses frozen; reset per world. */

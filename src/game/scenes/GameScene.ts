@@ -375,15 +375,20 @@ export class GameScene extends Phaser.Scene {
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
         actorPresentation: () => this.allyActors.review(),
         stageEvolution: (origin:string,age:number,encounter='roster') => {
-          const s=this.sim.state;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
+          const s=this.sim.state;this.paused=false;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
           s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=s.mineT=999;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
+          // Isolated combat fixture: mark local generated POIs discovered, so exploration drafts cannot freeze movement assertions.
+          const {cx,cy}=worldToChunk(s.px,s.py);
+          for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(const p of this.sim.chunks.get(s.worldSeed,s.worldNonce,cx+dx,cy+dy).poi)if(!s.poisWorld.includes(p.id))s.poisWorld.push(p.id);
           for(const f of ['kinetic','energy','defense','field'] as const){s.weaponStage[f]=age;s.weaponCd[f]=0;}
           for(const e of s.enemies)e.active=false;for(const p of s.projs)p.active=false;
           for(let i=0;i<s.squad.length;i++){const a=s.squad[i]!;a.active=i<2;a.x=s.px-60-i*25;a.y=s.py+60;a.inv=0;a.hp=a.maxHp;a.cd=0;}
           const families=encounter==='rush'?['chaser']:encounter==='burst'?['ranged']:['chaser','ranged','tank','swarm'];
           for(let i=0;i<families.length;i++){const e=this.sim.spawnEnemy(families[i] as 'chaser',false,false,i*Math.PI/2,encounter==='rush'?130:encounter==='burst'?290:150,[])!;e.hp=e.maxHp=1e8;if(encounter==='roster'){e.speed=0;e.dmg=0;e.evolution=undefined;e.shootT=999;}else e.evolution!.timer=0;}
           this.actorMotion.reset();
+          if(encounter!=='roster'){this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.paused=true;}
         },
+        advanceEvolution: (seconds:number) => {for(let i=0;i<Math.floor(Math.max(0,Math.min(3,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));},
         evolutionState: () => ({enemies:this.sim.state.enemies.filter(e=>e.active).map(e=>({family:e.family,x:e.x,y:e.y,evolution:e.evolution})),projs:this.sim.state.projs.filter(p=>p.active).map(p=>({src:p.src,visualTier:p.visualTier,vx:p.vx,vy:p.vy,dmg:p.dmg})),squadMode:this.sim.state.squadMode}),
         performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:0,enemyActors:this.enemyActors.size,allyActors:this.allyActors.size,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
