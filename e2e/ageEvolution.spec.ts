@@ -21,6 +21,8 @@ for(const lang of ['en','th'] as const)for(let age=0;age<6;age++)test('Age roste
  for(const origin of ['hunters','engineers','resonant','sentinels']){
   await page.evaluate(({origin,age})=>(window as any).__seedE2E.stageEvolution(origin,age),{origin,age});await page.waitForTimeout(180);
   const actors=await page.evaluate(()=>(window as any).__seedE2E.actorPresentation());const hero=actors[0];expect(hero.texture).toBe('actor-'+origin);expect(hero.rotation).toBe(0);expect(Math.floor(Number(hero.frame)/3)%6).toBe(age);
+  const guardians=actors.filter((a:any)=>a.texture==='actor-guardian');const expected=(origin==='engineers'||origin==='sentinels')&&age>=2?(age===2?1:age===3?2:3):0;
+  expect(guardians).toHaveLength(expected);expect(guardians.every((a:any)=>Math.floor(Number(a.frame)/3)===age)).toBe(true);
   await page.screenshot({path:'test-results/browser/evolution-age-'+lang+'-'+origin+'-'+age+'.png'});
  }
  await assertNoRawKeys(page);

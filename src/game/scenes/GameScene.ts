@@ -45,6 +45,7 @@ import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
 import { drawEnemy } from "../render/EnemyRenderer";
 import {eligibleFamilies} from "../../core/director/director";
+import {guardianCount} from "../render/weaponPresentation";
 import {drawEnemyTelegraph} from "../render/enemyTelegraph";
 import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
@@ -387,7 +388,7 @@ export class GameScene extends Phaser.Scene {
           const families=encounter==='rush'?['chaser']:encounter==='burst'?['ranged']:eligibleFamilies(age,'ordinary');
           for(let i=0;i<families.length;i++){const e=this.sim.spawnEnemy(families[i] as 'chaser',false,false,i*Math.PI/2,encounter==='rush'?130:encounter==='burst'?290:150,[])!;e.hp=e.maxHp=1e8;if(encounter==='roster'){e.speed=0;e.dmg=0;e.evolution=undefined;e.shootT=999;}else e.evolution!.timer=0;}
           this.actorMotion.reset();
-          if(encounter!=='roster'){this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.paused=true;}
+          if(encounter!=='roster'){for(const f of ['kinetic','energy','defense','field'] as const)s.weaponCd[f]=999;for(const a of s.squad)a.cd=999;this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.paused=true;}
         },
         advanceEvolution: (seconds:number) => {for(let i=0;i<Math.floor(Math.max(0,Math.min(3,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));},
         evolutionState: () => ({enemies:this.sim.state.enemies.filter(e=>e.active).map(e=>({family:e.family,x:e.x,y:e.y,evolution:e.evolution})),projs:this.sim.state.projs.filter(p=>p.active).map(p=>({src:p.src,visualTier:p.visualTier,vx:p.vx,vy:p.vy,dmg:p.dmg})),squadMode:this.sim.state.squadMode}),
@@ -553,7 +554,7 @@ export class GameScene extends Phaser.Scene {
           const s=this.sim.state; s.ageIndex=3;s.ageElapsed=0;s.build.hp=s.build.maxHp=1e9;
           for(const e of s.enemies)e.active=false;
           const families=["chaser","ranged","tank","swarm"] as const;
-          for(let i=0;i<(dense?120:5);i++){const e=s.enemies[i]!;const angle=i*2.399963;const distance=dense?90+(i%10)*22:130;Object.assign(e,{active:true,x:s.px+Math.cos(angle)*distance,y:s.py+Math.sin(angle)*distance,hp:300,maxHp:300,shield:0,family:families[i%4],speed:0,dmg:0,radius:i===4&&!dense?36:14,xp:0,elite:i%5===0,affix:i%5===0?"armored":"",flash:0,shootT:5,boss:i===4&&!dense,hitCd:0,siege:false});}
+          for(let i=0;i<(dense?120:5);i++){const e=s.enemies[i]!;const angle=i*2.399963;const distance=dense?90+(i%10)*22:130;Object.assign(e,{active:true,x:s.px+Math.cos(angle)*distance,y:s.py+Math.sin(angle)*distance,hp:300,maxHp:300,shield:0,family:families[i%4],speed:0,dmg:0,radius:i===4&&!dense?36:14,xp:0,elite:i%5===0,affix:i%5===0?"armored":"",flash:0,shootT:5,boss:i===4&&!dense,hitCd:0,siege:false,evolution:undefined});}
         },
         stageRepair: () => {
           const s=this.sim.state; for(const e of s.enemies)e.active=false; s.build.hp=s.build.maxHp=1e9; s.spawnT=s.eliteT=s.mineT=999;
@@ -3387,12 +3388,14 @@ export class GameScene extends Phaser.Scene {
       else drawHostileProj(g, p, wopts);
     }
     const b = s.build;
+    const enabled=activeFamilies(s.originId,s.expansionFamily);
     const est = getWeaponStage("energy", s.weaponStage.energy);
-    if (est.archetype === "aura" || b.bonusAura > 0) {
+    if (enabled.includes("energy") && (est.archetype === "aura" || b.bonusAura > 0)) {
       drawAura(g, s.px, s.py, est.radius + b.bonusAura * 30, 0xffb03c);
     }
     const fst = getWeaponStage("field", s.weaponStage.field);
-    if (fst.archetype === "orbit" || b.bonusOrbit > 0) {
+    if(enabled.includes("field") && fst.archetype==="aura")drawAura(g,s.px,s.py,fst.radius,phaserColors.legacy);
+    if (enabled.includes("field") && (fst.archetype === "orbit" || b.bonusOrbit > 0)) {
       const blades = 2 + b.bonusOrbit;
       for (let i = 0; i < blades; i++) {
         const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
@@ -3400,15 +3403,15 @@ export class GameScene extends Phaser.Scene {
       }
     }
     const dst = getWeaponStage("defense", s.weaponStage.defense);
-    if (dst.archetype === "orbit") {
+    if (enabled.includes("defense") && dst.archetype === "orbit") {
       const blades = Math.max(1, dst.count + b.bonusOrbit);
       drawOrbit(g, s.px, s.py, dst.radius, blades, s.orbitAng, dst.color, 7);
     }
-    const guardians = Math.min((dst.archetype === "summon" ? dst.count : 0) + b.bonusGuardians, 8);
+    const guardians = guardianCount(s);
     if (guardians > 0) {
       for (let i = 0; i < guardians; i++) {
         const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true);
+        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
       }
     }
     if (s.beamFlash) {
