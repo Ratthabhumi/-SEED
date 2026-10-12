@@ -44,6 +44,10 @@ import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
 import { drawEnemy } from "../render/EnemyRenderer";
+import {eligibleFamilies} from "../../core/director/director";
+import {guardianCount} from "../render/weaponPresentation";
+import {drawEnemyTelegraph,enemyDisplayHeading,enemyDisplayMoving} from "../render/enemyTelegraph";
+import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
 import { ActorRenderer } from "../render/ActorRenderer";
 import { repairPresentation } from "../render/repairPresentation";
@@ -79,6 +83,9 @@ export class GameScene extends Phaser.Scene {
   private allyActors!: ActorRenderer;
   private repairLabel!: Phaser.GameObjects.Text;
   private lastAbilityArtT = -10;
+  private actorMotion=new ActorMotion();
+  private artWorld="";
+  private enemyWarningT={rush:-Infinity,burst:-Infinity};
   private artLastX = 0;
   private artLastY = 0;
   private gfx!: Phaser.GameObjects.Graphics;
@@ -158,7 +165,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    for (const [id,url] of Object.entries(ACTOR_ASSETS)) this.load.svg("actor-"+id,url,{width:1152,height:64});
+    for (const [id,url] of Object.entries(ACTOR_ASSETS)) this.load.svg("actor-"+id,url,{width:humanoid(id as keyof typeof ACTOR_ASSETS)?2304:1152,height:64});
     this.load.svg("frontier-scout", SEED_ASSETS.frontier.scout, {width:64,height:64});
     this.load.svg("frontier-mite", SEED_ASSETS.frontier.mite, {width:64,height:64});
     this.load.svg("frontier-observatory", SEED_ASSETS.frontier.observatory, {width:96,height:96});
@@ -242,6 +249,7 @@ export class GameScene extends Phaser.Scene {
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
     this.lastAbilityArtT=-10;
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
+    this.actorMotion.reset();this.artWorld=this.sim.state.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;
     this.artLastX=this.sim.state.px; this.artLastY=this.sim.state.py;
     this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
     this.lastGroundKey = "";
@@ -368,6 +376,24 @@ export class GameScene extends Phaser.Scene {
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
+        actorPresentation: () => this.allyActors.review(),
+        stageEvolution: (origin:string,age:number,encounter='roster') => {
+          const s=this.sim.state;this.paused=false;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
+          this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);
+          s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=s.mineT=999;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
+          // Isolated combat fixture: mark local generated POIs discovered, so exploration drafts cannot freeze movement assertions.
+          const {cx,cy}=worldToChunk(s.px,s.py);
+          for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)for(const p of this.sim.chunks.get(s.worldSeed,s.worldNonce,cx+dx,cy+dy).poi)if(!s.poisWorld.includes(p.id))s.poisWorld.push(p.id);
+          for(const f of ['kinetic','energy','defense','field'] as const){s.weaponStage[f]=age;s.weaponCd[f]=0;}
+          for(const e of s.enemies)e.active=false;for(const p of s.projs)p.active=false;
+          for(let i=0;i<s.squad.length;i++){const a=s.squad[i]!;a.active=i<2;a.x=s.px-60-i*25;a.y=s.py+60;a.inv=0;a.hp=a.maxHp;a.cd=0;}
+          const families=encounter==='rush'?['chaser']:encounter==='burst'?['ranged']:eligibleFamilies(age,'ordinary');
+          for(let i=0;i<families.length;i++){const e=this.sim.spawnEnemy(families[i] as 'chaser',false,false,i*Math.PI/2,encounter==='rush'?130:encounter==='burst'?290:150,[])!;e.hp=e.maxHp=1e8;if(encounter==='roster'){e.speed=0;e.dmg=0;e.evolution=undefined;e.shootT=999;}else e.evolution!.timer=0;}
+          this.actorMotion.reset();
+          if(encounter!=='roster'){for(const f of ['kinetic','energy','defense','field'] as const)s.weaponCd[f]=999;for(const a of s.squad)a.cd=999;this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.paused=true;}
+        },
+        advanceEvolution: (seconds:number) => {for(let i=0;i<Math.floor(Math.max(0,Math.min(3,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));},
+        evolutionState: () => ({enemies:this.sim.state.enemies.filter(e=>e.active).map(e=>({family:e.family,x:e.x,y:e.y,evolution:e.evolution})),projs:this.sim.state.projs.filter(p=>p.active).map(p=>({src:p.src,visualTier:p.visualTier,vx:p.vx,vy:p.vy,dmg:p.dmg})),squadMode:this.sim.state.squadMode}),
         performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:0,enemyActors:this.enemyActors.size,allyActors:this.allyActors.size,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
           // Test-only shortcut for the boss-kill trigger; ascend() itself
@@ -530,7 +556,7 @@ export class GameScene extends Phaser.Scene {
           const s=this.sim.state; s.ageIndex=3;s.ageElapsed=0;s.build.hp=s.build.maxHp=1e9;
           for(const e of s.enemies)e.active=false;
           const families=["chaser","ranged","tank","swarm"] as const;
-          for(let i=0;i<(dense?120:5);i++){const e=s.enemies[i]!;const angle=i*2.399963;const distance=dense?90+(i%10)*22:130;Object.assign(e,{active:true,x:s.px+Math.cos(angle)*distance,y:s.py+Math.sin(angle)*distance,hp:300,maxHp:300,shield:0,family:families[i%4],speed:0,dmg:0,radius:i===4&&!dense?36:14,xp:0,elite:i%5===0,affix:i%5===0?"armored":"",flash:0,shootT:5,boss:i===4&&!dense,hitCd:0,siege:false});}
+          for(let i=0;i<(dense?120:5);i++){const e=s.enemies[i]!;const angle=i*2.399963;const distance=dense?90+(i%10)*22:130;Object.assign(e,{active:true,x:s.px+Math.cos(angle)*distance,y:s.py+Math.sin(angle)*distance,hp:300,maxHp:300,shield:0,family:families[i%4],speed:0,dmg:0,radius:i===4&&!dense?36:14,xp:0,elite:i%5===0,affix:i%5===0?"armored":"",flash:0,shootT:5,boss:i===4&&!dense,hitCd:0,siege:false,evolution:undefined});}
         },
         stageRepair: () => {
           const s=this.sim.state; for(const e of s.enemies)e.active=false; s.build.hp=s.build.maxHp=1e9; s.spawnT=s.eliteT=s.mineT=999;
@@ -2999,6 +3025,12 @@ export class GameScene extends Phaser.Scene {
         case "squad_command":
           this.qa?.noteSimEvent("squad_command", e.mode);
           break;
+        case "enemy_attack_fired": sfx.enemyAttack(e.kind);break;
+        case "enemy_attack_warning": {
+          const now=this.sim.state.runElapsed;
+          if(now-this.enemyWarningT[e.kind]>=3){toast(e.kind==="rush"?"combat.rushWarning":"combat.burstWarning");this.enemyWarningT[e.kind]=now;}
+          sfx.enemyWarning(e.kind);break;
+        }
         case "ability_used": {
           this.lastAbilityArtT = performance.now()/1000;
           const abil = ORIGIN_ABILITY[originById(this.sim.state.originId).id];
@@ -3309,7 +3341,7 @@ export class GameScene extends Phaser.Scene {
     const vis = (x: number, y: number): boolean => x >= vx0 && y >= vy0 && x <= vx1 && y <= vy1;
     const now = performance.now() / 1000;
     const hc = this.highContrast();
-    const wopts = { time: now, highContrast: hc };
+    const wopts = { time: now, highContrast: hc, reducedEffects:this.reducedEffects };
     this.arcs=this.arcs.filter(a=>a.until>performance.now());
     for(const arc of this.arcs){g.lineStyle(3,arc.relay?0xffda76:0x85ecff,0.9);g.lineBetween(arc.x1,arc.y1,arc.x2,arc.y2);}
     // Focused target = nearest foe to the player (HP bar while focused).
@@ -3333,37 +3365,43 @@ export class GameScene extends Phaser.Scene {
         focus = e;
       }
     }
+    if(this.artWorld!==s.worldNonce){this.actorMotion.reset();this.artWorld=s.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;}
     this.enemyActors.begin();
     this.allyActors.begin();
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
+      const facing=enemyDisplayHeading(e,s.px,s.py);
       drawEnemy(g, e, {
         bodyColor: ENEMY_LINEAGE[e.family].color[AGES[s.ageIndex] as AgeId],
-        facing: Math.atan2(s.py - e.y, s.px - e.x),
+        facing,
         time: now,
         highContrast: hc,
         hpBar: e.elite || e.boss || e.flash > 0 || e === focus,
         ageIndex: s.ageIndex,
         spriteBody: true,
       });
-      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,Math.atan2(s.py-e.y,s.px-e.x),s.elapsed,true,e.flash>0?0xffbbbb:0xffffff,s.ageIndex);
+      drawEnemyTelegraph(g,e,hc);
+      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex);
     }
     this.enemyActors.end();
-    const moving = s.px!==this.artLastX || s.py!==this.artLastY;
+    const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);
+    const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
-    this.allyActors.draw(actorFor(s.originId),s.px,s.py,48,this.playerFacing,s.elapsed,moving || s.dashT>0,now-this.lastHurtT<0.25?0xffaaaa:s.iframe>0?0x9fd8ff:now-this.lastAbilityArtT<0.35?0xffe4a3:0xffffff,s.ageIndex);
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,48,this.playerFacing,s.elapsed,moving || s.dashT>0,now-this.lastHurtT<0.25?0xffaaaa:s.iframe>0?0x9fd8ff:now-this.lastAbilityArtT<0.35?0xffe4a3:0xffffff,s.ageIndex,heroPose);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
-      if (p.friendly) drawFriendlyProj(g, p);
+      if (p.friendly) drawFriendlyProj(g, p,wopts);
       else drawHostileProj(g, p, wopts);
     }
     const b = s.build;
+    const enabled=activeFamilies(s.originId,s.expansionFamily);
     const est = getWeaponStage("energy", s.weaponStage.energy);
-    if (est.archetype === "aura" || b.bonusAura > 0) {
+    if (enabled.includes("energy") && (est.archetype === "aura" || b.bonusAura > 0)) {
       drawAura(g, s.px, s.py, est.radius + b.bonusAura * 30, 0xffb03c);
     }
     const fst = getWeaponStage("field", s.weaponStage.field);
-    if (fst.archetype === "orbit" || b.bonusOrbit > 0) {
+    if(enabled.includes("field") && fst.archetype==="aura")drawAura(g,s.px,s.py,fst.radius,phaserColors.legacy);
+    if (enabled.includes("field") && (fst.archetype === "orbit" || b.bonusOrbit > 0)) {
       const blades = 2 + b.bonusOrbit;
       for (let i = 0; i < blades; i++) {
         const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
@@ -3371,15 +3409,15 @@ export class GameScene extends Phaser.Scene {
       }
     }
     const dst = getWeaponStage("defense", s.weaponStage.defense);
-    if (dst.archetype === "orbit") {
+    if (enabled.includes("defense") && dst.archetype === "orbit") {
       const blades = Math.max(1, dst.count + b.bonusOrbit);
       drawOrbit(g, s.px, s.py, dst.radius, blades, s.orbitAng, dst.color, 7);
     }
-    const guardians = Math.min((dst.archetype === "summon" ? dst.count : 0) + b.bonusGuardians, 8);
+    const guardians = guardianCount(s);
     if (guardians > 0) {
       for (let i = 0; i < guardians; i++) {
         const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true);
+        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
       }
     }
     if (s.beamFlash) {
@@ -3401,7 +3439,8 @@ export class GameScene extends Phaser.Scene {
     // Command squad renders as origin-identified allies with mode glyph.
     for (const a of s.squad) {
       if (!a.active || !vis(a.x, a.y)) continue;
-      this.allyActors.draw(actorFor(s.originId),a.x,a.y,28,Math.atan2(s.py-a.y,s.px-a.x),s.elapsed,true,0xbbeeff,s.ageIndex);
+      const pose=this.actorMotion.sample(a,a.x,a.y,s.elapsed);
+      this.allyActors.draw(actorFor(s.originId),a.x,a.y,28,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xbbeeff,s.ageIndex,pose);
     }
     this.allyActors.end();
     for (const site of s.territories) {

@@ -24,3 +24,6 @@ Production character bodies are sprites only. PlayerRenderer/EnemyRenderer sprit
 Remaining art: independent authored attack/dash/death sequences, enemy attack timing, bespoke elites, squad role variants, full six-age environmental art and human silhouette/scale approval. Gait and event tint do not certify full production animation. Original source/manifest hashes and bundled MIT license provide provenance; no reference-game assets copied.
 
 Animation limitation: tank and boss currently use rigid facing/hit/equipment poses; their three gait frames repeat. Authored walking, attack and death animation remains production work.
+
+## Upright directional corrective slice (2026-10-12)
+Four humanoid strips now36 frames (18 front +18 authored back),2304×64; front idle/walk0/1/2 plus back offset18, stable horizontal flip, rotation0. Actual displacement controls gait; simulation time freezes animation on pause. Boss stays upright; insect/drone heading preserved.36-frame sprites keep pivot32,32 and six age equipment layers; cached raw actor pixels≈3.94MiB. Prior universal rotation/gait descriptions are superseded. ActorMotion and AGE_COMBAT_EVOLUTION.md define exact scope; authored attack/death/weapon mounts and expanded era/boss behavior remain partial.

@@ -37,7 +37,10 @@ export interface DraftOffer {
   };
 }
 
+import type {EnemyEvolutionState} from "../combat/enemyEvolution";
 export interface SimEnemy {
+  /** Spawn-assigned, canonical experimental adaptation; legacy fixtures may omit. */
+  evolution?:EnemyEvolutionState;
   active: boolean; x: number; y: number;
   hp: number; maxHp: number; shield: number;
   family: EnemyFamily; speed: number; dmg: number; radius: number; xp: number;
@@ -50,6 +53,8 @@ export interface SimEnemy {
 export interface SimProj {
   active: boolean; x: number; y: number; vx: number; vy: number;
   dmg: number; radius: number; life: number; friendly: boolean; color: number; src: string;
+  /** Spawn-time weapon tier for presentation; does not affect collision or damage. */
+  visualTier?:number;
 }
 
 export interface SimPickup { active: boolean; x: number; y: number; value: number; }

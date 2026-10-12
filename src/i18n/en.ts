@@ -1,5 +1,8 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "combat.rushWarning": "Rush incoming — step aside, then punish recovery",
+  "combat.burstWarning": "Burst incoming — strafe, then close during reload",
+
   "app.tagline": "Every seed is a different history. From stone to stars.",
   "ui.startGame": "Begin New Run",
   "ui.randomSeed": "Random Seed",

@@ -8,6 +8,7 @@
 //   input → player movement → age/mission → director/spawn + raids → enemy
 //   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
 //   collisions → mines → pickups/economy → territory upkeep → chunks/POI
+import {adaptationFor,createEvolution,stepEvolution} from "../combat/enemyEvolution";
 import { childKnowledgeFactor, childRaidInterval, childResearchBonusScale } from "../progression/childWorld";
 import { pathGuidance } from "../tech/pathGuidance";
 import { fnv1a32 } from "../seed/hash";
@@ -1375,7 +1376,8 @@ export class RunSimulation {
     e.dmg = base.dmg * (1 + s.ageIndex * 0.15) * (1 + s.ascension * 0.2) * (boss ? 2 : 1) * (def?.outgoingDamageMul ?? 1);
     e.radius = base.radius * (boss ? 3 : elite ? 1.4 : 1);
     e.xp = base.xp * (elite ? 5 : 1) * (boss ? 15 : 1);
-    e.elite = elite; e.boss = boss; e.affix = affix;
+    e.elite = elite; e.boss = boss; e.affix = affix; e.siege=false;
+    const adaptation=adaptationFor(s.ageIndex,family,elite,boss);e.evolution=adaptation?createEvolution(adaptation):undefined;
     e.flash = 0; e.shootT = 1 + this.streams.enemy.nextFloat() * 2; e.hitCd = 0;
     if (boss) {
       s.bossIndex = s.enemies.indexOf(e);
@@ -1495,7 +1497,7 @@ export class RunSimulation {
         m.family = "swarm"; m.maxHp = line.hp; m.hp = line.hp; m.shield = 0;
         m.speed = line.speed; m.dmg = line.dmg; m.radius = line.radius;
         m.xp = 1; m.elite = false; m.boss = false; m.affix = "";
-        m.flash = 0; m.shootT = 0; m.hitCd = 0;
+        m.flash = 0; m.shootT = 0; m.hitCd = 0; m.evolution=undefined;
       }
     }
     if (def && def.volatileRadius > 0) {
@@ -1641,6 +1643,8 @@ export class RunSimulation {
     return idx === -1 ? null : (this.state.enemies[idx] as SimEnemy);
   }
 
+  private evolutionShot=(e:SimEnemy,x:number,y:number):void=> { this.fireProjectile(e.x,e.y,x,y,260,e.dmg/3,0xff5a5a,"enemy-burst",false,6); };
+
   private fireProjectile(x: number, y: number, tx: number, ty: number, speed: number, dmg: number, color: number, src: string, friendly: boolean, radius = 6): void {
     for (const p of this.state.projs) {
       if (p.active) continue;
@@ -1648,6 +1652,7 @@ export class RunSimulation {
       p.active = true; p.x = x; p.y = y;
       p.vx = ((tx - x) / d) * speed; p.vy = ((ty - y) / d) * speed;
       p.dmg = dmg; p.radius = radius; p.life = 2.2; p.friendly = friendly; p.color = color; p.src = src;
+      p.visualTier=(["kinetic","energy","defense","field"] as string[]).includes(src)?this.state.weaponStage[src as WeaponFamily]:this.state.ageIndex;
       return;
     }
   }
@@ -1934,7 +1939,12 @@ export class RunSimulation {
       const dx = s.px - e.x;
       const dy = s.py - e.y;
       const d = Math.max(1, Math.hypot(dx, dy));
-      if (e.family === "ranged") {
+      const phase=e.evolution?.phase;const shots=e.evolution?.shots;
+      const evolved=stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
+      if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
+      if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});
+      if (evolved) { /* movement and fire owned by the canonical adaptation */ }
+      else if (e.family === "ranged") {
         if (d > 420) { e.x += (dx / d) * e.speed * dt; e.y += (dy / d) * e.speed * dt; }
         else if (d < 280) { e.x -= (dx / d) * e.speed * dt; e.y -= (dy / d) * e.speed * dt; }
         e.shootT -= dt;
