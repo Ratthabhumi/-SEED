@@ -1,5 +1,7 @@
 # -SEED Development Roadmap
 
+Content13 review checkpoint (2026-10-13): guaranteed voluntary Fire/Tools recovery, explicit combination objective, original painted actor/outpost/Verdant assets, all-family combat feedback and three-pattern boss counterplay are under review in PR7. See `docs/QUALITY_CLOSURE_REVIEW.md` for the seventeen-area evidence matrix. Production multi-frame animation, painted equipment eras/other biomes, hardware budgets and fresh human acceptance remain incomplete. No milestone/release-ready declaration.
+
 ## 1. North Star
 - **Official Title**: -SEED: เมล็ดพันธุ์แห่งอารยธรรม (-SEED: Seed of Civilization)
 - **High-Concept Pitch**: *Every seed is a different history. Take a civilization from stone tools to the stars — in a single run.*

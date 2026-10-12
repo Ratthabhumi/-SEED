@@ -48,7 +48,11 @@ import {eligibleFamilies} from "../../core/director/director";
 import {guardianCount} from "../render/weaponPresentation";
 import {drawEnemyTelegraph,enemyDisplayHeading,enemyDisplayMoving} from "../render/enemyTelegraph";
 import {ActorMotion,humanoid} from "../render/actorMotion";
-import { ACTOR_ASSETS, actorFor } from "../assets/actorAssets";
+import { ACTOR_ASSETS, actorFor, BOSS_ASSET_V2,ENEMIES_ASSET_V2 } from "../assets/actorAssets";
+import {HERO_ASSETS} from "../assets/heroAssets";
+import {HeroActions} from "../render/heroActions";
+import {drawBossTelegraph} from "../render/BossTelegraph";
+import {VerdantTerrain,VERDANT_TERRAIN} from "../render/VerdantTerrain";
 import { ActorRenderer } from "../render/ActorRenderer";
 import { repairPresentation } from "../render/repairPresentation";
 import { CombatFeedback, energyCharge } from "../render/CombatFeedback";
@@ -61,6 +65,7 @@ import {
 import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRenderer";
 import { drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
 import { TechMapView } from "../tech/TechMapView";
+import { DOMAIN_ICONS } from "../assets/domainIcons";
 import { SEED_ASSETS } from "../assets/seedAssets";
 import { TutorialDirector } from "../onboarding/TutorialDirector";
 import pkg from "../../../package.json";
@@ -160,6 +165,9 @@ export class GameScene extends Phaser.Scene {
   private fpsHudT = 0;
   /** Tech Map / Civ Map overlay open (pauses stepping like a modal). */
   private techMapOpen = false;
+  private heroActions = new HeroActions();
+  private lastAgeCardKey="";
+  private verdantTerrain!:VerdantTerrain;
   private techMapSel = "";
   private techMapView: TechMapView | null = null;
   private civMapOpen = false;
@@ -171,6 +179,11 @@ export class GameScene extends Phaser.Scene {
 
   preload(): void {
     for (const [id,url] of Object.entries(ACTOR_ASSETS)) this.load.svg("actor-"+id,url,{width:humanoid(id as keyof typeof ACTOR_ASSETS)?2304:1152,height:64});
+    for(const [id,url] of Object.entries(HERO_ASSETS))this.load.image("hero-v2-"+id,url);
+    this.load.image("verdant-v2",VERDANT_TERRAIN);
+    this.load.image("boss-v2",BOSS_ASSET_V2);
+    this.load.image("enemies-v2",ENEMIES_ASSET_V2);
+    this.load.image("outposts-v2",SEED_ASSETS.structures.atlasV2);
     this.load.svg("frontier-scout", SEED_ASSETS.frontier.scout, {width:64,height:64});
     this.load.svg("frontier-mite", SEED_ASSETS.frontier.mite, {width:64,height:64});
     this.load.svg("frontier-observatory", SEED_ASSETS.frontier.observatory, {width:96,height:96});
@@ -219,6 +232,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.heroActions = new HeroActions();
     const save = loadSave(localStorage);
     setLang(save.settings.lang);
     sfx.setVolume(save.settings.volume);
@@ -233,6 +247,9 @@ export class GameScene extends Phaser.Scene {
 
   /** Fresh run (and restart path): new simulation, clean adapter state. */
   private startRun(seed: string): void {
+    this.lastAgeCardKey="";
+    this.heroActions = new HeroActions();
+    this.verdantTerrain = new VerdantTerrain(this);
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
@@ -249,6 +266,8 @@ export class GameScene extends Phaser.Scene {
     this.paused = false;
     this.deathPersisted = false;
     ActorRenderer.frames(this);
+    const outpostAtlas=this.textures.get("outposts-v2");
+    for(let i=0;i<12;i++)if(!outpostAtlas.has(String(i)))outpostAtlas.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     this.enemyActors = new ActorRenderer(this,650,2);
     this.allyActors = new ActorRenderer(this,128,4);
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
@@ -607,6 +626,59 @@ export class GameScene extends Phaser.Scene {
           s.territories=[{poiId:"repair-test",poiType:"ruin",x:s.px+100,y:s.py,spec:"research",tier:1,hp:0,maxHp:300,disabled:true,garrisoned:false,heldSince:0,repairT:0}];
           this.refreshGround(true); return s.territories[0];
         },
+        stageFamilyReview: (family:"kinetic"|"energy"|"defense"|"field") => {
+          const s=this.sim.state;this.paused=true;this.combatFeedback.reset(s.worldNonce);
+          s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"engineers";
+          s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
+          for(const p of s.projs)p.active=false;for(const m of s.mines)m.active=false;for(const e of s.enemies)e.active=false;
+          for(const a of s.squad)a.cd=999;
+          for(const f of ["kinetic","energy","defense","field"] as const){s.weaponCd[f]=999;s.weaponStage[f]=0;}
+          s.weaponStage[family]=family==="energy"?4:family==="field"?0:3;s.weaponCd[family]=0;
+          const e=this.sim.spawnEnemy("tank",false,false,0,100,[])!;e.speed=e.dmg=0;e.hp=e.maxHp=10000;
+          if(family==="field")Object.assign(s.mines[0],{active:true,x:e.x,y:e.y,radius:60,dmg:40,life:3});
+          this.refreshHUD();return e.hp;
+        },
+        stageVerdantReview: () => {
+          const s=this.sim.state;this.paused=true;
+          s.build.hp=s.build.maxHp=500;
+          for(let r=0;r<9;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++) {
+            if(this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y).biome!=="verdant")continue;
+            s.px=x*CHUNK_SIZE+CHUNK_SIZE/2;s.py=y*CHUNK_SIZE+CHUNK_SIZE/2;
+            this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);this.refreshGround(true);return {biome:this.sim.siteBiome(s.px,s.py)};
+          }
+          throw new Error("Verdant review site not found");
+        },
+        stageBossReview: (pattern:"slam"|"fan"|"cross"="slam") => {
+          const s=this.sim.state;this.paused=true;s.ageIndex=5;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
+          for(const e of s.enemies)e.active=false;
+          s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
+          for(const f of ["kinetic","energy","defense","field"] as const)s.weaponCd[f]=999;
+          for(const a of s.squad)a.cd=999;
+          const e=this.sim.spawnEnemy("tank",false,true,0,250,[])!;
+          e.encounter!.phase="warning";e.encounter!.timer=1.15;e.encounter!.pattern=pattern;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;
+          this.refreshHUD();return {hp:s.build.hp,x:s.px,y:s.py};
+        },
+        bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
+        dodgeBossReview: () => {this.sim.state.py+=150;},
+        heroActionReview: (kind:"attack"|"hurt"|"dash"|"special"|"death") => {
+          // Presentation fixture only, never available in normal/QA builds.
+          const s=this.sim.state;this.paused=true;s.dashT=0;
+          this.heroActions=new HeroActions();this.heroActions.sync(s.worldNonce);
+          if(kind==="dash")s.dashT=.18;
+          else if(kind==="death")s.over=true;
+          else this.heroActions.accept(kind==="attack"?{type:"weapon_fired",family:"energy",x:s.px,y:s.py,tx:s.px+100,ty:s.py}:kind==="hurt"?{type:"player_hurt",damage:1}:{type:"ability_used",id:"review"},s.elapsed,s.px,s.py);
+        },
+        stageCombinationRecovery: () => {
+          const s=this.sim.state; this.paused=true;
+          s.ageIndex=2; s.ageElapsed=0; s.draftOpen=false; s.pendingLevels=0;
+          for(const e of s.enemies)e.active=false;
+          s.spawnT=s.eliteT=999; s.build.hp=s.build.maxHp=1e9;
+          this.refreshHUD();
+        },
+        requestCombinationReviewDraft: () => {
+          this.paused=false;const ev:SimEvent[]=[];this.sim.gainKnowledge(5000,"review",ev);this.handleEvents(ev);
+        },
+        combinationReview: () => ({route:this.sim.combinationRoute(),offers:this.sim.state.draftOffers.map(o=>o.nodeId),breakthroughs:this.sim.state.breakthroughs,hash:this.sim.hash()}),
         actorAssetUrls: () => ACTOR_ASSETS,
         repairState: () => ({territories:this.sim.state.territories,label:this.repairLabel.text,visible:this.repairLabel.visible,px:this.sim.state.px,py:this.sim.state.py}),
         moveRepairOutside: () => {this.sim.state.px=this.sim.state.territories[0]!.x+CLAIM_REACH_RADIUS+20;},
@@ -1096,6 +1168,10 @@ export class GameScene extends Phaser.Scene {
     knowNums.textContent = `${Math.floor(s.knowledgeTotal)} / ${nextNeed}`;
     knowFill.style.width = `${Math.min(100, (s.knowledgeTotal / Math.max(1, nextNeed)) * 100)}%`;
     // Age card: one checklist row per gate (the SAME predicate as the sim).
+    const ageCardKey=JSON.stringify([next,t("ui.nextAge"),s.ownedTags,s.breakthroughs,next<AGES.length?ageGates(next,s.knowledgeTotal,this.missionStateOf(s),this.dominionStateOf(s)):Math.floor(s.knowledgeTotal)]);
+    if(ageCardKey!==this.lastAgeCardKey){
+    this.lastAgeCardKey=ageCardKey;
+    const recipeFocused=document.activeElement?.id==="combination-map";
     ageCard.innerHTML = "";
     if (next < AGES.length) {
       const title = document.createElement("div");
@@ -1127,6 +1203,26 @@ export class GameScene extends Phaser.Scene {
           sub.className = "gate-sub" + (mstep.done ? " done" : "");
           sub.textContent = `${mstep.done ? "✓" : "○"} ${t(mstep.labelKey)} ${mstep.have}/${mstep.need}`;
           ageCard.appendChild(sub);
+          if (mstep.kind === "breakthrough" && !mstep.done) {
+            const route = this.sim.combinationRoute();
+            const help = el("div", "combination-route");
+            help.appendChild(el("strong","combination-title",undefined,`${t(mstep.labelKey)} ${mstep.have}/${mstep.need}`));
+            help.appendChild(el("p","", "ui.combinationRoute"));
+            for (const item of route.ingredients) {
+              const key = tagDisplayKey(item.tag);
+              help.appendChild(el("div", "combination-ingredient", undefined,
+                `${item.acquired ? "✓" : "○"} ${key ? t(key) : ""}`));
+            }
+            const go = button("ui.combinationMap", () => {
+              if (this.blockingModal || s.draftOpen) return;
+              this.sim.pinTarget(route.recipe.id);
+              this.toggleTechMap();
+            });
+            go.id = "combination-map";
+            help.appendChild(go);
+            ageCard.appendChild(help);
+            if(recipeFocused)go.focus({preventScroll:true});
+          }
         }
         for (const dsub of g.sub) {
           const sub = document.createElement("div");
@@ -1137,6 +1233,7 @@ export class GameScene extends Phaser.Scene {
       }
     } else {
       ageCard.textContent = `${t(`age.${ageId}` as EnKeys)} · ${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
+    }
     }
     // Mission one-liner under the top strip (QA structural class retained).
     age.textContent = this.frontierObjectiveText();
@@ -2142,16 +2239,13 @@ export class GameScene extends Phaser.Scene {
     // Also include fallback cards (they're valid TechNodes but not in the graph)
     const fb = fallbackCards(s.level);
     for (const f of fb) graphById.set(f.id, f);
-    const domainIcon: Record<string, string | undefined> = {
-      warfare: SEED_ASSETS.icons.military,
-      industry: SEED_ASSETS.icons.economy,
-      science: SEED_ASSETS.icons.research,
-    };
+    const domainIcon = DOMAIN_ICONS;
     s.draftOffers.forEach((offer, i) => {
       // Get base TechNode for title/description/domain
       const n = graphById.get(offer.nodeId);
       if (!n) return;
       const c = el("div", "card");
+      c.dataset.nodeId = n.id;
       c.appendChild(el("div", "key", undefined, `[${i + 1}]`));
       if (guidance.status === "active") { const relation = guidance.relations[n.id] ?? "unrelated"; c.dataset.pathRelation = relation; c.appendChild(el("p", "card-path-reason", `path.${relation}` as EnKeys)); }
       const h = document.createElement("h3");
@@ -2980,7 +3074,13 @@ export class GameScene extends Phaser.Scene {
     const save = loadSave(localStorage);
     for (const e of ev) {
       this.combatFeedback.accept(e, s.elapsed, this.reducedEffects);
+      this.heroActions.sync(s.worldNonce);
+      this.heroActions.accept(e,s.elapsed,s.px,s.py);
       switch (e.type) {
+        case "boss_attack_warning": toast(`combat.boss.${e.pattern}` as EnKeys);sfx.boss();break;
+        case "boss_attack_fired": sfx.weapon("field");break;
+        case "weapon_fired": sfx.weapon(e.family); break;
+        case "mine_detonated": sfx.weapon("field"); break;
         case "draft_opened":
           // UI appears via syncDraftUI (state-driven, exactly-one). Sound here.
           sfx.levelup();
@@ -3339,6 +3439,7 @@ export class GameScene extends Phaser.Scene {
     const civ = CIV_LAYER[AGES[s.ageIndex] as AgeId];
     const now = performance.now() / 1000;
     drawGround(g, {
+      texturedVerdant:true,
       getChunk: (x, y) => this.sim.chunks.get(s.worldSeed, s.worldNonce, x, y),
       styleFor: (biome) => BIOME_STYLE[biome],
       civColor: civ.color,
@@ -3351,6 +3452,7 @@ export class GameScene extends Phaser.Scene {
       time: now,
       highContrast: this.highContrast(),
     });
+    this.verdantTerrain.refresh(cx,cy,R,(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),this.highContrast());
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     // Claimed territories get age-dressing: the map grows a civilization.
     const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
@@ -3371,9 +3473,17 @@ export class GameScene extends Phaser.Scene {
           if ((!terr && poi.type === "ruin") && landmarkCount < 48) {
             let art = this.landmarkArt[landmarkCount++];
             if (!art) { art = this.add.image(0,0,"frontier-observatory").setDepth(-5); this.landmarkArt.push(art); }
-            art.setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(70,70).setAlpha(1);
+            art.setTexture("frontier-observatory").setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(70,70).setAlpha(1);
           }
           if (terr) {
+            if(terr.spec && landmarkCount<48) {
+              let art=this.landmarkArt[landmarkCount++];
+              if(!art){art=this.add.image(0,0,"outposts-v2").setDepth(-5);this.landmarkArt.push(art);}
+              const row=terr.spec==="research"?0:terr.spec==="military"?1:2;
+              const state=terr.disabled?(terr.repairT>0?3:2):terr.tier>=2?1:0;
+              const size=terr.tier>=2?132:112;
+              art.setTexture("outposts-v2",row*4+state).setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(size,size).setAlpha(1);
+            }
             drawTerritoryDressing(g, {
               x: poi.wx, y: poi.wy,
               ageIndex: s.ageIndex, tier: terr.tier, disabled: terr.disabled,
@@ -3438,13 +3548,17 @@ export class GameScene extends Phaser.Scene {
         spriteBody: true,
       });
       drawEnemyTelegraph(g,e,hc);
-      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex);
+      drawBossTelegraph(g,e);
+      const bossPose=e.boss?(e.flash>0?6:e.encounter?.phase==="warning"?3:e.encounter?.phase==="recover"?(e.encounter.pattern==="fan"?5:4):enemyDisplayMoving(e)?1+Math.floor(s.elapsed*4)%2:0):undefined;
+      const enemyPose=e.evolution?.phase==="attack"?3:enemyDisplayMoving(e)?1+Math.floor(s.elapsed*8)%2:0;
+      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,bossPose,e.boss?undefined:enemyPose);
     }
     this.enemyActors.end();
     const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);
     const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
-    this.allyActors.draw(actorFor(s.originId),s.px,s.py,48,this.playerFacing,s.elapsed,moving || s.dashT>0,now-this.lastHurtT<0.25?0xffaaaa:s.iframe>0?0x9fd8ff:now-this.lastAbilityArtT<0.35?0xffe4a3:0xffffff,s.ageIndex,heroPose);
+    this.heroActions.sync(s.worldNonce);
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,96,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
       if (p.friendly) drawFriendlyProj(g, p,wopts);
@@ -3505,7 +3619,7 @@ export class GameScene extends Phaser.Scene {
     for (const a of s.squad) {
       if (!a.active || !vis(a.x, a.y)) continue;
       const pose=this.actorMotion.sample(a,a.x,a.y,s.elapsed);
-      this.allyActors.draw(actorFor(s.originId),a.x,a.y,28,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xbbeeff,s.ageIndex,pose);
+      this.allyActors.draw(actorFor(s.originId),a.x,a.y,36,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xffffff,s.ageIndex,pose,a.inv>0?"hurt":pose.moving?"walk":"idle");
     }
     this.allyActors.end();
     for (const site of s.territories) {

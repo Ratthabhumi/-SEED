@@ -122,6 +122,16 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     rng.shuffleInPlace(pool);
     const count = age === "space" ? 3 : 3 + (rng.nextFloat() < 0.5 ? 1 : 0);
     const chosen = pool.slice(0, Math.min(count, pool.length));
+    // A mandatory pre-Industrial mission must never depend on a missing roll.
+    // Keep the original module-count budget and RNG consumption: reserve two
+    // selected slots for the universal, non-exclusive recipe instead of growing.
+    if (age === "stone") for (const suffix of ["fire", "tools"]) {
+      if (!chosen.some(t => t.suffix === suffix)) {
+        let slot=chosen.length-1;
+        while(chosen[slot].suffix==="fire"||chosen[slot].suffix==="tools")slot--;
+        chosen[slot]=SIDE_TEMPLATES.stone.find(t => t.suffix === suffix)!;
+      }
+    }
     for (let i = 0; i < chosen.length; i++) {
       const t = chosen[i] as SideTemplate;
       const id = `${age}-${t.suffix}`;

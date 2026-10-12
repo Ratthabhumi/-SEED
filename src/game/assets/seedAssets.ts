@@ -12,8 +12,12 @@ import promptM from "../../../assets/seed/input/prompt_m.png";
 import outpostResearch from "../../../assets/seed/structures/outpost_research.png";
 import outpostMilitary from "../../../assets/seed/structures/outpost_military.png";
 import outpostEconomic from "../../../assets/seed/structures/outpost_economic.png";
+import outpostsV2 from "../../../assets/seed/structures/outposts-v2.png";
 
 import iconResearch from "../../../assets/seed/icons/icon_research.png";
+import warfareSword from "../../../assets/seed/icons/warfare-swords.svg";
+import industryGear from "../../../assets/seed/icons/industry-gear.svg";
+import cultureMonument from "../../../assets/seed/icons/culture-monument.svg";
 import iconMilitary from "../../../assets/seed/icons/icon_military.png";
 import iconEconomic from "../../../assets/seed/icons/icon_economic.png";
 
@@ -40,12 +44,15 @@ export const SEED_ASSETS = {
     m: promptM,
   },
   structures: {
+    atlasV2:outpostsV2,
     research: outpostResearch,
     military: outpostMilitary,
     economy: outpostEconomic,
     economic: outpostEconomic,
   },
   icons: {
+    warfareSword,
+    industryGear,cultureMonument,
     research: iconResearch,
     military: iconMilitary,
     economy: iconEconomic,

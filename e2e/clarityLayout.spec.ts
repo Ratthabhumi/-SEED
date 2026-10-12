@@ -156,6 +156,9 @@ async function viewportMatrix(page: Page): Promise<void> {
     await openPause(page);
     await expect(page.locator("#pause-screen")).toContainText("โซนอันตราย");
     await page.keyboard.press("Escape");
+    // Phaser consumes Escape on its next frame; knowledge must not be staged
+    // while the pause surface still owns the simulation.
+    await expect(page.locator("#pause-screen")).toHaveCount(0);
     await openDraft(page);
     await expect(page.locator("#draft-screen")).toContainText("สุ่มตัวเลือกใหม่");
     await closeDraft(page);

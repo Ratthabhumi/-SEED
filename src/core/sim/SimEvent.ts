@@ -7,6 +7,11 @@ import type { OutpostSpec } from "../world/territory";
 import type { SquadMode } from "../combat/squad";
 
 export type SimEvent =
+  | {type:"boss_attack_warning";pattern:import("../combat/bossEncounter").BossPattern}
+  | {type:"boss_attack_fired";pattern:import("../combat/bossEncounter").BossPattern;x:number;y:number}
+  | { type: "weapon_fired"; family: WeaponFamily; x: number; y: number; tx: number; ty: number }
+  | { type: "weapon_impact"; family: WeaponFamily; x: number; y: number; hpDamage: number; shieldDamage: number }
+  | { type: "mine_detonated"; x: number; y: number; radius: number }
   | { type: "knowledge_collected"; x: number; y: number; gained: number }
   | { type: "beam_fired"; family: WeaponFamily; tier: number; x1: number; y1: number; x2: number; y2: number }
   | { type: "energy_impact"; x: number; y: number; hpDamage: number; shieldDamage: number; source: string }

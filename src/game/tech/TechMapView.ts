@@ -17,6 +17,7 @@ import { t } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { layoutTechGraph, techNodeBox, type TechGraphLayoutResult, type LayoutNode, type LayoutEdge } from "./TechGraphLayout";
 import { SEED_ASSETS } from "../assets/seedAssets";
+import { DOMAIN_ICONS } from "../assets/domainIcons";
 import { loadSave } from "../../core/save/save";
 
 export interface TechMapViewOptions {
@@ -389,6 +390,12 @@ export class TechMapView {
       mark.className = "techmap-node-mark";
       mark.textContent = isOwned ? "✓" : isAvailable ? "●" : inWindow ? "○" : "🔒";
       btn.appendChild(mark);
+      if (DOMAIN_ICONS[n.domain]) {
+        const icon = document.createElement("img");
+        icon.className = "techmap-domain-icon"; icon.src = DOMAIN_ICONS[n.domain]!;
+        icon.alt = ""; icon.width = 20; icon.height = 20;
+        btn.appendChild(icon);
+      }
 
       // Node title
       const label = document.createElement("span");
@@ -697,6 +704,19 @@ export class TechMapView {
       this.sideEl.appendChild(pinBtn);
     }
 
+    const route = this.sim.combinationRoute();
+    if (!route.complete) {
+      const recipe = document.createElement("div"); recipe.className = "combination-route";
+      recipe.textContent = t("ui.combinationRoute");
+      for (const item of route.ingredients) {
+        const ingredient = document.createElement("button"); ingredient.className = "btn techmap-no-pan";
+        ingredient.textContent = `${item.acquired ? "✓" : "○"} ${item.node ? t(item.node.titleKey as EnKeys) : "—"}`;
+        ingredient.disabled = !item.node;
+        ingredient.addEventListener("click", () => { if (item.node) this.selectNode(item.node.id); });
+        recipe.appendChild(ingredient);
+      }
+      this.sideEl.appendChild(recipe);
+    }
     const goalsTitle = document.createElement("h3"); goalsTitle.textContent = t("path.goal"); this.sideEl.appendChild(goalsTitle);
     for (const b of BREAKTHROUGHS) {
       const g = this.sim.pathGuidance(b.id);

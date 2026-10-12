@@ -39,6 +39,7 @@ export interface DraftOffer {
 
 import type {EnemyEvolutionState} from "../combat/enemyEvolution";
 export interface SimEnemy {
+  encounter?: import("../combat/bossEncounter").BossEncounter;
   /** Spawn-assigned, canonical experimental adaptation; legacy fixtures may omit. */
   evolution?:EnemyEvolutionState;
   active: boolean; x: number; y: number;

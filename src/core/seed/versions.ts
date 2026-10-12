@@ -58,7 +58,9 @@ export const WORLDGEN_VERSION = 2;
 // Content11: acquired Conduction/Relay behavior and tag-gated fusion. No geometry change.
 // Content12: spawn-assigned Stone rush / Industrial burst adaptation and hashed projectile tier.
 // Replay outcomes intentionally differ; geometry and persistent schema unchanged.
-export const CONTENT_VERSION = 12;
+// Content13: guaranteed optional Fire/Tools recipe and pre-Industrial draft slot.
+// Old draft traces differ intentionally; world geometry and save schema unchanged.
+export const CONTENT_VERSION = 13;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 
