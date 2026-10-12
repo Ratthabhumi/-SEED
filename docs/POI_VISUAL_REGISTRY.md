@@ -14,8 +14,11 @@ ring resets on Ascension/restart. No renderer collection or XP accounting.
 Alien Signal now has a fractured75u monolith, violet conduit and distinct lens.
 The architecture remains after discovery; discovery changes the lens state.
 Existing beacon, known-site tracking, mission, claim, first-Signal exemption and
-visibility ranges remain authoritative. No extra seed scan, offscreen coordinate
-hint or minimap/fog reveal was added. Native captures show actual generated Signal
+visibility ranges remain authoritative. Audit also found the old compass fallback
+scanned undiscovered POI coordinates. Remove that scan: without a known target,
+localized exploration guidance replaces hidden distance/bearing hints. Already
+discovered frontier sites and explicitly revealed strongholds still supply actual
+bearings. No new minimap/fog reveal. Native captures show actual generated Signal
 locations, including the deferred-specialization route.
 
 Other POI glyphs remain unchanged. The monolith/codex are review prototypes; human

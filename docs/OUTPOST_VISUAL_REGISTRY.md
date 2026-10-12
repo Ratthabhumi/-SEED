@@ -10,7 +10,7 @@ Claimed Ruins no longer retain the generic observatory sprite over another spec.
 | Research | observatory dome, lens, telescope, lab windows | Knowledge multiplier |
 | Military | two bastions, recessed gate, pennants | squad slot / existing support rules |
 | Economy | workshop roof, chimney, storage crate, supply strip | nearby canonical regeneration |
-| unassigned | existing claim pad | freely claimed land; choose a spec later |
+| unassigned | neutral outlined claim pad | freely claimed land; choose a spec later; no operational factory implied |
 
 Six geometry kits: timber, bronze framing, rivets, pipework, antenna, conduit
 grid. Tier2 adds an annex. Disabled structures lose operational lights and gain

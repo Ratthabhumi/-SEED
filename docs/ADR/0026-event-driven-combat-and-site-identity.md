@@ -7,6 +7,11 @@ resolved outcomes without altering gameplay, state ownership or RNG. Capture
 beam aim before death/split can recycle its target slot; keep the legacy excluded
 beamFlash presentation field compatible.
 
+The legacy compass fallback independently scanned undiscovered POIs, violating
+the requested known-coordinate boundary. Remove that scan and localize generic
+exploration/Signal guidance; retain bearings from discovered frontier focus and
+explicit canonical Stronghold revelation. No discovery radius/worldgen change.
+
 Presentation uses fixed pools and simulation-time lifetimes. Reuse the existing
 licensed impact texture, original code-native vector site artwork, typed theme
 and existing repair UI. No new dependency, canonical timer, balance change,

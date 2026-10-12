@@ -59,7 +59,7 @@ import {
   drawFriendlyProj, drawHostileProj, drawAura, drawOrbit, drawMine, drawKnowledge,
 } from "../render/ProjectileRenderer";
 import { drawGround, drawPoi, drawTerritoryDressing } from "../render/WorldRenderer";
-import { nearestInterest, drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
+import { drawOffscreenIndicator, minimapCells } from "../render/NavigationRenderer";
 import { TechMapView } from "../tech/TechMapView";
 import { SEED_ASSETS } from "../assets/seedAssets";
 import { TutorialDirector } from "../onboarding/TutorialDirector";
@@ -414,6 +414,13 @@ export class GameScene extends Phaser.Scene {
           for(const k of s.pickups)k.active=false;
           Object.assign(s.pickups[0]!,{active:true,x:s.px+100,y:s.py+40,value:5});
           return s.knowledgeTotal;
+        },
+        stageUnchartedNavigation: () => {
+          const s=this.sim.state;this.paused=true;s.ageIndex=4;s.signalSecured=false;
+          s.poisWorld=[];s.stronghold=null;s.raid=null;
+          for(const e of s.enemies)e.active=false;
+          this.updateFrontier();this.updateCompass();
+          return {compass:this.hud.compass?.textContent,known:s.poisWorld.length};
         },
         lineUpSignatureTargets: () => {
           const s=this.sim.state;s.weaponStage.field=0;let i=0;
@@ -2032,20 +2039,8 @@ export class GameScene extends Phaser.Scene {
       c.textContent = `◈ ${nm} ${Math.hypot(dx, dy).toFixed(0)}u ${arrowFor(dx, dy)}`;
       return;
     }
-    // Fallback: nearest undiscovered POI (presentation scan; throttled to 1 Hz).
-    const { cx, cy } = worldToChunk(s.px, s.py);
-    const cands: Array<{ x: number; y: number; label: string }> = [];
-    for (let ox = -2; ox <= 2; ox++) {
-      for (let oy = -2; oy <= 2; oy++) {
-        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
-        for (const poi of desc.poi) {
-          if (s.poisWorld.includes(poi.id)) continue;
-          cands.push({ x: poi.wx, y: poi.wy, label: t(`poi.${poi.type}.name` as EnKeys) });
-        }
-      }
-    }
-    const hit = nearestInterest(s.px, s.py, cands);
-    c.textContent = hit ? `◈ ${hit.label} ${hit.dist.toFixed(0)}u ${arrowFor(Math.cos(hit.angleRad), Math.sin(hit.angleRad))}` : "";
+    // No known destination: explain exploration without scanning hidden coordinates.
+    c.textContent = t(s.ageIndex>=4 && !s.signalSecured ? "ui.signalExploreHint" : "ui.exploreHint");
   }
 
   /** Lightweight contextual teaching: one line at a time, auto-dismissed. */

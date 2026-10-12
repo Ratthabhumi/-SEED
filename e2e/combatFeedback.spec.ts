@@ -1,5 +1,17 @@
 import {test,expect} from '@playwright/test';
 import {startRun,assertNoRawKeys} from './helpers';
+for(const lang of ['en','th'] as const)test('uncharted Signal guidance reveals no hidden bearing '+lang,async({page})=>{
+  await startRun(page,'EPOCH-GOLDEN-001',{lang});
+  const state=await page.evaluate(()=>(window as any).__seedE2E.stageUnchartedNavigation());
+  expect(state.known).toBe(0);expect(state.compass).toBe(lang==='en'
+    ?'Explore uncharted ground for an Alien Signal; clear nearby threats before claiming it.'
+    :'สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นหาสัญญาณต่างดาว แล้วกำจัดภัยรอบข้างก่อนยึด');
+  expect(state.compass).not.toMatch(/\d+u|[↗↘↙↖↑↓←→]/);
+  const box=await page.locator('.nav-compass').boundingBox();expect(box).not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.y+box!.height).toBeLessThanOrEqual(720);
+  await page.screenshot({path:'test-results/browser/signal-exploration-'+lang+'.png'});
+  await assertNoRawKeys(page);
+});
 for(const lang of ['en','th'] as const)test('real Atomic beam release, pause and restart '+lang,async({page})=>{
   await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
   await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageEvolution('resonant',4);h.primeSignature();});

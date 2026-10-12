@@ -11,7 +11,7 @@ not independently verified commercial claims.
 | Hero | PARTIAL / HUMAN_UNVALIDATED: upright four Origins×six Ages; incomplete attack/death/mount animation | retained; representative authored hero still pending |
 | Outposts | PLACEHOLDER: specialization omitted by dressing call | ENGINEERING_READY: spec/era/tier/damage/repair-aware architecture; human readability pending |
 | Knowledge | PARTIAL: generic crystal with unclear meaning | original shared codex, actual collection feedback, localized explanation; human recognition pending |
-| Alien Signal | PARTIAL: small shared beacon/glyph | unique monolith at existing visibility; existing fog/tracking/claim unchanged; unprompted navigation pending |
+| Alien Signal | PARTIAL: small shared beacon/glyph; compass fallback leaked undiscovered bearings | unique monolith, known-only bearings and localized uncharted guidance; claim/fog geometry unchanged; unprompted navigation pending |
 | Boss | PARTIAL: tank-template HP amplification / limited distinct attacks | unchanged; proper multi-pattern encounter still pending |
 | World | PLACEHOLDER / PARTIAL: color fills + sparse cosmetic dressing; actual biome site bonuses | unchanged; polished Verdant environment still pending |
 
@@ -35,14 +35,17 @@ Native browser evidence: `signature-charge/impact/reduced-{en,th}.png`,
 `signal-monolith-{en,th}.png`, `knowledge-codex-{en,th}.png` in the visual artifact.
 `conduction-before/after-{en,th}.png` compare real damage before and after selecting
 the actual technology card in an isolated staged arena.
+`signal-exploration-{en,th}.png` verify guidance without hidden coordinates.
 These are actual rendered staged encounters/real claim methods, not fresh human
 playtests. Native inspection found the first compact HUD icon hidden with its
 text label; move it beside persistent values. Initial restart fixture incorrectly
 treated fixture pause as a menu; fix fixture without changing Escape behavior.
 Retain initial failed logs; do not weaken assertions.
 
-Local B-only full check429 PASS; final B/C/D full check434/434 across61 files,
-31-asset provenance/build, Analyze6/6 and native targeted16/16 PASS. Packaging
+Local B-only full check429 PASS; B/C/D check434/434 and native targeted16/16
+PASS; neutral-claim regression brings final full check to435/435 across61 files,
+with31-asset provenance/build. Analyze6/6 PASS; final known-only navigation native
+regressions14/14 PASS. Packaging
 ZIP17 checks and exact-head four-job CI are required after commit; their final
 counts/links belong in the delivery receipt, not an advance claim here.
 

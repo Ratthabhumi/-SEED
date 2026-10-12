@@ -23,6 +23,13 @@ it('Age equipment changes actual geometry and destroyed state differs from activ
  expect(new Set(traces).size).toBe(6);
  const active=recorder(),broken=recorder();drawSpecializedOutpost(active.g,{x:0,y:0,spec:'research',ageIndex:3,tier:1,disabled:false});drawSpecializedOutpost(broken.g,{x:0,y:0,spec:'research',ageIndex:3,tier:1,disabled:true});expect(active.calls).not.toEqual(broken.calls);
 });
+it('free claimed land uses a neutral pad, not a functioning factory before specialization',()=>{
+ const pad=recorder(),factory=recorder();
+ drawSpecializedOutpost(pad.g,{x:0,y:0,spec:'',ageIndex:3,tier:1,disabled:false});
+ drawSpecializedOutpost(factory.g,{x:0,y:0,spec:'economy',ageIndex:3,tier:1,disabled:false});
+ expect(pad.calls.filter(c=>c[0]==='fillRect')).toHaveLength(0);
+ expect(factory.calls.filter(c=>c[0]==='fillRect').length).toBeGreaterThan(0);
+});
 it('Knowledge uses the shared codex, cosmetic bob leaves canonical coordinates unchanged',()=>{
  const k={active:true,x:40,y:50,value:4},a=recorder(),b=recorder();
  drawKnowledge(a.g,k,1);drawKnowledge(b.g,k,2);expect(a.calls).not.toEqual(b.calls);expect(k).toEqual({active:true,x:40,y:50,value:4});

@@ -16,6 +16,14 @@ export function outpostVisual(a:OutpostVisualState) {
 /** Original code-native architecture, cached with ground. No guns, production or collision implied. */
 export function drawSpecializedOutpost(g:Phaser.GameObjects.Graphics,a:OutpostVisualState & {x:number;y:number}):void {
   const v=outpostVisual(a),x=a.x,y=a.y,alpha=a.disabled?.65:1;
+  if(v.silhouette==="claim-pad"){
+    // Owned land is not an operational factory/fort before a specialization is chosen.
+    g.fillStyle(c.canvas,.65);g.fillEllipse(x,y+5,58,20);
+    g.lineStyle(2,c.secondary,.8);g.strokeRect(x-20,y-16,40,32);
+    for(const side of [-1,1]){g.lineBetween(x+side*24,y-12,x+side*24,y+12);}
+    g.lineStyle(1,c.action,.8);g.strokeCircle(x,y,5);
+    return;
+  }
   const metal=a.disabled?c.disabled:v.material,light=a.disabled?c.disabled:c.friendly;
   g.fillStyle(c.canvas,.8);g.fillEllipse(x,y+22,86,34);
   g.fillStyle(c.raised,alpha);g.fillRect(x-30,y-20,60,42);
