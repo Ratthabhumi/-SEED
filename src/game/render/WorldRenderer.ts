@@ -28,6 +28,7 @@ export interface GroundDrawArgs {
   worldSeed: string;
   time: number;
   highContrast: boolean;
+  texturedVerdant?: boolean;
 }
 
 function chunkRand(worldSeed: string, cx: number, cy: number, salt: string, mod: number): number {
@@ -44,7 +45,7 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
       const gx = ccx * CHUNK_SIZE;
       const gy = ccy * CHUNK_SIZE;
       g.fillStyle(style.ground, 1);
-      g.fillRect(gx, gy, CHUNK_SIZE, CHUNK_SIZE);
+      if(!a.texturedVerdant || desc.biome!=="verdant" || a.highContrast)g.fillRect(gx, gy, CHUNK_SIZE, CHUNK_SIZE);
       // ONE large soft tonal patch per chunk (low frequency, never entity-sized).
       const px = gx + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-x", 300);
       const py = gy + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-y", 300);

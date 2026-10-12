@@ -26,3 +26,7 @@ No trademark/name clearance performed yet — treat the display title as provisi
 
 All sound effects are synthesized at runtime with the Web Audio API (`src/game/audio/sfx.ts`).
 No external or copyrighted audio is used.
+
+## Original painted gameplay assets
+
+Four hero atlases, enemy/boss/outpost atlases and Verdant floor were generated for this project using OpenAI imagegen on2026-10-13. Raw source PNGs, exact tool prompts and normalization records are retained; these assets are art-review-pending. See docs/art/GENERATION_RECORD.json and assets/ASSET_MANIFEST.json. They do not represent completed skeletal or multi-frame combat animations.

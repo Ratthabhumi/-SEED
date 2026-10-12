@@ -1,0 +1,63 @@
+{
+  "tool": "OpenAI built-in imagegen",
+  "scope": "Last eight original atlas/terrain generations for quality closure",
+  "calls": [
+    {
+      "timestamp": "2026-10-12T17:18:31.887Z",
+      "prompt": "Create an ORIGINAL game-ready animated sprite atlas for -SEED, a dark science-fantasy civilization survivor. One Resonant hero: imposing upright armored human scholar-warrior, obsidian blue segmented armor, ivory and antique brass trims, luminous cyan crystal staff, short split cape, strong readable broad shoulder silhouette, beautiful premium hand-painted 2D game illustration with crisp dark outlines and clean material highlights, never generic flat geometric vector. Three-quarter overhead game camera, full body, upright feet bottom; NO camera perspective changes. Transparent background, no scenery, no letters, no numbers, no grid lines, no drop shadows beyond compact feet shadow. Technical: EXACT 4 by 4 evenly spaced atlas on a square canvas, 16 equal square cells. Every sprite entirely inside its cell with 12% margin and feet aligned at 85% cell height. All frames same body size and same equipment, no cropped weapon. Row 1 front-facing: idle, left stride, right stride, staff attack extended. Row 2 front-facing: hurt recoil, dash leaning forward cape trailing, death fallen on ground, special ability staff raised. Row 3 back-facing: idle, left stride, right stride, staff attack extended. Row 4 back-facing: hurt recoil, dash cape trailing, death fallen, special ability staff raised. Walk frames must actually change legs/arms; attack silhouette different; death must actually be fallen. Beautiful integrated animation artwork, not a concept poster. No art or characters from existing games. Overall output 2048x2048 if available. This atlas will be sliced into 16 cells.",
+      "transparent_background": true,
+      "mode": "generation",
+      "reference": null
+    },
+    {
+      "timestamp": "2026-10-12T17:21:32.037Z",
+      "prompt": "Create a game-ready Hunters hero atlas as a coherent sibling of this reference Resonant atlas. Preserve exactly 4 columns x 4 rows and exactly the same 16 pose roles and front/back viewpoints, same premium hand-painted game style. Replace subject with fierce civilization ranger in bone-white angular armor over charcoal leather, copper hunting mask, short red-brown split cape, a long original brass projectile rifle instead of any magical staff. Dominant orange/amber accents, no cyan magical rings. Clear broad combat silhouette. Rows: front idle/left stride/right stride/rifle aimed firing; front hurt/dash/death fallen/special aimed salvo; back idle/left stride/right stride/rifle firing; back hurt/dash/death fallen/special salvo. Each sprite fully inside its equal square cell with 12% EMPTY TRANSPARENT MARGIN ON ALL FOUR SIDES. Do not touch outer canvas edges. Feet same baseline, consistent scale. Transparent actual alpha, no text/grid/scenery. Attack is actual rifle attack, not staff casting. No copied characters. This is one atlas asset to slice and integrate into gameplay.",
+      "transparent_background": true,
+      "mode": "reference-based generation",
+      "reference": "assets/original/heroes/resonant-v2.png"
+    },
+    {
+      "timestamp": "2026-10-12T17:24:09.242Z",
+      "prompt": "Produce ONE game-ready 4x4 animated atlas of an Engineers hero sibling matching the reference quality and overhead upright viewpoint. A powerful brass-and-charcoal exosuit engineer with broad mechanical shoulders, amber visor, green power core, industrial tool gauntlet and compact hammer, short dark green utility cape. Original premium painted 2D action game style, readable at72px. Exactly16 separate fully isolated poses, each much smaller than reference occupying ONLY central60% of its equal square cell, surrounded by TRANSPARENT empty20% margins on every side. Do not touch any cell boundary. Consistent feet baseline85%, body scale across poses. Row1 front idle, left walk stride, right walk stride, hammer slam. Row2 front hurt, dash, death fallen, special gauntlet activation. Row3 back idle, left walk, right walk, hammer slam. Row4 back hurt, dash, death fallen, special activation. Actual different animated poses. No text, cell borders, other characters, background, ground plane or scenery. Actual alpha transparency. All body and equipment fully uncropped. ONE sprite atlas; not a concept poster.",
+      "transparent_background": true,
+      "mode": "reference-based generation",
+      "reference": "assets/original/heroes/resonant-v2.png"
+    },
+    {
+      "timestamp": "2026-10-12T17:27:23.645Z",
+      "prompt": "Create ONE ORIGINAL Sentinels hero game-ready sprite atlas matching the reference premium painted 2D quality, upright three-quarter overhead view, dark science fantasy. Distinguished massive pearl-white and steel knight in dark navy underarmor, broad shield silhouette, tall angular helm, blue-violet power core, large polygon shield held on left arm, short heavy sword in right hand, short violet cloak. Exactly4x4 grid, sixteen separate poses, consistent body scale/feet. Row1 front idle, left walk, right walk, sword slash; row2 front hurt recoil, dash shield forward, death fallen, special shield raised; row3 back idle,left walk,right walk,sword slash; row4 back hurt,dash,death fallen,special shield raised. Each sprite fits within central60% of its cell with huge20% EMPTY TRANSPARENT gutters so absolutely no part touches a neighboring frame or outside canvas. No letters/grid lines/scenery. Real transparent alpha. Full distinct walk leg poses and actual fallen dead pose. No copied game designs, no magical staff. Beautiful recognizable shield guardian hero; ONE atlas for gameplay import.",
+      "transparent_background": true,
+      "mode": "reference-based generation",
+      "reference": "assets/original/heroes/resonant-v2.png"
+    },
+    {
+      "timestamp": "2026-10-12T17:30:07.424Z",
+      "prompt": "Create ONE ORIGINAL seamless square top-down ground texture tile for a premium hand-painted 2D dark science-fantasy survivor game. Verdant lost-civilization woodland FLOOR, not a landscape illustration. Pure orthographic overhead, no horizon. Dark muted forest green moss, fine fern clusters and low grass tufts, earthy umber worn patches, small weathered slate fragments, a few broken flat ancient masonry slabs with faint teal mineral veins. Rich natural tactile painterly material detail, carefully composed understated density, no huge shapes, no repetitive geometric circles or sharp grid. Entire surface is WALKABLE decoration. No standing trees, no tall rocks, no walls, no buildings, no characters, no text, no shadows suggesting obstacles. Keep middle value DARK and contrast low so cyan/amber hero and red warning attacks stand out. Organic varied floor surface with readable texture at512px gameplay scale. PERFECTLY SEAMLESS opposite edges for repeated square tiling, no edge vignette or border. Full opaque image, square texture intended as actual repeating game terrain, NOT concept art or a mockup. Original unique artwork.",
+      "transparent_background": false,
+      "mode": "generation",
+      "reference": null
+    },
+    {
+      "timestamp": "2026-10-12T17:34:04.941Z",
+      "prompt": "ONE ORIGINAL game-ready boss sprite atlas, exactly4 columns by2 rows. A towering ancient civilization siege colossus made of fractured obsidian armor plates, weathered bronze mechanical joints, orange molten chest reactor, massive asymmetric stone hammer and six dorsal crystal vents. Dark science-fantasy premium hand-painted 2D style, upright three-quarter overhead camera, strong imposing silhouette, no copied game designs. Exactly8 distinct poses with same identity and size, each fully isolated in central60% of equal square cells with20% empty transparent padding all sides. Row1: idle standing, heavy left walking stride, heavy right walking stride, hammer raised warning. Row2: hammer slammed onto ground, six vents opened firing, hurt armor cracked, collapsed death. True transparent alpha, no scenery,text,grid lines,other objects. Obsidian and bronze with vivid warning orange, no cyan friendly colors. Entire full body fits each cell without touching any border. This is one atlas to slice for actual game combat, not an illustration poster.",
+      "transparent_background": true,
+      "mode": "generation",
+      "reference": null
+    },
+    {
+      "timestamp": "2026-10-12T17:45:31.480Z",
+      "prompt": "ONE ORIGINAL enemy sprite atlas for -SEED dark science-fantasy civilization survivor, exactly4 columns by4 rows, actual alpha transparency. Premium painted 2D game art matching obsidian/brass siege colossus and armored civilization heroes. 16 isolated game-ready sprites, all in central60% of each square cell with20% transparent margins. Strong enemy role silhouettes readable at42px, warm red-orange threat accents, not friendly cyan. Orthographic three-quarter overhead game view, full body. Row1 four poses of CHASER: lean feral armored blade creature with hooked forearms, idle, left rushing stride, right rushing stride, blade lunge. Row2 RANGED: floating skeletal bronze cannon drone with angular wing fins and orange lens, idle, moving left, moving right, cannon firing. Row3 TANK: heavy squat plated quadruped stone-bronze beast with broad frontal ram armor, idle, left stride, right stride, ram attack. Row4 SWARM: small vicious segmented beetle with six legs and luminous orange abdomen, idle, left scuttle, right scuttle, bite attack. Each row must preserve its identity and proportions across4 different poses. No characters/weapons from existing games. No text, labels,grid lines,ground,scenery or extra objects. All sprites stay fully uncropped in their equal square cells. A game atlas to slice, not a concept poster.",
+      "transparent_background": true,
+      "mode": "generation",
+      "reference": null
+    },
+    {
+      "timestamp": "2026-10-12T17:46:14.858Z",
+      "prompt": "ONE ORIGINAL game-ready civilization outpost sprite atlas, exactly4 columns by3 rows. Premium hand-painted 2D dark science-fantasy architecture, orthographic three-quarter overhead camera matching small upright armored heroes. Actual alpha transparent background, full buildings uncropped, all objects fit central60% of equal square cells with20% empty gutters. All12 sprites consistent footprint and viewpoint, no text/grid/scenery/characters. Row1 RESEARCH observatory: distinctive domed brass/ivory telescope tower with blue crystal lens; column1 tier1 compact, column2 tier2 larger side laboratory annex, column3 destroyed broken dome dark lens, column4 damaged with scaffolding repair braces blue lens partly lit. Row2 MILITARY bastion: angular charcoal stone fortress, brick-red shield banners, tall crenellated gate and defensive buttresses, NO firing turrets or guns; same4 states tier1/tier2 expanded walls/destroyed/repairing. Row3 ECONOMY workshop: copper-roof industrial workshop with green supply mark, chimney and visible storage crates, same4 states tier1/tier2 added storage shed/destroyed broken roof/repair scaffolding. Strongly different roof silhouettes and material colors visible at110px gameplay size. Original artwork, no copied game art. States must remain identifiable as their same building. Do not depict produced resources or functioning combat weapons absent from gameplay. ONE atlas to slice for game, not mockup or concept picture.",
+      "transparent_background": true,
+      "mode": "generation",
+      "reference": null
+    }
+  ],
+  "sources_retained": "assets/original/{heroes,actors,structures,terrain}; source and production SHA256 in ASSET_MANIFEST.json"
+}

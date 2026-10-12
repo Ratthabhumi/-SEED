@@ -26,6 +26,8 @@ import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
 import { generateTechGraph } from "../tech/generator";
 import { eligibleTech, expandTechWeb } from "../tech/web";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
+import { combinationRoute } from "../tech/combinationRoute";
+import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "../combat/bossEncounter";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CONTENT_VERSION } from "../seed/versions";
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
@@ -323,6 +325,12 @@ export class RunSimulation {
     return pathGuidance(this.graph, { target, owned: s.owned, tags: s.ownedTags, unlocked: s.breakthroughs, ageIndex: s.ageIndex, families: new Set(activeFamilies(s.originId, s.expansionFamily)) });
   }
 
+  combinationRoute() {
+    const s = this.state;
+    return combinationRoute(this.graph, s.owned, s.ownedTags, s.breakthroughs, s.ageIndex,
+      new Set(activeFamilies(s.originId, s.expansionFamily)));
+  }
+
   pinnedPathIds(): Set<string> {
     const s = this.state;
     const out = new Set<string>();
@@ -410,6 +418,19 @@ export class RunSimulation {
       }
     }
     
+    // One guaranteed, voluntary recipe component in every pre-Industrial level
+    // draft until any combination is earned. Reserve retains another slot.
+    // POI-domain filters and reroll semantics remain intact; no RNG draws added.
+    if (context === "level" && s.ageIndex <= 2 && s.breakthroughs.length === 0) {
+      const next = this.combinationRoute().next;
+      if (next && !offers.some(o => o.nodeId === next.id)) {
+        let slot=offers.length-1;
+        while(slot>=0 && offers[slot].nodeId===s.reservedTech)slot--;
+        if (slot >= 0) offers[slot] = this.convertToDraftOffer(next, "COMMON", 0);
+        else offers.push(this.convertToDraftOffer(next, "COMMON", 0));
+      }
+    }
+
     // Emergency fallback only (should be rare with the wide-frontier graph).
     const fb = fallbackCards(s.level);
     while (offers.length < 3) {
@@ -649,7 +670,8 @@ export class RunSimulation {
         let idx = -1;
         for (let i = s.draftOffers.length - 1; i >= 0; i--) {
           const o = s.draftOffers[i];
-          if (o && !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech) {
+          const recovery = s.ageIndex <= 2 && s.breakthroughs.length === 0 ? this.combinationRoute().next?.id : undefined;
+          if (o && !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech && o.nodeId !== recovery) {
             idx = i;
             break;
           }
@@ -1377,6 +1399,7 @@ export class RunSimulation {
     e.radius = base.radius * (boss ? 3 : elite ? 1.4 : 1);
     e.xp = base.xp * (elite ? 5 : 1) * (boss ? 15 : 1);
     e.elite = elite; e.boss = boss; e.affix = affix; e.siege=false;
+    e.encounter=boss?createBossEncounter():undefined;
     const adaptation=adaptationFor(s.ageIndex,family,elite,boss);e.evolution=adaptation?createEvolution(adaptation):undefined;
     e.flash = 0; e.shootT = 1 + this.streams.enemy.nextFloat() * 2; e.hitCd = 0;
     if (boss) {
@@ -1451,6 +1474,9 @@ export class RunSimulation {
       rest -= absorbed;
     }
     e.hp -= rest;
+    if ((src === "kinetic" || src === "defense" || src === "field") && (rest > 0 || shieldDamage > 0)) {
+      ev.push({type:"weapon_impact",family:src,x:e.x,y:e.y,hpDamage:Math.min(hpBefore,Math.max(0,rest)),shieldDamage});
+    }
     // Presentation observes resolved damage, before death can recycle this slot.
     // No RNG, state, balance or damage-accounting change.
     if ((src === "energy" || src === "chain" || src === "relay") && (rest > 0 || shieldDamage > 0)) {
@@ -1654,7 +1680,7 @@ export class RunSimulation {
 
   private evolutionShot=(e:SimEnemy,x:number,y:number):void=> { this.fireProjectile(e.x,e.y,x,y,260,e.dmg/3,0xff5a5a,"enemy-burst",false,6); };
 
-  private fireProjectile(x: number, y: number, tx: number, ty: number, speed: number, dmg: number, color: number, src: string, friendly: boolean, radius = 6): void {
+  private fireProjectile(x: number, y: number, tx: number, ty: number, speed: number, dmg: number, color: number, src: string, friendly: boolean, radius = 6, ev?:SimEvent[]): void {
     for (const p of this.state.projs) {
       if (p.active) continue;
       const d = Math.max(1, Math.hypot(tx - x, ty - y));
@@ -1662,6 +1688,7 @@ export class RunSimulation {
       p.vx = ((tx - x) / d) * speed; p.vy = ((ty - y) / d) * speed;
       p.dmg = dmg; p.radius = radius; p.life = 2.2; p.friendly = friendly; p.color = color; p.src = src;
       p.visualTier=(["kinetic","energy","defense","field"] as string[]).includes(src)?this.state.weaponStage[src as WeaponFamily]:this.state.ageIndex;
+      if(ev && friendly && ["kinetic","energy","defense","field"].includes(src)) ev.push({type:"weapon_fired",family:src as WeaponFamily,x,y,tx,ty});
       return;
     }
   }
@@ -1672,7 +1699,7 @@ export class RunSimulation {
   // executable path (covered by tests/sim/archetypes.test.ts).
   private fireProjectileSpread(
     fam: WeaponFamily, st: { speed: number; damage: number; radius: number; color: number },
-    n: number, range: number,
+    n: number, range: number, ev:SimEvent[],
   ): void {
     const s = this.state;
     const b = s.build;
@@ -1687,6 +1714,8 @@ export class RunSimulation {
         p.vx = Math.cos(base) * st.speed; p.vy = Math.sin(base) * st.speed;
         p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = 1.6;
         p.friendly = true; p.color = st.color; p.src = fam;
+        p.visualTier=s.weaponStage[fam];
+        ev.push({type:"weapon_fired",family:fam,x:s.px,y:s.py,tx:tgt.x,ty:tgt.y});
         break;
       }
     }
@@ -1740,7 +1769,7 @@ export class RunSimulation {
     }
   }
 
-  private guardianFire(st: { damage: number; color: number }, guardians: number): void {
+  private guardianFire(st: { damage: number; color: number }, guardians: number, ev:SimEvent[]): void {
     const s = this.state;
     const lim = Math.min(guardians, 6);
     for (let i = 0; i < lim; i++) {
@@ -1748,7 +1777,7 @@ export class RunSimulation {
       const gx = s.px + Math.cos(a) * 80;
       const gy = s.py + Math.sin(a) * 80;
       const tgt = this.nearestEnemy(gx, gy, 520);
-      if (tgt) this.fireProjectile(gx, gy, tgt.x, tgt.y, 420, st.damage * s.build.damageMul, st.color, "defense", true, 6);
+      if (tgt) this.fireProjectile(gx, gy, tgt.x, tgt.y, 420, st.damage * s.build.damageMul, st.color, "defense", true, 6,ev);
     }
   }
 
@@ -1773,7 +1802,7 @@ export class RunSimulation {
       const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
       tick("kinetic", st.cooldown * cdM, () => {
         if (st.archetype === "beam") this.beamStrike("kinetic", st, 800, ev);
-        else this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700);
+        else this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700,ev);
       });
     }
     // Energy: projectile / aura / beam per stage, plus bonus-granted systems.
@@ -1791,7 +1820,7 @@ export class RunSimulation {
       } else if (st.archetype === "projectile") {
         tick("energy", st.cooldown * cdM, () => {
           const tgt = this.nearestEnemy(s.px, s.py, 640);
-          if (tgt) this.fireProjectile(s.px, s.py, tgt.x, tgt.y, st.speed || 380, st.damage * b.damageMul, st.color, "energy", true, st.radius * 0.8);
+          if (tgt) this.fireProjectile(s.px, s.py, tgt.x, tgt.y, st.speed || 380, st.damage * b.damageMul, st.color, "energy", true, st.radius * 0.8,ev);
         });
       }
     }
@@ -1806,7 +1835,7 @@ export class RunSimulation {
       }
       const guardians = (st.archetype === "summon" ? st.count : 0) + b.bonusGuardians;
       if (guardians > 0) {
-        tick("defense", st.cooldown * cdM * 1.6, () => this.guardianFire(st, guardians));
+        tick("defense", st.cooldown * cdM * 1.6, () => this.guardianFire(st, guardians,ev));
       }
     }
     // Field: mines are the family signature (see mine section); the stage
@@ -1953,7 +1982,20 @@ export class RunSimulation {
       const dy = s.py - e.y;
       const d = Math.max(1, Math.hypot(dx, dy));
       const phase=e.evolution?.phase;const shots=e.evolution?.shots;
-      const evolved=stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
+      const bossPhase=e.encounter?.phase;
+      const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,s.px,s.py,dt,(pattern,x,y)=>{
+        ev.push({type:"boss_attack_fired",pattern,x,y});
+        if(pattern==="fan") {
+          const angle=Math.atan2(y-e.y,x-e.x);
+          // Deliberate central gap; warnings expose this safe direction.
+          for(const offset of [-.6,-.4,-.2,.2,.4,.6])this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
+        } else {
+          if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev);
+          for(let i=0;i<s.squad.length;i++){const a=s.squad[i];if(a.active&&bossAreaHit(pattern,e.x,e.y,x,y,a.x,a.y))this.damageAlly(i,e.dmg);}
+        }
+      });
+      if(e.encounter?.phase==="warning"&&bossPhase!=="warning")ev.push({type:"boss_attack_warning",pattern:e.encounter.pattern});
+      const evolved=bossMoved||stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
       if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
       if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});
       if (evolved) { /* movement and fire owned by the canonical adaptation */ }
@@ -2043,6 +2085,7 @@ export class RunSimulation {
       const hit = this.queryRadius(m.x, m.y, m.radius, this.scratch);
       if (hit.length > 0) {
         m.active = false;
+        ev.push({type:"mine_detonated",x:m.x,y:m.y,radius:m.radius});
         const lim = Math.min(hit.length, 12);
         for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, m.dmg, "field", ev);
         if (s.over) return ev;

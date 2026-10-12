@@ -59,6 +59,10 @@ describe("Asset Pipeline and Manifest Verification", () => {
       if (entry.id.startsWith("seed-frontier-")) {
         expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toBe("-SEED contributors");
         expect(entry.status).toBe("working-prototype"); expect(entry.vendorSourcePath).toMatch(/^assets\/original\/(frontier|actors)\//);
+      } else if (/^seed-(hero-v2-|verdant-v2|boss-v2|enemies-v2|outposts-v2|warfare-swords)/.test(entry.id)) {
+        expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toMatch(/^-SEED contributors/);
+        expect(entry.vendorSourcePath).toMatch(/^assets\/original\//);
+        expect(entry.status).toBe(entry.id==="seed-warfare-swords"?"reviewable":"art-review-pending");
       } else { expect(entry.sourceLicense).toBe("CC0"); expect(entry.author).toBe("Kenney"); }
 
       const diskPath = path.join(root, entry.projectPath);
@@ -134,9 +138,13 @@ describe("Asset Pipeline and Manifest Verification", () => {
 
       expect(prodSha).toBe(a.productionSha256);
       expect(vendorSha).toBe(a.vendorSourceSha256);
-      expect(prodSha).toBe(vendorSha);
-      expect(a.modified).toBe(false);
-      expect(a.status).toBe(a.id.startsWith("seed-frontier-") ? "working-prototype" : "production-selected");
+      if (/^seed-(hero-v2-|verdant-v2|boss-v2|enemies-v2|outposts-v2)/.test(a.id)) {
+        expect(a.modified).toBe(true); expect(prodSha).not.toBe(vendorSha);
+        expect(a.modifications).toMatch(/resize|slicing/); expect(a.status).toBe("art-review-pending");
+      } else {
+        expect(prodSha).toBe(vendorSha); expect(a.modified).toBe(false);
+        expect(a.status).toBe(a.id==="seed-warfare-swords"?"reviewable":a.id.startsWith("seed-frontier-")?"working-prototype":"production-selected");
+      }
     }
   });
 

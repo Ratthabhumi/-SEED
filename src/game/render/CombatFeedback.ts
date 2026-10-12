@@ -10,7 +10,7 @@ import { phaserColors } from "../../theme/tokens";
 export const COMBAT_FEEDBACK_BUDGET = { beams: 8, impacts: 32, sparksPerImpact: 5, impactSprites: 8 } as const;
 export const BEAM_RELEASE_SECONDS = 0.12;
 export const IMPACT_SECONDS = 0.24;
-type Slot = { until: number; x: number; y: number; tx: number; ty: number; color: number; width: number; shield: boolean };
+type Slot = { until: number; x: number; y: number; tx: number; ty: number; color: number; width: number; shield: boolean; kind?: string };
 const slot = (): Slot => ({ until: -Infinity, x: 0, y: 0, tx: 0, ty: 0, color: 0, width: 0, shield: false });
 
 /** Charge is advisory readiness, never a damage telegraph or a gameplay timer. */
@@ -27,6 +27,7 @@ export function energyCharge(s: RunState): number {
 export class CombatFeedback {
   private beams = Array.from({ length: COMBAT_FEEDBACK_BUDGET.beams }, slot);
   private impacts = Array.from({ length: COMBAT_FEEDBACK_BUDGET.impacts }, slot);
+  private muzzles = Array.from({length:8},slot);
   private world = "";
   private sprites: Phaser.GameObjects.Image[] = [];
   initialize(scene: Phaser.Scene): void {
@@ -38,22 +39,31 @@ export class CombatFeedback {
     this.world = world;
     for (const p of this.beams) p.until = -Infinity;
     for (const p of this.impacts) p.until = -Infinity;
+    for (const p of this.muzzles) p.until = -Infinity;
     for (const image of this.sprites) image.setVisible(false);
   }
   syncWorld(world: string): void { if (world !== this.world) this.reset(world); }
   accept(e: SimEvent, time: number, reduced: boolean): void {
+    if(e.type === "weapon_fired" && !reduced) {
+      const p=this.muzzles.find(p=>p.until<=time);
+      if(p)Object.assign(p,{until:time+.1,x:e.x,y:e.y,tx:e.tx,ty:e.ty,color:e.family==="kinetic"?0xffc579:e.family==="defense"?0x9ae7ff:0x53e0c8});
+    }
     if (e.type === "beam_fired") {
       const p = this.beams.find(p => p.until <= time);
       if (!p) return;
       const stage = getWeaponStage(e.family, e.tier);
       Object.assign(p, { until: time + BEAM_RELEASE_SECONDS, x: e.x1, y: e.y1, tx: e.x2, ty: e.y2,
         color: stage.color, width: Math.min(10, Math.max(4, stage.radius * 0.5)) });
-    } else if (e.type === "energy_impact" && !reduced) {
+    } else if ((e.type === "energy_impact" || e.type === "weapon_impact" || e.type === "mine_detonated") && !reduced) {
       const p = this.impacts.find(p => p.until <= time);
       if (!p) return;
+      const family = e.type === "weapon_impact" ? e.family : e.type === "mine_detonated" ? "field" : "energy";
+      const damage = e.type === "mine_detonated" ? 0 : e.hpDamage + e.shieldDamage;
       Object.assign(p, { until: time + IMPACT_SECONDS, x: e.x, y: e.y,
-        color: e.source === "relay" ? phaserColors.action : phaserColors.friendly,
-        shield: e.shieldDamage > 0, width: Math.min(18, 6 + Math.sqrt(e.hpDamage + e.shieldDamage)) });
+        color: family === "kinetic" ? 0xffc579 : family === "defense" ? 0x9ae7ff : family === "field" ? 0x9cf17b : e.type === "energy_impact" && e.source === "relay" ? phaserColors.action : phaserColors.friendly,
+        kind: e.type === "mine_detonated" ? "detonation" : family,
+        shield: e.type !== "mine_detonated" && e.shieldDamage > 0,
+        width: e.type === "mine_detonated" ? Math.min(140,e.radius) : Math.min(18, 6 + Math.sqrt(damage)) });
     }
   }
   counts(time: number): { beams: number; impacts: number } {
@@ -61,6 +71,11 @@ export class CombatFeedback {
   }
   draw(g: Phaser.GameObjects.Graphics, time: number, reduced: boolean, visible: (x: number, y: number) => boolean): void {
     for (const image of this.sprites) image.setVisible(false);
+    if(!reduced)for(const p of this.muzzles){if(p.until<=time || !visible(p.x,p.y))continue;
+      const a=Math.atan2(p.ty-p.y,p.tx-p.x), f=(p.until-time)/.1;
+      const x=p.x+Math.cos(a)*16,y=p.y+Math.sin(a)*16;
+      g.fillStyle(p.color,f);g.fillTriangle(x-Math.sin(a)*5,y+Math.cos(a)*5,x+Math.sin(a)*5,y-Math.cos(a)*5,x+Math.cos(a)*16*f,y+Math.sin(a)*16*f);
+    }
     for (const p of this.beams) {
       if (p.until <= time || (!visible(p.x, p.y) && !visible(p.tx, p.ty))) continue;
       const f = (p.until - time) / BEAM_RELEASE_SECONDS;
@@ -78,6 +93,19 @@ export class CombatFeedback {
       const p=this.impacts[index]!;
       if (p.until <= time || !visible(p.x, p.y)) continue;
       const f = (p.until - time) / IMPACT_SECONDS, travel = 1 - f * f;
+      if (p.kind === "detonation") {
+        // Six expanding soil fracture spokes, not a second damage system.
+        g.lineStyle(3,p.color,f);
+        for(let i=0;i<6;i++) { const a=i*Math.PI/3;
+          const r=p.width*travel;
+          g.lineBetween(p.x+Math.cos(a)*r*.35,p.y+Math.sin(a)*r*.35,p.x+Math.cos(a)*r,p.y+Math.sin(a)*r);
+        }
+        continue;
+      }
+      if (p.kind === "defense") {
+        g.lineStyle(2,p.color,f);
+        g.strokeTriangle(p.x,p.y-12*travel,p.x-10*travel,p.y+9*travel,p.x+10*travel,p.y+9*travel);
+      }
       const image=this.sprites[index];
       if(image) image.setPosition(p.x,p.y).setDisplaySize(24+travel*24,24+travel*24)
         .setTint(p.color).setAlpha(f*0.55).setVisible(true);

@@ -46,8 +46,8 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
   for (const e of s.enemies) {
     if (!e.active) continue;
     enemies.push(
-      [r6(e.x), r6(e.y), r6(e.hp), r6(e.shield), e.family, e.elite ? e.affix : "", e.boss ? 1 : 0,
-        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), e.siege ? 1 : 0, e.evolution?[e.evolution.id,e.evolution.phase,r6(e.evolution.timer),r6(e.evolution.aimX),r6(e.evolution.aimY),e.evolution.shots].join(":"):""].join(","),
+      [r6(e.x), r6(e.y), r6(e.hp), r6(e.maxHp), r6(e.shield), e.family, e.elite ? e.affix : "", e.boss ? 1 : 0,
+        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), e.siege ? 1 : 0, e.evolution?[e.evolution.id,e.evolution.phase,r6(e.evolution.timer),r6(e.evolution.aimX),r6(e.evolution.aimY),e.evolution.shots].join(":"):"", e.encounter?[e.encounter.phase,r6(e.encounter.timer),e.encounter.cycle,e.encounter.pattern,r6(e.encounter.aimX),r6(e.encounter.aimY),e.encounter.enraged?1:0].join(":"):""].join(","),
     );
   }
   enemies.sort();

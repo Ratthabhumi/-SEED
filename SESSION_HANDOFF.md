@@ -1,3 +1,9 @@
+## Content13 recovery and painted gameplay art review — 2026-10-13
+
+Branch feat/breakthrough-quality-closure-20261013, base PR6 exact36c0bbb. Preserved291 incoming human files with SHA256 ledger under scratch/quality-closure-baseline-20261013 and sanitized report143 in e72728b. Human PR6 Resonant run ended in Iron without combination; missing exact input replay prevents claiming the reported screenshot was reproduced. Older INTERRUPTED_BY_BUG retained.
+
+Implemented guaranteed voluntary Fire/Tools graph/draft recovery and localized objective/map guidance, Warfare sword semantics, all-family release/impact/mines, four painted hero pose atlases, four painted enemy roles, three-stateful outpost rows, Verdant walkable floor, and a deterministic three-pattern boss with warnings/recovery/hashed state. Content13/worldgen2/save2. No dependency, merges or tags. Full production animation and painted six-era equipment/other biomes remain incomplete; human/hardware gates remain pending. Exact engineering/ZIP receipt belongs in PR/task after final validation; no prospective green claim. See docs/QUALITY_CLOSURE_REVIEW.md and ADR0027. Initial local mixed-tree failures retained, thresholds unchanged; targeted25 and Analyze6 passed during implementation.
+
 ## Event-driven combat and site identity checkpoint — 2026-10-12
 
 Branch feat/combat-feedback-slice-20261012, based on verified PR5 exact2ea1191ca555dc7e00164702b0dd6f0c9fbc97ac. Preserve real session265/266 in37083d0: same session qa-13489-w2qem1 and terminal wallEnd1389083.5, target-complete, zero feedback/ratings and null comment. Raw originals, three incoming documents and SHA256 ledger copied to ignored scratch/combat-feedback-baseline-20261012. Older INTERRUPTED_BY_BUG evidence retained.
