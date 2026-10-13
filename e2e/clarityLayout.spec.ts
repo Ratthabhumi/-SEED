@@ -115,6 +115,18 @@ async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "
 
 const PAUSE_HEADINGS_EN = ["Primary", "Display", "Help", "Run", "Danger Zone"];
 
+test("opening an already visible pause must not queue a toggle behind Resume",async({page})=>{
+  await startRun(page,"PAUSE-ALREADY-OPEN");await openPause(page);
+  await page.locator("#pause-screen").evaluate(el=>{(el as HTMLElement).dataset.fixtureIdentity="original";});
+  await openPause(page);
+  const frames=()=>page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  await frames();await expect(page.locator("#pause-screen")).toHaveCount(1);
+  await expect(page.locator("#pause-screen")).toHaveAttribute("data-fixture-identity","original");
+  const before=await page.evaluate(()=>(window as any).__seedE2E.specRegressionState().elapsed);
+  await resumePause(page);await frames();await expect(page.locator("#pause-screen")).toHaveCount(0);
+  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.specRegressionState().elapsed)).toBeGreaterThan(before);
+});
+
 async function viewportMatrix(page: Page): Promise<void> {
   await test.step("EN 100%: HUD zones, draft, tech CURRENT+OVERVIEW, civmap", async () => {
     await assertHudZones(page);

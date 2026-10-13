@@ -81,6 +81,9 @@ export async function drainDrafts(page: Page, maxRounds = 120): Promise<void> {
 export async function openPause(page: Page, retries = 5): Promise<void> {
   for (let i = 0; i < retries; i++) {
     await drainDrafts(page, 40);
+    // Language changes/background auto-pause can already own this surface.
+    // Sending another queued Escape would close it or race with Resume.
+    if (await page.locator("#pause-screen").isVisible()) return;
     await page.keyboard.press("Escape");
     try {
       await expect(page.locator("#pause-screen")).toBeVisible({ timeout: 3000 });
