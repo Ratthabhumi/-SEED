@@ -73,6 +73,7 @@ export interface QaFrameData {
   frameMs: number;
   simMsAvg: number;
   rendererCpuSubmitMs?: number;
+    terrain?:import("./PerformanceSampler").TerrainTelemetry;
   childCondition?: string;
   queries: number;
   buckets: number;
@@ -445,6 +446,7 @@ export class QaSession {
       frameMs: f.frameMs,
       simMs: f.simMsAvg,
       rendererCpuSubmitMs: f.rendererCpuSubmitMs,
+      terrain:f.terrain,
       enemies: f.enemies,
       projs: f.projs,
       pickups: f.pickups,

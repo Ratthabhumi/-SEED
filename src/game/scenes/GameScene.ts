@@ -56,6 +56,8 @@ import {HERO_ASSETS} from "../assets/heroAssets";
 import {HeroActions} from "../render/heroActions";
 import {drawBossTelegraph} from "../render/BossTelegraph";
 import {TerrainPainter,TERRAIN_TEXTURES} from "../render/TerrainPainter";
+import {COMBAT_ASSETS,combatFrames} from "../assets/combatAssets";
+import {CombatSprites} from "../render/CombatSprites";
 import {HeroEquipment} from "../render/HeroEquipment";
 import {DeathResponse} from "../render/DeathResponse";
 import {WORLD_SCALE,gameZoom,enemyArtSize} from "../render/combatPresentation";
@@ -174,7 +176,12 @@ export class GameScene extends Phaser.Scene {
   private heroActions = new HeroActions();
   private lastAgeCardKey="";
   private terrainPainter!:TerrainPainter;
+  private groundRefreshMs=0;
+  private chunkReadMs=0;
+  private groundMaxMs=0;
+  private chunkReadMaxMs=0;
   private heroEquipment=new HeroEquipment();
+  private combatSprites!:CombatSprites;
   private equipmentGraphics!:Phaser.GameObjects.Graphics;
   private deathResponse!:DeathResponse;
   private techMapSel = "";
@@ -192,6 +199,9 @@ export class GameScene extends Phaser.Scene {
     this.load.svg("actor-guardian",ACTOR_ASSETS.guardian,{width:1152,height:64});
     for(const [id,url] of Object.entries(HERO_ASSETS))this.load.image("hero-v2-"+id,url);
     for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
+    this.load.image("combat-projectiles",COMBAT_ASSETS.projectiles);
+    this.load.image("combat-equipment",COMBAT_ASSETS.equipment);
+    this.load.image("world-props",COMBAT_ASSETS.props);
     this.load.image("boss-v2",BOSS_ASSET_V2);
     this.load.image("enemies-v2",ENEMIES_ASSET_V2);
     this.load.image("outposts-v2",SEED_ASSETS.structures.atlasV2);
@@ -258,10 +268,12 @@ export class GameScene extends Phaser.Scene {
 
   /** Fresh run (and restart path): new simulation, clean adapter state. */
   private startRun(seed: string): void {
+    this.groundMaxMs=this.chunkReadMaxMs=0;
     this.lastAgeCardKey="";
     this.heroActions = new HeroActions();
     this.terrainPainter = new TerrainPainter(this);
-    this.heroEquipment=new HeroEquipment();
+    this.heroEquipment=new HeroEquipment(this);
+    this.combatSprites=new CombatSprites(this);
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
@@ -278,6 +290,7 @@ export class GameScene extends Phaser.Scene {
     this.paused = false;
     this.deathPersisted = false;
     ActorRenderer.frames(this);
+    combatFrames(this);
     this.enemyActors = new ActorRenderer(this,650,2);
     this.allyActors = new ActorRenderer(this,128,4);
     this.deathResponse=new DeathResponse(this);
@@ -420,7 +433,28 @@ export class GameScene extends Phaser.Scene {
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
         actorPresentation: () => this.allyActors.review(),
-        integratedReview:()=>({actors:this.allyActors.review(),enemies:this.enemyActors.review(),zoom:this.cameras.main.zoom,
+        streamingMove:(x:number,y:number)=>{
+          const s=this.sim.state,dx=x-s.px,dy=y-s.py;this.paused=true;s.px=x;s.py=y;
+          for(const e of s.enemies)if(e.active){e.x+=dx;e.y+=dy;}
+          for(const p of s.projs)if(p.active){p.x+=dx;p.y+=dy;}
+          this.playerArc.setPosition(x,y);this.cameras.main.centerOn(x,y);
+          const begin=performance.now();this.refreshGround(true);
+          return {refreshGroundMs:performance.now()-begin,chunkReadMs:this.chunkReadMs,terrain:this.terrainPainter.counts(),chunkCache:{hits:this.sim.chunks.hits,misses:this.sim.chunks.misses,size:this.sim.chunks.size}};
+        },
+        streamingFixture:(x:number,y:number,dense=false,reduced=false,contrast=false)=>{
+          // Explicit benchmark fixture only, never a human playtest or gameplay input.
+          const s=this.sim.state;this.paused=true;this.reducedEffects=reduced;
+          s.px=x;s.py=y;this.playerArc.setPosition(x,y);this.cameras.main.centerOn(x,y);
+          for(const e of s.enemies)e.active=false;for(const p of s.projs)p.active=false;
+          if(dense){
+            for(let i=0;i<500;i++){const e=this.sim.spawnEnemy("chaser",false,false,i*.618,100+i%300,[]);if(e){e.speed=0;e.dmg=0;}}
+            for(let i=0;i<800;i++){const p=s.projs[i]!;Object.assign(p,{active:true,friendly:true,x:x+Math.cos(i*.618)*(100+i%500),y:y+Math.sin(i*.618)*(100+i%300),vx:120,vy:0,radius:4,color:0xffda76,src:"kinetic",visualTier:3});}
+          }
+          const save=loadSave(localStorage);save.settings.contrast=contrast?"high":"normal";storeSave(localStorage,save);
+          const begin=performance.now();this.refreshGround(true);
+          return {refreshGroundMs:performance.now()-begin,terrain:this.terrainPainter.counts(),hash:this.sim.hash()};
+        },
+        integratedReview:()=>({groundRefreshMs:this.groundRefreshMs,chunkReadMs:this.chunkReadMs,equipment:this.heroEquipment.review(),combatSprites:this.combatSprites.counts(),actors:this.allyActors.review(),enemies:this.enemyActors.review(),zoom:this.cameras.main.zoom,
           terrain:this.terrainPainter.counts(),logistics:this.sim.logisticsStatus(),raid:this.sim.raidReadiness(),age:this.sim.state.ageIndex,
           defenses:this.sim.state.raidsSurvived,landmarks:this.landmarkArt.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,width:i.displayWidth,height:i.displayHeight}))}),
         stageRaidClosure:()=>{
@@ -864,6 +898,8 @@ export class GameScene extends Phaser.Scene {
       frameMs: this.frameSamples.length > 0 ? (this.frameSamples[this.frameSamples.length - 1] as number) : 0,
       simMsAvg: this.simSamples.length > 0 ? simSum / this.simSamples.length : 0,
       rendererCpuSubmitMs: this.renderSamples[this.renderSamples.length - 1],
+      terrain:(()=>{const terrain=this.terrainPainter.counts();return {refreshMaxMs:this.groundMaxMs,chunkReadMaxMs:this.chunkReadMaxMs,
+        uploadMaxMs:terrain.uploadMaxMs,workerPaintMaxMs:terrain.workerPaintMaxMs,uploads:terrain.uploads,uploadBytes:terrain.uploadBytes,misses:terrain.misses,pending:terrain.pending,workerFailed:terrain.workerFailed};})(),
       childCondition: childCondition(s.ascension),
       queries: this.sim.queryCount,
       buckets: this.sim.spatialBucketCount,
@@ -3450,6 +3486,7 @@ export class GameScene extends Phaser.Scene {
       this.lastGroundKey = gk;
       this.refreshGround(false);
     }
+    this.terrainPainter.update();
     if (this.showDebug) this.refreshDebug();
     // QA harness tick (no-op unless ?qa=1 session exists).
     if (this.qa) {
@@ -3485,6 +3522,7 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------- render (world space)
   private refreshGround(_full: boolean): void {
+    const refreshBegin=performance.now();this.chunkReadMs=0;
     const s = this.sim.state;
     const g = this.ground;
     if (!g) return;
@@ -3494,9 +3532,10 @@ export class GameScene extends Phaser.Scene {
     const R = ACTIVE_RADIUS_CHUNKS + 1;
     const civ = CIV_LAYER[AGES[s.ageIndex] as AgeId];
     const now = performance.now() / 1000;
+    const getChunk=(x:number,y:number)=>{const begin=performance.now();const result=this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y);this.chunkReadMs+=performance.now()-begin;return result;};
     drawGround(g, {
       texturedGround:true,
-      getChunk: (x, y) => this.sim.chunks.get(s.worldSeed, s.worldNonce, x, y),
+      getChunk,
       styleFor: (biome) => BIOME_STYLE[biome],
       civColor: civ.color,
       civDensity: civ.density,
@@ -3508,16 +3547,17 @@ export class GameScene extends Phaser.Scene {
       time: now,
       highContrast: this.highContrast(),
     });
-    this.terrainPainter.refresh(cx,cy,R,(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),this.highContrast(),s.worldNonce);
+    this.terrainPainter.refresh(cx,cy,R,getChunk,this.highContrast(),s.worldNonce);
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     // Claimed territories get age-dressing: the map grows a civilization.
     const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
     let landmarkCount = 0;
     for (let ox = -R; ox <= R; ox++) {
       for (let oy = -R; oy <= R; oy++) {
-        const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        const desc = getChunk(cx+ox,cy+oy);
         for (const poi of desc.poi) {
           drawPoi(g, {
+            painted:!this.highContrast(),
             wx: poi.wx,
             wy: poi.wy,
             type: poi.type,
@@ -3526,10 +3566,12 @@ export class GameScene extends Phaser.Scene {
             highContrast: this.highContrast(),
           });
           const terr = terrByPoi.get(poi.id);
-          if ((!terr && poi.type === "ruin") && landmarkCount < 48) {
+          if(!terr&&!this.highContrast()&&landmarkCount<48){
             let art = this.landmarkArt[landmarkCount++];
-            if (!art) { art = this.add.image(0,0,"frontier-observatory").setDepth(-5); this.landmarkArt.push(art); }
-            art.setTexture("frontier-observatory").setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(70,70).setAlpha(1);
+            if (!art) { art = this.add.image(0,0,"world-props",0).setDepth(-5); this.landmarkArt.push(art); }
+            const frame=["ruin","meteor","vault","signal","megasite","worldtree"].indexOf(poi.type);
+            const size=poi.type==="signal"||poi.type==="megasite"?144:112;
+            art.setTexture("world-props",Math.max(0,frame)).setVisible(true).setPosition(poi.wx,poi.wy-24).setDisplaySize(size,size).setAlpha(s.poisWorld.includes(poi.id)?.7:1);
           }
           if (terr) {
             if(terr.spec && landmarkCount<48) {
@@ -3551,9 +3593,12 @@ export class GameScene extends Phaser.Scene {
       }
     }
     for (let i=landmarkCount;i<this.landmarkArt.length;i++) this.landmarkArt[i]!.setVisible(false);
+    this.groundRefreshMs=performance.now()-refreshBegin;
+    this.groundMaxMs=Math.max(this.groundMaxMs,this.groundRefreshMs);this.chunkReadMaxMs=Math.max(this.chunkReadMaxMs,this.chunkReadMs);
   }
 
   private drawFrame(): void {
+    this.combatSprites.begin();
     const s = this.sim.state;
     const g = this.gfx;
     g.clear();
@@ -3574,11 +3619,14 @@ export class GameScene extends Phaser.Scene {
 
     for (const k of s.pickups) {
       if (!k.active || !vis(k.x, k.y)) continue;
-      drawKnowledge(g, k,s.elapsed,this.reducedEffects);
+      if(hc)drawKnowledge(g,k,s.elapsed,this.reducedEffects);else this.combatSprites.knowledge(k,s.elapsed,this.reducedEffects);
     }
     for (const m of s.mines) {
       if (!m.active || !vis(m.x, m.y)) continue;
-      drawMine(g, m, wopts);
+      if(hc)drawMine(g,m,wopts);else {
+        this.combatSprites.mine(m,s.originId);
+        g.lineStyle(1,0xc9b458,0.22);g.strokeCircle(m.x,m.y,m.radius);
+      }
     }
     for (const e of s.enemies) {
       if (!e.active || !vis(e.x, e.y)) continue;
@@ -3618,10 +3666,10 @@ export class GameScene extends Phaser.Scene {
     this.artLastX=s.px; this.artLastY=s.py;
     this.heroActions.sync(s.worldNonce);
     this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
-    this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects);
+    this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects,hc);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
-      if (p.friendly) drawFriendlyProj(g, p,wopts);
+      if (p.friendly) {if(hc)drawFriendlyProj(g,p,wopts);else this.combatSprites.projectile(p,s.originId);}
       else drawHostileProj(g, p, wopts);
     }
     const b = s.build;
@@ -3648,9 +3696,11 @@ export class GameScene extends Phaser.Scene {
     if (guardians > 0) {
       for (let i = 0; i < guardians; i++) {
         const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,WORLD_SCALE.guardian,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
+        if(hc)this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,WORLD_SCALE.guardian,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
+        else this.allyActors.guardian(s.originId,s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,WORLD_SCALE.guardian,a+Math.PI/2);
       }
     }
+    this.combatSprites.end();
     this.combatFeedback.syncWorld(s.worldNonce);
     this.combatFeedback.draw(g,s.elapsed,this.reducedEffects,vis);
     if(!this.reducedEffects && this.knowledgeCollectUntil>s.elapsed){

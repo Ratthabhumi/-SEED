@@ -3,6 +3,34 @@
 **Status**: CANONICAL SPECIFICATION  
 **Scope**: Presentation, UI, Sprites, VFX, and Third-Party Asset Normalization
 
+## Current default: Dark Science-Fantasy Civilization Survivor
+
+This contract supersedes historical geometric prototype requirements below.
+Painted silhouettes, textured tarnished brass/iron/obsidian, upper-left ivory
+highlights, compact contact shadows and restrained luminous cores define the
+world. Hunters use wood/bone/amber; Engineers brass/blue; Resonant obsidian/violet/
+cyan; Sentinels ivory armor/teal. Hostile coral also uses barbed silhouettes.
+Meaning uses shape, labels and contrast; essential warnings never depend on glow.
+
+Upright three-quarter overhead bodies retain stable scale and ground pivots.
+Equipment follows actual captured attack aim. Floor→structure→actor→projectile→
+impact/danger depth is deliberate. Existing entity/camera sizes and collision
+remain unchanged. POIs112–144u. Projectile decorative tails do not enlarge hits.
+Shared alpha atlases have12px gutters and linear filtering: projectiles384²,
+equipment768×512, world props512×384. Floor252px samples remain unchanged, now
+worker-prepared with bounded partial uploads. No per-frame fullscreen shader.
+
+Six weapon tiers reflect actual weaponStage. Static poses/recoil/death fade are
+FUNCTIONAL_BUT_VISUALLY_WEAK, not authored production animation or six costumes.
+Painted body atlases still contain baked weapon/muzzle details: weapon-neutral
+redraws are required before full attachment cohesion can be accepted. Four
+Guardian body frames identify Origin; full painted Guardian era kits remain open.
+See PERFORMANCE_ART_CLOSURE.md for the live inventory and remaining gates.
+
+Vector warnings, HP bars, reach rings and High Contrast silhouettes intentionally
+share this palette/contrast hierarchy. Decorative legacy default bodies/POIs are
+replaced; historical source and licensed fallback assets remain preserved.
+
 ---
 
 Content14 supersedes the old mandatory geometric body/hex-pad description below
