@@ -47,6 +47,8 @@ jobs:
         with:
           name: visual-evidence-${{ github.sha }}
           path: |
+            test-results/browser/streaming-counters.json
+            test-results/browser/*.webm
             test-results/browser/**/*.png
             test-results/browser/**/trace.zip
             test-results/browser/**/error-context.md

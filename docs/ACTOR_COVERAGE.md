@@ -1,5 +1,12 @@
 # Living Frontier actor coverage and direction
 
+Current corrective pass: default Guardian bodies use four painted Origin frames
+in world-props-v1; High Contrast retains the six-era SVG fallback. Actual enabled
+family, age counts and simulation behavior are unchanged. Mounted hero equipment
+uses24 painted weapon-tier cells; body pose atlases remain unchanged. Full six-era
+body/Guardian costumes and authored multi-frame combat/death animation remain
+open. See PERFORMANCE_ART_CLOSURE.md for live status, not historical assertions.
+
 Content14 override: normal gameplay uses the four painted16-pose hero atlases,
 painted16-frame enemy roles,8 boss poses and12 outpost states introduced in
 Content13. Hero112u, squad56u, Guardian48u, ordinary enemies44/56/64/78u,

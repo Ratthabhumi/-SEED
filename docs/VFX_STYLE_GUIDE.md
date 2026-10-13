@@ -1,5 +1,23 @@
 # Combat presentation checkpoint — 2026-10-12
 
+## Current shared material contract — 2026-10-13
+
+Default friendly projectiles/traps and mounted equipment use original painted
+atlases, actual canonical role/tier/coordinates and bounded pools. Amber physical
+arrows, blue brass devices, violet/cyan crystal bolts and teal armored darts
+share actor materials/upper-left highlights. Bright directional cores and small
+decorative tails remain readable at real zoom; collision does not follow artwork
+length. Essential projectile bodies remain visible under Reduced Effects.
+High Contrast retains explicit geometric weapon/projectile/device silhouettes.
+
+Beams/chains/areas deliberately remain exact-path geometry with dark separation,
+bright cores and restrained outer color. Rings, HP bars and hostile barbs encode
+combat information; do not replace their actual geometry with decorative art.
+Event-triggered existing charge/release/impact/audio and pools remain bounded.
+No fake new attacks, randomized cosmetic gameplay stream, bloom shader or new
+damage rule. Full authored powers/impact/hostile animation remains acceptance
+work. New POI/Guardian/codex assets do not certify actor animation.
+
 Content14 integration: Hunters kinetic arrow/bow, Engineers ribbed mechanical
 release, Resonant fork/branch beam and Sentinels faceted prism share one typed
 presentation registry. Actual weaponStage selects equipment/shot material;

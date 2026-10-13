@@ -4,8 +4,12 @@ import type {RunState} from "../../core/sim/RunState";
 import {activeFamilies} from "../../core/progression/origins";
 import {NOVA_RADIUS,BULWARK_IFRAME} from "../../core/combat/squad";
 import type {WeaponFamily} from "../../core/combat/weapons";
+import {equipmentFrame} from "./combatSpriteIdentity";
 /** Original equipment rig. Posed bodies remain original atlases, no fake attacks. */
 export class HeroEquipment {
+  private weapon?:Phaser.GameObjects.Image;
+  constructor(private scene?:Phaser.Scene){}
+  review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation}:null;}
   private world="";private released=-Infinity;private aim=0;
   private releasedFamily:WeaponFamily="kinetic";
   private ability="";private abilityAt=-Infinity;private abilityX=0;private abilityY=0;
@@ -14,7 +18,7 @@ export class HeroEquipment {
   fire(world:string,time:number,x:number,y:number,tx:number,ty:number,family:WeaponFamily){
     if(this.world!==world)this.reset(world);this.released=time;this.aim=Math.atan2(ty-y,tx-x);this.releasedFamily=family;
   }
-  draw(g:Phaser.GameObjects.Graphics,s:RunState,facing:number,reduced:boolean){
+  draw(g:Phaser.GameObjects.Graphics,s:RunState,facing:number,reduced:boolean,highContrast=false){
     if(this.world!==s.worldNonce)this.reset(s.worldNonce);
     const enabled=activeFamilies(s.originId,s.expansionFamily);
     const family=s.elapsed-this.released<.16&&enabled.includes(this.releasedFamily)?this.releasedFamily:enabled[0]!;
@@ -22,6 +26,13 @@ export class HeroEquipment {
     const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
     const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
     const x=s.px+nx*(20-fresh*4),y=s.py-4+ny*(20-fresh*4),len=art.weaponLength;
+    if(this.scene&&!highContrast){
+      const frame=equipmentFrame(s.originId,s.weaponStage[family]);
+      if(!this.weapon)this.weapon=this.scene.add.image(0,0,"combat-equipment",frame).setDepth(5);
+      if(this.weapon.frame.name!==String(frame))this.weapon.setTexture("combat-equipment",frame);
+      this.weapon.setPosition(x+nx*7,y+ny*7).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(ang).setVisible(!s.over);
+    }else{
+    this.weapon?.setVisible(false);
     // Age equipment: collar/material, physical braces and energy conduits.
     g.lineStyle(3,0x0b1218,1);g.lineBetween(s.px-12,s.py-17,s.px+12,s.py-17);
     g.lineStyle(2,art.material,1);g.lineBetween(s.px-12,s.py-18,s.px+12,s.py-18);
@@ -48,6 +59,7 @@ export class HeroEquipment {
       g.lineStyle(5,art.material,1);g.lineBetween(x,y,x+nx*len,y+ny*len);
       g.lineStyle(2,art.color,1);g.lineBetween(x+px*4,y+py*4,x+nx*len+px*4,y+ny*len+py*4);
       const ribs=2+Math.min(3,art.stage);for(let i=0;i<ribs;i++){const d=4+i*4;g.lineStyle(2,0x172027,1);g.lineBetween(x+nx*d-px*4,y+ny*d-py*4,x+nx*d+px*4,y+ny*d+py*4);}
+    }
     }
     if(fresh&&!reduced){g.lineStyle(2,art.color,fresh);g.lineBetween(x+nx*len,y+ny*len,x+nx*(len+9*fresh),y+ny*(len+9*fresh));}
     const age=s.elapsed-this.abilityAt;

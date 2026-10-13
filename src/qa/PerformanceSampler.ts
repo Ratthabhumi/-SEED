@@ -6,6 +6,7 @@ export interface PerfSampleInput {
   simMs: number;
   /** CPU submit bracket, not GPU completion; omitted in historical reports. */
   rendererCpuSubmitMs?: number;
+  terrain?:TerrainTelemetry;
   enemies: number;
   projs: number;
   pickups: number;
@@ -17,6 +18,10 @@ export interface PerfSampleInput {
   buckets: number;
   chunkHits: number;
   chunkMisses: number;
+}
+export interface TerrainTelemetry {
+ refreshMaxMs:number;chunkReadMaxMs:number;uploadMaxMs:number;workerPaintMaxMs:number;
+ uploads:number;uploadBytes:number;misses:number;pending:number;workerFailed:boolean;
 }
 
 export interface CheckpointStats {
@@ -35,6 +40,8 @@ export interface CheckpointStats {
   rendererCpuSubmitP50?: number;
   rendererCpuSubmitP95?: number;
   rendererCpuSubmitP99?: number;
+  /** Cumulative adapter maxima/counters; sparse2Hz sampling is not a trace. */
+  terrain?:TerrainTelemetry;
   enemiesMax: number;
   projsMax: number;
   pickupsMax: number;
@@ -79,7 +86,7 @@ export class PerformanceSampler {
 
   push(s: PerfSampleInput): void {
     const total = s.chunkHits + s.chunkMisses;
-    this.samples.push({ ...s, chunkHitRate: total > 0 ? s.chunkHits / total : 1 });
+    this.samples.push({ ...s, terrain:s.terrain?{...s.terrain}:undefined,chunkHitRate: total > 0 ? s.chunkHits / total : 1 });
     if (this.samples.length > MAX_SAMPLES) {
       this.samples.shift();
       this.sinceMark = Math.max(0, this.sinceMark - 1);
@@ -101,11 +108,13 @@ export class PerformanceSampler {
     const sims = win.map((s) => s.simMs).sort((a, b) => a - b);
     const renderers = win.map(s => s.rendererCpuSubmitMs).filter((n): n is number => n !== undefined && Number.isFinite(n) && n >= 0).sort((a,b) => a-b);
     const last = win[win.length - 1] as Stored;
+    const terrain=last.terrain;
     return {
       label,
       simTime,
       wallTime,
       samples: win.length,
+      ...(terrain?{terrain:{...terrain}}:{}),
       fpsMin: win.reduce((m, s) => Math.min(m, s.fps), Number.POSITIVE_INFINITY),
       frameP50: percentile(frames, 50),
       frameP95: percentile(frames, 95),

@@ -202,6 +202,7 @@ export function buildSanitizedMarkdown(snap) {
       `frame ${f2(p.frameP50)}/${f2(p.frameP95)}/${f2(p.frameP99)}ms ` +
       `sim ${f2(p.simP50)}/${f2(p.simP95)}/${f2(p.simP99)}ms ` +
       `ent ${p.enemiesMax}/${p.projsMax}/${p.pickupsMax}`);
+      if(p.terrain)L.push(`  terrain cumulative max: ground ${f2(p.terrain.refreshMaxMs)}ms, chunks ${f2(p.terrain.chunkReadMaxMs)}ms, upload CPU call ${f2(p.terrain.uploadMaxMs)}ms, worker ${f2(p.terrain.workerPaintMaxMs)}ms; uploads ${p.terrain.uploads}/${p.terrain.uploadBytes} bytes; misses ${p.terrain.misses}, pending ${p.terrain.pending}, workerFailed ${p.terrain.workerFailed}. Sparse telemetry, not a GPU/causal trace.`);
   }
   if ((snap.perfCheckpoints ?? []).length === 0) L.push(`- none recorded`);
   L.push(``);

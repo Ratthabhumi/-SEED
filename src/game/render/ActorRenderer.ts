@@ -3,6 +3,7 @@ import {facingPolicy,humanoid,type MotionPose} from "./actorMotion";
 import { ACTOR_ASSETS, type ActorId } from "../assets/actorAssets";
 import { HERO_ASSETS } from "../assets/heroAssets";
 import type {HeroAction} from "./heroActions";
+import {originRow} from "./combatSpriteIdentity";
 /** Bound matches canonical enemy pool; allies use a separate bounded pool. */
 export class ActorRenderer {
   private images: Phaser.GameObjects.Image[] = [];
@@ -28,6 +29,11 @@ export class ActorRenderer {
     }
   }
   begin(): void { this.count = 0; }
+  guardian(origin:string,x:number,y:number,size:number,facing:number):void{
+    if(this.count>=this.max)throw new Error("Actor pool exceeded "+this.max);
+    let image=this.images[this.count++];if(!image){image=this.scene.add.image(0,0,"world-props",7+originRow(origin)).setDepth(this.depth);this.images.push(image);}
+    this.sprite(image,"world-props",7+originRow(origin),x,y,size,.5,0,Math.cos(facing)<-.15,0xffffff);
+  }
   private sprite(image:Phaser.GameObjects.Image,key:string,frame:number,x:number,y:number,size:number,origin:number,rotation:number,flip:boolean,tint:number){
     let style=this.styles.get(image);
     if(!style){style={key:"",frame:"",size:-1,origin:-1,tint:-1};this.styles.set(image,style);}

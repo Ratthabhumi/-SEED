@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import alphaBounds from "../../src/game/assets/combatFrameBounds.json";
 import { t } from "../../src/i18n/i18n";
 
 declare const process: { cwd: () => string };
@@ -59,7 +60,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
       if (entry.id.startsWith("seed-frontier-")) {
         expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toBe("-SEED contributors");
         expect(entry.status).toBe("working-prototype"); expect(entry.vendorSourcePath).toMatch(/^assets\/original\/(frontier|actors)\//);
-      } else if (/^seed-(hero-v2-|verdant-v2|terrain-|boss-v2|enemies-v2|outposts-v2|warfare-swords|domain-)/.test(entry.id)) {
+      } else if (/^seed-(world-props-v1|projectiles-v1|equipment-v1|hero-v2-|verdant-v2|terrain-|boss-v2|enemies-v2|outposts-v2|warfare-swords|domain-)/.test(entry.id)) {
         expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toMatch(/^-SEED contributors/);
         expect(entry.vendorSourcePath).toMatch(/^assets\/original\//);
         expect(entry.status).toBe(entry.id==="seed-warfare-swords"||entry.id.startsWith("seed-domain-")?"reviewable":"art-review-pending");
@@ -137,8 +138,10 @@ describe("Asset Pipeline and Manifest Verification", () => {
       const vendorSha = crypto.createHash("sha256").update(fs.readFileSync(vendorFull, "")).digest("hex");
 
       expect(prodSha).toBe(a.productionSha256);
+      if(a.id==='seed-projectiles-v1')expect(prodSha).toBe(alphaBounds.shotsSha256);
+      if(a.id==='seed-world-props-v1')expect(prodSha).toBe(alphaBounds.propsSha256);
       expect(vendorSha).toBe(a.vendorSourceSha256);
-      if (/^seed-(hero-v2-|verdant-v2|terrain-|boss-v2|enemies-v2|outposts-v2)/.test(a.id)) {
+      if (/^seed-(world-props-v1|projectiles-v1|equipment-v1|hero-v2-|verdant-v2|terrain-|boss-v2|enemies-v2|outposts-v2)/.test(a.id)) {
         expect(a.modified).toBe(true); expect(prodSha).not.toBe(vendorSha);
         expect(a.modifications).toMatch(/resize|slicing/); expect(a.status).toBe("art-review-pending");
       } else {

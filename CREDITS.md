@@ -30,3 +30,10 @@ No external or copyrighted audio is used.
 ## Original painted gameplay assets
 
 Four hero atlases, enemy/boss/outpost atlases and Verdant/Arid/Tundra/Badlands floors were generated for this project using OpenAI imagegen on2026-10-13. Raw source PNGs, exact tool prompts and normalization records are retained; these assets are art-review-pending. See docs/art/GENERATION_RECORD.json and assets/ASSET_MANIFEST.json. They do not represent completed skeletal or multi-frame combat animations.
+
+Three original painted combat/equipment/world-prop atlases were generated with
+the same built-in tool on2026-10-13:16 projectile/trap cells,24 weapon-tier cells
+and12 landmark/codex/Guardian/impact-sample cells. The impact sample is unbound.
+Sources/prompts/packing records/normalized alpha/hashes are retained under
+assets/original/combat and the generation record. Human acceptance is pending;
+static six-tier weapons are not six animated costumes.
