@@ -56,11 +56,18 @@ async function assertContextClear(page: Page): Promise<void> {
   }
 }
 
+async function resumePause(page:Page):Promise<void>{
+  // Layout navigation uses the explicit native control, independent of Phaser's
+  // queued Escape event. Escape behavior has dedicated pause/modal regressions.
+  const resume=page.locator("#pause-screen .pause-sec").first().getByRole("button").first();
+  await expect(resume).toBeVisible();await resume.focus();await page.keyboard.press("Enter");
+  await expect(page.locator("#pause-screen")).toHaveCount(0);
+}
+
 async function setScale(page: Page, label: "100%" | "125%" | "150%" | "200%"): Promise<void> {
   await openPause(page);
   await page.locator("#pause-screen").getByRole("button", { name: label, exact: true }).click();
-  await page.keyboard.press("Escape");
-  await expect(page.locator("#pause-screen")).toHaveCount(0);
+  await resumePause(page);
 }
 
 async function openDraft(page: Page): Promise<void> {
@@ -155,10 +162,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     await page.evaluate(() => window.__seedE2E?.setLang("th"));
     await openPause(page);
     await expect(page.locator("#pause-screen")).toContainText("โซนอันตราย");
-    await page.keyboard.press("Escape");
-    // Phaser consumes Escape on its next frame; knowledge must not be staged
-    // while the pause surface still owns the simulation.
-    await expect(page.locator("#pause-screen")).toHaveCount(0);
+    await resumePause(page);
     await openDraft(page);
     await expect(page.locator("#draft-screen")).toContainText("สุ่มตัวเลือกใหม่");
     await closeDraft(page);
@@ -180,7 +184,7 @@ async function viewportMatrix(page: Page): Promise<void> {
         await expect(page.locator("#pause-screen").getByRole("heading", { name: heading })).toBeVisible();
       }
       await noPageOverflow(page);
-      await page.keyboard.press("Escape");
+      await resumePause(page);
     }
   });
 
