@@ -81,6 +81,9 @@ export async function drainDrafts(page: Page, maxRounds = 120): Promise<void> {
 export async function openPause(page: Page, retries = 5): Promise<void> {
   for (let i = 0; i < retries; i++) {
     await drainDrafts(page, 40);
+    // Language changes/background auto-pause can already own this surface.
+    // Sending another queued Escape would close it or race with Resume.
+    if (await page.locator("#pause-screen").isVisible()) return;
     await page.keyboard.press("Escape");
     try {
       await expect(page.locator("#pause-screen")).toBeVisible({ timeout: 3000 });
@@ -95,7 +98,7 @@ export async function openPause(page: Page, retries = 5): Promise<void> {
 export async function assertNoRawKeys(page: Page): Promise<void> {
   const hits = await page.evaluate(() => {
     const els = Array.from(document.querySelectorAll("button, h1, h2, h3, .toast-title, .hud-objective, .techmap-title"));
-    const re = /\b(ui|tutorial|age|domain|family|rarity|quality|modifier|effect|web|biome|tech|poi|chronicle|qa|squad|ability|gate|mission|objective)\.[A-Za-z0-9_.]+/i;
+    const re = /\b(ui|tutorial|age|domain|family|rarity|quality|modifier|effect|web|biome|tech|poi|chronicle|qa|squad|ability|gate|mission|objective|raid|path)\.[A-Za-z0-9_.]+/i;
     return els
       .map((el) => (el.textContent ?? "").trim())
       .filter((t) => t.length > 0 && re.test(t));

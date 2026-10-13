@@ -1,5 +1,18 @@
 # Living Frontier actor coverage and direction
 
+Content14 override: normal gameplay uses the four painted16-pose hero atlases,
+painted16-frame enemy roles,8 boss poses and12 outpost states introduced in
+Content13. Hero112u, squad56u, Guardian48u, ordinary enemies44/56/64/78u,
+elites1.4×, boss at least196u, bases176/208u. Camera zoom1–1.25 responds to
+height; collision sizes remain canonical and unchanged. Six equipment materials
+and mounted weapon geometries now come from combatPresentation/HeroEquipment,
+with real release recoil and Origin-specific bow/mechanical/fork/prism grammar.
+These rigs do not constitute six independently painted costumes or full authored
+attack/death sequences. Guardian alone retains its six-era legacy SVG upload;
+other old actor sources are retained for provenance/diagnostics without gameplay
+GPU uploads. Historical prototype sizes below are superseded. See
+INTEGRATED_GAMEPLAY_ART_CLOSURE.md for native evidence and open acceptance gates.
+
 Editable original SVG in assets/original/actors; exact MIT copies in assets/seed/actors. All working-prototype pending human visual acceptance. Texture1152×64: six equipment Ages ×three64px anchored gait poses; pivot32,32. Ten textures≈2.81MiB raw RGBA before overhead. Cached once, no new dependency.
 
 | Actor | Role/silhouette | Renderer / size | States | Status |

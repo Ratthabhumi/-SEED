@@ -11,6 +11,8 @@ import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../co
 import { FixedAccumulator, SIM_DT } from "../../core/sim/fixedStep";
 import { InputLatch } from "../../core/sim/InputLatch";
 import { RunSimulation, fallbackCards } from "../../core/sim/RunSimulation";
+import {recommendedCard} from "../../core/tech/pathGuidance";
+import {heroPortrait} from "../ui/heroPortrait";
 import type { SimEvent } from "../../core/sim/SimEvent";
 import { MAX_ENEMIES, MAX_PROJ, MAX_PICKUP, type SimEnemy } from "../../core/sim/RunState";
 import { CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS } from "../../core/world/territory";
@@ -43,6 +45,7 @@ import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
+import {onceKeyboardEvent} from "../input/onceKeyboardEvent";
 import { drawEnemy } from "../render/EnemyRenderer";
 import {eligibleFamilies} from "../../core/director/director";
 import {guardianCount} from "../render/weaponPresentation";
@@ -52,7 +55,10 @@ import { ACTOR_ASSETS, actorFor, BOSS_ASSET_V2,ENEMIES_ASSET_V2 } from "../asset
 import {HERO_ASSETS} from "../assets/heroAssets";
 import {HeroActions} from "../render/heroActions";
 import {drawBossTelegraph} from "../render/BossTelegraph";
-import {VerdantTerrain,VERDANT_TERRAIN} from "../render/VerdantTerrain";
+import {TerrainPainter,TERRAIN_TEXTURES} from "../render/TerrainPainter";
+import {HeroEquipment} from "../render/HeroEquipment";
+import {DeathResponse} from "../render/DeathResponse";
+import {WORLD_SCALE,gameZoom,enemyArtSize} from "../render/combatPresentation";
 import { ActorRenderer } from "../render/ActorRenderer";
 import { repairPresentation } from "../render/repairPresentation";
 import { CombatFeedback, energyCharge } from "../render/CombatFeedback";
@@ -167,7 +173,10 @@ export class GameScene extends Phaser.Scene {
   private techMapOpen = false;
   private heroActions = new HeroActions();
   private lastAgeCardKey="";
-  private verdantTerrain!:VerdantTerrain;
+  private terrainPainter!:TerrainPainter;
+  private heroEquipment=new HeroEquipment();
+  private equipmentGraphics!:Phaser.GameObjects.Graphics;
+  private deathResponse!:DeathResponse;
   private techMapSel = "";
   private techMapView: TechMapView | null = null;
   private civMapOpen = false;
@@ -178,9 +187,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    for (const [id,url] of Object.entries(ACTOR_ASSETS)) this.load.svg("actor-"+id,url,{width:humanoid(id as keyof typeof ACTOR_ASSETS)?2304:1152,height:64});
+    // Only Guardian still uses the authored six-era SVG rig. Keep other old
+    // sources for diagnostics/provenance without uploading dead gameplay bodies.
+    this.load.svg("actor-guardian",ACTOR_ASSETS.guardian,{width:1152,height:64});
     for(const [id,url] of Object.entries(HERO_ASSETS))this.load.image("hero-v2-"+id,url);
-    this.load.image("verdant-v2",VERDANT_TERRAIN);
+    for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
     this.load.image("boss-v2",BOSS_ASSET_V2);
     this.load.image("enemies-v2",ENEMIES_ASSET_V2);
     this.load.image("outposts-v2",SEED_ASSETS.structures.atlasV2);
@@ -249,7 +260,8 @@ export class GameScene extends Phaser.Scene {
   private startRun(seed: string): void {
     this.lastAgeCardKey="";
     this.heroActions = new HeroActions();
-    this.verdantTerrain = new VerdantTerrain(this);
+    this.terrainPainter = new TerrainPainter(this);
+    this.heroEquipment=new HeroEquipment();
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
@@ -266,10 +278,9 @@ export class GameScene extends Phaser.Scene {
     this.paused = false;
     this.deathPersisted = false;
     ActorRenderer.frames(this);
-    const outpostAtlas=this.textures.get("outposts-v2");
-    for(let i=0;i<12;i++)if(!outpostAtlas.has(String(i)))outpostAtlas.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     this.enemyActors = new ActorRenderer(this,650,2);
     this.allyActors = new ActorRenderer(this,128,4);
+    this.deathResponse=new DeathResponse(this);
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
     this.lastAbilityArtT=-10;
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
@@ -288,11 +299,15 @@ export class GameScene extends Phaser.Scene {
 
     this.ground = this.add.graphics().setDepth(-10);
     this.gfx = this.add.graphics().setDepth(0);
+    this.equipmentGraphics=this.add.graphics().setDepth(5);
     this.playerArc = this.add.circle(0, 0, 16, 0xffd166) as unknown as Phaser.GameObjects.Arc;
     // Camera anchor only — the player body is drawn by PlayerRenderer.
     this.playerArc.setVisible(false);
     this.playerArc.setDepth(10);
     this.cameras.main.startFollow(this.playerArc, false, 0.14, 0.14);
+    this.cameras.main.setZoom(gameZoom(this.scale.height));
+    const resizeWorld=()=>{this.cameras.main.setZoom(gameZoom(this.scale.height));this.refreshGround(true);};
+    this.scale.on("resize",resizeWorld);this.events.once("shutdown",()=>this.scale.off("resize",resizeWorld));
     this.bossGfx = this.add.graphics().setDepth(45);
     this.bossGfx.setScrollFactor(0);
     this.playerFacing = -Math.PI / 2;
@@ -321,9 +336,10 @@ export class GameScene extends Phaser.Scene {
         LEFT: kb.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
         RIGHT: kb.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
       };
-      const on = (event: string, fn: () => void): void => {
-        kb.on(event, fn);
-        this.keyHandlers.push({ event, fn });
+      const on = (event: string, fn: (event?:KeyboardEvent) => void): void => {
+        const handler=onceKeyboardEvent(fn);
+        kb.on(event, handler);
+        this.keyHandlers.push({ event, fn:handler });
       };
       // P1-02: Space edge latches in the adapter (survives zero-step frames);
       // movement is level-polled per frame. Never JustDown() inside step timing.
@@ -404,6 +420,20 @@ export class GameScene extends Phaser.Scene {
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
         actorPresentation: () => this.allyActors.review(),
+        integratedReview:()=>({actors:this.allyActors.review(),enemies:this.enemyActors.review(),zoom:this.cameras.main.zoom,
+          terrain:this.terrainPainter.counts(),logistics:this.sim.logisticsStatus(),raid:this.sim.raidReadiness(),age:this.sim.state.ageIndex,
+          defenses:this.sim.state.raidsSurvived,landmarks:this.landmarkArt.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,width:i.displayWidth,height:i.displayHeight}))}),
+        stageRaidClosure:()=>{
+          // Gate fixture only. Upgrade/dismantle/raid combat use real core paths.
+          this.paused=true;const s=this.sim.state;s.raid=null;s.ageIndex=3;s.elapsed=100;s.lastRaidAt=100;s.raidReadySince=null;
+          s.knowledgeTotal=5000;s.elitesAge=2;s.spawnT=s.eliteT=s.mineT=999;
+          s.build.hp=s.build.maxHp=10000;
+          for(const e of s.enemies)e.active=false;
+          this.handleEvents(this.sim.dismantleOutpost("allocation-2"));
+          this.handleEvents(this.sim.upgradeOutpost("allocation-0"));
+          this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.refreshHUD();
+        },
+        advanceRaidReview:(seconds:number)=>{for(let i=0;i<Math.floor(Math.min(95,Math.max(0,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.refreshHUD();},
         stageEvolution: (origin:string,age:number,encounter='roster') => {
           const s=this.sim.state;this.paused=false;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
           this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);
@@ -591,6 +621,9 @@ export class GameScene extends Phaser.Scene {
           s.ageElapsed = 0;
           s.maxLogistics = 6;
           s.logistics = full ? 6 : 0;
+          s.territories=full?Array.from({length:3},(_,i)=>({poiId:`reserved-regression-${i}`,poiType:"ruin" as const,
+            x:s.px,y:s.py,spec:"military" as const,tier:1 as const,hp:OUTPOST_MAXHP,maxHp:OUTPOST_MAXHP,
+            disabled:false,garrisoned:false,heldSince:0,repairT:0})):[];
           s.build.hp = s.build.maxHp = 1e9;
           for (const e of s.enemies) e.active = false;
           for (let ox = -8; ox <= 8; ox++) for (let oy = -8; oy <= 8; oy++) {
@@ -638,15 +671,16 @@ export class GameScene extends Phaser.Scene {
           if(family==="field")Object.assign(s.mines[0],{active:true,x:e.x,y:e.y,radius:60,dmg:40,life:3});
           this.refreshHUD();return e.hp;
         },
-        stageVerdantReview: () => {
+        stageBiomeReview: (biome:"verdant"|"arid"|"tundra"|"badlands") => {
           const s=this.sim.state;this.paused=true;
           s.build.hp=s.build.maxHp=500;
           for(let r=0;r<9;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++) {
-            if(this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y).biome!=="verdant")continue;
+            if(this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y).biome!==biome)continue;
             s.px=x*CHUNK_SIZE+CHUNK_SIZE/2;s.py=y*CHUNK_SIZE+CHUNK_SIZE/2;
+            let allyIndex=0;for(const ally of s.squad)if(ally.active){ally.x=s.px-65+allyIndex++*45;ally.y=s.py+65;}
             this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);this.refreshGround(true);return {biome:this.sim.siteBiome(s.px,s.py)};
           }
-          throw new Error("Verdant review site not found");
+          throw new Error(`${biome} review site not found`);
         },
         stageBossReview: (pattern:"slam"|"fan"|"cross"="slam") => {
           const s=this.sim.state;this.paused=true;s.ageIndex=5;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
@@ -776,8 +810,9 @@ export class GameScene extends Phaser.Scene {
         this.qaGfx?.setVisible(this.qaOverlay);
         this.qaText?.setVisible(this.qaOverlay);
       };
-      kb.on("keydown-F4", toggle);
-      this.keyHandlers.push({ event: "keydown-F4", fn: toggle });
+      const handler=onceKeyboardEvent(toggle);
+      kb.on("keydown-F4", handler);
+      this.keyHandlers.push({ event: "keydown-F4", fn: handler });
     }
   }
 
@@ -1129,7 +1164,7 @@ export class GameScene extends Phaser.Scene {
     const abilTxt = s.abilityCd > 0 ? `${t("ui.ability")} ${Math.ceil(s.abilityCd)}s` : `${t("ui.ability")}: ${t(abil.nameKey)} [F]`;
     squadLine.innerHTML = "";
     const squadTitle = document.createElement("span");
-    squadTitle.textContent = `${t(ORIGIN_SQUAD_NAME[originById(s.originId).id])} ${alive}/${s.squad.length} · `;
+    squadTitle.textContent = `${t(ORIGIN_SQUAD_NAME[originById(s.originId).id])} ${alive}/${this.sim.mobileSquadLimit()} · `;
     squadLine.appendChild(squadTitle);
 
     const modeBadge = document.createElement("span");
@@ -1235,6 +1270,19 @@ export class GameScene extends Phaser.Scene {
       ageCard.textContent = `${t(`age.${ageId}` as EnKeys)} · ${t("ui.progressKnowledge")} ${Math.floor(s.knowledgeTotal)}`;
     }
     }
+    const readiness=this.sim.raidReadiness();
+    let raidLine=ageCard.querySelector<HTMLElement>(".raid-readiness");
+    if(!raidLine){raidLine=el("div","raid-readiness");ageCard.appendChild(raidLine);}
+    raidLine.textContent=t(`raid.${readiness.status}` as EnKeys)+(readiness.seconds===null||readiness.status==="active"?"":` ${Math.ceil(readiness.seconds)}s`)+(readiness.gateBlocked?` · ${t("raid.gateReady")}`:"");
+    const targetPost=s.territories.find(p=>p.poiId===readiness.targetId);
+    if(targetPost){const dx=targetPost.x-s.px,dy=targetPost.y-s.py,d=Math.hypot(dx,dy);
+      const bearing=d<40?"◉":["→","↘","↓","↙","←","↖","↑","↗"][(Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8]!;
+      raidLine.textContent+=` · ${t("raid.target")}: ${bearing} ${Math.round(d)}u`;
+    }
+    let logisticsLine=ageCard.querySelector<HTMLElement>(".logistics-status");
+    if(!logisticsLine){logisticsLine=el("div","logistics-status");ageCard.appendChild(logisticsLine);}
+    const ledger=this.sim.logisticsStatus();
+    logisticsLine.textContent=`${t("ui.logisticsLine")} ${ledger.used}/${ledger.maximum}`+(ledger.overcommit?` · ${t("ui.signalReserve")}`:"");
     // Mission one-liner under the top strip (QA structural class retained).
     age.textContent = this.frontierObjectiveText();
     // Persistent Ascension entry (STAY dismisses the offer screen; this stays).
@@ -1597,7 +1645,10 @@ export class GameScene extends Phaser.Scene {
       const logisticsInfo = el("div", "logistics-info");
       logisticsInfo.textContent = `${t("ui.logisticsLine")} ${s.logistics}/${s.maxLogistics}`;
       panel.appendChild(logisticsInfo);
+      panel.appendChild(el("p","logistics-contract","ui.neutralClaims"));
+      if(this.sim.logisticsStatus().overcommit)panel.appendChild(el("p","logistics-overcommit","ui.signalOvercommit"));
       const site = s.territories.find((t) => t.poiId === poiId);
+      if(site?.poiType==="signal"&&!s.signalSecured)panel.appendChild(el("p","signal-exemption","ui.firstSignalAvailable"));
       if (site) panel.appendChild(el("p", "site-biome", `biome.${this.sim.siteBiome(site.x, site.y)}.role` as EnKeys));
       
       const row = el("div", "btn-row");
@@ -2209,6 +2260,7 @@ export class GameScene extends Phaser.Scene {
     heading.id = "draft-heading";
     screen.appendChild(heading);
     const guidance = this.sim.pathGuidance();
+    const recommended=recommendedCard(guidance,s.draftOffers);
     if (guidance.status !== "none") {
       const goal = el("section", "draft-goal");
       goal.appendChild(el("strong", "", undefined, `${t("path.goal")}: ${guidance.titleKey ? t(guidance.titleKey as EnKeys) : t("path.invalid")}`));
@@ -2248,6 +2300,7 @@ export class GameScene extends Phaser.Scene {
       c.dataset.nodeId = n.id;
       c.appendChild(el("div", "key", undefined, `[${i + 1}]`));
       if (guidance.status === "active") { const relation = guidance.relations[n.id] ?? "unrelated"; c.dataset.pathRelation = relation; c.appendChild(el("p", "card-path-reason", `path.${relation}` as EnKeys)); }
+      if(n.id===recommended){c.classList.add("card-recommended");c.dataset.recommended="true";c.appendChild(el("strong","card-recommendation","path.recommended"));}
       const h = document.createElement("h3");
       h.textContent = t(n.titleKey as EnKeys) + (n.web?.kind === "frontier" ? ` ${n.web.depth}.${n.web.slot + 1}` : "");
       const d = document.createElement("p");
@@ -2987,7 +3040,7 @@ export class GameScene extends Phaser.Scene {
         c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } });
         const h = document.createElement("h3");
         h.textContent = t(o.nameKey);
-        const portrait = document.createElement("img"); portrait.src=ACTOR_ASSETS[o.id]; portrait.alt=""; portrait.className="origin-portrait";
+        const portrait = heroPortrait(o.id);
         const crop=el("span","origin-portrait-crop"); crop.append(portrait); c.append(crop);
         const d = document.createElement("p");
         d.textContent = `${t(o.descKey)} (${o.families.map((f) => t(`family.${f}` as EnKeys)).join("+")})`;
@@ -3073,13 +3126,16 @@ export class GameScene extends Phaser.Scene {
     let knowledgeCollected=0;
     const save = loadSave(localStorage);
     for (const e of ev) {
-      this.combatFeedback.accept(e, s.elapsed, this.reducedEffects);
+      this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId);
+      if(e.type==="weapon_fired"&&Math.hypot(e.x-s.px,e.y-s.py)<40)this.heroEquipment.fire(s.worldNonce,s.elapsed,e.x,e.y,e.tx,e.ty,e.family);
+      if(e.type==="ability_used")this.heroEquipment.activate(s.worldNonce,s.elapsed,e.id,s.px,s.py);
+      if(e.type==="enemy_killed")this.deathResponse.accept(e,s.elapsed,s.worldNonce,this.reducedEffects);
       this.heroActions.sync(s.worldNonce);
       this.heroActions.accept(e,s.elapsed,s.px,s.py);
       switch (e.type) {
         case "boss_attack_warning": toast(`combat.boss.${e.pattern}` as EnKeys);sfx.boss();break;
         case "boss_attack_fired": sfx.weapon("field");break;
-        case "weapon_fired": sfx.weapon(e.family); break;
+        case "weapon_fired": sfx.weapon(e.family,s.originId); break;
         case "mine_detonated": sfx.weapon("field"); break;
         case "draft_opened":
           // UI appears via syncDraftUI (state-driven, exactly-one). Sound here.
@@ -3439,7 +3495,7 @@ export class GameScene extends Phaser.Scene {
     const civ = CIV_LAYER[AGES[s.ageIndex] as AgeId];
     const now = performance.now() / 1000;
     drawGround(g, {
-      texturedVerdant:true,
+      texturedGround:true,
       getChunk: (x, y) => this.sim.chunks.get(s.worldSeed, s.worldNonce, x, y),
       styleFor: (biome) => BIOME_STYLE[biome],
       civColor: civ.color,
@@ -3452,7 +3508,7 @@ export class GameScene extends Phaser.Scene {
       time: now,
       highContrast: this.highContrast(),
     });
-    this.verdantTerrain.refresh(cx,cy,R,(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),this.highContrast());
+    this.terrainPainter.refresh(cx,cy,R,(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),this.highContrast(),s.worldNonce);
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     // Claimed territories get age-dressing: the map grows a civilization.
     const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
@@ -3481,13 +3537,14 @@ export class GameScene extends Phaser.Scene {
               if(!art){art=this.add.image(0,0,"outposts-v2").setDepth(-5);this.landmarkArt.push(art);}
               const row=terr.spec==="research"?0:terr.spec==="military"?1:2;
               const state=terr.disabled?(terr.repairT>0?3:2):terr.tier>=2?1:0;
-              const size=terr.tier>=2?132:112;
+              const size=terr.tier>=2?WORLD_SCALE.outpost2:WORLD_SCALE.outpost1;
               art.setTexture("outposts-v2",row*4+state).setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(size,size).setAlpha(1);
             }
             drawTerritoryDressing(g, {
               x: poi.wx, y: poi.wy,
               ageIndex: s.ageIndex, tier: terr.tier, disabled: terr.disabled,
               spec:terr.spec,repairing:terr.disabled && terr.repairT>0,
+              painted:!this.highContrast(),
             });
           }
         }
@@ -3501,14 +3558,14 @@ export class GameScene extends Phaser.Scene {
     const g = this.gfx;
     g.clear();
     const cam = this.cameras.main;
-    const vx0 = cam.scrollX - 60;
-    const vy0 = cam.scrollY - 60;
-    const vx1 = cam.scrollX + cam.width + 60;
-    const vy1 = cam.scrollY + cam.height + 60;
+    const vx0 = cam.worldView.x - 128;
+    const vy0 = cam.worldView.y - 128;
+    const vx1 = cam.worldView.right + 128;
+    const vy1 = cam.worldView.bottom + 128;
     const vis = (x: number, y: number): boolean => x >= vx0 && y >= vy0 && x <= vx1 && y <= vy1;
     const now = performance.now() / 1000;
     const hc = this.highContrast();
-    const wopts = { time: now, highContrast: hc, reducedEffects:this.reducedEffects };
+    const wopts = { time: now, highContrast: hc, reducedEffects:this.reducedEffects,origin:s.originId };
     this.arcs=this.arcs.filter(a=>a.until>s.elapsed);
     for(const arc of this.arcs){g.lineStyle(3,arc.relay?0xffda76:0x85ecff,0.9);g.lineBetween(arc.x1,arc.y1,arc.x2,arc.y2);}
     // Focused target = nearest foe to the player (HP bar while focused).
@@ -3546,19 +3603,22 @@ export class GameScene extends Phaser.Scene {
         hpBar: e.elite || e.boss || e.flash > 0 || e === focus,
         ageIndex: s.ageIndex,
         spriteBody: true,
+        visualSize:enemyArtSize(e.family,e.radius,e.elite,e.boss),
       });
       drawEnemyTelegraph(g,e,hc);
       drawBossTelegraph(g,e);
       const bossPose=e.boss?(e.flash>0?6:e.encounter?.phase==="warning"?3:e.encounter?.phase==="recover"?(e.encounter.pattern==="fan"?5:4):enemyDisplayMoving(e)?1+Math.floor(s.elapsed*4)%2:0):undefined;
       const enemyPose=e.evolution?.phase==="attack"?3:enemyDisplayMoving(e)?1+Math.floor(s.elapsed*8)%2:0;
-      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,e.radius*3,facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,bossPose,e.boss?undefined:enemyPose);
+      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,enemyArtSize(e.family,e.radius,e.elite,e.boss),facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,bossPose,e.boss?undefined:enemyPose);
     }
     this.enemyActors.end();
+    this.deathResponse.draw(s.elapsed,s.worldNonce,this.reducedEffects);
     const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);
     const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
     this.heroActions.sync(s.worldNonce);
-    this.allyActors.draw(actorFor(s.originId),s.px,s.py,96,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
+    this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
       if (p.friendly) drawFriendlyProj(g, p,wopts);
@@ -3588,7 +3648,7 @@ export class GameScene extends Phaser.Scene {
     if (guardians > 0) {
       for (let i = 0; i < guardians; i++) {
         const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
-        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,26,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
+        this.allyActors.draw("guardian",s.px+Math.cos(a)*80,s.py+Math.sin(a)*80,WORLD_SCALE.guardian,a+Math.PI/2,s.elapsed,true,0xffffff,s.ageIndex);
       }
     }
     this.combatFeedback.syncWorld(s.worldNonce);
@@ -3619,7 +3679,7 @@ export class GameScene extends Phaser.Scene {
     for (const a of s.squad) {
       if (!a.active || !vis(a.x, a.y)) continue;
       const pose=this.actorMotion.sample(a,a.x,a.y,s.elapsed);
-      this.allyActors.draw(actorFor(s.originId),a.x,a.y,36,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xffffff,s.ageIndex,pose,a.inv>0?"hurt":pose.moving?"walk":"idle");
+      this.allyActors.draw(actorFor(s.originId),a.x,a.y,WORLD_SCALE.squad,pose.heading,s.elapsed,pose.moving,a.inv>0?0xffbbbb:0xffffff,s.ageIndex,pose,a.inv>0?"hurt":pose.moving?"walk":"idle");
     }
     this.allyActors.end();
     for (const site of s.territories) {
@@ -3679,17 +3739,21 @@ export class GameScene extends Phaser.Scene {
   private drawBossIndicator(): void {
     const g = this.bossGfx;
     if (!g) return;
+    const cam = this.cameras.main,z=cam.zoom;
+    const ox=cam.width*.5*(1-1/z),oy=cam.height*.5*(1-1/z);
+    g.setScale(1/z).setPosition(ox,oy);
+    this.debugText?.setScale(1/z).setPosition(ox+10/z,oy+110/z);
     g.clear();
     const s = this.sim.state;
     if (s.bossIndex < 0) return;
     const boss = s.enemies[s.bossIndex];
     if (!boss?.active) return;
-    const cam = this.cameras.main;
     drawOffscreenIndicator(g, {
-      scrollX: cam.scrollX,
-      scrollY: cam.scrollY,
+      scrollX: cam.worldView.x,
+      scrollY: cam.worldView.y,
       width: cam.width,
       height: cam.height,
+      zoom:z,
     }, boss.x, boss.y, 0xff2222, 12);
   }
 }

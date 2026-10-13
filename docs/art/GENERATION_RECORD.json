@@ -1,6 +1,6 @@
 {
   "tool": "OpenAI built-in imagegen",
-  "scope": "Last eight original atlas/terrain generations for quality closure",
+  "scope": "Original gameplay art and four-biome family; actual production animations remain an open acceptance gate",
   "calls": [
     {
       "timestamp": "2026-10-12T17:18:31.887Z",
@@ -57,6 +57,36 @@
       "transparent_background": true,
       "mode": "generation",
       "reference": null
+    },
+    {
+      "recordedAt": "2026-10-13T01:30:33.774284+00:00",
+      "prompt": "Create one original seamless square top-down walkable ground texture for -SEED's arid biome. Match the supplied Verdant texture's painted science-fantasy rendering and overhead diffuse lighting, but show muted ochre sand, worn sandstone plates, sparse dry grass, wind-combed sand, scattered small pebbles. No perspective horizon, buildings, characters, cliffs, large obstacles, text, frame or symbols. Ground only, every location is traversable. Low contrast and subdued values keep heroes and hostile warnings readable. Mix medium irregular rock/ground areas with broad quieter spaces, avoiding microscopic noisy details. Seamless tileable edges on all four sides; no visible tile border. Opaque full canvas, square 1024x1024 production texture. This is a game floor asset, not a concept poster.",
+      "mode": "generate-with-original-style-reference",
+      "transparent_background": false,
+      "referenced_image_paths": [
+        "assets/seed/terrain/verdant-v2.png"
+      ],
+      "source": "assets/original/terrain/arid-v1.png"
+    },
+    {
+      "recordedAt": "2026-10-13T01:30:33.928360+00:00",
+      "prompt": "Create one original seamless square top-down walkable ground texture for -SEED's tundra biome. Match the supplied Verdant texture's painted science-fantasy rendering and overhead diffuse lighting, but show dark blue slate, thin scattered snow patches, frost seams, hardy pale lichen, small weathered stones. No perspective horizon, buildings, characters, cliffs, large obstacles, text, frame or symbols. Ground only, every location is traversable. Low contrast and subdued values keep heroes and hostile warnings readable. Mix medium irregular rock/ground areas with broad quieter spaces, avoiding microscopic noisy details. Seamless tileable edges on all four sides; no visible tile border. Opaque full canvas, square 1024x1024 production texture. This is a game floor asset, not a concept poster.",
+      "mode": "generate-with-original-style-reference",
+      "transparent_background": false,
+      "referenced_image_paths": [
+        "assets/seed/terrain/verdant-v2.png"
+      ],
+      "source": "assets/original/terrain/tundra-v1.png"
+    },
+    {
+      "recordedAt": "2026-10-13T01:30:34.057893+00:00",
+      "prompt": "Create one original seamless square top-down walkable ground texture for -SEED's badlands biome. Match the supplied Verdant texture's painted science-fantasy rendering and overhead diffuse lighting, but show muted wine-brown shale, charcoal basalt plates, subtle cracked dusty ground, sparse rust-colored scrub. No perspective horizon, buildings, characters, cliffs, large obstacles, text, frame or symbols. Ground only, every location is traversable. Low contrast and subdued values keep heroes and hostile warnings readable. Mix medium irregular rock/ground areas with broad quieter spaces, avoiding microscopic noisy details. Seamless tileable edges on all four sides; no visible tile border. Opaque full canvas, square 1024x1024 production texture. This is a game floor asset, not a concept poster.",
+      "mode": "generate-with-original-style-reference",
+      "transparent_background": false,
+      "referenced_image_paths": [
+        "assets/seed/terrain/verdant-v2.png"
+      ],
+      "source": "assets/original/terrain/badlands-v1.png"
     }
   ],
   "sources_retained": "assets/original/{heroes,actors,structures,terrain}; source and production SHA256 in ASSET_MANIFEST.json"

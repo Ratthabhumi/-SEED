@@ -5,6 +5,7 @@ import type { POIType } from "../world/poi";
 import type { WeaponFamily } from "../combat/weapons";
 import type { OutpostSpec } from "../world/territory";
 import type { SquadMode } from "../combat/squad";
+import type {EnemyFamily} from "../director/director";
 
 export type SimEvent =
   | {type:"boss_attack_warning";pattern:import("../combat/bossEncounter").BossPattern}
@@ -53,4 +54,4 @@ export type SimEvent =
   | { type: "player_died" }
   | {type:"enemy_attack_fired";kind:"rush"|"burst"}
   | { type: "enemy_attack_warning";kind:"rush"|"burst";x:number;y:number }
-  | { type: "enemy_killed"; elite: boolean; boss: boolean; x: number; y: number };
+  | { type: "enemy_killed"; elite: boolean; boss: boolean; x: number; y: number;family?:EnemyFamily;radius?:number;visualTier?:number };

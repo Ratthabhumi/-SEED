@@ -1,5 +1,14 @@
 # Living Frontier — UI Design System v1
 
+Content14 additions: one gold outer outline marks the highest actual offered
+pinned-path relation (complete > required > progress > indirect, offer-order tie).
+No relevant offer means no gold card. The localized label and relation reason
+remain separate from rarity styling and child keyboard focus. The persistent
+age card names committed Logistics, displays the one-time Signal exception when
+overcommitted, and shows actual raid preparation/warning/blocked/combat status
+with known target bearing and distance. Neutral land stays free; Later/Escape
+remain reachable. Title/child Origin portraits use current painted hero assets.
+
 Canonical colors: src/theme/tokens.ts. Generated CSS: src/styles/tokens.css (node scripts/theme-css.mjs; --check validates). Phaser mappings derive from the same palette. Common controls/cards/HUD consume semantic variables; specialized map/domain colors remain. Incremental migration; not every legacy literal has been removed.
 
 Slate canvas/surfaces; cream text; gold action/focus/warnings; teal friendly/success; coral hostile/damage; blue research; violet permanent Archive. Labels, glyphs and silhouettes accompany meaningful color. Tests validate common rendered text pairs >=4.5:1. High contrast changes surfaces/borders.

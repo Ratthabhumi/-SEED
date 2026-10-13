@@ -1,5 +1,17 @@
 # Combat presentation checkpoint — 2026-10-12
 
+Content14 integration: Hunters kinetic arrow/bow, Engineers ribbed mechanical
+release, Resonant fork/branch beam and Sentinels faceted prism share one typed
+presentation registry. Actual weaponStage selects equipment/shot material;
+actual damage events select impacts. Nova expands at its captured cast origin
+within the real260u radius; Bulwark facets require its real iframe window;
+Overdrive equipment requires its real timer. Kill observations retain family,
+radius and tier before pool reuse; DeathResponse uses at most12 pooled fall/fade
+images for0.3 simulation seconds, disabled by Reduced Effects and reset per world.
+This is posed motion/feedback, not an authored death animation. Existing voice,
+beam and spark caps remain. High contrast retains functional geometry. See
+ADR0028 and the integrated closure review for measurements and limitations.
+
 Original stylized science-fantasy presentation, using the typed theme and existing
 licensed impact texture. This is the first Energy signature prototype, not an
 approval of production art or a completed four-family overhaul.

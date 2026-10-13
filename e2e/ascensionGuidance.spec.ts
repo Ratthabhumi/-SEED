@@ -21,6 +21,10 @@ for(const lang of ['en','th'] as const) {
  const offered=await page.evaluate(()=>{const h=(window as unknown as {__seedE2E:{snapshot:()=>string}}).__seedE2E;return (JSON.parse(h.snapshot()).lvl[6][0] as string).replace(/:(COMMON|UNCOMMON|RARE|MYTHIC):.*$/,'');});
  await page.locator('#draft-goal-map').click();await page.locator('.techmap-btn-overview').click();await page.locator('.techmap-node[data-node-id="'+offered+'"]').click();await page.locator('.techmap-pin-btn').click();await page.keyboard.press('T');
  await expect(page.locator('.card[data-path-relation="complete"]')).toHaveCount(1);await expect(page.locator('.card[data-path-relation="complete"] .card-path-reason')).toContainText(lang==='en'?'Completes':'สำเร็จ');
+ await expect(page.locator('.card-recommended')).toHaveCount(1);
+ await expect(page.locator('.card-recommended')).toHaveAttribute('data-node-id',offered);
+ await expect(page.locator('.card-recommendation')).toContainText(lang==='en'?'Recommended for your pinned path':'แนะนำสำหรับเส้นทางที่ปักหมุด');
+ expect(await page.locator('.card-recommended').evaluate(el=>getComputedStyle(el).outlineColor)).toBe('rgb(255, 209, 102)');
  await page.screenshot({path:'test-results/browser/recommended-draft-'+lang+'.png'});
  await page.locator('.card[data-path-relation="complete"] .card-select').click();
  await resolveDrafts(page,20);await page.keyboard.press('T');await expect(page.locator('.techmap-pin')).toBeVisible();await expect(page.locator('[data-node-id="'+id+'"]')).toBeAttached();expect(await page.locator('.techmap-goal-progress').innerText()).toMatch(/([1-9]\d*)\/\1/);

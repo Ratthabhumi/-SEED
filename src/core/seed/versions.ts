@@ -60,7 +60,8 @@ export const WORLDGEN_VERSION = 2;
 // Replay outcomes intentionally differ; geometry and persistent schema unchanged.
 // Content13: guaranteed optional Fire/Tools recipe and pre-Industrial draft slot.
 // Old draft traces differ intentionally; world geometry and save schema unchanged.
-export const CONTENT_VERSION = 13;
+// Content14: reconciled reservations and gate-aware, transactional raid scheduling.
+export const CONTENT_VERSION = 14;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

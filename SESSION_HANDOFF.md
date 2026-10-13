@@ -1,3 +1,38 @@
+## Integrated Gameplay/Visual closure experiment — 2026-10-13
+
+Verified product input cause, superseding earlier fixture-only explanations:
+50fa2e5 push CI38388086000 passed4/4, but PR integration still failed Pause.
+Installed Phaser4 KeyboardManager emits PROCESS per DOM event; KeyboardPlugin
+revisits the uncleared queue and compares only the immediately previous code/time/
+type. Same-frame Escape down/up followed by a second key replays original Escape,
+closing/recreating Pause behind Resume. A deterministic real-engine burst
+regression failed before repair (scratch/integrated-phaser-keyburst-red.log/trace).
+GameScene edge commands/F4 now consume each KeyboardEvent object once through
+a WeakSet; fresh presses/repeat information/manual no-payload callbacks remain.
+No third-party patch, dependency, canonical balance/worldgen/save change. Added
+three unit contracts plus native burst; retained all earlier failures. Visual CI
+artifacts now preserve failure traces/context/screenshots. Final corrected receipt
+must supersede50fa2e5. See ADR0028 and integrated ledger.
+
+Corrected input candidate: native key-burst/layout/full-Logistics/Signal/Escape/
+Thai200%11/11 PASS; new input unit3/3 PASS. Full frozen-source check463/463 across
+69 files,45 provenance, TypeScript/build PASS on standard retry. First full run
+passed all463 assertions but reported Vitest worker onTaskUpdate timeout, so it
+was retained as failed infrastructure evidence rather than called green. No
+timeouts/assertions weakened. Final exact-SHA CI/ZIP receipt belongs in PR8.
+
+Further fixture correction:7b65332 PR integration passed4/4, but exact push38383657714 still failed Pause closure at1920, disproving the initial Escape-only explanation. Added a regression marking the original menu, calling the shared openPause twice, and requiring that same menu plus actual resumed simulation. It failed before repair because openPause unconditionally toggled an already-visible Pause and recreated it. The helper now returns when Pause is already visible (language rebuild/automatic pause may already own it), leaving native keyboard Resume and all closure assertions intact. This changes test setup only, no product/balance. Preserve both failed CI runs and the local failing marker/trace. Final publication receipt supersedes7b65332.
+
+Publication30b53f7 exact push CI38379774393 passed4/4: Node22/24 full460, provenance45, Analyze6 + comparative cohort8, native119 passed/one existing capture-only skip; official Node22 ZIP5110782bytes/76 entries CRC/root/licenses/full SHA PASS. PR8 Draft targets PR7. The concurrent PR integration run38379843730 passed118 native cases but failed Thai2560 Pause closure: layout navigation's Escape remained queued across a rendering boundary. Preserve the failed run/log; layout closes through the visible Resume control with native keyboard Enter and retains the zero-pause assertion. Dedicated Escape/softlock regressions remain unchanged. Production source and balance are unchanged by this test-only correction. Final corrected exact-head/ZIP receipt belongs in PR8.
+
+Start2222002b84928fff38dedad9689bfbcd0b67edae (verified local/origin/PR7), branch feat/integrated-gameplay-art-closure-20261013; eventual Draft base PR7 branch. Preserved5187 authentic QA/playtest/handoff files in ignored scratch/integrated-closure-baseline-20261013 with SHA256 ledger. No new human verdict, main merge, tag or market research.
+
+Content14/worldgen2/save2: actual reservation reconciliation and visible Logistics contract; normal raid cadence retained with bounded gate-aware preparation, actual spawned-unit credit, saturation recovery and hashed phase/readiness; one advisory gold recommended card; shared Origin/family/scale/equipment rig; three additional original biome floors and one bounded blended atlas; replace overlapping floor/building/old actor uploads. Four painted hero bodies remain, with new rigged equipment and real event-driven effects. Full authored animation/costume and hardware acceptance remain open; do not certify them as complete. See ADR0028. Focused core36 and presentation34 passed during implementation; early evolving-tree full check passed but is diagnostic, final frozen-source gates remain required. Earlier fixture failures retained and corrected to represent real6/6 reservations. Baseline performance from official PR7 ZIP measured on the same local software browser before optimization (scratch/integrated-before-performance.json); not a hardware certificate.
+
+Frozen-source verification: full460/460 across68 files,45/45 provenance, TypeScript and production build PASS; Analyze6/6 PASS. Native integrated selection/raids/four-biome/viewport/boss/Origin matrix13 passed with one outpost fixture failure: real movement collected Knowledge and queued a draft before the codex check. Preserve failure/trace in scratch/integrated-native-v2; resolve real pending drafts and use fresh runs per specialization (avoids fixture-only recruited allies after direct territory replacement). Corrected outpost EN/TH2/2 PASS. Native images personally inspected for new ground, fork staff, scale, gold outline and bases. Single16MiB atlas rejected earlier blurry124px cells in favor of252px. Full browser/exact-head CI and official package still require final publication receipt; no prospective pass. No new human fun verdict.
+
+Same unassisted canonical900s controller across4 Origins×2 seeds reached real boss/child1/8 before versus3/8 after. Adaptive trajectories differ; cohort never had Raid as sole gate, so no natural raid-wait benefit inferred. New CI Analyze job reruns the comparative receipt once. Sparse same-host SwiftShader parent/child command p95 improved7.9/14.8→4.1/4.7ms, vertices50700/60855→12318/17271; calls increased5/6→6/7. Hardware60FPS/full GPU/stress/15-minute memory remain OPEN. Comprehensive21-row ledger, intentional legacy retention and one consolidated human protocol: docs/INTEGRATED_GAMEPLAY_ART_CLOSURE.md. QA launcher serves clean source; official ZIP static preview is a distinct route with manual QA export.
+
 ## Content13 recovery and painted gameplay art review — 2026-10-13
 
 Additional CI95a239d clarity2560/Thai fixture race: Escape is consumed on a Phaser frame; the test granted knowledge before confirming the pause surface closed. Await actual pause removal before staging the draft, matching the existing setScale contract. Preserve the failed run; no production guard or assertion removed. Isolated frontier-policy audit PASS49.47s under unchanged180s budget; the earlier full-check timeout remains part of the receipt.

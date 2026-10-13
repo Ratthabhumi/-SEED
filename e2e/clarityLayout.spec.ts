@@ -56,11 +56,18 @@ async function assertContextClear(page: Page): Promise<void> {
   }
 }
 
+async function resumePause(page:Page):Promise<void>{
+  // Layout navigation uses the explicit native control, independent of Phaser's
+  // queued Escape event. Escape behavior has dedicated pause/modal regressions.
+  const resume=page.locator("#pause-screen .pause-sec").first().getByRole("button").first();
+  await expect(resume).toBeVisible();await resume.focus();await page.keyboard.press("Enter");
+  await expect(page.locator("#pause-screen")).toHaveCount(0);
+}
+
 async function setScale(page: Page, label: "100%" | "125%" | "150%" | "200%"): Promise<void> {
   await openPause(page);
   await page.locator("#pause-screen").getByRole("button", { name: label, exact: true }).click();
-  await page.keyboard.press("Escape");
-  await expect(page.locator("#pause-screen")).toHaveCount(0);
+  await resumePause(page);
 }
 
 async function openDraft(page: Page): Promise<void> {
@@ -107,6 +114,32 @@ async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "
 }
 
 const PAUSE_HEADINGS_EN = ["Primary", "Display", "Help", "Run", "Danger Zone"];
+
+test("one physical Escape stays consumed when Phaser processes a same-frame key burst",async({page})=>{
+  await startRun(page,"PAUSE-PHASER-BURST");
+  await page.evaluate(()=>{
+    const send=(type:string,key:string,code:string,keyCode:number)=>window.dispatchEvent(new KeyboardEvent(type,{key,code,keyCode,bubbles:true}));
+    send("keydown","Escape","Escape",27);
+    const pause=document.getElementById("pause-screen");if(!pause)throw new Error("real Phaser Escape failed to open Pause");
+    pause.dataset.physicalEventIdentity="original";
+    send("keyup","Escape","Escape",27);send("keydown","z","KeyZ",90);send("keyup","z","KeyZ",90);
+  });
+  await expect(page.locator("#pause-screen")).toHaveCount(1);
+  await expect(page.locator("#pause-screen")).toHaveAttribute("data-physical-event-identity","original");
+  await resumePause(page);
+});
+
+test("opening an already visible pause must not queue a toggle behind Resume",async({page})=>{
+  await startRun(page,"PAUSE-ALREADY-OPEN");await openPause(page);
+  await page.locator("#pause-screen").evaluate(el=>{(el as HTMLElement).dataset.fixtureIdentity="original";});
+  await openPause(page);
+  const frames=()=>page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  await frames();await expect(page.locator("#pause-screen")).toHaveCount(1);
+  await expect(page.locator("#pause-screen")).toHaveAttribute("data-fixture-identity","original");
+  const before=await page.evaluate(()=>(window as any).__seedE2E.specRegressionState().elapsed);
+  await resumePause(page);await frames();await expect(page.locator("#pause-screen")).toHaveCount(0);
+  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.specRegressionState().elapsed)).toBeGreaterThan(before);
+});
 
 async function viewportMatrix(page: Page): Promise<void> {
   await test.step("EN 100%: HUD zones, draft, tech CURRENT+OVERVIEW, civmap", async () => {
@@ -155,10 +188,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     await page.evaluate(() => window.__seedE2E?.setLang("th"));
     await openPause(page);
     await expect(page.locator("#pause-screen")).toContainText("โซนอันตราย");
-    await page.keyboard.press("Escape");
-    // Phaser consumes Escape on its next frame; knowledge must not be staged
-    // while the pause surface still owns the simulation.
-    await expect(page.locator("#pause-screen")).toHaveCount(0);
+    await resumePause(page);
     await openDraft(page);
     await expect(page.locator("#draft-screen")).toContainText("สุ่มตัวเลือกใหม่");
     await closeDraft(page);
@@ -180,7 +210,7 @@ async function viewportMatrix(page: Page): Promise<void> {
         await expect(page.locator("#pause-screen").getByRole("heading", { name: heading })).toBeVisible();
       }
       await noPageOverflow(page);
-      await page.keyboard.press("Escape");
+      await resumePause(page);
     }
   });
 

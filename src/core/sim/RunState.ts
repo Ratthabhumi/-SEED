@@ -141,6 +141,8 @@ export interface RunState {
   territories: Territory[];
   raid: RaidState | null;
   lastRaidAt: number;
+  /** First continuous instant when a raid is the only missing next-age gate. */
+  raidReadySince: number | null;
   // Logistics / Garrison (v0.24)
   logistics: number;
   maxLogistics: number;

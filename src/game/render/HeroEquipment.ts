@@ -1,0 +1,66 @@
+import type Phaser from "phaser";
+import {combatPresentation} from "./combatPresentation";
+import type {RunState} from "../../core/sim/RunState";
+import {activeFamilies} from "../../core/progression/origins";
+import {NOVA_RADIUS,BULWARK_IFRAME} from "../../core/combat/squad";
+import type {WeaponFamily} from "../../core/combat/weapons";
+/** Original equipment rig. Posed bodies remain original atlases, no fake attacks. */
+export class HeroEquipment {
+  private world="";private released=-Infinity;private aim=0;
+  private releasedFamily:WeaponFamily="kinetic";
+  private ability="";private abilityAt=-Infinity;private abilityX=0;private abilityY=0;
+  reset(world:string){this.world=world;this.released=-Infinity;this.abilityAt=-Infinity;}
+  activate(world:string,time:number,id:string,x:number,y:number){if(this.world!==world)this.reset(world);this.ability=id;this.abilityAt=time;this.abilityX=x;this.abilityY=y;}
+  fire(world:string,time:number,x:number,y:number,tx:number,ty:number,family:WeaponFamily){
+    if(this.world!==world)this.reset(world);this.released=time;this.aim=Math.atan2(ty-y,tx-x);this.releasedFamily=family;
+  }
+  draw(g:Phaser.GameObjects.Graphics,s:RunState,facing:number,reduced:boolean){
+    if(this.world!==s.worldNonce)this.reset(s.worldNonce);
+    const enabled=activeFamilies(s.originId,s.expansionFamily);
+    const family=s.elapsed-this.released<.16&&enabled.includes(this.releasedFamily)?this.releasedFamily:enabled[0]!;
+    const art=combatPresentation(s.originId,family,s.weaponStage[family]);
+    const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
+    const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
+    const x=s.px+nx*(20-fresh*4),y=s.py-4+ny*(20-fresh*4),len=art.weaponLength;
+    // Age equipment: collar/material, physical braces and energy conduits.
+    g.lineStyle(3,0x0b1218,1);g.lineBetween(s.px-12,s.py-17,s.px+12,s.py-17);
+    g.lineStyle(2,art.material,1);g.lineBetween(s.px-12,s.py-18,s.px+12,s.py-18);
+    for(const side of [-1,1]){
+      g.fillStyle(0x172027,1);g.fillRoundedRect(s.px+side*(14+art.stage)-6,s.py-22,12,9,2);
+      g.lineStyle(2,art.material,1);g.strokeRoundedRect(s.px+side*(14+art.stage)-6,s.py-22,12,9,2);
+      if(art.stage>=3){g.lineStyle(2,art.color,1);g.lineBetween(s.px+side*18,s.py-12,s.px+side*22,s.py+2);}
+    }
+    if(art.shape==="arrow"){
+      g.lineStyle(6,0x0b1218,1);g.lineBetween(x-px*17,y-py*17,x+px*17,y+py*17);
+      g.lineStyle(3,art.material,1);g.lineBetween(x-px*17,y-py*17,x+px*17,y+py*17);
+      g.lineStyle(1,art.color,1);g.lineBetween(x-px*17,y-py*17,x-nx*8,y-ny*8);g.lineBetween(x+px*17,y+py*17,x-nx*8,y-ny*8);
+    }else if(art.shape==="fork"){
+      g.lineStyle(6,0x0b1218,1);g.lineBetween(x-nx*10,y-ny*10,x+nx*len,y+ny*len);
+      g.lineStyle(3,art.material,1);g.lineBetween(x-nx*10,y-ny*10,x+nx*len,y+ny*len);
+      for(const side of [-1,1]){g.lineStyle(3,art.color,1);g.lineBetween(x+nx*(len-8),y+ny*(len-8),x+nx*len+px*9*side,y+ny*len+py*9*side);}
+      g.fillStyle(art.color,1);g.fillTriangle(x+nx*(len+5),y+ny*(len+5),x+nx*len+px*4,y+ny*len+py*4,x+nx*len-px*4,y+ny*len-py*4);
+    }else if(art.shape==="prism"){
+      g.fillStyle(0x172027,1);g.fillTriangle(x+nx*len,y+ny*len,x+px*12,y+py*12,x-px*12,y-py*12);
+      g.lineStyle(3,art.material,1);g.strokeTriangle(x+nx*len,y+ny*len,x+px*12,y+py*12,x-px*12,y-py*12);
+      g.lineStyle(2,art.color,1);g.lineBetween(x,y,x+nx*len,y+ny*len);
+    }else{
+      g.lineStyle(8,0x0b1218,1);g.lineBetween(x,y,x+nx*len,y+ny*len);
+      g.lineStyle(5,art.material,1);g.lineBetween(x,y,x+nx*len,y+ny*len);
+      g.lineStyle(2,art.color,1);g.lineBetween(x+px*4,y+py*4,x+nx*len+px*4,y+ny*len+py*4);
+      const ribs=2+Math.min(3,art.stage);for(let i=0;i<ribs;i++){const d=4+i*4;g.lineStyle(2,0x172027,1);g.lineBetween(x+nx*d-px*4,y+ny*d-py*4,x+nx*d+px*4,y+ny*d+py*4);}
+    }
+    if(fresh&&!reduced){g.lineStyle(2,art.color,fresh);g.lineBetween(x+nx*len,y+ny*len,x+nx*(len+9*fresh),y+ny*(len+9*fresh));}
+    const age=s.elapsed-this.abilityAt;
+    if(this.ability==="nova"&&age<.35){
+      const fade=1-age/.35,r=NOVA_RADIUS*(.25+.75*age/.35);
+      g.lineStyle(reduced?2:3,art.color,fade);
+      for(let i=0;i<6;i++){const a=i*Math.PI/3,ax=this.abilityX+Math.cos(a)*r,ay=this.abilityY+Math.sin(a)*r;
+        g.lineBetween(this.abilityX+Math.cos(a+.15)*r*.65,this.abilityY+Math.sin(a+.15)*r*.65,ax,ay);
+        g.lineBetween(ax,ay,this.abilityX+Math.cos(a+.28)*r*.82,this.abilityY+Math.sin(a+.28)*r*.82);}
+    }
+    if(s.overdriveT>0&&!reduced){g.lineStyle(2,art.color,.8);for(const side of [-1,1])g.strokeRect(s.px+side*22-5,s.py-17,10,16);}
+    if(this.ability==="bulwark"&&age<BULWARK_IFRAME&&s.iframe>0){
+      g.lineStyle(3,art.color,.85);for(let i=0;i<6;i++){const a=i*Math.PI/3,b=a+.75;g.lineBetween(s.px+Math.cos(a)*43,s.py+Math.sin(a)*43,s.px+Math.cos(b)*43,s.py+Math.sin(b)*43);}
+    }
+  }
+}

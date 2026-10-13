@@ -73,6 +73,22 @@ export function calculateLogisticsCost(spec: OutpostSpec, tier: 1 | 2, ageIndex:
   return Math.ceil(base * tierMult);
 }
 
+/** Disabled posts retain their reservation: loss/repair cannot farm capacity. */
+export function committedLogistics(territories: readonly Territory[], ageIndex = 0): number {
+  let used = 0;
+  for (const post of territories) if (post.spec) used += calculateLogisticsCost(post.spec, post.tier, ageIndex);
+  return used;
+}
+
+/** Read-only explanation; the first Signal flag is world-scoped and never refunded. */
+export function logisticsLedger(territories: readonly Territory[], maximum: number, signalSecured: boolean, ageIndex = 0) {
+  const used = committedLogistics(territories, ageIndex);
+  return { used, maximum, overcommit: Math.max(0, used - maximum), signalExceptionUsed: signalSecured,
+    neutral: territories.filter(p => !p.spec).length,
+    operational: territories.filter(p => !!p.spec && !p.disabled).length,
+    reservedDisabled: territories.filter(p => !!p.spec && p.disabled).length };
+}
+
 export function canFoundOutpost(currentLogistics: number, cost: number, maxLogistics: number): boolean {
   return currentLogistics + cost <= maxLogistics;
 }

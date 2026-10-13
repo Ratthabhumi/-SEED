@@ -28,7 +28,7 @@ export interface GroundDrawArgs {
   worldSeed: string;
   time: number;
   highContrast: boolean;
-  texturedVerdant?: boolean;
+  texturedGround?: boolean;
 }
 
 function chunkRand(worldSeed: string, cx: number, cy: number, salt: string, mod: number): number {
@@ -41,11 +41,13 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
       const ccx = a.cx + ox;
       const ccy = a.cy + oy;
       const desc = a.getChunk(ccx, ccy);
+      // Authored blended floor replaces every legacy flat block/decor glyph.
+      if(a.texturedGround&&!a.highContrast)continue;
       const style = a.styleFor(desc.biome);
       const gx = ccx * CHUNK_SIZE;
       const gy = ccy * CHUNK_SIZE;
       g.fillStyle(style.ground, 1);
-      if(!a.texturedVerdant || desc.biome!=="verdant" || a.highContrast)g.fillRect(gx, gy, CHUNK_SIZE, CHUNK_SIZE);
+      g.fillRect(gx, gy, CHUNK_SIZE, CHUNK_SIZE);
       // ONE large soft tonal patch per chunk (low frequency, never entity-sized).
       const px = gx + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-x", 300);
       const py = gy + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-y", 300);
@@ -270,6 +272,7 @@ export interface TerritoryDressingArgs {
   disabled: boolean;
   spec: OutpostSpec | "";
   repairing?: boolean;
+  painted?: boolean;
 }
 
 /**
@@ -277,5 +280,5 @@ export interface TerritoryDressingArgs {
  * neutral pad until specialization; this function owns no gameplay state.
  */
 export function drawTerritoryDressing(g: Phaser.GameObjects.Graphics, a: TerritoryDressingArgs): void {
-  drawSpecializedOutpost(g,a);
+  if(!a.painted||!a.spec)drawSpecializedOutpost(g,a);
 }

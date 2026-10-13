@@ -31,14 +31,16 @@ import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CONTENT_VERSION } from "../seed/versions";
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
-import { calculateMaxLogistics, calculateLogisticsCost, applyFoundOutpost, calculateKnowledgeUpgradeCost, calculateGarrisonBenefit, toggleGarrison, type OutpostConfig } from "../emergence/outpostLogistics";
-import { canAdvanceAge, type DominionState } from "../progression/ages";
+import { calculateMaxLogistics, calculateLogisticsCost } from "../emergence/outpostLogistics";
+import { canAdvanceAge, AGE_DEFS, type DominionState } from "../progression/ages";
+import { committedLogistics, logisticsLedger } from "../emergence/outpostLogistics";
+import { raidDelay, RAID_RETRY_SECONDS, RAID_MAX_UNITS } from "../world/raidReadiness";
 import { missionDone, type MissionState } from "../progression/missions";
 import {
   CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS, OUTPOST_MAXHP, RAID_INTERVAL, RAID_WARN_SEC,
   RAID_SIZE_BASE, TIER2_HOLD_SEC, REPAIR_NEED, activeTerritories,
   territoryKnowledgeBonus, militaryBonusSlots, economyRegenAt,
-  territoryById, canClaimMore, signalExempt, outpostUpgradeCost, type OutpostSpec,
+  territoryById, outpostUpgradeCost, type OutpostSpec,
 } from "../world/territory";
 import {
   SQUAD_BASE_CAP, SQUAD_MAX, SQUAD_HP, SQUAD_DMG, SQUAD_SPEED, SQUAD_RANGE, SQUAD_CD,
@@ -140,7 +142,7 @@ export class RunSimulation {
       draftContext: "level",
       elitesAge: 0, raidsSurvived: 0, signalSecured: false,
       missionDoneCache: false,
-      territories: [], raid: null, lastRaidAt: 0,
+      territories: [], raid: null, lastRaidAt: 0, raidReadySince: null,
       logistics: 0,
       maxLogistics,
       squad: Array.from({ length: SQUAD_MAX }, (_, i) => ({
@@ -840,7 +842,7 @@ export class RunSimulation {
     });
     s.stats.outpostsClaimed = (s.stats.outpostsClaimed || 0) + 1;
     // First claim starts the raid clock (grace window, not instant pressure).
-    if (s.lastRaidAt === 0) s.lastRaidAt = s.elapsed;
+    if (s.territories.length === 1) s.lastRaidAt = s.elapsed;
     // signalSecured is set in setOutpostSpec after successful specialization
     this.logHistory("claim", cand.poiType);
     ev.push({ type: "territory_claimed", poiId, poiType: cand.poiType });
@@ -855,6 +857,22 @@ export class RunSimulation {
     const t = territoryById(s.territories, poiId);
     if (s.over || !t || t.spec !== "" || t.disabled) return false;
     return this.canAffordSpecialization(t.poiType,spec);
+  }
+
+  logisticsStatus() {
+    const s=this.state;
+    return logisticsLedger(s.territories,s.maxLogistics,s.signalSecured,s.ageIndex);
+  }
+
+  /** Stationed allies reserve pool slots; founding cannot duplicate their service. */
+  mobileSquadLimit():number {
+    const posts=this.state.territories;
+    const stationed=posts.filter(p=>p.garrisoned&&!!p.spec).length;
+    return Math.max(1,squadCap(militaryBonusSlots(activeTerritories(posts)))-stationed);
+  }
+  private trimMobileSquad():void {
+    const limit=this.mobileSquadLimit();let count=0;
+    for(const ally of this.state.squad)if(ally.active&&++count>limit)ally.active=false;
   }
 
   private canAffordSpecialization(poiType:POIType,spec:OutpostSpec):boolean {
@@ -875,7 +893,7 @@ export class RunSimulation {
     const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
 
     t.spec = spec;
-    s.logistics += cost;
+    s.logistics = committedLogistics(s.territories,s.ageIndex);
     if (spec === "military") this.reinforceSquad();
     // Mark signal as secured AFTER successful specialization (for mission tracking)
     if (t.poiType === "signal") s.signalSecured = true;
@@ -908,13 +926,13 @@ export class RunSimulation {
     if (s.over || !t || !t.spec || s.raid?.poiId === poiId) return [];
     const released = calculateLogisticsCost(t.spec, t.tier, s.ageIndex);
     const wasGarrisoned = t.garrisoned;
-    s.logistics = Math.max(0, s.logistics - released);
     t.spec = "";
     t.tier = 1;
     t.garrisoned = false;
+    s.logistics = committedLogistics(s.territories,s.ageIndex);
     t.heldSince = s.elapsed;
     // Do not heal, revive, award Knowledge, or reset the Signal mission flag.
-    const cap = squadCap(militaryBonusSlots(activeTerritories(s.territories)));
+    const cap = this.mobileSquadLimit();
     let active = 0;
     for (const ally of s.squad) if (ally.active && ++active > cap) ally.active = false;
     if (wasGarrisoned && s.squad.filter((ally) => ally.active).length < cap) {
@@ -932,8 +950,8 @@ export class RunSimulation {
     if (!status.allowed) return ev;
     const t = territoryById(s.territories, poiId)!;
     s.knowledgeTotal -= status.knowledgeCost;
-    s.logistics += status.logisticsCost;
     t.tier = 2;
+    s.logistics = committedLogistics(s.territories,s.ageIndex);
     t.hp = t.maxHp;
     this.logHistory("upgrade", `${t.spec}@${t.poiType}`);
     ev.push({ type: "outpost_upgraded", poiId });
@@ -953,7 +971,6 @@ export class RunSimulation {
     if (!t || t.disabled || t.spec === "") return ev;
     
     const activeMobile = s.squad.filter(a => a.active).length;
-    const maxSlots = squadCap(militaryBonusSlots(activeTerritories(s.territories)));
     
     if (!t.garrisoned) {
       // Garrison: need at least 1 mobile squad remaining
@@ -972,11 +989,10 @@ export class RunSimulation {
       // Recall
       t.garrisoned = false;
       // Try to activate a reserve squad if under cap
-      if (activeMobile < maxSlots) {
+      if (activeMobile < this.mobileSquadLimit()) {
         for (const a of s.squad) {
-          if (!a.active) {
+          if (!a.active && a.hp>0) {
             a.active = true;
-            a.hp = a.maxHp;
             a.x = s.px - 30;
             a.y = s.py;
             break;
@@ -992,13 +1008,14 @@ export class RunSimulation {
   /** Activate reserve allies up to the military-bonus cap. */
   private reinforceSquad(): void {
     const s = this.state;
-    const cap = squadCap(militaryBonusSlots(activeTerritories(s.territories)));
-    let active = 0;
+    const cap = this.mobileSquadLimit();
+    this.trimMobileSquad();
+    let active = s.squad.filter(a=>a.active).length;
     for (const a of s.squad) {
-      if (a.active) { active++; continue; }
+      if (a.active) continue;
       if (active >= cap) break;
       a.active = true;
-      a.hp = a.maxHp;
+      if(a.hp<=0)a.hp=a.maxHp; // new recruit; living reserves keep their injuries
       a.x = s.px - 30;
       a.y = s.py;
       active++;
@@ -1006,14 +1023,39 @@ export class RunSimulation {
   }
 
   // ------------------------------------------------------------------ raids
+  private raidTargets() {
+    const s=this.state;
+    return s.territories.filter(t=>!t.disabled&&!!t.spec).sort((a,b)=>
+      Math.hypot(a.x-s.px,a.y-s.py)-Math.hypot(b.x-s.px,b.y-s.py)||(a.poiId<b.poiId?-1:a.poiId>b.poiId?1:0));
+  }
+  private raidIsOnlyGate(): boolean {
+    const s=this.state,next=AGE_DEFS[s.ageIndex+1];
+    if(!next||next.dominion.raids<=s.raidsSurvived||s.knowledgeTotal<next.knowledgeThreshold)return false;
+    // Counterfactual predicate only, never writes progression/credit.
+    return canAdvanceAge(next.index,s.knowledgeTotal,this.missionState(),{...this.dominionState(),raidsSurvived:next.dominion.raids});
+  }
+
+  raidReadiness() {
+    const s=this.state;
+    const targets=this.raidTargets();
+    return {status:s.raid?(s.raid.landed?"active":s.raid.spawnBlocked?"blocked":"warning"):targets.length?"waiting":"noTarget",
+      seconds:s.raid?Math.max(0,s.raid.tMinus):targets.length?raidDelay(s.elapsed,s.lastRaidAt,childRaidInterval(s.ascension,RAID_INTERVAL),s.raidReadySince):null,
+      gateBlocked:this.raidIsOnlyGate(),targetId:s.raid?.poiId??targets[0]?.poiId??""};
+  }
+
   /** Deterministic raid scheduler (event stream picks the target). */
   private updateRaid(dt: number, ev: SimEvent[]): void {
     const s = this.state;
-    const targets = s.territories.filter((t) => !t.disabled && t.spec !== "");
+    const targets = this.raidTargets();
     if (!s.raid) {
-      if (targets.length > 0 && s.elapsed - s.lastRaidAt >= childRaidInterval(s.ascension, RAID_INTERVAL)) {
-        const pick = targets[this.streams.event.nextInt(0, targets.length)] as (typeof targets)[number];
-        s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false };
+      if(targets.length && this.raidIsOnlyGate())s.raidReadySince??=s.elapsed;
+      else s.raidReadySince=null;
+      if (targets.length > 0 && raidDelay(s.elapsed,s.lastRaidAt,childRaidInterval(s.ascension,RAID_INTERVAL),s.raidReadySince)===0) {
+        // Prefer the closest defensible base; exact ties retain one seeded draw.
+        const first=targets[0]!;const distance=Math.hypot(first.x-s.px,first.y-s.py);
+        const nearby=targets.filter(t=>Math.abs(Math.hypot(t.x-s.px,t.y-s.py)-distance)<.01);
+        const pick = nearby[this.streams.event.nextInt(0, nearby.length)]!;
+        s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false, spawned:0 };
         ev.push({ type: "raid_incoming", poiId: pick.poiId, seconds: RAID_WARN_SEC });
       }
       return;
@@ -1023,18 +1065,24 @@ export class RunSimulation {
       // Target gone meanwhile: raiders dissolve into the normal hunt.
       for (const e of s.enemies) if (e.active && e.siege) e.siege = false;
       s.raid = null;
+      s.lastRaidAt=s.elapsed;s.raidReadySince=null;
       return;
     }
     if (!s.raid.landed) {
       s.raid.tMinus -= dt;
       if (s.raid.tMinus > 0) return;
-      s.raid.landed = true;
-      const n = RAID_SIZE_BASE + s.ascension;
+      const n = Math.min(RAID_MAX_UNITS,RAID_SIZE_BASE + s.ascension);
+      let spawned=0;
       for (let i = 0; i < n; i++) {
         const ang = this.streams.event.nextFloat() * Math.PI * 2;
         const e = this.spawnEnemyAt("chaser", false, t.x + Math.cos(ang) * 500, t.y + Math.sin(ang) * 500, ev);
-        if (e) e.siege = true;
+        if (e) {e.siege = true;spawned++;}
       }
+      s.raid.spawned=spawned;
+      s.raid.landed=spawned>0;
+      s.raid.spawnBlocked=spawned===0;
+      // Keep the visible warning alive and retry, never a phantom victory.
+      if(!spawned)s.raid.tMinus=RAID_RETRY_SECONDS;
       return;
     }
     // Repelled when no siege unit remains.
@@ -1046,6 +1094,7 @@ export class RunSimulation {
       const poiId = s.raid.poiId;
       s.raid = null;
       s.lastRaidAt = s.elapsed;
+      s.raidReadySince=null;
       s.raidsSurvived++;
       this.gainKnowledge(100, "raid", ev);
       this.logHistory("raid", "repelled");
@@ -1056,7 +1105,7 @@ export class RunSimulation {
   /** Spawn at an explicit world position (siege waves); player-relative otherwise. */
   private spawnEnemyAt(family: EnemyFamily, elite: boolean, x: number, y: number, ev: SimEvent[]): SimEnemy | null {
     const s = this.state;
-    const e = this.allocEnemy();
+    const e = this.allocEnemy() ?? this.reclaimSlot();
     if (!e) return null;
     const dx = x - s.px;
     const dy = y - s.py;
@@ -1072,9 +1121,11 @@ export class RunSimulation {
     terr.disabled = true;
     terr.hp = 0;
     terr.repairT = 0;
+    this.trimMobileSquad();
     for (const e of s.enemies) if (e.active && e.siege) e.siege = false;
     s.raid = null;
     s.lastRaidAt = s.elapsed;
+    s.raidReadySince=null;
     this.logHistory("outpost-lost", terr.poiType);
     ev.push({ type: "outpost_lost", poiId: terr.poiId });
   }
@@ -1358,7 +1409,7 @@ export class RunSimulation {
   private reclaimSlot(): SimEnemy | null {
     let victim: SimEnemy | null = null;
     for (const e of this.state.enemies) {
-      if (!e.active || e.boss) continue;
+      if (!e.active || e.boss || e.siege) continue;
       if (!victim) { victim = e; continue; }
       const aRank = (victim.elite ? 1 : 0) * 1e9 + victim.maxHp;
       const bRank = (e.elite ? 1 : 0) * 1e9 + e.maxHp;
@@ -1493,13 +1544,14 @@ export class RunSimulation {
     const deathReward = e.xp;
     const deathX = e.x;
     const deathY = e.y;
+    const deathFamily=e.family,deathRadius=e.radius;
     const wasElite = e.elite;
     const wasBoss = e.boss;
     e.active = false;
     s.stats.kills++;
     s.runKills++;
     s.ageKills++;
-    ev.push({ type: "enemy_killed", elite: wasElite, boss: wasBoss, x: deathX, y: deathY });
+    ev.push({ type: "enemy_killed", elite: wasElite, boss: wasBoss, x: deathX, y: deathY,family:deathFamily,radius:deathRadius,visualTier:s.ageIndex });
     if (wasElite && !wasBoss) {
       s.stats.elites++;
       s.elitesAge++;

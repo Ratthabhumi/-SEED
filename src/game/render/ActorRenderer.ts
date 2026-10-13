@@ -7,8 +7,11 @@ import type {HeroAction} from "./heroActions";
 export class ActorRenderer {
   private images: Phaser.GameObjects.Image[] = [];
   private count = 0;
+  private styles=new WeakMap<Phaser.GameObjects.Image,{key:string;frame:string;size:number;origin:number;tint:number}>();
   constructor(private scene: Phaser.Scene, private max: number, private depth: number) {}
   static frames(scene: Phaser.Scene): void {
+    const outposts=scene.textures.get("outposts-v2");
+    for(let i=0;i<12;i++)if(!outposts.has(String(i)))outposts.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     const boss=scene.textures.get("boss-v2");
     for(let i=0;i<8;i++)if(!boss.has(String(i)))boss.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     const enemies=scene.textures.get("enemies-v2");
@@ -18,37 +21,45 @@ export class ActorRenderer {
       const texture=scene.textures.get("hero-v2-"+id);
       for(let i=0;i<16;i++)if(!texture.has(String(i)))texture.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     }
-    for (const id of Object.keys(ACTOR_ASSETS)) {
+    for (const id of ["guardian"] as const) {
       if (!scene.textures.exists("actor-" + id)) throw new Error("Mandatory actor art missing: " + id);
       const texture = scene.textures.get("actor-" + id);
       for (let frame = 0; frame < (humanoid(id as ActorId)?36:18); frame++) if (!texture.has(String(frame))) texture.add(frame,0,frame*64,0,64,64);
     }
   }
   begin(): void { this.count = 0; }
+  private sprite(image:Phaser.GameObjects.Image,key:string,frame:number,x:number,y:number,size:number,origin:number,rotation:number,flip:boolean,tint:number){
+    let style=this.styles.get(image);
+    if(!style){style={key:"",frame:"",size:-1,origin:-1,tint:-1};this.styles.set(image,style);}
+    if(style.key!==key||style.frame!==String(frame)){image.setTexture(key,frame);style.key=key;style.frame=String(frame);style.size=-1;style.origin=-1;}
+    if(style.size!==size){image.setDisplaySize(size,size);style.size=size;}
+    if(style.origin!==origin){image.setOrigin(.5,origin);style.origin=origin;}
+    if(style.tint!==tint){image.setTint(tint);style.tint=tint;}
+    image.setPosition(x,y).setRotation(rotation).setFlipX(flip).setVisible(true);
+  }
   draw(id: ActorId,x: number,y: number,size: number,facing: number,time: number,moving: boolean,tint = 0xffffff, age = 0, pose?:MotionPose, action?:HeroAction, bossPose?:number, enemyPose?:number): void {
     if (this.count >= this.max) throw new Error("Actor pool exceeded " + this.max);
     let image = this.images[this.count++];
-    if (!image) { image=this.scene.add.image(0,0,"actor-"+id,0).setDepth(this.depth); this.images.push(image); }
+    if (!image) { image=this.scene.add.image(0,0,"enemies-v2",0).setDepth(this.depth); this.images.push(image); }
     const upright=facingPolicy(id)==='upright';
     if(enemyPose!==undefined && ["chaser","ranged","tank","swarm"].includes(id)) {
       const row=["chaser","ranged","tank","swarm"].indexOf(id);
       const gliding=id==="ranged"&&(enemyPose===1||enemyPose===2);
       const frame=gliding?(Math.cos(facing)<-.15?2:1):enemyPose;
-      image.setTexture("enemies-v2",row*4+frame).setPosition(x,y).setOrigin(.5,.65).setDisplaySize(size,size).setRotation(0).setFlipX(gliding?false:Math.cos(facing)<-.15).setTint(tint).setVisible(true);return;
+      this.sprite(image,"enemies-v2",row*4+frame,x,y,size,.65,0,gliding?false:Math.cos(facing)<-.15,tint);return;
     }
     if(id==="boss" && bossPose!==undefined){
-      image.setTexture("boss-v2",bossPose).setPosition(x,y).setOrigin(.5,.65).setDisplaySize(size,size).setRotation(0).setFlipX(false).setTint(tint).setVisible(true);return;
+      this.sprite(image,"boss-v2",bossPose,x,y,size,.65,0,false,tint);return;
     }
     if(action && id in HERO_ASSETS) {
       const index=action==="walk"?1+Math.floor(time*8)%2:({idle:0,attack:3,hurt:4,dash:5,death:6,special:7} as const)[action];
-      image.setTexture("hero-v2-"+id,index+(pose?.back?8:0)).setPosition(x,y).setOrigin(.5,.65)
-        .setDisplaySize(size,size).setRotation(0).setFlipX(pose?.flip??false).setTint(tint).setVisible(true);
+      this.sprite(image,"hero-v2-"+id,index+(pose?.back?8:0),x,y,size,.65,0,pose?.flip??false,tint);
       return;
     }
     const frame=Math.max(0,Math.min(5,age))*3+(moving?1+Math.floor(time*8)%2:0)+(humanoid(id)&&pose?.back?18:0);
-    image.setTexture("actor-"+id,frame).setPosition(x,y).setOrigin(.5,.5).setDisplaySize(size,size).setRotation(upright?0:facing+Math.PI/2).setFlipX(upright?(pose?.flip??Math.cos(facing)<-0.15):false).setTint(tint).setVisible(true);
+    this.sprite(image,"actor-"+id,frame,x,y,size,.5,upright?0:facing+Math.PI/2,upright?(pose?.flip??Math.cos(facing)<-0.15):false,tint);
   }
   end(): void { for(let i=this.count;i<this.images.length;i++)this.images[i]!.setVisible(false); }
   get size(): number { return this.images.length; }
-  review():unknown[] { return this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
+  review():unknown[] { return this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y,width:i.displayWidth,height:i.displayHeight,screenWidth:i.displayWidth*this.scene.cameras.main.zoom,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
 }

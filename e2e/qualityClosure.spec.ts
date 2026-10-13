@@ -21,7 +21,7 @@ test('four distinct imported hero atlases and posed combat states',async({page})
   for(const origin of ['hunters','engineers','resonant','sentinels']){
     await page.evaluate(o=>(window as any).__seedE2E.stageEvolution(o,3),origin);
     await page.evaluate(()=>(window as any).__seedE2E.primeSignature());
-    expect(await page.evaluate(()=>(window as any).__seedE2E.stageVerdantReview().biome)).toBe('verdant');
+    expect(await page.evaluate(()=>(window as any).__seedE2E.stageBiomeReview('verdant').biome)).toBe('verdant');
     for(const kind of ['attack','hurt','special','dash'] as const){
       await page.evaluate(k=>(window as any).__seedE2E.heroActionReview(k),kind);await page.waitForTimeout(100);
       const hero=await page.evaluate(()=>(window as any).__seedE2E.actorPresentation()[0]);
@@ -33,7 +33,7 @@ test('four distinct imported hero atlases and posed combat states',async({page})
 });
 test('four weapon families show actual damage and distinct bounded feedback',async({page})=>{
   await startRun(page,'EPOCH-GOLDEN-001');
-  await page.evaluate(()=>(window as any).__seedE2E.stageVerdantReview());
+  await page.evaluate(()=>(window as any).__seedE2E.stageBiomeReview('verdant'));
   for(const family of ['kinetic','energy','defense','field'] as const){
     const hp=await page.evaluate(f=>(window as any).__seedE2E.stageFamilyReview(f),family);
     // Projectile families need real travel time. Stop at the first resolved hit
