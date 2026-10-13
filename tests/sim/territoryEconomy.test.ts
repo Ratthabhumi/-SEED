@@ -285,6 +285,9 @@ describe("P1 specialization validation at Industrial Logistics 6/6", () => {
     s.territories.push({ poiId, poiType: signal ? "signal" : "ruin", x: s.px, y: s.py,
       spec: "", tier: 1, hp: 300, maxHp: 300, disabled: false,
       heldSince: 703, repairT: 0, garrisoned: false });
+    // Real reservations once, while preserving the pending target's old index.
+    if(!s.territories.some(t=>t.poiId==="reserved-0"))for(let i=0;i<3;i++)s.territories.push({poiId:`reserved-${i}`,poiType:"ruin",x:s.px,y:s.py,
+      spec:"military",tier:1,hp:300,maxHp:300,disabled:false,heldSince:0,repairT:0,garrisoned:false});
   }
 
   it("all unaffordable choices reject without mutation; pending claims can be retried", () => {

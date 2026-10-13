@@ -5,12 +5,13 @@ import { getWeaponStage } from "../../core/combat/weapons";
 import { activeFamilies } from "../../core/progression/origins";
 import { drawBeam } from "./ProjectileRenderer";
 import { phaserColors } from "../../theme/tokens";
+import {combatPresentation} from "./combatPresentation";
 
 /** Fixed presentation pool. Seconds are canonical elapsed time: pause freezes FX. */
 export const COMBAT_FEEDBACK_BUDGET = { beams: 8, impacts: 32, sparksPerImpact: 5, impactSprites: 8 } as const;
 export const BEAM_RELEASE_SECONDS = 0.12;
 export const IMPACT_SECONDS = 0.24;
-type Slot = { until: number; x: number; y: number; tx: number; ty: number; color: number; width: number; shield: boolean; kind?: string };
+type Slot = { until: number; x: number; y: number; tx: number; ty: number; color: number; width: number; shield: boolean; kind?: string;shape?:string };
 const slot = (): Slot => ({ until: -Infinity, x: 0, y: 0, tx: 0, ty: 0, color: 0, width: 0, shield: false });
 
 /** Charge is advisory readiness, never a damage telegraph or a gameplay timer. */
@@ -43,24 +44,26 @@ export class CombatFeedback {
     for (const image of this.sprites) image.setVisible(false);
   }
   syncWorld(world: string): void { if (world !== this.world) this.reset(world); }
-  accept(e: SimEvent, time: number, reduced: boolean): void {
+  accept(e: SimEvent, time: number, reduced: boolean,origin="hunters"): void {
     if(e.type === "weapon_fired" && !reduced) {
       const p=this.muzzles.find(p=>p.until<=time);
-      if(p)Object.assign(p,{until:time+.1,x:e.x,y:e.y,tx:e.tx,ty:e.ty,color:e.family==="kinetic"?0xffc579:e.family==="defense"?0x9ae7ff:0x53e0c8});
+      if(p)Object.assign(p,{until:time+.1,x:e.x,y:e.y,tx:e.tx,ty:e.ty,color:combatPresentation(origin,e.family,0).color});
     }
     if (e.type === "beam_fired") {
       const p = this.beams.find(p => p.until <= time);
       if (!p) return;
       const stage = getWeaponStage(e.family, e.tier);
+      const art=combatPresentation(origin,e.family,e.tier);
       Object.assign(p, { until: time + BEAM_RELEASE_SECONDS, x: e.x1, y: e.y1, tx: e.x2, ty: e.y2,
-        color: stage.color, width: Math.min(10, Math.max(4, stage.radius * 0.5)) });
+        color: art.color,shape:art.shape, width: Math.min(10, Math.max(4, stage.radius * 0.5)) });
     } else if ((e.type === "energy_impact" || e.type === "weapon_impact" || e.type === "mine_detonated") && !reduced) {
       const p = this.impacts.find(p => p.until <= time);
       if (!p) return;
       const family = e.type === "weapon_impact" ? e.family : e.type === "mine_detonated" ? "field" : "energy";
+      const art=combatPresentation(origin,family,0);
       const damage = e.type === "mine_detonated" ? 0 : e.hpDamage + e.shieldDamage;
       Object.assign(p, { until: time + IMPACT_SECONDS, x: e.x, y: e.y,
-        color: family === "kinetic" ? 0xffc579 : family === "defense" ? 0x9ae7ff : family === "field" ? 0x9cf17b : e.type === "energy_impact" && e.source === "relay" ? phaserColors.action : phaserColors.friendly,
+        color:art.color,shape:art.shape,
         kind: e.type === "mine_detonated" ? "detonation" : family,
         shield: e.type !== "mine_detonated" && e.shieldDamage > 0,
         width: e.type === "mine_detonated" ? Math.min(140,e.radius) : Math.min(18, 6 + Math.sqrt(damage)) });
@@ -83,6 +86,14 @@ export class CombatFeedback {
       drawBeam(g, p.x, p.y, p.tx, p.ty, p.width * (0.6 + f * 0.4), p.color);
       if (reduced) continue;
       const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.max(1, Math.hypot(dx, dy));
+      if(p.shape==="fork"){
+        g.lineStyle(1,phaserColors.text,f*.8);
+        for(let i=0;i<4;i++){const a=i/4,b=(i+1)/4,offset=i%2?2:-2;
+          g.lineBetween(p.x+dx*a-dy/d*offset,p.y+dy*a+dx/d*offset,p.x+dx*b+dy/d*offset,p.y+dy*b-dx/d*offset);}
+      }
+      if(p.shape==="prism"){
+        g.lineStyle(2,p.color,f);for(const t of [.2,.55,.9])g.lineBetween(p.x+dx*t-dy/d*5,p.y+dy*t+dx/d*5,p.x+dx*t+dy/d*5,p.y+dy*t-dx/d*5);
+      }
       g.lineStyle(2, p.color, f);
       for (const side of [-1, 1]) g.lineBetween(p.x - dy / d * 8 * side, p.y + dx / d * 8 * side,
         p.x + dx / d * 18, p.y + dy / d * 18);
@@ -106,6 +117,9 @@ export class CombatFeedback {
         g.lineStyle(2,p.color,f);
         g.strokeTriangle(p.x,p.y-12*travel,p.x-10*travel,p.y+9*travel,p.x+10*travel,p.y+9*travel);
       }
+      if(p.shape==="mechanical"){g.lineStyle(2,p.color,f);g.strokeRect(p.x-8*travel,p.y-8*travel,16*travel,16*travel);}
+      if(p.shape==="fork"){g.lineStyle(2,p.color,f);g.lineBetween(p.x-15*travel,p.y+4,p.x,p.y-7);g.lineBetween(p.x,p.y-7,p.x+15*travel,p.y+4);}
+      if(p.shape==="prism"){g.lineStyle(2,p.color,f);g.strokeTriangle(p.x,p.y-15*travel,p.x-13*travel,p.y+10*travel,p.x+13*travel,p.y+10*travel);}
       const image=this.sprites[index];
       if(image) image.setPosition(p.x,p.y).setDisplaySize(24+travel*24,24+travel*24)
         .setTint(p.color).setAlpha(f*0.55).setVisible(true);

@@ -29,6 +29,7 @@ export interface CameraView {
   scrollY: number;
   width: number;
   height: number;
+  zoom?:number;
 }
 
 export interface MinimapCell {
@@ -58,8 +59,8 @@ export function minimapCells(chunksWorld: readonly string[], cx: number, cy: num
 export function isOffscreen(view: CameraView, wx: number, wy: number, margin = 40): boolean {  return (
     wx < view.scrollX - margin ||
     wy < view.scrollY - margin ||
-    wx > view.scrollX + view.width + margin ||
-    wy > view.scrollY + view.height + margin
+    wx > view.scrollX + view.width/(view.zoom??1) + margin ||
+    wy > view.scrollY + view.height/(view.zoom??1) + margin
   );
 }
 
@@ -72,8 +73,8 @@ export function drawOffscreenIndicator(
 ): void {
   if (!isOffscreen(view, wx, wy)) return;
   const m = 34;
-  const sx = wx - view.scrollX;
-  const sy = wy - view.scrollY;
+  const sx = (wx - view.scrollX)*(view.zoom??1);
+  const sy = (wy - view.scrollY)*(view.zoom??1);
   const cx = Math.max(m, Math.min(view.width - m, sx));
   const cy = Math.max(m, Math.min(view.height - m, sy));
   const ang = Math.atan2(sy - cy, sx - cx);

@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {startRun,assertNoRawKeys} from './helpers';
+import {startRun,resolveDrafts,assertNoRawKeys} from './helpers';
 for(const lang of ['en','th'] as const)test('uncharted Signal guidance reveals no hidden bearing '+lang,async({page})=>{
   await startRun(page,'EPOCH-GOLDEN-001',{lang});
   const state=await page.evaluate(()=>(window as any).__seedE2E.stageUnchartedNavigation());
@@ -34,16 +34,25 @@ for(const lang of ['en','th'] as const)test('real Atomic beam release, pause and
   await expect(page.locator('.hud')).toBeVisible();expect((await state()).beams).toBe(0);
 });
 for(const lang of ['en','th'] as const)test('actual claimed outpost identities and localized Knowledge HUD '+lang,async({page})=>{
-  await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
+  await page.setViewportSize({width:1600,height:900});await startRun(page,'EPOCH-GOLDEN-001',{lang});
   await expect(page.locator('.knowledge-icon')).toBeVisible();
   for(let i=0;i<3;i++){
+    // Fresh runs prevent the fixture removing a Military base while leaving
+    // its previously recruited allies in the next specialization capture.
+    if(i>0)await startRun(page,'EPOCH-GOLDEN-001',{lang});
     const id=await page.evaluate(()=>(window as any).__seedE2E.stageSpecRegression(false,false));
     await page.locator('#spec-screen .terr-spec-btn').nth(i).click();await expect(page.locator('#spec-screen')).toHaveCount(0);
     const terr=await page.evaluate(id=>(window as any).__seedE2E.specRegressionState().territories.find((t:any)=>t.poiId===id),id);
     expect(terr.spec).toBe(['research','military','economy'][i]);
-    await page.waitForTimeout(600);await page.screenshot({path:'test-results/browser/outpost-'+terr.spec+'-'+lang+'.png'});
+    // Real movement separates the actor from the building for native inspection.
+    await page.keyboard.down('d');await page.waitForTimeout(1800);await page.keyboard.up('d');
+    await resolveDrafts(page,20);
+    const landmark=await page.evaluate(()=>(window as any).__seedE2E.integratedReview().landmarks);
+    expect(landmark.some((a:any)=>a.texture==='outposts-v2'&&Number(a.frame)===i*4&&a.width===176)).toBe(true);
+    await page.screenshot({path:'test-results/browser/outpost-'+terr.spec+'-'+lang+'.png'});
   }
   await page.evaluate(()=>(window as any).__seedE2E.stageSpecRegression(true,false));await page.locator('#spec-screen .spec-later-btn').click();
+  await resolveDrafts(page,20);
   await page.waitForTimeout(600);await page.screenshot({path:'test-results/browser/signal-monolith-'+lang+'.png'});
   await page.evaluate(()=>(window as any).__seedE2E.stageKnowledgeReview());await page.waitForTimeout(100);
   await page.screenshot({path:'test-results/browser/knowledge-codex-'+lang+'.png'});

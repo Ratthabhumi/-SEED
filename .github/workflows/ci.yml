@@ -63,3 +63,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run analyze
+      - run: node scripts/run-progression-cohort.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: progression-cohort-${{ github.sha }}
+          path: test-results/integrated-progression-cohort.json
+          if-no-files-found: error
+          retention-days: 14

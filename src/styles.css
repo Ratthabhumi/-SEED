@@ -711,6 +711,14 @@ button, input { font-family: inherit; }
 .draft-goal { width:min(100%,1240px); max-height:26dvh; overflow:auto; flex:0 1 auto; text-align:left; line-height:1.8; padding:8px 12px; box-sizing:border-box; border:1px solid #487266; border-radius:10px; }
 .draft-goal p {margin:2px 0; font-size:var(--font-caption);}
 .card-path-reason {line-height:1.8; color:#b9e6ff; font-size:var(--font-caption);}
+.card-recommended {position:relative;outline:3px solid #ffd166;outline-offset:3px;}
+.card-recommended::before {content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 0 18px #ffd16644;}
+.cards-wrapper {padding:6px;scroll-padding:8px;}
+.card-recommendation {color:#ffd166;line-height:1.8;font-size:var(--font-caption);}
+.card-recommended:focus-within {outline-color:#ffd166;}
+.card-recommended :focus-visible {outline:3px solid var(--friendly);outline-offset:2px;}
+.raid-readiness {line-height:1.8;margin-top:8px;font-size:var(--font-caption);}
+.painted-origin-portrait {display:block;width:56px;height:56px;background-size:400% 400%;background-position:0 0;background-repeat:no-repeat;}
 .card[data-path-relation='complete'], .card[data-path-relation='required'], .card[data-path-relation='progress'] {border-color:#76dfc4;}
 #draft-screen[hidden] {display:none!important;}
 .child-intro {box-sizing:border-box; max-height:calc(100dvh - 40px); overflow:auto; line-height:1.8;}

@@ -22,6 +22,18 @@ export interface PathGuidance {
   relations: Record<string, PathRelation>;
 }
 
+/** One advisory choice. Equal priorities retain the actual draft order; no RNG. */
+export function recommendedCard(guidance: PathGuidance, offers: readonly {nodeId: string}[]): string | null {
+  if (guidance.status !== "active") return null;
+  const rank: Record<PathRelation, number> = {complete:4, required:3, progress:2, indirect:1, unrelated:0};
+  let best = 0, id: string | null = null;
+  for (const offer of offers) {
+    const value = rank[guidance.relations[offer.nodeId] ?? "unrelated"];
+    if (value > best) { best = value; id = offer.nodeId; }
+  }
+  return id;
+}
+
 /** Derived advice only: no draws, mutation, quality or offer-weight changes. */
 export function pathGuidance(nodes: readonly TechNode[], ctx: PathContext): PathGuidance {
   const out: PathGuidance = {

@@ -24,6 +24,7 @@ export interface EnemyDrawOpts {
   /** World age: iron+ adds plating, atomic+ adds energy trim (family kept). */
   ageIndex?: number;
   spriteBody?: boolean;
+  visualSize?:number;
 }
 
 /** Ranged aim tell: fires when shootT hits 0 (sim), so <0.5s reads as "aiming". */
@@ -164,7 +165,7 @@ export function drawEnemy(
     g.lineBetween(e.x, e.y, e.x + Math.cos(opts.facing) * (r + 14), e.y + Math.sin(opts.facing) * (r + 14));
   }
   const showBar = opts.hpBar ?? shouldShowHpBar({ elite: e.elite, boss: e.boss, flash: e.flash, focused: false });
-  if (showBar) drawHpBar(g, e.x, e.y - r - 14, r * 2, bossHpFraction(e.hp, e.maxHp));
+  if (showBar) drawHpBar(g,e.x,e.y-(opts.visualSize?opts.visualSize*.6+8:r+14),opts.visualSize?Math.max(28,opts.visualSize*.65):r*2,bossHpFraction(e.hp,e.maxHp));
   if (e.elite) {
     const w = opts.highContrast ? 4 : 3;
     g.lineStyle(w, VL.eliteRing, 1);

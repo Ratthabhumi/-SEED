@@ -1,9 +1,21 @@
 # -SEED Art Bible & Visual Design System
-**Version**: 0.22  
+**Version**: Content14 presentation review
 **Status**: CANONICAL SPECIFICATION  
 **Scope**: Presentation, UI, Sprites, VFX, and Third-Party Asset Normalization
 
 ---
+
+Content14 supersedes the old mandatory geometric body/hex-pad description below
+for default gameplay. Original painted actors and four authored walkable biome
+surfaces now share the restrained science-fantasy palette; geometry supplies
+functional telegraphs, actual equipment and accessibility fallbacks. Numeric
+world/screen hierarchy is owned by `src/game/render/combatPresentation.ts`:
+hero112u, squad56u, Guardian48u, ordinary44–78u, elite×1.4, boss≥196u,
+outposts176/208u; viewport zoom1–1.25. Hitboxes remain canonical. One blended
+ground atlas replaces flat block/low-frequency glyph overlays. One painted
+building path replaces duplicate superstructures; high contrast and neutral
+claims retain their clear functional silhouettes. Full authored animation and
+painted six-era costumes remain acceptance work, not certified by these rigs.
 
 ## 1. Visual Thesis
 > *"Readable civilization evolution through geometric sci-fi language."*

@@ -45,17 +45,18 @@ describe("human-observed logistics allocation", () => {
     const x = sim(); const s = x.state;
     s.ageIndex = 3; s.elapsed = 100; s.logistics = s.maxLogistics = 6; s.knowledgeTotal = 1000;
     const released = site("release", "military"); released.tier = 2;
-    s.territories.push(released, site("upgrade"));
+    // All six committed points must have actual reservations, not a phantom counter.
+    s.territories.push(released, site("upgrade"),site("reserved","military"));
     expect(x.dismantleOutpost("release")).toEqual([{ type: "outpost_dismantled", poiId: "release", released: 3 }]);
     expect(s.logistics).toBe(3); expect(s.knowledgeTotal).toBe(1000); expect(released).toMatchObject({ spec: "", tier: 1, hp: 120, heldSince: 100 });
-    expect(s.territories).toHaveLength(2); expect(x.dismantleOutpost("release")).toEqual([]);
+    expect(s.territories).toHaveLength(3); expect(x.dismantleOutpost("release")).toEqual([]);
     expect(x.upgradeOutpost("upgrade").some((e) => e.type === "outpost_upgraded")).toBe(true);
     expect(s.logistics).toBe(4);
   });
   it("Signal overflow cannot be farmed by dismantling and respecializing", () => {
     const x = sim(); const s = x.state;
     s.logistics = s.maxLogistics = 6; s.ageIndex = 3;
-    s.territories.push(site("signal", "", "signal"));
+    s.territories.push(...[0,1,2].map(i=>site(`reserved-${i}`,"military")),site("signal", "", "signal"));
     expect(x.canSetOutpostSpec("signal", "military")).toBe(true);
     x.setOutpostSpec("signal", "military"); expect(s.logistics).toBe(8);
     x.dismantleOutpost("signal"); expect(s.logistics).toBe(6);

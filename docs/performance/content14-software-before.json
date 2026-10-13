@@ -1,0 +1,82 @@
+{
+  "classification": "LOCAL_BROWSER_MEASUREMENT",
+  "limitations": "Short sparse trace, driver reported explicitly. Presentation command construction excludes Phaser render/GPU completion. Draw/vertex counts are WebGL submissions, not GPU execution time; no stress-load or hardware60FPS certification.",
+  "parent": {
+    "samples": 73,
+    "frameMs": [
+      66.4,
+      78.2,
+      100
+    ],
+    "simMs": [
+      0.1,
+      0.6,
+      16.7
+    ],
+    "presentationCommandsMs": [
+      4.8,
+      7.9,
+      29.1
+    ],
+    "gpuSubmission": {
+      "driver": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "drawCallsP95": 5,
+      "verticesP95": 50700
+    },
+    "sceneObjects": 49,
+    "pools": {
+      "mites": 0,
+      "enemyActors": 2,
+      "allyActors": 3,
+      "landmarks": 1,
+      "vfx": 0,
+      "arcs": 0
+    },
+    "rendererType": 2,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "age": 0,
+    "ascension": 0
+  },
+  "child": {
+    "samples": 63,
+    "frameMs": [
+      79.4,
+      98.3,
+      112.1
+    ],
+    "simMs": [
+      0.1,
+      0.2,
+      1.1
+    ],
+    "presentationCommandsMs": [
+      5.8,
+      14.8,
+      26.8
+    ],
+    "gpuSubmission": {
+      "driver": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "drawCallsP95": 6,
+      "verticesP95": 60855
+    },
+    "sceneObjects": 72,
+    "pools": {
+      "mites": 0,
+      "enemyActors": 9,
+      "allyActors": 3,
+      "landmarks": 5,
+      "vfx": 0,
+      "arcs": 0
+    },
+    "rendererType": 2,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "age": 0,
+    "ascension": 1
+  }
+}

@@ -103,8 +103,9 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     // Append new territory fields to preserve existing snapshot reader indices.
     terr: [...s.territories].sort((a, b) => (a.poiId < b.poiId ? -1 : 1)).map((t) =>
       [t.poiId, t.poiType, r6(t.x), r6(t.y), t.spec, t.tier, r6(t.hp), t.disabled ? 1 : 0, r6(t.heldSince), r6(t.repairT), r6(t.maxHp), t.garrisoned ? 1 : 0].join(",")),
-    raid: s.raid ? [s.raid.poiId, r6(s.raid.tMinus)] : [],
+    raid: s.raid ? [s.raid.poiId, r6(s.raid.tMinus), s.raid.landed ? 1 : 0, s.raid.spawned ?? 0,s.raid.spawnBlocked?1:0] : [],
     raidAt: r6(s.lastRaidAt),
+    raidReadySince: s.raidReadySince === null ? null : r6(s.raidReadySince),
     squad: [s.squadMode, r6(s.focusX), r6(s.focusY), r6(s.abilityCd), r6(s.overdriveT),
       ...s.squad.map((a) => [a.active ? 1 : 0, r6(a.x), r6(a.y), r6(a.hp), r6(a.cd), r6(a.inv)].join(","))],
     hist: s.history.map((h) => `${r6(h.t)}:${h.kind}:${h.label}`),

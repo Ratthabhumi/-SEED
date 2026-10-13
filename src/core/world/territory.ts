@@ -31,6 +31,9 @@ export interface RaidState {
   tMinus: number;
   /** True once the raider wave has spawned (repel check active). */
   landed: boolean;
+  /** Only successful allocations count; zero-spawn waves never award credit. */
+  spawned?: number;
+  spawnBlocked?: boolean;
 }
 
 /** POI must be threat-free within this radius to claim. */

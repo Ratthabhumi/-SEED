@@ -1,6 +1,6 @@
 // Title screen: seed input + language + animated backdrop. DOM for text (Thai-safe).
 import Phaser from "phaser";
-import { ACTOR_ASSETS } from "../assets/actorAssets";
+import {heroPortrait} from "../ui/heroPortrait";
 import { ARCHIVE_REWARDS, purchaseArchive } from "../../core/progression/archiveLedger";
 import { t, setLang, getLang } from "../../i18n/i18n";
 import { uiRoot, clearUI, el, button, applyUiScale } from "../ui";
@@ -115,7 +115,7 @@ export class TitleScene extends Phaser.Scene {
       if (isQAMode(window.location.search)) b.id = `qa-origin-${o.id}`;
       b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
       b.setAttribute("aria-pressed", String(o.id === pickedOrigin));
-      const portrait = document.createElement("img"); portrait.src = ACTOR_ASSETS[o.id]; portrait.alt = ""; portrait.className = "origin-portrait";
+      const portrait = heroPortrait(o.id);
       // Strip is cropped to the first anchored pose, never squashed into a portrait.
       const crop = el("span", "origin-portrait-crop"); crop.append(portrait); b.prepend(crop);
       b.addEventListener("click", () => {

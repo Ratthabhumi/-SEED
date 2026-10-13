@@ -1,10 +1,19 @@
 import {describe,it,expect} from 'vitest';
-import {pathGuidance, type PathContext} from '../../src/core/tech/pathGuidance';
+import {pathGuidance, recommendedCard, type PathContext} from '../../src/core/tech/pathGuidance';
 import type {TechNode} from '../../src/core/tech/graph';
 import {RunSimulation} from '../../src/core/sim/RunSimulation';
 const node=(id:string, prerequisites:string[]=[], tags:string[]=[], extra:Partial<TechNode>={}):TechNode=>({id,titleKey:id,descriptionKey:id,age:'stone',domain:'science',tags,prerequisites,synergyTags:[],exclusions:[],rarity:'common',weight:1,effects:[],...extra});
 const ctx=(extra:Partial<PathContext>={}):PathContext=>({target:'goal',owned:[],tags:[],unlocked:[],ageIndex:0,families:new Set(['kinetic']),...extra});
 describe('pure goal advice',()=>{
+ it('recommends one actual eligible choice, breaks ties by draft order and never invents relevance',()=>{
+   const ns=[node('a'),node('b'),node('goal',['a','b']),node('other')];
+   const g=pathGuidance(ns,ctx());
+   expect(recommendedCard(g,[{nodeId:'other'},{nodeId:'b'},{nodeId:'a'}])).toBe('b');
+   expect(recommendedCard(g,[{nodeId:'other'}])).toBeNull();
+   expect(recommendedCard(pathGuidance(ns,ctx({target:''})),[{nodeId:'a'}])).toBeNull();
+   const ready=pathGuidance(ns,ctx({owned:['a','b']}));
+   expect(recommendedCard(ready,[{nodeId:'other'},{nodeId:'goal'}])).toBe('goal');
+ });
  it('rejects broken OR prerequisite routes while retaining a reachable alternative',()=>{const ns=[node('a'),node('blocked',[],[],{exclusions:['x']}),node('bad',['a','blocked'],['fire']),node('missing',['gone'],['fire']),node('good',[],['fire']),node('tools',[],['tools'])];const g=pathGuidance(ns,ctx({target:'metallurgy',owned:['x']}));expect(g.relations.a).toBe('unrelated');expect(g.relations.good).toBe('progress');expect(g.blockers).not.toContain('missing');const absent=pathGuidance(ns.filter(n=>n.id!=='good'),ctx({target:'metallurgy',owned:['x']}));expect(absent.blockers).toContain('missing');expect(absent.relations.a).toBe('unrelated');});
  it('handles no goal, invalid goal and completed owned goal',()=>{const ns=[node('goal')];expect(pathGuidance(ns,ctx({target:''})).status).toBe('none');expect(pathGuidance(ns,ctx({target:'bad'})).status).toBe('invalid');expect(pathGuidance(ns,ctx({owned:['goal']})).status).toBe('complete');});
  it('ranks multi prerequisite chains without claiming unrelated cards help',()=>{const ns=[node('a'),node('b',['a']),node('c'),node('goal',['b','c']),node('other')];const g=pathGuidance(ns,ctx({owned:['a']}));expect(g.next).toEqual(['b','c']);expect(g.relations.b).toBe('required');expect(g.relations.other).toBe('unrelated');expect(g.have).toBe(1);expect(g.need).toBe(4);});

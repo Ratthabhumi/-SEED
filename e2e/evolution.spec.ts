@@ -47,11 +47,25 @@ test("Archive purchases persist once, optional energy choice survives settings a
 });
 
 test("measured parent and child frame samples plus HUD lifecycle",async({page})=>{
+ await page.addInitScript(()=>{
+   const probe={calls:0,vertices:0,frames:[] as Array<{calls:number;vertices:number}>,driver:"unknown"};(window as any).__seedRenderProbe=probe;
+   for(const Type of [window.WebGLRenderingContext,window.WebGL2RenderingContext])if(Type){
+     for(const name of ["drawElements","drawArrays"] as const){
+       const original=Type.prototype[name] as any;if(original.__seedProbe)continue;
+       const wrapped=function(this:WebGLRenderingContext,...args:any[]){
+         probe.calls++;probe.vertices+=Number(args[name==="drawArrays"?2:1])||0;
+         if(probe.driver==="unknown"){const ext=this.getExtension("WEBGL_debug_renderer_info");probe.driver=ext?String(this.getParameter(ext.UNMASKED_RENDERER_WEBGL)):"masked WebGL";}
+         return original.apply(this,args);
+       };(wrapped as any).__seedProbe=true;(Type.prototype[name] as any)=wrapped;
+     }
+   }
+   const sample=()=>{if(probe.calls){probe.frames.push({calls:probe.calls,vertices:probe.vertices});if(probe.frames.length>240)probe.frames.shift();probe.calls=probe.vertices=0;}requestAnimationFrame(sample);};requestAnimationFrame(sample);
+ });
  await page.setViewportSize({width:1920,height:1080});await startRun(page,"EPOCH-GOLDEN-001");
  const measure=async()=>{
-  await page.evaluate(()=>(window as any).__seedE2E.resetPerformanceSamples());
+  await page.evaluate(()=>{(window as any).__seedE2E.resetPerformanceSamples();(window as any).__seedRenderProbe.frames=[];});
   await page.waitForTimeout(4500);
-  return page.evaluate(()=>(window as any).__seedE2E.performanceSamples());
+  return page.evaluate(()=>({...((window as any).__seedE2E.performanceSamples()),gpuSubmission:(window as any).__seedRenderProbe}));
  };
  const parent=await measure();
  await page.evaluate(()=>(window as any).__seedE2E.readyAscend());await page.locator(".hud-ascend button").click();
@@ -59,8 +73,8 @@ test("measured parent and child frame samples plus HUD lifecycle",async({page})=
  await page.keyboard.press("Escape");await expect(page.locator("#child-intro-screen")).toHaveCount(0);
  const child=await measure();await expect(page.locator("#fps-hud")).toHaveCount(1);await expect(page.locator("#fps-hud")).toContainText("World 2");
  const percentile=(xs:number[],p:number)=>{const v=[...xs].sort((a,b)=>a-b);return Number((v[Math.min(v.length-1,Math.floor(v.length*p))]??0).toFixed(3));};
- const summary=(s:any)=>({samples:s.frame.length,frameMs:[.5,.95,.99].map(p=>percentile(s.frame,p)),simMs:[.5,.95,.99].map(p=>percentile(s.sim,p)),rendererCpuSubmitMs:[.5,.95,.99].map(p=>percentile(s.rendererCpuSubmit,p)),sceneObjects:s.sceneObjects,pools:s.pools,rendererType:s.rendererType,viewport:s.viewport,age:s.age,ascension:s.ascension});
- const report={classification:"LOCAL_BROWSER_MEASUREMENT",limitations:"Short sparse software-rendered trace. CPU submission is not GPU completion; no stress-load or hardware60FPS certification.",parent:summary(parent),child:summary(child)};
+ const summary=(s:any)=>({samples:s.frame.length,frameMs:[.5,.95,.99].map(p=>percentile(s.frame,p)),simMs:[.5,.95,.99].map(p=>percentile(s.sim,p)),presentationCommandsMs:[.5,.95,.99].map(p=>percentile(s.rendererCpuSubmit,p)),gpuSubmission:{driver:s.gpuSubmission.driver,drawCallsP95:percentile(s.gpuSubmission.frames.map((f:any)=>f.calls),.95),verticesP95:percentile(s.gpuSubmission.frames.map((f:any)=>f.vertices),.95)},sceneObjects:s.sceneObjects,pools:s.pools,rendererType:s.rendererType,viewport:s.viewport,age:s.age,ascension:s.ascension});
+ const report={classification:"LOCAL_BROWSER_MEASUREMENT",limitations:"Short sparse trace, driver reported explicitly. Presentation command construction excludes Phaser render/GPU completion. Draw/vertex counts are WebGL submissions, not GPU execution time; no stress-load or hardware60FPS certification.",parent:summary(parent),child:summary(child)};
  const fs=await import("node:fs/promises");await fs.writeFile("test-results/evolution-performance.json",JSON.stringify(report,null,2));
  expect(parent.frame.length).toBeGreaterThan(20);expect(child.frame.length).toBeGreaterThan(20);
  await page.screenshot({path:"test-results/browser/evolution-child.png"});

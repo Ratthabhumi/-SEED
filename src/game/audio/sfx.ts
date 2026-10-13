@@ -46,10 +46,11 @@ export class Sfx {
   enemyAttack(kind:"rush"|"burst"):void {this.tone(kind==="rush"?160:360,0.06,"square",0.05,-60);}
   enemyWarning(kind:"rush"|"burst"):void {this.tone(kind==="rush"?240:520,0.16,"triangle",0.08,kind==="rush"?-80:100);}
   energy():void {this.tone(900,0.08,"sine",0.06,180);}
-  weapon(family:"kinetic"|"energy"|"defense"|"field"):void {
-    if(family==="kinetic")this.tone(170,.06,"sawtooth",.055,-110);
+  weapon(family:"kinetic"|"energy"|"defense"|"field",origin=""):void {
+    if(family==="kinetic")this.tone(origin==="hunters"?230:170,.06,origin==="hunters"?"triangle":"sawtooth",.055,-110);
     else if(family==="defense")this.tone(480,.1,"triangle",.05,120);
     else if(family==="field")this.tone(95,.18,"sawtooth",.06,-65);
+    else if(origin==="sentinels")this.tone(560,.1,"triangle",.05,-260);
     else this.energy();
   }
   beam(energy: boolean): void {
