@@ -13,13 +13,24 @@ HUMAN_FUN_PASS or RELEASE_READY is implied.
 
 ## Evidence boundaries
 
+Final input reliability correction: the installed Phaser4 keyboard plugin
+revisits its uncleared queue on each DOM key event and filters only the last
+code/time/type. A same-frame Escape down/up then another key replayed the same
+Escape, recreating Pause behind Resume. The native burst regression failed before
+repair. Scene edge handlers now consume each KeyboardEvent once through a
+WeakSet, while distinct physical presses, existing repeat filters and movement
+polling remain intact. Shared openPause is also idempotent. The earlier
+Escape-only/helper-only hypotheses were insufficient; failed CI runs are retained.
+Failure traces/error context/screenshots are now included in the visual artifact
+so future timing defects remain inspectable. See ADR0028/keyboardEvents tests.
+
 Before edits,5187 incoming QA/playtest/handoff files were privately preserved with
 SHA256 ledger in scratch/integrated-closure-baseline-20261013. Earlier human
 INTERRUPTED_BY_BUG records remain unchanged. Operator photos/FPS32–45 mentioned
 in the incoming plan are reports, not a newly captured exact-SHA hardware trace.
 No staged browser fixture is represented as a clean human playtest.
 
-Full frozen-source local check:460 tests across68 files,45 asset provenance
+Full frozen-source local check:463 tests across69 files,45 asset provenance
 records, TypeScript and production build passed. Focused canonical cases cover
 3840 seeded reservation mutations, genuine6/6 first-Signal/ordinary posts,
 disabled reservations, upgrades/dismantling, garrison quota and real raid credit.

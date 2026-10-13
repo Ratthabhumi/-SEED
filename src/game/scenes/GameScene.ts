@@ -45,6 +45,7 @@ import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
+import {onceKeyboardEvent} from "../input/onceKeyboardEvent";
 import { drawEnemy } from "../render/EnemyRenderer";
 import {eligibleFamilies} from "../../core/director/director";
 import {guardianCount} from "../render/weaponPresentation";
@@ -335,9 +336,10 @@ export class GameScene extends Phaser.Scene {
         LEFT: kb.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
         RIGHT: kb.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
       };
-      const on = (event: string, fn: () => void): void => {
-        kb.on(event, fn);
-        this.keyHandlers.push({ event, fn });
+      const on = (event: string, fn: (event?:KeyboardEvent) => void): void => {
+        const handler=onceKeyboardEvent(fn);
+        kb.on(event, handler);
+        this.keyHandlers.push({ event, fn:handler });
       };
       // P1-02: Space edge latches in the adapter (survives zero-step frames);
       // movement is level-polled per frame. Never JustDown() inside step timing.
@@ -808,8 +810,9 @@ export class GameScene extends Phaser.Scene {
         this.qaGfx?.setVisible(this.qaOverlay);
         this.qaText?.setVisible(this.qaOverlay);
       };
-      kb.on("keydown-F4", toggle);
-      this.keyHandlers.push({ event: "keydown-F4", fn: toggle });
+      const handler=onceKeyboardEvent(toggle);
+      kb.on("keydown-F4", handler);
+      this.keyHandlers.push({ event: "keydown-F4", fn: handler });
     }
   }
 

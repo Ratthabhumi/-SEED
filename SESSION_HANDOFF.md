@@ -1,5 +1,26 @@
 ## Integrated Gameplay/Visual closure experiment — 2026-10-13
 
+Verified product input cause, superseding earlier fixture-only explanations:
+50fa2e5 push CI38388086000 passed4/4, but PR integration still failed Pause.
+Installed Phaser4 KeyboardManager emits PROCESS per DOM event; KeyboardPlugin
+revisits the uncleared queue and compares only the immediately previous code/time/
+type. Same-frame Escape down/up followed by a second key replays original Escape,
+closing/recreating Pause behind Resume. A deterministic real-engine burst
+regression failed before repair (scratch/integrated-phaser-keyburst-red.log/trace).
+GameScene edge commands/F4 now consume each KeyboardEvent object once through
+a WeakSet; fresh presses/repeat information/manual no-payload callbacks remain.
+No third-party patch, dependency, canonical balance/worldgen/save change. Added
+three unit contracts plus native burst; retained all earlier failures. Visual CI
+artifacts now preserve failure traces/context/screenshots. Final corrected receipt
+must supersede50fa2e5. See ADR0028 and integrated ledger.
+
+Corrected input candidate: native key-burst/layout/full-Logistics/Signal/Escape/
+Thai200%11/11 PASS; new input unit3/3 PASS. Full frozen-source check463/463 across
+69 files,45 provenance, TypeScript/build PASS on standard retry. First full run
+passed all463 assertions but reported Vitest worker onTaskUpdate timeout, so it
+was retained as failed infrastructure evidence rather than called green. No
+timeouts/assertions weakened. Final exact-SHA CI/ZIP receipt belongs in PR8.
+
 Further fixture correction:7b65332 PR integration passed4/4, but exact push38383657714 still failed Pause closure at1920, disproving the initial Escape-only explanation. Added a regression marking the original menu, calling the shared openPause twice, and requiring that same menu plus actual resumed simulation. It failed before repair because openPause unconditionally toggled an already-visible Pause and recreated it. The helper now returns when Pause is already visible (language rebuild/automatic pause may already own it), leaving native keyboard Resume and all closure assertions intact. This changes test setup only, no product/balance. Preserve both failed CI runs and the local failing marker/trace. Final publication receipt supersedes7b65332.
 
 Publication30b53f7 exact push CI38379774393 passed4/4: Node22/24 full460, provenance45, Analyze6 + comparative cohort8, native119 passed/one existing capture-only skip; official Node22 ZIP5110782bytes/76 entries CRC/root/licenses/full SHA PASS. PR8 Draft targets PR7. The concurrent PR integration run38379843730 passed118 native cases but failed Thai2560 Pause closure: layout navigation's Escape remained queued across a rendering boundary. Preserve the failed run/log; layout closes through the visible Resume control with native keyboard Enter and retains the zero-pause assertion. Dedicated Escape/softlock regressions remain unchanged. Production source and balance are unchanged by this test-only correction. Final corrected exact-head/ZIP receipt belongs in PR8.

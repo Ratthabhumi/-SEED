@@ -59,3 +59,13 @@ construction timing excludes Phaser rendering and GPU completion.
 Measured sparse software baseline is not target-hardware evidence. Keep full
 regressions, native captures, comparative cohorts and unchanged performance
 budgets; no fun/production-art/60FPS claim follows from CI alone.
+
+Input correction: installed Phaser4 KeyboardManager emits PROCESS per DOM key,
+but KeyboardPlugin.update revisits its uncleared queue and deduplicates only the
+immediately previous code/time/type. A same-frame Escape down/up then another
+key replays the original Escape, closing/recreating Pause before native Resume.
+A failing-before-fix native key-burst regression proves this mechanism. Scene
+edge commands now consume each KeyboardEvent object once through a WeakSet,
+including F4 diagnostics; distinct events and existing repeat filters are
+preserved. Movement level polling, canonical balance, RNG and InputFrame replay
+remain unchanged. Do not patch third-party code or debounce by timestamp.

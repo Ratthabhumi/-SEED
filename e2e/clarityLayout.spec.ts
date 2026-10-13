@@ -115,6 +115,20 @@ async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "
 
 const PAUSE_HEADINGS_EN = ["Primary", "Display", "Help", "Run", "Danger Zone"];
 
+test("one physical Escape stays consumed when Phaser processes a same-frame key burst",async({page})=>{
+  await startRun(page,"PAUSE-PHASER-BURST");
+  await page.evaluate(()=>{
+    const send=(type:string,key:string,code:string,keyCode:number)=>window.dispatchEvent(new KeyboardEvent(type,{key,code,keyCode,bubbles:true}));
+    send("keydown","Escape","Escape",27);
+    const pause=document.getElementById("pause-screen");if(!pause)throw new Error("real Phaser Escape failed to open Pause");
+    pause.dataset.physicalEventIdentity="original";
+    send("keyup","Escape","Escape",27);send("keydown","z","KeyZ",90);send("keyup","z","KeyZ",90);
+  });
+  await expect(page.locator("#pause-screen")).toHaveCount(1);
+  await expect(page.locator("#pause-screen")).toHaveAttribute("data-physical-event-identity","original");
+  await resumePause(page);
+});
+
 test("opening an already visible pause must not queue a toggle behind Resume",async({page})=>{
   await startRun(page,"PAUSE-ALREADY-OPEN");await openPause(page);
   await page.locator("#pause-screen").evaluate(el=>{(el as HTMLElement).dataset.fixtureIdentity="original";});

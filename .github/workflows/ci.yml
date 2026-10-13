@@ -48,6 +48,8 @@ jobs:
           name: visual-evidence-${{ github.sha }}
           path: |
             test-results/browser/**/*.png
+            test-results/browser/**/trace.zip
+            test-results/browser/**/error-context.md
             test-results/evolution-performance.json
           if-no-files-found: warn
           retention-days: 14
