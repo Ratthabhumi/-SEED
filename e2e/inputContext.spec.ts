@@ -52,3 +52,13 @@ for(const surface of ["draft","pause","tech","civ","blur"])test(`physical moveme
  expect(await pos()).toEqual(stopped);
  await page.keyboard.down("w");await expect.poll(async()=>(await pos()).y).toBeLessThan(stopped.y-5);await page.keyboard.up("w");
 });
+test("editable focus clears held movement and typing cannot move the hero",async({page})=>{
+ await startRun(page,"EPOCH-GOLDEN-001");await page.evaluate(()=>(window as any).__seedE2E.stageEvolution("hunters",0));
+ const pos=()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).p.slice(0,2));
+ const begin=await pos();await page.keyboard.down("d");await expect.poll(async()=>(await pos())[0]).toBeGreaterThan(begin[0]+5);
+ await page.evaluate(()=>{const edit=document.createElement("textarea");edit.id="input-context-editor";document.getElementById("ui")!.appendChild(edit);edit.focus();});
+ await page.keyboard.up("d");await page.keyboard.down("w");const stopped=await pos();await page.waitForTimeout(250);expect(await pos()).toEqual(stopped);await page.keyboard.up("w");
+ await page.keyboard.type("tf ");await expect(page.locator("#techmap-screen")).toHaveCount(0);await expect(page.locator("#input-context-editor")).toHaveValue("wtf ");
+ await page.evaluate(()=>document.getElementById("input-context-editor")!.remove());
+ await page.keyboard.down("d");await expect.poll(async()=>(await pos())[0]).toBeGreaterThan(stopped[0]+5);await page.keyboard.up("d");
+});

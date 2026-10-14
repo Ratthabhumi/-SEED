@@ -819,3 +819,9 @@ Content15.2 cohort correction: all8 cases passed but two complete runs failed
 Vitest onTaskUpdate RPC acknowledgement after continuous CPU-bound execution.
 The harness yields via Node setImmediate between unchanged cases; no timeout,
 policy or assertion change. Retain both failed logs and require a clean retry.
+Content15.2 clean6d00fce local full browser:162PASS/1oldskip,17.1minutes; full
+check484/54 provenance, Analyze6, ZIP source gates PASS. Cohort setImmediate
+yield retry8/8 PASS without RPC error. Final editable-focus guard prevents
+typing from moving/triggering game commands; focused native/QA and exact-head CI
+must cover it. Generated8×2 Hunter walk was withheld (foot-contact chronology
+unverified), actual source in docs/evidence/content152; no runtime allocation.

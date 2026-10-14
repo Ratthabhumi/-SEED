@@ -72,7 +72,9 @@ metadata; manager-owned texture is reused and never accumulated by run count.
   two offscreen animated-center cases and the correct dirty-build QA rejection.
   Dash fixture also needed real movement: canonical Dash requires `il>0`.
   Corrected focused suite11/11 and center EN/TH2/2 passed; full clean rebuild
-  must certify the consolidated product. No original assertion was removed.
+  certified6d00fce:162PASS/1oldskip,17.1minutes on native D3D11. Final editable-
+  focus correction receives focused native/QA checks and full exact-head CI.
+  No original assertion was removed.
   Two cohort runs completed all8 assertions but failed worker RPC acknowledgement
   after64/78s of continuous CPU work. Harness now yields Node's event loop with
   `setImmediate` between the same cases; no cohort/policy/assertion reduction or

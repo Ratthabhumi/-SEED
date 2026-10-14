@@ -1,6 +1,10 @@
 # Animation and attachment coverage
 
-No new motion images in15.2; original source/provenance remain in15.1.
+No new motion images are enabled in runtime; original reference/provenance
+remain in15.1. A real generated8×2 walk experiment was withheld because ordered
+foot-contact chronology was not verified; see
+`docs/evidence/content152/rejected-walk-review.md`. Actual source retained,
+not counted as approved animation.
 Hunters Stone/Space front/back:36distinct authored reference key poses.
 Idle/hurt/dash/ability/death each one key pose; walk and attack each two frames.
 Recovery reuses the second attack key pose. Canonical clock/native Phaser
