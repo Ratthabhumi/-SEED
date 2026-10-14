@@ -16,6 +16,7 @@ export class HeroEquipment {
   reset(world:string){this.world=world;this.released=-Infinity;this.abilityAt=-Infinity;}
   activate(world:string,time:number,id:string,x:number,y:number){if(this.world!==world)this.reset(world);this.ability=id;this.abilityAt=time;this.abilityX=x;this.abilityY=y;}
   fire(world:string,time:number,x:number,y:number,tx:number,ty:number,family:WeaponFamily){
+    if(family!=="kinetic"&&family!=="energy")return;
     if(this.world!==world)this.reset(world);this.released=time;this.aim=Math.atan2(ty-y,tx-x);this.releasedFamily=family;
   }
   draw(g:Phaser.GameObjects.Graphics,s:RunState,facing:number,reduced:boolean,highContrast=false){

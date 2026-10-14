@@ -275,7 +275,7 @@ button, input { font-family: inherit; }
 .toast {
   position: absolute; top: 84px; left: 50%; transform: translate(-50%, -12px);
   background: var(--panel); border: 1px solid var(--accent); border-radius: 12px;
-  padding: 14px 26px; opacity: 0; transition: all 0.35s; text-align: center; max-width: 90vw;
+  padding: 14px 26px; opacity: 0; transition: opacity 0.35s, transform 0.35s; text-align: center; max-width: 90vw;
   z-index: 40;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }

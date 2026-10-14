@@ -15,6 +15,10 @@ and Analyze but native145/146 passed/one existing skip failed the old R2 asserti
 requiring zero toast DOM nodes. Content15 deliberately preserves hidden alerts
 under modals; R2 now requires zero VISIBLE toasts, preserving the no-overlap
 invariant without deleting critical notifications. Failure/log/screenshot remain.
+The strict visible assertion then exposed a real CSS transition: global
+transition:all animated inherited visibility for350ms, so some children remained
+visible while their parent was hidden. Restrict transitions to opacity/transform;
+keep the zero-visible assertion. The intermediate R2 failure remains evidence.
 
 Base PR9 fd171b239d00827d8100ae165d551d5766630cc7 verified local/origin/
 OPEN Draft and both CI runs4/4. New branch feat/content15-combat-world-ui-quality.
