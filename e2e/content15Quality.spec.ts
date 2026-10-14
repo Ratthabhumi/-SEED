@@ -28,7 +28,9 @@ for(const origin of ["hunters","engineers","resonant","sentinels"])test(`neutral
   await page.evaluate(([o,a])=>(window as any).__seedE2E.stageEvolution(o,a),[origin,age]);
   await page.waitForTimeout(100);
   const hero=(await page.evaluate(()=>(window as any).__seedE2E.actorPresentation()))[0];
-  expect(hero.texture).toBe("hero-neutral");expect(Number(hero.frame)%24).toBe(["hunters","engineers","resonant","sentinels"].indexOf(origin)*6+age);
+  if(origin==="hunters"&&(age===0||age===5)){
+    expect(hero.texture).toBe("hero-reference");expect(Math.floor(Number(hero.frame)/18)).toBe(age===5?1:0);
+  }else{expect(hero.texture).toBe("hero-neutral");expect(Number(hero.frame)%24).toBe(["hunters","engineers","resonant","sentinels"].indexOf(origin)*6+age);}
   await assertNoRawKeys(page);await page.screenshot({path:`test-results/browser/content15-body-${origin}-${age}.png`});
  }
 });

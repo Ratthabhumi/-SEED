@@ -1,0 +1,10 @@
+{
+  "tool": "built-in imagegen",
+  "date": "2026-10-14",
+  "reference": "assets/seed/content15/heroes-neutral-v1.png",
+  "source": "hunters-reference-v1.png",
+  "promptSummary": "36 distinct original painted weapon-neutral Hunters poses;9 columns idle/walk-left/walk-right/attack/recover/hurt/dash/ability/death;4 rows Stone front/back and Space front/back; regular transparent grid, identity/palette/anatomy/foot baseline locked",
+  "license": "Project MIT",
+  "classification": "AUTHORED_KEY_POSES_SPARSE_WALK_ATTACK_CLIPS",
+  "humanArtAcceptance": "PENDING"
+}

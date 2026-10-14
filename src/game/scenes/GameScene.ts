@@ -52,7 +52,7 @@ import {guardianCount} from "../render/weaponPresentation";
 import {drawEnemyTelegraph,enemyDisplayHeading,enemyDisplayMoving} from "../render/enemyTelegraph";
 import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor, BOSS_ASSET_V2,ENEMIES_ASSET_V2 } from "../assets/actorAssets";
-import {HERO_ASSETS,NEUTRAL_HERO_ATLAS} from "../assets/heroAssets";
+import {HERO_ASSETS,NEUTRAL_HERO_ATLAS,REFERENCE_HERO_ATLAS} from "../assets/heroAssets";
 import {HeroActions} from "../render/heroActions";
 import {drawBossTelegraph} from "../render/BossTelegraph";
 import {bossWarningDuration} from "../../core/combat/bossEncounter";
@@ -86,8 +86,15 @@ function percentile(sorted: number[], p: number): number {
 
 import { AbilityLoadout } from "../ui/AbilityLoadout";
 import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
+import { RenderDiagnostics } from "../render/RenderDiagnostics";
+import { HostileProjectileBatch } from "../render/HostileProjectileBatch";
+import { NumericFeedback } from "../render/NumericFeedback";
 
 export class GameScene extends Phaser.Scene {
+  private diagnostics?:RenderDiagnostics;
+  private hostileBatch!:HostileProjectileBatch;
+  private vectorHostiles=false;
+  private numericFeedback?:NumericFeedback;
   private loadout!: AbilityLoadout;
   private displayedOffers:unknown=null;
   private decisionInput!: DecisionInputBoundary;
@@ -206,6 +213,7 @@ export class GameScene extends Phaser.Scene {
     this.load.svg("actor-guardian",ACTOR_ASSETS.guardian,{width:1152,height:64});
     this.load.image("hero-neutral",NEUTRAL_HERO_ATLAS);
     for(const [id,url] of Object.entries(HERO_ASSETS))this.load.image("hero-v2-"+id,url);
+    this.load.image("hero-reference",REFERENCE_HERO_ATLAS);
     for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
     this.load.image("combat-projectiles",COMBAT_ASSETS.projectiles);
     this.load.image("combat-equipment",COMBAT_ASSETS.equipment);
@@ -287,6 +295,9 @@ export class GameScene extends Phaser.Scene {
     this.terrainPainter = new TerrainPainter(this);
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
+    this.hostileBatch=new HostileProjectileBatch(this);
+    this.vectorHostiles=new URLSearchParams(location.search).get("hostile")==="vector";
+    this.numericFeedback=new URLSearchParams(location.search).get("numbers")==="atlas"?new NumericFeedback(this):undefined;
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
@@ -322,6 +333,19 @@ export class GameScene extends Phaser.Scene {
     this.renderSamples = [];
     this.game.events.on(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
     this.game.events.on(Phaser.Core.Events.POST_RENDER, this.onPostRender);
+    if(new URLSearchParams(location.search).get("profile")==="1"){
+      this.diagnostics=new RenderDiagnostics(this);
+      for(const [target,key,label] of [
+        [this,"update","scene.update"],[this,"drawFrame","presentation.prepare"],
+        [this,"refreshGround","terrain.refresh"],[this,"handleEvents","events.feedback"],
+        [this,"floatTextAt","text.feedback"],[this.sim,"step","simulation.step"],
+        [this.enemyActors,"draw","actors.prepare"],[this.allyActors,"draw","allies.prepare"],
+        [this.terrainPainter,"update","terrain.update"],[this.terrainPainter,"upload","terrain.upload"],
+      ] as const)this.diagnostics.wrap(target,key,label);
+      const contexts=this.terrainPainter.diagnosticTargets();
+      this.diagnostics.wrap(contexts.tile,"putImageData","terrain.putImageData");
+      this.diagnostics.wrap(contexts.backing,"drawImage","terrain.backingDrawImage");
+    }else this.diagnostics=undefined;
 
     this.ground = this.add.graphics().setDepth(-10);
     this.gfx = this.add.graphics().setDepth(0);
@@ -445,6 +469,11 @@ export class GameScene extends Phaser.Scene {
           this.handleEvents(ev);
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
+        renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
+        referenceAnimation:()=>this.allyActors.referenceReview(),
+        hostileBatchCounts:()=>this.hostileBatch.counts(),
+        numericFeedbackCounts:()=>this.numericFeedback?.counts()??null,
+        resetRenderDiagnostics:()=>this.diagnostics?.reset(),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
         actorPresentation: () => this.allyActors.review(),
         streamingMove:(x:number,y:number)=>{
@@ -3679,6 +3708,7 @@ export class GameScene extends Phaser.Scene {
 
   private drawFrame(): void {
     this.combatSprites.begin();
+    this.hostileBatch.begin();
     const s = this.sim.state;
     const g = this.gfx;
     g.clear();
@@ -3745,12 +3775,14 @@ export class GameScene extends Phaser.Scene {
     const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
     this.heroActions.sync(s.worldNonce);
-    this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over),undefined,undefined,true);
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over),undefined,undefined,true,this.heroActions.revision);
+    const reference=this.allyActors.referenceReview();
+    this.heroEquipment.socket(reference?(reference.socket[0]!-64)*WORLD_SCALE.hero/128*(heroPose.flip?-1:1):0,reference?(reference.socket[1]!-83.2)*WORLD_SCALE.hero/128:-16);
     this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects,hc);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
       if (p.friendly) {if(hc)drawFriendlyProj(g,p,wopts);else this.combatSprites.projectile(p,s.originId);}
-      else drawHostileProj(g, p, wopts);
+      else if(this.vectorHostiles||!this.hostileBatch.draw(p,hc))drawHostileProj(g, p, wopts);
     }
     const b = s.build;
     const enabled=activeFamilies(s.originId,s.expansionFamily);
@@ -3783,6 +3815,7 @@ export class GameScene extends Phaser.Scene {
       }
     }
     this.combatSprites.end();
+    this.hostileBatch.end();
     this.combatFeedback.syncWorld(s.worldNonce);
     this.combatFeedback.draw(g,s.elapsed,this.reducedEffects,vis);
     if(!this.reducedEffects && this.knowledgeCollectUntil>s.elapsed){
@@ -3849,6 +3882,7 @@ export class GameScene extends Phaser.Scene {
 
   /** Pooled floating combat text (transient presentation, zero per-frame allocs). */
   private floatTextAt(x: number, y: number, txt: string, color: string): void {
+    if(this.numericFeedback?.show(x,y,txt,color))return;
     let t = this.floatText.find((o) => !o.visible);
     if (!t) {
       if (this.floatText.length >= 12) return;

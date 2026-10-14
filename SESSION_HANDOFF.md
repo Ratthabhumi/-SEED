@@ -1,3 +1,30 @@
+## Content15 renderer/animation closure candidate — 2026-10-14
+
+First b6d43bf PR CI38525799632:150 browser PASS/1 skip/1 failure. Numeric/cache
+fixture assumed2.2 wall seconds guarantees an actual enemy shot, but software
+rendering advances less canonical time and glyph count remained0. Wait/poll for
+the actual rendered shot with30s cap; keep positive glyph and≤64 pool assertions.
+This changes only test synchronization, not renderer/core or performance limits.
+Failed CI log/artifact retained. Full exact corrected-head CI must supersede it.
+
+Parent PR10 efef11ef9729c3bbc388061a45b605688b6a213e push38513285072/PR38513288712
+CI4/4 each verified. New branch feat/content15-perf-animation-closure-20261014
+targets that parent; no main merge/tag/public release or canonical version change.
+Cached threat glyphs reduce measured Graphics CPU work; optional phase/GL/GPU
+profiler and numeric-only prototype remain diagnostic. Original36-pose Hunters
+Stone/Space reference, native clips, canonical-time/event playback, sockets and
+PNG sequence roundtrip delivered; full animation/artist acceptance still pending.
+15min live no-profiler renderer p95=4.7ms, sim1.5ms, zero page errors; boss/World2/
+restart green. All240 ABBA/BAAB cold/warm rows retained: some render p95>8ms,
+terrain upload lifetime worst31.6ms, small normal/reduced median regressions.
+PERFORMANCE_GATE_OPEN and REPEATABILITY_UNRESOLVED; no universal no-regression
+or HUMAN_FUN_PASS. See docs/CONTENT15_PERF_ANIMATION_DELIVERY.md and research/
+CONTENT15_RENDERER_AND_ANIMATION_20261014.md for evidence and remaining Research.
+Incoming clean-parent Engineers session384 preserved locally before edits and
+published sanitized; target-complete is not a fun verdict. Exact final-head CI/
+ZIP/sha receipt belongs in the new Draft PR, with local frozen dirty-build
+measurements distinguished from official packages.
+
 ## Content15 evidence publication — 2026-10-14
 
 Product SHA070098909d40cac810e2438311e54ba2c21d53ed verified push38500135128
@@ -216,310 +243,312 @@ Branch: feat/content9-ascension-guidance-20261011, based on clean Content9 a09ba
 
 ## Run
 
-- sessionId: qa-422486-kb2iv0
-- reportSequence: 403
-- buildSha: fd171b239d00827d8100ae165d551d5766630cc7
+- sessionId: qa-20893-5044b3
+- reportSequence: 384
+- buildSha: efef11ef9729c3bbc388061a45b605688b6a213e
 - buildDirty: false
-- seed: EPOCH-GOLDEN-001
-- origin: resonant
-- package: 0.2.0-dev.0 / worldgen 2 / content 14 / save 2
+- seed: EPOCH-T7PB-ZB3X
+- origin: engineers
+- package: 0.2.0-dev.0 / worldgen 3 / content 15 / save 2
 - endReason: target-complete
-- wallDuration: 2071.36s
-- viewport: 2560x1305 / refresh: ~49Hz
+- wallDuration: 1975.10s
+- viewport: 2560x1305 / refresh: ~72Hz
 
 ## Route
 - [x] run started (0.00s)
-- [x] Bronze (99.92s)
-- [x] Iron (183.45s)
-- [x] Industrial (320.08s)
-- [x] Atomic (370.65s)
-- [x] Space (438.50s)
-- [x] boss spawned (503.05s)
-- [x] boss killed (699.62s)
-- [x] ascension offered (699.62s)
+- [x] Bronze (189.90s)
+- [x] Iron (326.32s)
+- [x] Industrial (465.07s)
+- [x] Atomic (556.63s)
+- [x] Space (800.30s)
+- [x] boss spawned (874.98s)
+- [x] boss killed (891.08s)
+- [x] ascension offered (891.08s)
 - [x] ascension started (0.00s)
 - [x] child world (0.00s)
-- [x] post-ascension +30s (30.25s)
-- [x] post-ascension +60s (60.13s)
-- [x] post-ascension +120s (120.10s)
+- [x] post-ascension +30s (30.18s)
+- [x] post-ascension +60s (60.18s)
+- [x] post-ascension +120s (120.22s)
 - [ ] player died
-- [x] run ended (120.10s)
+- [x] run ended (120.22s)
 
 ## Civilization Command Loop Usage
 
-- Tech Map opened: 1
-- First Tech Map open: 49.52s sim
-- Paths pinned: 1 [space-lance]
+- Tech Map opened: 4
+- First Tech Map open: 205.87s sim
+- Paths pinned: 4 [space-lance, stone-tools, space-swarm]
 - Reserve uses: 0 (attempts 0)
-- Rerolls: 1 (attempts 1, unavailable 0)
+- Rerolls: 0 (attempts 0, unavailable 0)
 - Skips: 0
-- Breakthroughs completed: 2 [metallurgy, fortress]
+- Breakthroughs completed: 2 [metallurgy, war-machine]
 
-- Territories claimed: 5 [ruin, signal, signal, meteor, vault] (claim attempts 5)
-- First territory time: 113.33s sim
-- Outpost types: [Research: 1, Military: 1, Economy: 2]
-- Outpost upgrades: 3 (attempts 3)
-- Raids incoming: 2
+- Territories claimed: 6 [meteor, ruin, vault, vault, signal, signal] (claim attempts 6)
+- First territory time: 96.47s sim
+- Outpost types: [Research: 2, Military: 2, Economy: 2]
+- Outpost upgrades: 1 (attempts 1)
+- Raids incoming: 3
 - Raids defended: 1
-- Raids lost: 1
-- Outposts repaired: 0
+- Raids lost: 2
+- Outposts repaired: 2
 
-- Rally commands (Q): 1
-- Focus commands (E): 0
+- Rally commands (Q): 6
+- Focus commands (E): 3
 - Hold commands (R): 0
-- Origin ability uses (F): 2
-- Civ Map opens (M): 0
+- Origin ability uses (F): 4
+- Civ Map opens (M): 1
 
 - Age gate block summary:
-  - Stone dwell: 99.92s
-  - Bronze dwell: 83.53s
-  - Iron dwell: 136.63s
-  - Industrial dwell: 50.57s
-  - Atomic dwell: 67.85s
-  - Space to Boss kill: 261.12s
+  - Stone dwell: 189.90s
+  - Bronze dwell: 136.42s
+  - Iron dwell: 138.75s
+  - Industrial dwell: 91.57s
+  - Atomic dwell: 243.67s
+  - Space to Boss kill: 90.78s
 
 ## Engagement Identity
-- @0.00s stone asc 0: origin resonant [energy+field] lv1 k0e0d0f0 techs 0 knowledge 0 breakthroughs [-] legacies [-] poi [-]
-- @99.92s bronze asc 0: origin resonant [energy+field] lv9 k1e1d1f1 techs 12 knowledge 552 breakthroughs [metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
-- @183.45s iron asc 0: origin resonant [energy+field] lv15 k2e2d2f2 techs 18 knowledge 1508 breakthroughs [fortress+metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
-- @320.08s industrial asc 0: origin resonant [energy+field] lv20 k3e3d3f3 techs 23 knowledge 2800 breakthroughs [fortress+metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
-- @370.65s atomic asc 0: origin resonant [energy+field+kinetic] lv24 k4e4d4f4 techs 27 knowledge 4598 breakthroughs [fortress+metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
-- @438.50s space asc 0: origin resonant [energy+field+kinetic] lv28 k5e5d5f5 techs 31 knowledge 6599 breakthroughs [fortress+metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
-- @699.62s space asc 0: origin resonant [energy+field+kinetic] lv37 k5e5d5f5 techs 40 knowledge 13634 breakthroughs [fortress+metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
-- @0.00s stone asc 1: origin engineers [defense+kinetic] lv1 k0e0d0f0 techs 41 knowledge 0 breakthroughs [metallurgy] legacies [heir-metallurgy] poi [-]
+- @0.00s stone asc 0: origin engineers [defense+energy+kinetic] lv1 k0e0d0f0 techs 0 knowledge 0 breakthroughs [-] legacies [-] poi [-]
+- @189.90s bronze asc 0: origin engineers [defense+energy+kinetic] lv9 k1e1d1f1 techs 12 knowledge 548 breakthroughs [-] legacies [-] poi [meteor+ruin+signal+vault]
+- @326.32s iron asc 0: origin engineers [defense+energy+kinetic] lv15 k2e2d2f2 techs 18 knowledge 1501 breakthroughs [-] legacies [-] poi [meteor+ruin+signal+vault]
+- @465.07s industrial asc 0: origin engineers [defense+energy+kinetic] lv20 k3e3d3f3 techs 23 knowledge 2859 breakthroughs [metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
+- @556.63s atomic asc 0: origin engineers [defense+energy+kinetic] lv23 k4e4d4f4 techs 26 knowledge 4507 breakthroughs [metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
+- @800.30s space asc 0: origin engineers [defense+energy+kinetic] lv30 k5e5d5f5 techs 33 knowledge 8311 breakthroughs [metallurgy] legacies [-] poi [meteor+ruin+signal+vault]
+- @891.08s space asc 0: origin engineers [defense+energy+kinetic] lv32 k5e5d5f5 techs 35 knowledge 10492 breakthroughs [metallurgy+war-machine] legacies [-] poi [meteor+ruin+signal+vault]
+- @0.00s stone asc 1: origin engineers [defense+kinetic] lv1 k0e0d0f0 techs 37 knowledge 0 breakthroughs [metallurgy] legacies [heir-metallurgy] poi [-]
 
 ## Knowledge At Age
-- bronze @99.92s (asc 0): 552
-- iron @183.45s (asc 0): 1508
-- industrial @320.08s (asc 0): 2800
-- atomic @370.65s (asc 0): 4598
-- space @438.50s (asc 0): 6599
+- bronze @189.90s (asc 0): 548
+- iron @326.32s (asc 0): 1501
+- industrial @465.07s (asc 0): 2859
+- atomic @556.63s (asc 0): 4507
+- space @800.30s (asc 0): 8311
 
 ## Sim Decisions (ordered)
-- [dominion] 0/0 @0.95s stone asc 0
-- [mission_complete] bronze @8.03s stone asc 0
-- [poi-major] meteor @11.95s stone asc 0
-- [site_prompt] CONTESTED:meteor @11.97s stone asc 0
-- [focus] poi-982d6fd4--2-0-0 @11.97s stone asc 0
-- [tech] application-energy-0 @11.97s stone asc 0
-- [poi_discovered] meteor:+35 @14.43s stone asc 0
-- [site_prompt] CONTESTED:meteor @14.45s stone asc 0
-- [focus] poi-982d6fd4--3-0-0 @14.45s stone asc 0
-- [tech] application-field-0 @14.45s stone asc 0
-- [tech] application-energy-1 @14.45s stone asc 0
-- [poi-major] ruin @18.45s stone asc 0
-- [site_prompt] CONTESTED:ruin @18.47s stone asc 0
-- [focus] poi-982d6fd4--4-0-0 @18.47s stone asc 0
-- [tech] web:application-energy-1:0 @18.47s stone asc 0
-- [poi-major] signal @27.22s stone asc 0
-- [site_prompt] CONTESTED:signal @27.23s stone asc 0
-- [focus] poi-982d6fd4--3-2-0 @27.23s stone asc 0
-- [tech] web:application-field-0:0 @27.23s stone asc 0
-- [tech] web:web:application-field-0:0:0 @34.87s stone asc 0
-- [poi-major] vault @41.63s stone asc 0
-- [site_prompt] CONTESTED:vault @41.65s stone asc 0
-- [focus] poi-982d6fd4--2-4-0 @41.65s stone asc 0
-- [tech] web:web:application-energy-1:0:1 @41.65s stone asc 0
-- [poi_discovered] ruin:+35 @49.05s stone asc 0
-- [site_prompt] CLAIMABLE:ruin @49.07s stone asc 0
-- [focus] poi-982d6fd4--5-4-0 @49.07s stone asc 0
-- [tech] weave-stone-warfare-culture @49.07s stone asc 0
-- [techmap_open] open @49.52s stone asc 0
-- [pin] space-lance @49.52s stone asc 0
-- [poi_discovered] signal:+71 @55.02s stone asc 0
-- [site_prompt] CONTESTED:signal @55.03s stone asc 0
-- [focus] poi-982d6fd4--6-5-0 @55.03s stone asc 0
-- [tech] stone-tools @55.03s stone asc 0
-- [poi_discovered] meteor:+50 @61.60s stone asc 0
-- [site_prompt] CONTESTED:meteor @61.62s stone asc 0
-- [focus] poi-982d6fd4--6-6-0 @61.62s stone asc 0
-- [tech] application-field-1 @61.62s stone asc 0
-- [focus] poi-982d6fd4--6-5-0 @63.18s stone asc 0
-- [focus] poi-982d6fd4--5-4-0 @66.58s stone asc 0
-- [focus] poi-982d6fd4--6-5-0 @73.25s stone asc 0
-- [focus] poi-982d6fd4--6-6-0 @74.37s stone asc 0
-- [tech] stone-fire @84.73s stone asc 0
-- [breakthrough] metallurgy @84.73s stone asc 0
-- [poi_discovered] ruin:+50 @90.10s stone asc 0
-- [site_prompt] CONTESTED:ruin @90.83s stone asc 0
-- [focus] poi-982d6fd4--7-9-0 @90.83s stone asc 0
-- [poi_discovered] vault:+80 @95.72s stone asc 0
-- [site_prompt] CONTESTED:vault @95.73s stone asc 0
-- [focus] poi-982d6fd4--9-10-0 @95.73s stone asc 0
-- [tech] stone-totem @95.73s stone asc 0
-- [poi_discovered] vault:+80 @99.88s stone asc 0
-- [age_reached] bronze @99.90s stone asc 0
-- [site_prompt] CLAIMABLE:vault @99.92s bronze asc 0
-- [focus] poi-982d6fd4--11-11-0 @99.92s bronze asc 0
-- [tech] weave-bronze-industry-science @102.32s bronze asc 0
-- [poi_discovered] vault:+87 @104.80s bronze asc 0
-- [site_prompt] CLAIMABLE:vault @105.03s bronze asc 0
-- [focus] poi-982d6fd4--13-12-0 @105.03s bronze asc 0
-- [poi_discovered] signal:+109 @106.13s bronze asc 0
-- [site_prompt] CLAIMABLE:signal @106.15s bronze asc 0
-- [focus] poi-982d6fd4--14-12-0 @106.15s bronze asc 0
-- [tech] web:web:application-energy-1:0:0 @106.15s bronze asc 0
-- [poi_discovered] ruin:+59 @109.35s bronze asc 0
-- [site_prompt] CLAIMABLE:ruin @109.42s bronze asc 0
-- [focus] poi-982d6fd4--14-13-0 @109.42s bronze asc 0
-- [poi_discovered] vault:+95 @110.50s bronze asc 0
-- [site_prompt] CLAIMABLE:vault @110.52s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @110.52s bronze asc 0
-- [tech] bronze-armor @110.52s bronze asc 0
-- [breakthrough] fortress @110.52s bronze asc 0
-- [focus] poi-982d6fd4--14-13-0 @111.83s bronze asc 0
-- [claim_attempt] poi-982d6fd4--14-13-0 @113.33s bronze asc 0
-- [territory_claimed] poi-982d6fd4--14-13-0:ruin @113.33s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @113.33s bronze asc 0
-- [first_claim] 113.3s @113.33s bronze asc 0
-- [dominion] 1/1 @113.33s bronze asc 0
-- [outpost_spec] poi-982d6fd4--14-13-0:military @113.33s bronze asc 0
-- [mission_complete] iron @123.70s bronze asc 0
-- [poi_discovered] signal:+118 @129.65s bronze asc 0
-- [site_prompt] CONTESTED:signal @129.67s bronze asc 0
-- [focus] poi-982d6fd4--15-15-0 @129.67s bronze asc 0
-- [tech] web:web:web:application-field-0:0:0:0 @129.67s bronze asc 0
-- [poi_discovered] meteor:+71 @131.53s bronze asc 0
-- [site_prompt] CONTESTED:meteor @132.53s bronze asc 0
-- [focus] poi-982d6fd4--16-15-0 @132.53s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @134.77s bronze asc 0
-- [focus] poi-982d6fd4--14-12-0 @138.10s bronze asc 0
-- [focus] poi-982d6fd4--13-12-0 @140.33s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @145.88s bronze asc 0
-- [tech] bronze-rite @146.07s bronze asc 0
-- [focus] poi-982d6fd4--15-15-0 @147.63s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @149.83s bronze asc 0
-- [focus] poi-982d6fd4--14-12-0 @154.22s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @155.32s bronze asc 0
-- [focus] poi-982d6fd4--15-15-0 @159.77s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @163.10s bronze asc 0
-- [focus] poi-982d6fd4--14-12-0 @171.98s bronze asc 0
-- [focus] poi-982d6fd4--13-12-0 @178.55s bronze asc 0
-- [tech] web:bronze-rite:1 @178.67s bronze asc 0
-- [focus] poi-982d6fd4--15-13-0 @180.70s bronze asc 0
-- [age_reached] iron @183.43s bronze asc 0
-- [mission_complete] industrial @189.77s iron asc 0
-- [focus] poi-982d6fd4--14-12-0 @190.58s iron asc 0
-- [focus] poi-982d6fd4--13-12-0 @193.92s iron asc 0
-- [focus] poi-982d6fd4--14-12-0 @199.52s iron asc 0
-- [focus] poi-982d6fd4--15-13-0 @201.75s iron asc 0
-- [tech] web:stone-tools:0 @208.85s iron asc 0
-- [upgrade_attempt] poi-982d6fd4--14-13-0 @214.87s iron asc 0
-- [outpost_upgraded] poi-982d6fd4--14-13-0 @214.87s iron asc 0
-- [focus] poi-982d6fd4--16-15-0 @216.40s iron asc 0
-- [focus] poi-982d6fd4--15-15-0 @217.52s iron asc 0
-- [focus] poi-982d6fd4--16-15-0 @223.08s iron asc 0
-- [focus] poi-982d6fd4--15-15-0 @224.22s iron asc 0
-- [focus] poi-982d6fd4--15-13-0 @227.55s iron asc 0
-- [focus] poi-982d6fd4--14-12-0 @234.15s iron asc 0
-- [claim_attempt] poi-982d6fd4--14-12-0 @235.10s iron asc 0
-- [territory_claimed] poi-982d6fd4--14-12-0:signal @235.10s iron asc 0
-- [focus] poi-982d6fd4--15-13-0 @235.10s iron asc 0
-- [dominion] 2/2 @235.10s iron asc 0
-- [outpost_spec] poi-982d6fd4--14-12-0:research @235.10s iron asc 0
-- [focus] poi-982d6fd4--13-12-0 @235.98s iron asc 0
-- [focus] poi-982d6fd4--11-11-0 @245.97s iron asc 0
-- [poi_discovered] signal:+136 @246.23s iron asc 0
-- [site_prompt] CLAIMABLE:signal @246.25s iron asc 0
-- [focus] poi-982d6fd4--10-13-0 @246.25s iron asc 0
-- [tech] web:weave-bronze-industry-science:1 @246.25s iron asc 0
-- [focus] poi-982d6fd4--9-10-0 @250.50s iron asc 0
-- [focus] poi-982d6fd4--11-11-0 @251.62s iron asc 0
-- [focus] poi-982d6fd4--13-12-0 @256.02s iron asc 0
-- [focus] poi-982d6fd4--11-11-0 @257.15s iron asc 0
-- [focus] poi-982d6fd4--13-12-0 @258.25s iron asc 0
-- [focus] poi-982d6fd4--15-13-0 @262.73s iron asc 0
-- [poi_discovered] meteor:+81 @263.17s iron asc 0
-- [site_prompt] CONTESTED:meteor @263.83s iron asc 0
-- [focus] poi-982d6fd4--17-9-0 @263.83s iron asc 0
-- [poi_discovered] ruin:+68 @266.33s iron asc 0
-- [site_prompt] CLAIMABLE:ruin @267.15s iron asc 0
-- [focus] poi-982d6fd4--19-9-0 @267.15s iron asc 0
-- [poi_discovered] ruin:+68 @267.67s iron asc 0
-- [site_prompt] CONTESTED:ruin @267.68s iron asc 0
-- [tech] web:web:web:application-energy-1:0:1:1 @267.68s iron asc 0
-- [focus] poi-982d6fd4--19-8-0 @269.37s iron asc 0
-- [poi_discovered] ruin:+73 @270.30s iron asc 0
-- [site_prompt] CLAIMABLE:ruin @270.48s iron asc 0
-- [focus] poi-982d6fd4--20-10-0 @270.48s iron asc 0
-- [poi_discovered] signal:+146 @272.75s iron asc 0
-- [site_prompt] CONTESTED:signal @273.27s iron asc 0
-- [focus] poi-982d6fd4--21-11-0 @273.27s iron asc 0
-- [poi_discovered] signal:+146 @276.28s iron asc 0
-- [site_prompt] CONTESTED:signal @276.30s iron asc 0
-- [focus] poi-982d6fd4--22-12-0 @276.30s iron asc 0
-- [tech] web:bronze-rite:0 @276.30s iron asc 0
-- [poi_discovered] vault:+117 @281.38s iron asc 0
-- [site_prompt] CLAIMABLE:vault @281.80s iron asc 0
-- [focus] poi-982d6fd4--20-14-0 @281.80s iron asc 0
-- [focus] poi-982d6fd4--15-13-0 @287.30s iron asc 0
-- [focus] poi-982d6fd4--16-15-0 @289.50s iron asc 0
-- [focus] poi-982d6fd4--15-13-0 @290.60s iron asc 0
-- [focus] poi-982d6fd4--16-15-0 @292.83s iron asc 0
-- [raid_incoming] poi-982d6fd4--14-13-0:30s @293.32s iron asc 0
-- [focus] poi-982d6fd4--14-13-0 @293.95s iron asc 0
-- [tech] web:bronze-armor:0 @304.27s iron asc 0
-- [age_reached] industrial @320.07s iron asc 0
-- [expansion] kinetic @320.08s industrial asc 0
-- [claim_attempt] poi-982d6fd4--15-15-0 @323.72s industrial asc 0
-- [territory_claimed] poi-982d6fd4--15-15-0:signal @323.72s industrial asc 0
-- [dominion] 3/3 @323.72s industrial asc 0
-- [outpost_spec] poi-982d6fd4--15-15-0:economy @323.72s industrial asc 0
-- [mission_complete] atomic @325.30s industrial asc 0
-- [raid_repelled] poi-982d6fd4--14-13-0 @329.42s industrial asc 0
-- [focus] poi-982d6fd4--15-13-0 @329.43s industrial asc 0
-- [tech] iron-fort @329.43s industrial asc 0
-- [focus] poi-982d6fd4--13-12-0 @329.50s industrial asc 0
-- [focus] poi-982d6fd4--15-13-0 @332.87s industrial asc 0
-- [focus] poi-982d6fd4--16-15-0 @336.23s industrial asc 0
-- [claim_attempt] poi-982d6fd4--16-15-0 @336.72s industrial asc 0
-- [territory_claimed] poi-982d6fd4--16-15-0:meteor @336.72s industrial asc 0
-- [focus] poi-982d6fd4--15-13-0 @336.72s industrial asc 0
-- [dominion] 4/3 @336.72s industrial asc 0
-- [outpost_spec] poi-982d6fd4--16-15-0:economy @336.72s industrial asc 0
-- [tech] weave-industrial-science-industry @348.30s industrial asc 0
-- [tech] web:web:web:application-field-0:0:0:1 @354.15s industrial asc 0
-- [claim_attempt] poi-982d6fd4--15-13-0 @360.13s industrial asc 0
-- [territory_claimed] poi-982d6fd4--15-13-0:vault @360.13s industrial asc 0
-- [focus] poi-982d6fd4--13-12-0 @360.13s industrial asc 0
-- [dominion] 5/3 @360.13s industrial asc 0
-- [tech] web:web:bronze-rite:1:0 @364.55s industrial asc 0
-- [focus] poi-982d6fd4--10-13-0 @364.83s industrial asc 0
-- [focus] poi-982d6fd4--13-12-0 @369.25s industrial asc 0
-- [focus] poi-982d6fd4--10-13-0 @370.37s industrial asc 0
-- [poi_discovered] vault:+139 @370.62s industrial asc 0
-- [age_reached] atomic @370.63s industrial asc 0
-- [site_prompt] CLAIMABLE:vault @370.65s atomic asc 0
-- [focus] poi-982d6fd4--12-14-0 @370.65s atomic asc 0
-- [focus] poi-982d6fd4--10-13-0 @373.70s atomic asc 0
-- [mission_complete] space @374.17s atomic asc 0
-- [focus] poi-982d6fd4--12-14-0 @378.17s atomic asc 0
-- [focus] poi-982d6fd4--13-12-0 @378.77s atomic asc 0
-- [tech] web:web:web:application-energy-1:0:1:0 @378.77s atomic asc 0
+- [dominion] 0/0 @0.97s stone asc 0
+- [mission_complete] bronze @9.77s stone asc 0
+- [tech] application-energy-0 @34.65s stone asc 0
+- [tech] application-defense-0 @51.37s stone asc 0
+- [poi-major] ruin @58.67s stone asc 0
+- [tech] web:application-defense-0:1 @58.68s stone asc 0
+- [site_prompt] CONTESTED:ruin @58.87s stone asc 0
+- [focus] poi-123a380f-3-2-0 @58.87s stone asc 0
+- [poi-major] meteor @63.40s stone asc 0
+- [tech] weave-stone-warfare-culture @63.42s stone asc 0
+- [site_prompt] CONTESTED:meteor @63.57s stone asc 0
+- [focus] poi-123a380f-4-2-0 @63.57s stone asc 0
+- [tech] application-defense-1 @68.62s stone asc 0
+- [focus] poi-123a380f-3-2-0 @73.25s stone asc 0
+- [poi_discovered] meteor:+38 @95.15s stone asc 0
+- [site_prompt] CONTESTED:meteor @95.17s stone asc 0
+- [focus] poi-123a380f--4-6-0 @95.17s stone asc 0
+- [tech] web:web:application-defense-0:1:0 @95.17s stone asc 0
+- [claim_attempt] poi-123a380f--4-6-0 @96.47s stone asc 0
+- [territory_claimed] poi-123a380f--4-6-0:meteor @96.47s stone asc 0
+- [first_claim] 96.5s @96.47s stone asc 0
+- [dominion] 1/0 @96.47s stone asc 0
+- [outpost_spec] poi-123a380f--4-6-0:military @96.47s stone asc 0
+- [tech] web:application-energy-0:0 @116.00s stone asc 0
+- [poi_discovered] ruin:+39 @117.37s stone asc 0
+- [site_prompt] CONTESTED:ruin @117.42s stone asc 0
+- [focus] poi-123a380f--3-6-0 @117.42s stone asc 0
+- [tech] application-kinetic-1 @121.58s stone asc 0
+- [poi-major] vault @122.62s stone asc 0
+- [site_prompt] CONTESTED:vault @122.63s stone asc 0
+- [focus] poi-123a380f--4-7-0 @122.63s stone asc 0
+- [tech] fb-hp-7 @122.63s stone asc 0
+- [focus] poi-123a380f--3-6-0 @128.77s stone asc 0
+- [ability_used] overdrive @132.38s stone asc 0
+- [focus] poi-123a380f--4-7-0 @138.83s stone asc 0
+- [poi-major] signal @149.13s stone asc 0
+- [site_prompt] CONTESTED:signal @149.15s stone asc 0
+- [focus] poi-123a380f--7-7-0 @149.15s stone asc 0
+- [tech] web:application-defense-1:0 @149.15s stone asc 0
+- [focus] poi-123a380f--3-6-0 @155.57s stone asc 0
+- [tech] web:web:application-defense-1:0:0 @155.60s stone asc 0
+- [focus] poi-123a380f--7-7-0 @156.57s stone asc 0
+- [focus] poi-123a380f--3-6-0 @158.80s stone asc 0
+- [focus] poi-123a380f--4-7-0 @160.42s stone asc 0
+- [focus] poi-123a380f--3-6-0 @161.52s stone asc 0
+- [ability_used] overdrive @171.80s stone asc 0
+- [focus] poi-123a380f--4-7-0 @177.58s stone asc 0
+- [tech] application-kinetic-0 @177.58s stone asc 0
+- [focus] poi-123a380f--7-7-0 @182.37s stone asc 0
+- [poi_discovered] vault:+63 @189.85s stone asc 0
+- [age_reached] bronze @189.87s stone asc 0
+- [site_prompt] CONTESTED:vault @189.90s bronze asc 0
+- [focus] poi-123a380f--6-6-0 @189.90s bronze asc 0
+- [tech] stone-fire @191.33s bronze asc 0
+- [focus] poi-123a380f--3-6-0 @197.42s bronze asc 0
+- [ability_used] overdrive @197.45s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @199.68s bronze asc 0
+- [focus] poi-123a380f--3-6-0 @200.80s bronze asc 0
+- [mission_complete] iron @204.03s bronze asc 0
+- [techmap_open] open @205.87s bronze asc 0
+- [pin] space-lance @205.87s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @209.05s bronze asc 0
+- [focus] poi-123a380f--7-7-0 @219.10s bronze asc 0
+- [focus] poi-123a380f--6-6-0 @221.32s bronze asc 0
+- [tech] bronze-precision @224.67s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @225.73s bronze asc 0
+- [focus] poi-123a380f--3-6-0 @226.90s bronze asc 0
+- [claim_attempt] poi-123a380f--3-6-0 @229.15s bronze asc 0
+- [territory_claimed] poi-123a380f--3-6-0:ruin @229.15s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @229.15s bronze asc 0
+- [dominion] 2/1 @229.15s bronze asc 0
+- [outpost_spec] poi-123a380f--3-6-0:research @229.15s bronze asc 0
+- [upgrade_attempt] poi-123a380f--4-6-0 @233.18s bronze asc 0
+- [outpost_upgraded] poi-123a380f--4-6-0 @233.18s bronze asc 0
+- [tech] web:web:application-defense-0:1:1 @239.35s bronze asc 0
+- [focus] poi-123a380f--7-7-0 @240.10s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @243.42s bronze asc 0
+- [focus] poi-123a380f--7-7-0 @244.55s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @246.83s bronze asc 0
+- [focus] poi-123a380f--7-7-0 @247.97s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @251.35s bronze asc 0
+- [squad_command] follow @259.00s bronze asc 0
+- [squad_command] focus @259.65s bronze asc 0
+- [tech] web:web:web:application-defense-0:1:0:0 @270.37s bronze asc 0
+- [raid_incoming] poi-123a380f--3-6-0:30s @276.45s bronze asc 0
+- [focus] poi-123a380f--3-6-0 @276.52s bronze asc 0
+- [squad_command] follow @287.87s bronze asc 0
+- [tech] web:weave-stone-warfare-culture:1 @295.93s bronze asc 0
+- [poi_discovered] vault:+82 @311.57s bronze asc 0
+- [claim_attempt] poi-123a380f--1-10-0 @311.90s bronze asc 0
+- [territory_claimed] poi-123a380f--1-10-0:vault @311.90s bronze asc 0
+- [dominion] 3/1 @311.90s bronze asc 0
+- [poi_discovered] vault:+82 @315.20s bronze asc 0
+- [site_prompt] CONTESTED:vault @315.22s bronze asc 0
+- [tech] web:bronze-precision:1 @315.22s bronze asc 0
+- [poi_discovered] ruin:+51 @317.80s bronze asc 0
+- [site_prompt] CONTESTED:ruin @318.55s bronze asc 0
+- [outpost_lost] poi-123a380f--3-6-0 @319.92s bronze asc 0
+- [focus] poi-123a380f--3-9-0 @320.77s bronze asc 0
+- [dominion] 2/1 @320.77s bronze asc 0
+- [focus] poi-123a380f--4-7-0 @322.97s bronze asc 0
+- [age_reached] iron @326.30s bronze asc 0
+- [tech] web:web:weave-stone-warfare-culture:1:1 @328.68s iron asc 0
+- [outpost_repaired] poi-123a380f--3-6-0 @337.02s iron asc 0
+- [dominion] 3/2 @337.10s iron asc 0
+- [techmap_open] open @342.32s iron asc 0
+- [pin] stone-tools @342.32s iron asc 0
+- [focus] poi-123a380f--2-9-0 @350.43s iron asc 0
+- [focus] poi-123a380f--3-9-0 @352.67s iron asc 0
+- [focus] poi-123a380f--2-9-0 @353.77s iron asc 0
+- [focus] poi-123a380f--3-9-0 @359.30s iron asc 0
+- [tech] stone-tools @359.58s iron asc 0
+- [breakthrough] metallurgy @359.58s iron asc 0
+- [mission_complete] industrial @359.58s iron asc 0
+- [focus] poi-123a380f--2-9-0 @372.75s iron asc 0
+- [outpost_spec] poi-123a380f--1-10-0:economy @377.08s iron asc 0
+- [focus] poi-123a380f-3-2-0 @401.08s iron asc 0
+- [focus] poi-123a380f-3-2-0 @403.27s iron asc 0
+- [poi_discovered] ruin:+65 @406.98s iron asc 0
+- [site_prompt] CONTESTED:ruin @407.00s iron asc 0
+- [focus] poi-123a380f-0-4-0 @407.00s iron asc 0
+- [tech] web:bronze-precision:0 @407.00s iron asc 0
+- [squad_command] follow @412.35s iron asc 0
+- [squad_command] focus @413.43s iron asc 0
+- [focus] poi-123a380f-3-2-0 @417.22s iron asc 0
+- [squad_command] follow @417.72s iron asc 0
+- [focus] poi-123a380f-0-4-0 @418.35s iron asc 0
+- [poi_discovered] meteor:+78 @425.93s iron asc 0
+- [site_prompt] CLAIMABLE:meteor @426.05s iron asc 0
+- [focus] poi-123a380f--2-2-0 @426.05s iron asc 0
+- [poi_discovered] ruin:+65 @432.97s iron asc 0
+- [site_prompt] CONTESTED:ruin @433.83s iron asc 0
+- [focus] poi-123a380f--1-1-0 @433.83s iron asc 0
+- [focus] poi-123a380f--2-2-0 @436.55s iron asc 0
+- [tech] weave-bronze-warfare-culture @436.55s iron asc 0
+- [focus] poi-123a380f--1-1-0 @448.12s iron asc 0
+- [poi_discovered] meteor:+78 @454.72s iron asc 0
+- [site_prompt] CLAIMABLE:meteor @455.80s iron asc 0
+- [focus] poi-123a380f--2--1-0 @455.80s iron asc 0
+- [poi_discovered] ruin:+65 @465.03s iron asc 0
+- [site_prompt] CLAIMABLE:ruin @465.05s iron asc 0
+- [focus] poi-123a380f--3--3-0 @465.05s iron asc 0
+- [tech] web:stone-tools:1 @465.05s iron asc 0
+- [age_reached] industrial @465.05s iron asc 0
+- [mission_complete] atomic @466.38s industrial asc 0
+- [focus] poi-123a380f--2--1-0 @472.12s industrial asc 0
+- [poi_discovered] vault:+104 @472.17s industrial asc 0
+- [site_prompt] CLAIMABLE:vault @473.25s industrial asc 0
+- [focus] poi-123a380f-0--3-0 @473.25s industrial asc 0
+- [focus] poi-123a380f--2--1-0 @474.37s industrial asc 0
+- [focus] poi-123a380f-0--3-0 @475.48s industrial asc 0
+- [focus] poi-123a380f--2--1-0 @479.98s industrial asc 0
+- [techmap_open] open @483.32s industrial asc 0
+- [pin] space-lance @483.32s industrial asc 0
+- [tech] web:web:stone-tools:1:0 @483.32s industrial asc 0
+- [focus] poi-123a380f--1-1-0 @486.35s industrial asc 0
+- [focus] poi-123a380f--2-2-0 @489.70s industrial asc 0
+- [focus] poi-123a380f--1-1-0 @494.18s industrial asc 0
+- [focus] poi-123a380f--2-2-0 @495.28s industrial asc 0
+- [raid_incoming] poi-123a380f--3-6-0:30s @499.93s industrial asc 0
+- [focus] poi-123a380f--3-6-0 @500.82s industrial asc 0
+- [tech] web:web:bronze-precision:1:1 @524.45s industrial asc 0
+- [raid_repelled] poi-123a380f--3-6-0 @534.78s industrial asc 0
+- [focus] poi-123a380f--4-7-0 @534.80s industrial asc 0
+- [tech] iron-ballistics @534.80s industrial asc 0
+- [age_reached] atomic @556.62s industrial asc 0
+- [focus] dominion @558.02s atomic asc 0
+- [focus] poi-123a380f--4-7-0 @559.13s atomic asc 0
+- [tech] web:web:stone-tools:1:1 @559.68s atomic asc 0
+- [focus] poi-123a380f--2-2-0 @570.47s atomic asc 0
+- [squad_command] focus @571.57s atomic asc 0
+- [focus] dominion @573.27s atomic asc 0
+- [focus] poi-123a380f--4-7-0 @578.82s atomic asc 0
+- [focus] dominion @581.03s atomic asc 0
+- [focus] poi-123a380f--4-7-0 @581.63s atomic asc 0
+- [focus] dominion @582.92s atomic asc 0
+- [focus] poi-123a380f--4-7-0 @584.02s atomic asc 0
+- [tech] web:iron-ballistics:0 @592.53s atomic asc 0
+- [squad_command] follow @613.67s atomic asc 0
+- [focus] dominion @622.57s atomic asc 0
+- [focus] poi-123a380f--4-7-0 @623.67s atomic asc 0
+- [tech] bronze-sentry @626.15s atomic asc 0
+- [ability_used] overdrive @641.42s atomic asc 0
+- [focus] poi-123a380f--7-7-0 @644.85s atomic asc 0
+- [focus] poi-123a380f--4-7-0 @645.98s atomic asc 0
+- [claim_attempt] poi-123a380f--4-7-0 @652.78s atomic asc 0
+- [territory_claimed] poi-123a380f--4-7-0:vault @652.78s atomic asc 0
+- [focus] poi-123a380f--6-6-0 @652.78s atomic asc 0
+- [dominion] 4/4 @652.78s atomic asc 0
+- [outpost_spec] poi-123a380f--4-7-0:economy @652.78s atomic asc 0
+- [focus] poi-123a380f-0-4-0 @655.92s atomic asc 0
+- [focus] poi-123a380f--2-2-0 @659.25s atomic asc 0
+- [tech] weave-iron-industry-culture @661.37s atomic asc 0
+- [focus] poi-123a380f--1-1-0 @672.33s atomic asc 0
+- [focus] poi-123a380f--2-2-0 @675.65s atomic asc 0
+- [focus] poi-123a380f--1-1-0 @676.78s atomic asc 0
+- [focus] poi-123a380f--2--1-0 @677.90s atomic asc 0
+- [focus] poi-123a380f--3--3-0 @685.68s atomic asc 0
+- [focus] poi-123a380f--2--1-0 @687.92s atomic asc 0
+- [poi_discovered] meteor:+92 @688.70s atomic asc 0
 
 ## Performance Summary
-- bronze: n=280 fpsMin=55 frame 17.60/35.80/49.10ms sim 0.68/0.88/0.97ms ent 45/27/73
-  terrain cumulative max: ground 11.20ms, chunks 3.90ms, upload CPU call 38.80ms, worker 161.10ms; uploads 274/71827456 bytes; misses 274, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- iron: n=643 fpsMin=49 frame 17.30/34.50/53.30ms sim 0.80/0.83/0.95ms ent 66/47/118
-  terrain cumulative max: ground 12.20ms, chunks 4.90ms, upload CPU call 38.80ms, worker 161.10ms; uploads 489/128188416 bytes; misses 489, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- industrial: n=880 fpsMin=46 frame 16.90/35.30/53.00ms sim 0.83/0.92/1.02ms ent 127/57/146
-  terrain cumulative max: ground 12.20ms, chunks 6.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 928/243269632 bytes; misses 928, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- atomic: n=131 fpsMin=43 frame 18.40/34.80/45.40ms sim 0.93/1.51/1.51ms ent 134/80/171
-  terrain cumulative max: ground 12.20ms, chunks 6.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 1043/273416192 bytes; misses 1043, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- space: n=288 fpsMin=56 frame 15.70/38.20/55.80ms sim 0.75/0.97/1.02ms ent 41/30/208
-  terrain cumulative max: ground 12.20ms, chunks 6.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 1317/345243648 bytes; misses 1317, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- boss-spawn: n=313 fpsMin=50 frame 16.60/39.40/64.70ms sim 1.12/1.14/1.23ms ent 76/18/291
-  terrain cumulative max: ground 32.00ms, chunks 6.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 1557/408158208 bytes; misses 1564, pending 7, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- boss-fight: n=540 fpsMin=49 frame 16.40/35.70/50.30ms sim 0.76/1.06/1.19ms ent 87/32/376
-  terrain cumulative max: ground 32.00ms, chunks 22.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 2294/601358336 bytes; misses 2294, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- post-ascension: n=17 fpsMin=51 frame 15.90/34.40/34.40ms sim 0.88/0.91/0.91ms ent 28/11/355
-  terrain cumulative max: ground 32.00ms, chunks 22.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 2294/601358336 bytes; misses 2294, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- post-ascension+30s: n=143 fpsMin=54 frame 15.70/40.80/52.40ms sim 0.63/0.93/1.16ms ent 24/11/12
-  terrain cumulative max: ground 32.00ms, chunks 22.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 2372/621805568 bytes; misses 2372, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- post-ascension+60s: n=187 fpsMin=56 frame 16.60/39.90/48.20ms sim 0.66/0.72/0.76ms ent 57/18/17
-  terrain cumulative max: ground 32.00ms, chunks 22.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 2428/636485632 bytes; misses 2428, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
-- post-ascension+120s: n=273 fpsMin=57 frame 16.30/37.30/50.10ms sim 0.76/0.88/0.95ms ent 94/44/59
-  terrain cumulative max: ground 32.00ms, chunks 22.20ms, upload CPU call 38.80ms, worker 174.30ms; uploads 2615/685506560 bytes; misses 2615, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- bronze: n=758 fpsMin=51 frame 15.70/39.90/60.60ms sim 0.75/0.98/1.14ms ent 89/59/79
+  terrain cumulative max: ground 14.00ms, chunks 3.30ms, upload CPU call 57.80ms, worker 242.60ms; uploads 479/125566976 bytes; misses 479, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- iron: n=278 fpsMin=39 frame 16.90/38.00/49.20ms sim 0.82/1.02/1.10ms ent 89/80/123
+  terrain cumulative max: ground 22.40ms, chunks 15.00ms, upload CPU call 57.80ms, worker 249.60ms; uploads 805/211025920 bytes; misses 805, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- industrial: n=329 fpsMin=53 frame 14.80/33.50/38.00ms sim 0.72/0.88/1.13ms ent 36/24/157
+  terrain cumulative max: ground 22.40ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 1143/299630592 bytes; misses 1143, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- atomic: n=197 fpsMin=52 frame 15.60/40.60/57.30ms sim 0.82/1.12/1.26ms ent 36/34/215
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 1279/335282176 bytes; misses 1279, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- space: n=638 fpsMin=54 frame 15.40/38.20/55.20ms sim 0.79/1.25/1.32ms ent 79/41/369
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 1904/499122176 bytes; misses 1904, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- boss-spawn: n=229 fpsMin=49 frame 14.60/38.30/61.20ms sim 0.85/1.11/1.50ms ent 77/28/400
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2058/539492352 bytes; misses 2058, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- boss-fight: n=29 fpsMin=58 frame 13.80/32.70/34.20ms sim 1.16/1.48/1.50ms ent 72/28/400
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2100/550502400 bytes; misses 2100, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- post-ascension: n=45 fpsMin=55 frame 14.70/27.60/55.60ms sim 0.99/1.26/1.39ms ent 65/29/400
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2127/557580288 bytes; misses 2127, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- post-ascension+30s: n=820 fpsMin=52 frame 16.20/41.70/67.50ms sim 0.80/0.81/0.97ms ent 29/7/7
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2227/583794688 bytes; misses 2227, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- post-ascension+60s: n=62 fpsMin=60 frame 14.20/35.20/40.70ms sim 0.78/1.01/1.05ms ent 46/16/11
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2290/600309760 bytes; misses 2290, pending 0, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- post-ascension+120s: n=134 fpsMin=49 frame 17.50/37.70/41.90ms sim 0.91/1.14/1.20ms ent 69/34/42
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2413/632553472 bytes; misses 2418, pending 5, workerFailed false. Sparse telemetry, not a GPU/causal trace.
+- end: n=1 fpsMin=66 frame 12.90/12.90/12.90ms sim 0.83/0.83/0.83ms ent 67/9/42
+  terrain cumulative max: ground 30.80ms, chunks 15.00ms, upload CPU call 57.80ms, worker 1488.30ms; uploads 2413/632553472 bytes; misses 2418, pending 5, workerFailed false. Sparse telemetry, not a GPU/causal trace.
 
 ## Assertions / Errors
 - failed assertions: 0

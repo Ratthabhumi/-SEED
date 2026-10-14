@@ -20,6 +20,8 @@ describe("original hero atlas integration",()=>{
     a.sync("child");expect(a.pose(0,false,false,false)).toBe("idle");
     a.accept({type:"weapon_fired",family:"defense",x:80,y:0,tx:100,ty:0},0,0,0);
     expect(a.pose(0,false,false,false)).toBe("idle");
+    a.accept({type:"weapon_fired",family:"field",x:0,y:0,tx:100,ty:0},0,0,0);
+    expect(a.pose(0,false,false,false)).toBe("idle");
     a.accept({type:"ability_used",id:"test"},0,0,0);expect(a.pose(.2,false,false,false)).toBe("special");expect(a.pose(.4,true,false,false)).toBe("walk");
   });
 });

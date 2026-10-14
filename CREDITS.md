@@ -46,3 +46,11 @@ selected PNGs have source/production checksums in the manifest, including the
 additional back-source hash. Offline packing is reproducible with
 scripts/normalize-content15.py. Human review and full authored animation remain
 pending; procedural bob and weapon recoil are presentation, not animation assets.
+# Content15 animation reference
+
+Original Hunters Stone/Space36 transparent key poses generated with built-in
+imagegen using the project's neutral Hero identity reference. Project MIT.
+Sources and generation summary: assets/original/content15-animation/.
+Reproducible technical packing: scripts/pack-animation-reference.py.
+Sparse walk/attack clips and authored key poses; full library and human art
+approval remain pending. No third-party character or animation copied.
