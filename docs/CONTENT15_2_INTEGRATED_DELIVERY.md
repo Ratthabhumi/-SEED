@@ -125,3 +125,22 @@ original vectors. Existing Mesh2D crop mechanism is reused. `?friendly=fullquad`
 is a same-build diagnostic comparator. New bound tests preserve faint tips and
 cell-edge gutters. Final cropped diagnostics and uninstrumented paired/live
 measurements must supersede this prototype before any performance verdict.
+
+## Corrected product verification
+
+Frozen rendering/gameplay product105b6c8: `npm run check` passed486 tests in81
+files,54 provenance checks, typecheck and production build. Native D3D11 focused
+suite17/17 passed, including nine input cases, three integrated presentation
+cases, WebGL1/2 exact upload bytes and three QA provenance cases. Full162-pass/
+one-existing-skip run belongs to earlier6d00fce; final full exact-head suite is
+reported in the Draft PR CI receipt, not inferred from that earlier run.
+Analyze6/6 and progression cohort8/8 passed; retained cohort RPC failures are
+documented above. Final artifact and CI provenance belong to the final head.
+
+[Paired performance](CONTENT15_2_PERFORMANCE.md):240 observations completed,
+no page errors. HC1920 cold median per-run p95 improves9.00→7.10ms and warm
+7.70→5.90ms, but one candidate cold run at8.00ms fails the strict<8ms budget.
+Normal/reduced mixed results and29ms lifetime upload maximum remain disclosed.
+Performance is PARTIAL. The corrected gallery/video certifies staged execution
+and presentation only. All22 historical and nine additional complaint statuses
+remain individually recorded; unresolved production motion/art are not closed.

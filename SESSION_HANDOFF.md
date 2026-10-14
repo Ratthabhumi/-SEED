@@ -832,3 +832,18 @@ HC full96px quads raised short diagnostic GPU p95 from8.655 to14.880ms despite
 CPU savings. Crop transparent area using CPU alpha bounds+2px gutters; retain
 all real pixels/canonical shots and original fallback. Same-build fullquad
 comparator, alpha edge tests and final cropped measurements required.
+
+Content15.2 final publication checkpoint (15 October2026): corrected clean
+product105b6c8 check486/81files/54 provenance and native focused17/17 PASS.
+Paired240 rows completed without page errors; HC1920 cold median9.0→7.1ms,
+warm7.7→5.9ms. Strict render<8 still fails one candidate cold run at8.0ms;
+normal/reduced mixed, upload lifetime max29ms remains. Independent advancing
+Space901.313s/54,002 unique frames: sim p95=1.0ms, renderer=4.7ms, frame=16.7ms;
+boss/child/restart20s each advance without pause/errors. Staged HP/roster are
+explicit; not natural combat/fun evidence. All raw observations, corrected
+four-Origin Stone/Space gallery and native WebM committed under content152.
+Generated walk experiment remains withheld; source/runtime motion unchanged.
+Final docs/evidence commit changes no canonical/runtime code after105b6c8.
+One stacked Draft targets PR11; final exact-SHA push/PR CI and official Node22/24
+ZIP hashes are maintained in its PR body to avoid a self-referential SHA loop.
+Quality remains PARTIAL; research questions are in the targeted research brief.
