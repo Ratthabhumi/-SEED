@@ -21,3 +21,9 @@ The generated source is not a layered Krita project. Raw images, selected-frame
 indices and reproducible importer are genuine. Distinct image hashes do not
 certify gait or artistic quality. Actual source/production checksums belong in
 ASSET_MANIFEST; no unapproved runtime source is counted as complete animation.
+
+Current source-reviewed hand points override the old chest-center defaults for
+the36 legacy reference poses without rewriting their historical metadata/PNG.
+New guard→idle hand displacement is bounded below12 source pixels (previously
+roughly37). These are initial source coordinates, not full artist-approved rigs;
+canonical projectile origins remain unchanged.

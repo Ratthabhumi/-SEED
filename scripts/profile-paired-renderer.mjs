@@ -27,7 +27,9 @@ for(let block=0;block<Number(blocks);block++)for(const [position,label] of [...(
     if(cache==='warm'){await page.waitForTimeout(1500);await page.evaluate(()=>window.__seedE2E.resetPerformanceSamples());}
     await page.waitForTimeout(3000);
     const measured=await page.evaluate(()=>({performance:window.__seedE2E.performanceSamples(),state:window.__seedE2E.canonicalStressState(),foreground:document.visibilityState,hash:window.__seedE2E.hash()}));
-    report.rows.push({block,position,label,viewport,mode,cache,initial,hash:measured.hash,foreground:measured.foreground,renderer:info.gpu.auxAttributes?.glRenderer,browser:browser.version(),frame:summary(measured.performance.frame),render:summary(measured.performance.rendererCpuSubmit),terrain:measured.state.terrain});save();
+    report.rows.push({block,position,label,viewport,mode,cache,initial,hash:measured.hash,foreground:measured.foreground,renderer:info.gpu.auxAttributes?.glRenderer??'UNAVAILABLE',browser:browser.version(),frame:summary(measured.performance.frame),render:summary(measured.performance.rendererCpuSubmit),terrain:measured.state.terrain});save();
+    if(initial.hash!==measured.hash)throw Error('Paused rendering mutated canonical state');
+    if(measured.state.enemies!==500||measured.state.projectiles!==800)throw Error('Paused comparison lost canonical density');
    }
    await context.close();
   }

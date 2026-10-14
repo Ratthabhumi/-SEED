@@ -27,6 +27,7 @@ manifest['assets']=[a for a in manifest['assets'] if a['projectPath']!=template[
 manifest_path.write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n')
 if (out/'hunters-attack-v2.png').exists():
  attack=template.copy();attack.update(id='seed-content15-v153-hunters-attack-v2',projectPath='assets/seed/content153/hunters-attack-v2.png',vendorSourcePath='assets/original/content153/hunters-motion-experiment-v2.png',sourceFile='hunters-motion-experiment-v2.png',sourcePack='Original -SEED generated motion experiment',sourceRelease='content153-attack-v2',purpose='Hunters Stone/Space front release and recovery only; walk withheld',modifications='Reviewed source rows1/3 columns3/5/6/7 slicing, uniform resize, locked scale and foot baseline; per-frame sockets, no synthetic frames',byteSize=(out/'hunters-attack-v2.png').stat().st_size,vendorSourceSha256=hashlib.sha256(motion.read_bytes()).hexdigest(),productionSha256=hashlib.sha256((out/'hunters-attack-v2.png').read_bytes()).hexdigest())
+ attack['versionOrRelease']='v2'
  manifest['assets']=[a for a in manifest['assets'] if a['projectPath']!=attack['projectPath']]+[attack]
  manifest_path.write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n')
 print('Packed four original hostile attack sprites; walk remains withheld')

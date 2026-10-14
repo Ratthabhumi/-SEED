@@ -73,14 +73,19 @@ def pack_attack_supplement(source,out,metadata_out):
             if len(group)>len(best):best=group
         body=set(best);mask=Image.new('L',(w,h));mask.putdata([255 if i in body else 0 for i in range(w*h)])
         cell.putalpha(ImageChops.multiply(alpha,mask.filter(ImageFilter.MaxFilter(3))));return cell
-    image=Image.open(source).convert('RGBA');atlas=Image.new('RGBA',(1024,128));frames=[]
+    image=Image.open(source).convert('RGBA');atlas=Image.new('RGBA',(1024,128));frames=[];distinct=set()
+    if image.getchannel('A').getextrema()[0]!=0:raise ValueError('Transparent motion source required')
     # Reviewed release -> follow-through -> returning elbow -> guard. The
     # experimental walk rows and raised-hand pose are deliberately excluded.
     for age,row in [(0,1),(5,3)]:
         cells=[isolate(image.crop((c*image.width//8,row*image.height//4,(c+1)*image.width//8,(row+1)*image.height//4))) for c in range(8)]
         guard=cells[0].getchannel('A').getbbox();scale=104/(guard[3]-guard[1])
         for col,hand in [(3,[113,44]),(5,[105,50]),(6,[113,83]),(7,[97,82])]:
-            cell=cells[col];box=cell.getchannel('A').getbbox();sprite=cell.crop(box)
+            cell=cells[col];box=cell.getchannel('A').getbbox()
+            if not box:raise ValueError('Empty authored supplement pose')
+            sprite=cell.crop(box);body_hash=hashlib.sha256(sprite.tobytes()).hexdigest()
+            if body_hash in distinct:raise ValueError('Duplicate authored supplement body')
+            distinct.add(body_hash)
             sprite=sprite.resize((round(sprite.width*scale),round(sprite.height*scale)),Image.Resampling.LANCZOS)
             if sprite.width>124 or sprite.height>116:raise ValueError('Supplement exceeds fixed body scale')
             x=(128-sprite.width)//2;y=116-sprite.height;frame=len(frames)
@@ -88,7 +93,9 @@ def pack_attack_supplement(source,out,metadata_out):
             frames.append({'frame':frame,'socket':hand,'bounds':[x,y,sprite.width,sprite.height],'ground':[64,116],'sourceRow':row,'sourceColumn':col,'sourcePoseHash':hashlib.sha256(cell.tobytes()).hexdigest()})
     out.mkdir(parents=True,exist_ok=True);metadata_out.mkdir(parents=True,exist_ok=True)
     atlas.save(out/'hunters-attack-v2.png')
-    metadata={'schema':2,'classification':'GENERATED_RELEASE_RECOVERY_CANDIDATE_NOT_FULL_MOTION_FAMILY','humanArtAcceptance':'PENDING','frames':frames,'overrides':{f'{age}:front:attack':{'frames':list(range(i,i+4)),'frameMs':40,'loop':False,'sockets':[f['socket'] for f in frames[i:i+4]]} for age,i in [(0,0),(5,4)]}}
+    front=[[92,76],[93,68],[109,64],[121,57],[93,68],[99,80],[83,69],[104,80],[90,100]]
+    back=[[93,80],[94,84],[109,77],[121,61],[94,76],[96,84],[86,72],[103,84],[90,100]]
+    metadata={'schema':2,'classification':'GENERATED_RELEASE_RECOVERY_CANDIDATE_NOT_FULL_MOTION_FAMILY','humanArtAcceptance':'PENDING','frames':frames,'socketOverrides':{str(row*9+col):point for row in range(4) for col,point in enumerate(back if row%2 else front)},'overrides':{f'{age}:front:attack':{'frames':list(range(i,i+4)),'frameMs':40,'loop':False,'sockets':[f['socket'] for f in frames[i:i+4]]} for age,i in [(0,0),(5,4)]}}
     (metadata_out/'hunters-attack-v2.json').write_text(json.dumps(metadata,indent=2)+'\n')
     print('Packed eight distinct release/recovery poses; no walk certification')
 

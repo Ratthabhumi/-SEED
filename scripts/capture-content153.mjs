@@ -15,12 +15,12 @@ const browser=await chromium.launch({headless:true,...(process.platform==='win32
 const context=await browser.newContext({viewport:{width:1920,height:1080},recordVideo:{dir:out,size:{width:1920,height:1080}}}),errors=[],captures=[];
 const client=await browser.newBrowserCDPSession(),gpu=(await client.send('SystemInfo.getInfo')).gpu.auxAttributes?.glRenderer;
 const fresh=async()=>{const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(()=>localStorage.setItem('seed-game-save-v1',JSON.stringify({schema:1,settings:{lang:'en',volume:0,uiScale:1,tutorialCompleted:true},archive:[],history:[],best:{}})));await p.goto(url+'/?e2e');await p.locator('#seed-input').fill('EPOCH-GOLDEN-001');await p.locator('#start-btn').click();await p.waitForFunction(()=>window.__seedE2E?.content153Review);return p;};
-const capture=async(p,name)=>{await p.screenshot({path:join(out,name+'.png')});captures.push({file:name+'.png',review:await p.evaluate(()=>window.__seedE2E.content153Review())});};
+const capture=async(p,name)=>{await p.screenshot({path:join(out,name+'.png')});captures.push({file:name+'.png',review:await p.evaluate(()=>{const h=window.__seedE2E;return {...h.content153Review(),position:JSON.parse(h.snapshot()).p,zoom:h.integratedReview().zoom};})});};
 try{
  const page=await fresh();
  for(const origin of ['hunters','engineers','resonant','sentinels'])for(const age of [0,2,5]){
-  await page.evaluate(([o,a])=>window.__seedE2E.stageEvolution(o,a),[origin,age]);await page.waitForFunction(()=>window.__seedE2E.content153Review().terrain.pending===0);
-  await page.keyboard.down('d');await page.waitForTimeout(500);await page.keyboard.up('d');await page.waitForTimeout(500);await capture(page,`${origin}-${age}`);
+  await page.evaluate(([o,a])=>{const h=window.__seedE2E;h.stageEvolution(o,a);h.cleanPresentation();h.notificationReset();},[origin,age]);await page.waitForFunction(()=>window.__seedE2E.content153Review().terrain.pending===0);
+  await page.keyboard.down('d');await page.waitForTimeout(700);await page.keyboard.up('d');await page.keyboard.down('w');await page.waitForTimeout(500);await page.keyboard.up('w');await capture(page,`${origin}-${age}`);
  }
  for(const biome of ['verdant','arid','tundra','badlands']){
   await page.evaluate(b=>{const h=window.__seedE2E,p=h.findTerrainBiome(b);h.streamingFixture(p.x,p.y);},biome);await page.waitForFunction(()=>window.__seedE2E.content153Review().terrain.pending===0);await capture(page,'biome-'+biome);
@@ -29,7 +29,7 @@ try{
  await page.evaluate(()=>window.__seedE2E.setLang('th'));await capture(page,'thai-hud');await page.close();await page.video().saveAs(join(out,'presentation.webm'));
  const hostile=await fresh();await hostile.evaluate(()=>window.__seedE2E.startOrdinaryHostileCapture());
  await hostile.waitForTimeout(4000);await capture(hostile,'ordinary-hostile-live');await hostile.close();await hostile.video().saveAs(join(out,'ordinary-hostile.webm'));
- const boss=await fresh(),begin=Date.now(),preparation=await boss.evaluate(()=>window.__seedE2E.prepareNaturalBoss('balanced')),states=[];
+ const boss=await fresh(),begin=Date.now(),preparation=await boss.evaluate(()=>window.__seedE2E.prepareNaturalBoss('balanced')),preparedAt=Date.now(),states=[];
  let held=new Set();
  if(preparation.spawn!==null)for(let i=0;i<600;i++){
   const s=await boss.evaluate(()=>window.__seedE2E.bossArenaState());states.push(s);if(s.killed||s.over||!s.boss)break;
@@ -40,6 +40,6 @@ try{
   await boss.waitForTimeout(100);
  }
  for(const k of held)await boss.keyboard.up(k);await capture(boss,'natural-progression-boss-final');
- writeFileSync(join(out,'index.json'),JSON.stringify({classification:'STAGED_ART_GALLERY_PLUS_CANONICAL_NATURAL_PROGRESSION_BOSS',sourceSha:build.sha,buildDirty:false,seed:'EPOCH-GOLDEN-001',gpu,browser:browser.version(),captures,preparation,bossStates:states,bossWallMs:Date.now()-begin,errors,limitations:'Gallery uses staged roster/ages. Boss build comes from actual movement/drafts/claims/combat, then real browser movement from spawn. Balanced automated policy and circular steering are not human play or a fun verdict. Failure/unreachable/censored outcomes retained; no HP/phase forcing.'},null,2));
+ writeFileSync(join(out,'index.json'),JSON.stringify({classification:'STAGED_ART_GALLERY_PLUS_CANONICAL_NATURAL_PROGRESSION_BOSS',sourceSha:build.sha,buildDirty:false,seed:'EPOCH-GOLDEN-001',gpu,browser:browser.version(),captures,preparation,preparationWallMs:preparedAt-begin,bossStates:states,bossWallMs:Date.now()-preparedAt,errors,limitations:'Gallery uses staged roster/ages. Boss build comes from actual movement/drafts/claims/combat, then real browser movement from spawn. Balanced automated policy and circular steering are not human play or a fun verdict. Failure/unreachable/censored outcomes retained; no HP/phase forcing.'},null,2));
  await boss.close();await boss.video().saveAs(join(out,'natural-boss.webm'));if(errors.length)throw Error(errors.join('; '));
 }finally{await context.close();await browser.close();if(server)await new Promise(resolve=>server.httpServer.close(resolve));}

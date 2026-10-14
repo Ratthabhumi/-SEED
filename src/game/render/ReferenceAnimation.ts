@@ -3,6 +3,7 @@ export interface MotionMetadata {
   clips: Record<string,{columns:number[];frameMs:number;loop:boolean}>;
   frames:Array<{frame:number;socket:number[]}>;
   overrides?:Record<string,{frames:number[];frameMs:number;loop:boolean;sockets:number[][]}>;
+  socketOverrides?:Record<string,number[]>;
 }
 /** Display clock follows canonical elapsed time. No action/input owned here. */
 export class ReferenceAnimation {
@@ -23,7 +24,7 @@ export class ReferenceAnimation {
     const tick=Math.max(0,Math.floor((time-this.started)*1000/clip.frameMs));
     const index=clip.loop?tick%clip.columns.length:Math.min(tick,clip.columns.length-1);
     const row=(age===5?2:0)+(back?1:0),frame=row*9+clip.columns[index]!;
-    this.selected={frame,socket:this.metadata.frames[frame]!.socket,action,index};return this.selected;
+    this.selected={frame,socket:this.metadata.socketOverrides?.[String(frame)]??this.metadata.frames[frame]!.socket,action,index};return this.selected;
   }
   review(){return this.selected??null;}
 }

@@ -874,3 +874,21 @@ Failed CI is retained, not a gameplay failure or a pass. Add full no-grants
 natural progression observer via the existing policy (4Origins×3seeds×3draft
 priorities); default cohort policy remains unchanged. Every defeat/unreached/
 phase-skipped result is retained; finite execution is not boss-quality approval.
+
+18033fd checkpoint: Node22/24 verify and Analyze (including natural36-case
+execution) succeeded; render evidence failed before measurement because4190
+is a Fetch-forbidden port. Use previously supported4187/4188, not a network
+security workaround. No rows from that infrastructure failure count as timing
+evidence. Existing strict8ms/five-block/500-800 requirements remain. Asset IDs
+are genuine Content15 original-art entries, not Kenney; metadata corrected,
+not integrity/license tests. Final native videos/480rows/ZIP receipt pending.
+
+Final source correction: initial release/recovery guard exposed a jump back to
+legacy chest-center sockets. Keep historical36-pose metadata immutable and add
+source-reviewed current hand overrides in the v2 supplement; guard→idle <12px
+regression, no projectile-origin change. Coordinates remain initial artist
+review candidates. Native capture records served binary identity, actual player
+coordinates/zoom, matching D700ms/W500ms comparison input, and separate preparation
+versus encounter wall times. Performance uses safe4187/4188 and preserves all
+failed rows before enforcing paused-state hash/density invariants. No new gates
+are certified until final exact-head CI/artifacts complete.

@@ -75,6 +75,8 @@ same-build cached/painted hostile art), fixed500/800 counts, all three modes,
 720p/1080p and cold/warm. Devices/compiled SHAs are recorded. Software CI values
 cannot certify the operator's Intel hardware; green measurement execution is
 separate from strict render<8ms acceptance.
+The existing advancing canonical stress also covers Space/boss/World2/restart;
+its high-HP setup and retiring projectile counts remain explicitly staged.
 
 Retained checkpoint failures:43b751d typecheck lacked Node timer declarations;
 45e40bf ran492/494 unit tests successfully but two asset-category checks failed.

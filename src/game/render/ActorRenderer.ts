@@ -10,7 +10,7 @@ import {ReferenceAnimation} from "./ReferenceAnimation";
 type ActorImage=Phaser.GameObjects.Image|Phaser.GameObjects.Sprite;
 /** Bound matches canonical enemy pool; allies use a separate bounded pool. */
 export class ActorRenderer {
-  private reference=new ReferenceAnimation({...referenceMetadata,overrides:attackMetadata.overrides});
+  private reference=new ReferenceAnimation({...referenceMetadata,overrides:attackMetadata.overrides,socketOverrides:attackMetadata.socketOverrides});
   private referenceActive=false;
   referenceReview(){return this.referenceActive?this.reference.review():null;}
   private images: ActorImage[] = [];

@@ -5,7 +5,7 @@ import subprocess,re,json,io
 root=Path(__file__).resolve().parents[1];out=root/'docs/evidence/content153';out.mkdir(parents=True,exist_ok=True)
 profiles=[('Content13','origin/feat/breakthrough-quality-closure-20261013'),('Content14','origin/feat/content14-stutter-art-consistency-20261013'),('Content15','origin/feat/content15-combat-world-ui-quality'),('15.2','ce63df35d52e8b3041d232f5e8e3438c087cecf8')]
 biomes=['verdant','arid','tundra','badlands'];canvas=Image.new('RGB',(1040,1190),'#101820');draw=ImageDraw.Draw(canvas);records=[]
-def git(*args):return subprocess.check_output(['git',*args],cwd=root,stderr=subprocess.DEVNULL)
+def git(*args):return subprocess.check_output(['git',*args],cwd=root)
 for column,(name,ref) in enumerate(profiles):
  sha=git('rev-parse',ref).decode().strip();versions=git('show',sha+':src/core/seed/versions.ts').decode();w=int(re.search(r'WORLDGEN_VERSION\s*=\s*(\d+)',versions)[1])
  try:painter=git('show',sha+':src/game/render/TerrainPainter.ts').decode()
