@@ -10,6 +10,11 @@ Origin, projectile/trap/drone, regen and Legacy roles instead of repeated bows.
 Final corrective exact-SHA/CI/package/hardware receipts supersede e2c3811.
 Corrective frozen check480/480 across78 files/53 provenance/typecheck/build PASS;
 native restart green and bilingual role-icon/notification checks3/3 PASS.
+First exact e2c3811 push CI38494502177 passed both480/provenance/package jobs
+and Analyze but native145/146 passed/one existing skip failed the old R2 assertion
+requiring zero toast DOM nodes. Content15 deliberately preserves hidden alerts
+under modals; R2 now requires zero VISIBLE toasts, preserving the no-overlap
+invariant without deleting critical notifications. Failure/log/screenshot remain.
 
 Base PR9 fd171b239d00827d8100ae165d551d5766630cc7 verified local/origin/
 OPEN Draft and both CI runs4/4. New branch feat/content15-combat-world-ui-quality.

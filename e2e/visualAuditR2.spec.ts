@@ -72,7 +72,9 @@ test("live R2 invariants: Overview copy, fit/pin flow, picker without toast over
   await page.evaluate(() => (window as unknown as { __seedE2E: { claimFirst: () => string } }).__seedE2E.claimFirst());
   await page.evaluate(() => (window as unknown as { __seedE2E: { openSpecPicker: () => void } }).__seedE2E.openSpecPicker());
   await expect(page.locator("#spec-screen")).toBeVisible();
-  expect(await page.locator(".toast").count()).toBe(0);
+  // Content15 retains queued alerts while a choice hides the stack. Test
+  // actual overlap/visibility rather than require destructive DOM dismissal.
+  expect(await page.locator(".toast:visible").count()).toBe(0);
   await page.locator("#spec-screen .spec-later-btn").click();
   await expect(page.locator("#spec-screen")).toHaveCount(0);
 

@@ -36,8 +36,10 @@ try{
    if(states.length>1&&observation.state.elapsed<=states[states.length-2].elapsed)throw Error('Canonical clock no longer advances');
   }
   const frames=await page.evaluate(()=>{cancelAnimationFrame(window.__stressRaf);return window.__stressFrames;});
+  let prefixElapsed=0;const prefixFrames=frames.filter(ms=>{prefixElapsed+=ms;return prefixElapsed<=30000;});
+  const prefix30={};for(const metric of ['frame','sim','rendererCpuSubmit']){const values=metric==='frame'?prefixFrames:samples.slice(0,30).flatMap(s=>s[metric]);prefix30[metric]={p50:pct(values,50),p95:pct(values,95),p99:pct(values,99),worst:values.reduce((max,value)=>Math.max(max,value),0)};}
   const summary={};for(const metric of ['frame','sim','rendererCpuSubmit']){const values=metric==='frame'?frames:samples.flatMap(s=>s[metric]);summary[metric]={p50:pct(values,50),p95:pct(values,95),p99:pct(values,99),worst:values.reduce((max,value)=>Math.max(max,value),0)};}
-  rows.push({mode,start,durationMs:Date.now()-begin,summary,uniqueFrameSamples:frames.length,states,limitations:'Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.'});
+  rows.push({mode,start,durationMs:Date.now()-begin,summary,prefix30,uniqueFrameSamples:frames.length,states,limitations:'Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.'});
   await page.screenshot({path:output.replace('.json',`-${mode}.png`)});
  }
  mkdirSync(dirname(output),{recursive:true});writeFileSync(output,JSON.stringify({gpu,fixture:true,rows,errors,classification:'STAGED_LIVE_CANONICAL_STRESS',limitations:'Actual fixed-step simulation plus renderer. No human enjoyment/visual verdict, natural encounter hit-rate or sustained500/800 certification follows.'},null,2));
