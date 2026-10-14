@@ -51,7 +51,7 @@
   //   qualities in all ages without age clamping). Laws combatBias wired to combat-family
   //   tech score. Authoritative origin identity legibility and deterministic player-visible
   //   World Traits derived from domainBias and combatBias.
-export const WORLDGEN_VERSION = 2;
+export const WORLDGEN_VERSION = 3;
 // Content 9: biome specialization tradeoffs, reversible logistics, and tech web.
 // Chunk/POI geometry and the persistent settings/archive schema stay compatible.
 // Content 10: child-only conditions and child-seeded laws. World-one laws retain c9.
@@ -61,7 +61,9 @@ export const WORLDGEN_VERSION = 2;
 // Content13: guaranteed optional Fire/Tools recipe and pre-Industrial draft slot.
 // Old draft traces differ intentionally; world geometry and save schema unchanged.
 // Content14: reconciled reservations and gate-aware, transactional raid scheduling.
-export const CONTENT_VERSION = 14;
+// Content15: committed boss rhythm and family-specific elite attacks.
+// Worldgen3: biome-weighted POI types; density/locations/IDs stay unchanged.
+export const CONTENT_VERSION = 15;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

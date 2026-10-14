@@ -11,7 +11,7 @@ export function combatPresentation(origin:string,family:WeaponFamily,tier:number
 }
 
 export const WORLD_SCALE={hero:112,squad:56,guardian:48,outpost1:176,outpost2:208,
-  enemy:{swarm:44,chaser:56,ranged:64,tank:78},boss:196} as const;
+  enemy:{swarm:52,chaser:68,ranged:76,tank:92},boss:240} as const;
 export function gameZoom(height:number){return Math.max(1,Math.min(1.25,height/900));}
 export function enemyArtSize(family:keyof typeof WORLD_SCALE.enemy,radius:number,elite:boolean,boss:boolean){
   if(boss)return Math.max(WORLD_SCALE.boss,radius*3);

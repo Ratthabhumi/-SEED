@@ -27,6 +27,7 @@ export class CombatSprites {
   this.draw(projectileFrame(origin,p),p.x,p.y,width,height,Math.atan2(p.vy,p.vx),tier<3?0xe2d2b3:0xffffff);
  }
  mine(m:SimMine,origin:string){this.draw(12+originRow(origin),m.x,m.y,36,36,0,0xffffff);}
+ orbit(x:number,y:number,angle:number,origin:string,family:"field"|"defense"){this.draw((family==="field"?originRow(origin):8+originRow(origin)),x,y,40,24,angle,0xffffff);}
  knowledge(k:SimPickup,time:number,reduced:boolean){
   if(this.pickupCount>=400)return;
   const size=30+Math.min(6,k.value*.5),y=k.y+(reduced?0:Math.sin(time*3+k.x*.01)*2);

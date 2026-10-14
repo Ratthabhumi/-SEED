@@ -40,7 +40,7 @@ import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
-import { uiRoot, clearUI, el, button, toast, applyUiScale, isKeyRepeat } from "../ui";
+import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, applyUiScale, isKeyRepeat } from "../ui";
 import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
@@ -52,9 +52,10 @@ import {guardianCount} from "../render/weaponPresentation";
 import {drawEnemyTelegraph,enemyDisplayHeading,enemyDisplayMoving} from "../render/enemyTelegraph";
 import {ActorMotion,humanoid} from "../render/actorMotion";
 import { ACTOR_ASSETS, actorFor, BOSS_ASSET_V2,ENEMIES_ASSET_V2 } from "../assets/actorAssets";
-import {HERO_ASSETS} from "../assets/heroAssets";
+import {HERO_ASSETS,NEUTRAL_HERO_ATLAS} from "../assets/heroAssets";
 import {HeroActions} from "../render/heroActions";
 import {drawBossTelegraph} from "../render/BossTelegraph";
+import {bossWarningDuration} from "../../core/combat/bossEncounter";
 import {TerrainPainter,TERRAIN_TEXTURES} from "../render/TerrainPainter";
 import {COMBAT_ASSETS,combatFrames} from "../assets/combatAssets";
 import {CombatSprites} from "../render/CombatSprites";
@@ -83,7 +84,13 @@ function percentile(sorted: number[], p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))] as number;
 }
 
+import { AbilityLoadout } from "../ui/AbilityLoadout";
+import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
+
 export class GameScene extends Phaser.Scene {
+  private loadout!: AbilityLoadout;
+  private displayedOffers:unknown=null;
+  private decisionInput!: DecisionInputBoundary;
   private sim!: RunSimulation;
   private masterSeed = "EPOCH-GOLDEN-001";
   private acc = new FixedAccumulator();
@@ -197,6 +204,7 @@ export class GameScene extends Phaser.Scene {
     // Only Guardian still uses the authored six-era SVG rig. Keep other old
     // sources for diagnostics/provenance without uploading dead gameplay bodies.
     this.load.svg("actor-guardian",ACTOR_ASSETS.guardian,{width:1152,height:64});
+    this.load.image("hero-neutral",NEUTRAL_HERO_ATLAS);
     for(const [id,url] of Object.entries(HERO_ASSETS))this.load.image("hero-v2-"+id,url);
     for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
     this.load.image("combat-projectiles",COMBAT_ASSETS.projectiles);
@@ -253,6 +261,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.decisionInput = new DecisionInputBoundary();
     this.heroActions = new HeroActions();
     const save = loadSave(localStorage);
     setLang(save.settings.lang);
@@ -268,6 +277,10 @@ export class GameScene extends Phaser.Scene {
 
   /** Fresh run (and restart path): new simulation, clean adapter state. */
   private startRun(seed: string): void {
+    // Phaser destroys display objects on shutdown while reusing this Scene.
+    // A previous pooled Text/Image has a destroyed canvas/scene, not a free slot.
+    this.floatText=[];this.vfxPool=[];this.bursts=[];this.dmgNums=[];
+    this.displayedOffers=null;
     this.groundMaxMs=this.chunkReadMaxMs=0;
     this.lastAgeCardKey="";
     this.heroActions = new HeroActions();
@@ -357,6 +370,7 @@ export class GameScene extends Phaser.Scene {
       // P1-02: Space edge latches in the adapter (survives zero-step frames);
       // movement is level-polled per frame. Never JustDown() inside step timing.
       on("keydown-SPACE", () => {
+        if(this.sim.state.draftOpen||this.blockingModal||this.paused||this.sim.state.over)return;
         this.latch.pressDash();
       });
       on("keydown-F3", () => {
@@ -388,9 +402,9 @@ export class GameScene extends Phaser.Scene {
         const s = this.sim.state;
         if (!s.over && !s.draftOpen) this.togglePause();
       });
-      on("keydown-ONE", () => this.pickCard(0));
-      on("keydown-TWO", () => this.pickCard(1));
-      on("keydown-THREE", () => this.pickCard(2));
+      on("keydown-ONE", ev => { if(this.decisionInput.allows(ev)) this.pickCard(0); });
+      on("keydown-TWO", ev => { if(this.decisionInput.allows(ev)) this.pickCard(1); });
+      on("keydown-THREE", ev => { if(this.decisionInput.allows(ev)) this.pickCard(2); });
       // Command layer (v021): squad orders + origin ability + map screens.
       // Q/E/R/F are edge-triggered: ignore held-key auto-repeat so one
       // physical press is exactly one intentional command (v0.24).
@@ -594,6 +608,26 @@ export class GameScene extends Phaser.Scene {
         },
         hash: () => this.sim.hash(),
         snapshot: () => this.sim.snapshot(),
+        notificationBurst:(count:number,critical=false)=>{
+          for(let i=0;i<Math.min(80,count);i++)toast(critical?"ui.raidIncoming":"ui.poiFound",`QA ${i}`,undefined,10000);
+          return notificationCounts();
+        },
+        notificationReset:()=>clearNotifications(),
+        notificationCounts:()=>notificationCounts(),
+        draftFacts:()=>({offers:this.sim.state.draftOffers.map(o=>o.nodeId),taken:this.sim.state.stats.techsTaken}),
+        canonicalStressStart:(boss=false)=>{
+          // Staged stress, NOT a human/natural run: actual fixed-step combat
+          // resumes. Entities retire/fire/move normally; no per-frame refill.
+          const s=this.sim.state;this.paused=false;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
+          s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=999;
+          for(const e of s.enemies)e.active=false;
+          for(let i=0;i<500;i++){const e=this.sim.spawnEnemy(i%3===0?"ranged":"chaser",i%40===0,false,i*.618,200+i%280,[])!;e.hp=e.maxHp=1e8;e.dmg=0;}
+          for(let i=0;i<800;i++){const p=s.projs[i]!;Object.assign(p,{active:true,friendly:true,x:s.px+Math.cos(i*.618)*(100+i%500),y:s.py+Math.sin(i*.618)*(100+i%300),vx:120,vy:0,radius:4,color:0xffda76,src:"kinetic",visualTier:s.ageIndex,dmg:0,life:2.2});}
+          if(boss){const e=this.sim.spawnEnemy("tank",false,true,0,250,[])!;e.hp=e.maxHp=1e8;}
+          this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;
+          return {fixture:true,enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length};
+        },
+        canonicalStressState:()=>({elapsed:this.sim.state.elapsed,world:this.sim.state.ascension+1,draft:this.sim.state.draftOpen,paused:this.paused,enemies:this.sim.state.enemies.filter(e=>e.active).length,projectiles:this.sim.state.projs.filter(p=>p.active).length,boss:this.sim.state.enemies.find(e=>e.active&&e.boss)?.encounter,terrain:this.terrainPainter.counts()}),
         seed: () => this.masterSeed,
         cleanPresentation: () => {
           const s = this.sim.state;
@@ -723,10 +757,11 @@ export class GameScene extends Phaser.Scene {
           for(const f of ["kinetic","energy","defense","field"] as const)s.weaponCd[f]=999;
           for(const a of s.squad)a.cd=999;
           const e=this.sim.spawnEnemy("tank",false,true,0,250,[])!;
-          e.encounter!.phase="warning";e.encounter!.timer=1.15;e.encounter!.pattern=pattern;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;
+          e.encounter!.phase="warning";e.encounter!.timer=bossWarningDuration(pattern);e.encounter!.pattern=pattern;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;
           this.refreshHUD();return {hp:s.build.hp,x:s.px,y:s.py};
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
+        bossPhaseReview:()=>{const e=this.sim.state.enemies.find(e=>e.active&&e.boss)!;e.hp=e.maxHp*.4;e.encounter!.phase="approach";e.encounter!.timer=0;this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));},
         dodgeBossReview: () => {this.sim.state.py+=150;},
         heroActionReview: (kind:"attack"|"hurt"|"dash"|"special"|"death") => {
           // Presentation fixture only, never available in normal/QA builds.
@@ -1019,6 +1054,8 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onShutdown(): void {
+    this.decisionInput.dispose();
+    clearNotifications();
     this.game.events.off(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
     this.game.events.off(Phaser.Core.Events.POST_RENDER, this.onPostRender);
     this.techMapView?.destroy();
@@ -1166,10 +1203,12 @@ export class GameScene extends Phaser.Scene {
       know, knowNums, knowFill, ageCard, goals, ascendWrap, terrBar, techBtn,
       civBtn, minimap: mm, bossBar, bossFill, hint,
     };
+    this.loadout=new AbilityLoadout();hud.append(this.loadout.node);
     this.refreshHUD();
   }
 
   private refreshHUD(): void {
+    this.loadout?.update(this.sim.state);
     const s = this.sim.state;
     const { stats, age, hpLine, hpFill, identLine, squadLine, knowNums, knowFill, ageCard, goals } = this.hud;
     if (!stats || !age || !hpLine || !hpFill || !identLine || !squadLine || !knowNums || !knowFill || !ageCard || !goals) return;
@@ -1487,6 +1526,13 @@ export class GameScene extends Phaser.Scene {
     // Free claims remain available alongside deferred specialization.
     // Logistics is stated whenever the frontier is full and ANY unclaimed
     // site is near — contested or clear. Claiming itself has no cost.
+    const nearby=this.sim.nearbyClaimSites()[0];
+    if(nearby && nearby.reason!=="CLAIMABLE"){
+      const message=el("p","claim-status",`claim.${nearby.reason}` as EnKeys);
+      message.dataset.claimReason=nearby.reason;
+      if(nearby.remainingDistance)message.append(` (${Math.ceil(nearby.remainingDistance)}u)`);
+      bar.appendChild(message);
+    }
     const anySite = this.sim.claimablePOIs()[0];
     if ((unspecced || anySite) && s.logistics >= s.maxLogistics) {
       this.appendLogisticsLine(bar, s);
@@ -1512,12 +1558,7 @@ export class GameScene extends Phaser.Scene {
       b.className = "btn terr-claim-btn";
       b.textContent = `${t("ui.claim")}: ${t(`poi.${c.poiType}.name` as EnKeys)} [C]`;
       b.addEventListener("click", () => {
-        // Attempt telemetry (v0.24): discovery != successful mutation.
-        this.qa?.noteSimEvent("claim_attempt", c.poiId);
-        const ev = this.sim.claimTerritory(c.poiId);
-        this.handleEvents(ev);
-        const terr = s.territories.find((x) => x.poiId === c.poiId);
-        if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
+        this.attemptClaim(c.poiId);
       });
       bar.appendChild(b);
       purpose("ui.claimPurpose");
@@ -1653,16 +1694,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** [C] claims the nearest valid, clear, in-reach, unclaimed site. */
+  private attemptClaim(poiId:string):void {
+    const status=this.sim.claimStatus(poiId);
+    this.qa?.noteSimEvent("claim_attempt",poiId);
+    if(status.reason!=="CLAIMABLE"){toast(`claim.${status.reason}` as EnKeys);return;}
+    this.handleEvents(this.sim.claimTerritory(poiId));
+    const terr=this.sim.state.territories.find(t=>t.poiId===poiId);
+    if(terr&&terr.spec==="")this.showSpecPicker(poiId);
+  }
   private claimNearestSite(): void {
     const s = this.sim.state;
-    if (s.over || this.techMapOpen || this.civMapOpen || this.blockingModal) return;
+    if (s.over || s.draftOpen || this.paused || this.techMapOpen || this.civMapOpen || this.blockingModal) return;
     const c = this.sim.claimablePOIs().find((x) => x.clear);
-    if (!c) return;
+    if (!c) {
+      const site=this.sim.nearbyClaimSites()[0];
+      toast(site ? `claim.${site.reason}` as EnKeys : "claim.NO_SITE");
+      return;
+    }
     // v0.24: claim is free; Logistics only consumed when specializing (setOutpostSpec).
-    this.qa?.noteSimEvent("claim_attempt", c.poiId);
-    this.handleEvents(this.sim.claimTerritory(c.poiId));
-    const terr = s.territories.find((x) => x.poiId === c.poiId);
-    if (terr && terr.spec === "") this.showSpecPicker(c.poiId);
+    this.attemptClaim(c.poiId);
   }
 
   /** Optional specialization: free claims can be specialized later. */
@@ -2268,6 +2318,7 @@ export class GameScene extends Phaser.Scene {
   private syncDraftUI(): void {
     const open = this.sim.state.draftOpen && !this.sim.state.over && !this.paused;
     const el = document.getElementById("draft-screen");
+    if(open&&el&&this.displayedOffers!==this.sim.state.draftOffers){el.remove();this.openDraft();this.surfaces.suspendContext();return;}
     if (open && !el) {
       this.openDraft();
       // Suspend AFTER open: drafts preempt map overlays (whose close path
@@ -2282,7 +2333,10 @@ export class GameScene extends Phaser.Scene {
   private openDraft(): void {
     const s = this.sim.state;
     if (document.getElementById("draft-screen")) return; // exactly-one guard
+    this.decisionInput.enter();
+    this.latch.discardEdges();
     this.tutorial?.onDraftOpened();
+    this.displayedOffers=s.draftOffers;
     // Drafts take precedence over informational map overlays.
     if (this.techMapOpen) this.toggleTechMap();
     if (this.civMapOpen) this.toggleCivMap();
@@ -2435,7 +2489,7 @@ export class GameScene extends Phaser.Scene {
         selectBtn.textContent = "SELECT";
         selectBtn.setAttribute("aria-label", `Select card ${i + 1}`);
       }
-      selectBtn.addEventListener("click", () => this.pickCard(i));
+      selectBtn.addEventListener("click", () => this.pickCard(i,screen));
       c.appendChild(selectBtn);
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
@@ -2446,6 +2500,7 @@ export class GameScene extends Phaser.Scene {
         rs.textContent = `${t("ui.reserve")}${s.reservedTech === offer.nodeId ? " ✓" : ""}`;
         rs.addEventListener("click", (ev2) => {
           ev2.stopPropagation();
+          if(!this.currentDraftSurface(screen))return;
           this.qa?.noteSimEvent("reserve_attempt", offer.nodeId);
           this.handleEvents(this.sim.reserveCard(i));
           this.refreshHUD();
@@ -2462,6 +2517,7 @@ export class GameScene extends Phaser.Scene {
     reroll.textContent = s.rerolls > 0 && !this.sim.canRerollDraft()
       ? t("draft.rerollEmpty") : `${t("ui.reroll")} (${s.rerolls})`;
     reroll.addEventListener("click", () => {
+      if(!this.currentDraftSurface(screen))return;
       // Capture visible ids first: NEW markers are computed presentation-side
       // from the before/after difference (never canonical state).
       const prev = new Set(s.draftOffers.map((o) => o.nodeId));
@@ -2478,6 +2534,7 @@ export class GameScene extends Phaser.Scene {
     skip.className = "btn";
     skip.textContent = t("ui.skip");
     skip.addEventListener("click", () => {
+      if(!this.currentDraftSurface(screen))return;
       this.handleEvents(this.sim.skipDraft());
       document.getElementById("draft-screen")?.remove();
     });
@@ -2516,12 +2573,22 @@ export class GameScene extends Phaser.Scene {
     screen.querySelector<HTMLButtonElement>(".card-select")?.focus();
   }
 
-  private pickCard(i: number): void {
+  private currentDraftSurface(screen:HTMLElement):boolean {
+    return screen.isConnected&&screen===document.getElementById("draft-screen")&&screen.dataset.committed!=="true"&&this.displayedOffers===this.sim.state.draftOffers;
+  }
+  private pickCard(i: number,expectedScreen?:HTMLElement): void {
     const s = this.sim.state;
     if (!s.draftOpen || s.over || this.techMapOpen || this.blockingModal) return;
+    const screen=expectedScreen??document.getElementById("draft-screen");
+    if(!screen||!this.currentDraftSurface(screen))return;
     const ev = this.sim.chooseDraft(i);
+    if(!ev.some(e=>e.type==="tech_selected"))return;
+    screen.dataset.committed="true";screen.remove();
+    this.decisionInput.enter();
+    this.latch.discardEdges();
     sfx.select();
     this.handleEvents(ev);
+    this.syncDraftUI();
     // Next queued draft (if any) appears via syncDraftUI — exactly one surface.
   }
 
@@ -2536,6 +2603,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private showPause(): void {
+    this.decisionInput.enter();
+    this.latch.discardEdges();
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = "pause-screen";
@@ -2911,10 +2980,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private showBlockingFresh(id: string, dur: number, build?: (screen: HTMLElement) => void): void {
+    this.decisionInput.enter();
+    this.latch.discardEdges();
     // Caller (or queue drain) guarantees no live modal; never re-enter drain.
     this.blockingModal?.remove();
     // Dismiss any active toasts to prevent overlapping presentation text
-    document.querySelectorAll(".toast").forEach((t) => t.remove());
+    // Notifications remain queued; a blocking choice must not erase warnings.
     const root = uiRoot();
     const screen = el("div", "screen");
     screen.id = id;
@@ -3170,6 +3241,7 @@ export class GameScene extends Phaser.Scene {
       this.heroActions.accept(e,s.elapsed,s.px,s.py);
       switch (e.type) {
         case "boss_attack_warning": toast(`combat.boss.${e.pattern}` as EnKeys);sfx.boss();break;
+        case "boss_phase_changed":toast("combat.boss.phaseTransition");sfx.boss();break;
         case "boss_attack_fired": sfx.weapon("field");break;
         case "weapon_fired": sfx.weapon(e.family,s.originId); break;
         case "mine_detonated": sfx.weapon("field"); break;
@@ -3177,10 +3249,13 @@ export class GameScene extends Phaser.Scene {
           // UI appears via syncDraftUI (state-driven, exactly-one). Sound here.
           sfx.levelup();
           break;
-        case "tech_selected":
+        case "tech_selected": {
+          const node=this.sim.techGraph().find(n=>n.id===e.techId)??fallbackCards(s.level).find(n=>n.id===e.techId);
+          if(node)toast("ui.techAcquired",t(node.titleKey as EnKeys),effectSummary(e.effectiveEffects??node.effects));
           sfx.select();
           this.qa?.noteSimEvent("tech", e.techId);
           break;
+        }
         case "draft_reserved":
           sfx.select();
           this.qa?.noteSimEvent("draft_reserve", e.techId);
@@ -3326,6 +3401,7 @@ export class GameScene extends Phaser.Scene {
           break;
         }
         case "ascended":
+          clearNotifications();
           this.arcs=[];
           this.knowledgeCollectUntil=-Infinity;
           toast("ui.ascendTitle", `#${e.ascension} · ${e.worldSeed}`);
@@ -3556,6 +3632,10 @@ export class GameScene extends Phaser.Scene {
       for (let oy = -R; oy <= R; oy++) {
         const desc = getChunk(cx+ox,cy+oy);
         for (const poi of desc.poi) {
+          // Environmental visibility follows explored chunks; distant hidden
+          // sites are not disclosed by the render neighborhood/prewarm cache.
+          if(!(desc.x===cx&&desc.y===cy)&&!s.chunksWorld.includes(`${desc.x},${desc.y}`))continue;
+
           drawPoi(g, {
             painted:!this.highContrast(),
             wx: poi.wx,
@@ -3655,8 +3735,8 @@ export class GameScene extends Phaser.Scene {
       });
       drawEnemyTelegraph(g,e,hc);
       drawBossTelegraph(g,e);
-      const bossPose=e.boss?(e.flash>0?6:e.encounter?.phase==="warning"?3:e.encounter?.phase==="recover"?(e.encounter.pattern==="fan"?5:4):enemyDisplayMoving(e)?1+Math.floor(s.elapsed*4)%2:0):undefined;
-      const enemyPose=e.evolution?.phase==="attack"?3:enemyDisplayMoving(e)?1+Math.floor(s.elapsed*8)%2:0;
+      const bossPose=e.boss?(e.flash>0?6:["warning","commit"].includes(e.encounter?.phase??"")?3:e.encounter?.phase==="phase-transition"?3:e.encounter?.phase==="attack"?(e.encounter.pattern==="fan"?5:4):e.encounter?.phase==="recover"?(e.encounter.pattern==="fan"?5:4):enemyDisplayMoving(e)?1+Math.floor(s.elapsed*4)%2:0):undefined;
+      const enemyPose=["warning","attack"].includes(e.evolution?.phase??"")?3:enemyDisplayMoving(e)?1+Math.floor(s.elapsed*8)%2:0;
       this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,enemyArtSize(e.family,e.radius,e.elite,e.boss),facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,bossPose,e.boss?undefined:enemyPose);
     }
     this.enemyActors.end();
@@ -3665,7 +3745,7 @@ export class GameScene extends Phaser.Scene {
     const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
     this.heroActions.sync(s.worldNonce);
-    this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over));
+    this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over),undefined,undefined,true);
     this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects,hc);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
@@ -3684,13 +3764,15 @@ export class GameScene extends Phaser.Scene {
       const blades = 2 + b.bonusOrbit;
       for (let i = 0; i < blades; i++) {
         const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
-        drawOrbit(g, s.px, s.py, fst.radius || 110, 1, a, 0xb48cff, 8);
+        if(hc)drawOrbit(g, s.px, s.py, fst.radius || 110, 1, a, 0xb48cff, 8);
+        else this.combatSprites.orbit(s.px+Math.cos(a)*(fst.radius||110),s.py+Math.sin(a)*(fst.radius||110),a+Math.PI/2,s.originId,"field");
       }
     }
     const dst = getWeaponStage("defense", s.weaponStage.defense);
     if (enabled.includes("defense") && dst.archetype === "orbit") {
       const blades = Math.max(1, dst.count + b.bonusOrbit);
-      drawOrbit(g, s.px, s.py, dst.radius, blades, s.orbitAng, dst.color, 7);
+      if(hc)drawOrbit(g, s.px, s.py, dst.radius, blades, s.orbitAng, dst.color, 7);
+      else for(let i=0;i<blades;i++){const a=s.orbitAng+i*Math.PI*2/blades;this.combatSprites.orbit(s.px+Math.cos(a)*dst.radius,s.py+Math.sin(a)*dst.radius,a+Math.PI/2,s.originId,"defense");}
     }
     const guardians = guardianCount(s);
     if (guardians > 0) {

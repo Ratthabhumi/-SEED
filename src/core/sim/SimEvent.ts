@@ -9,6 +9,7 @@ import type {EnemyFamily} from "../director/director";
 
 export type SimEvent =
   | {type:"boss_attack_warning";pattern:import("../combat/bossEncounter").BossPattern}
+  | {type:"boss_phase_changed";phase:2}
   | {type:"boss_attack_fired";pattern:import("../combat/bossEncounter").BossPattern;x:number;y:number}
   | { type: "weapon_fired"; family: WeaponFamily; x: number; y: number; tx: number; ty: number }
   | { type: "weapon_impact"; family: WeaponFamily; x: number; y: number; hpDamage: number; shieldDamage: number }
@@ -20,7 +21,7 @@ export type SimEvent =
   | { type: "run_completed" }
   | { type: "outpost_dismantled"; poiId: string; released: number }
   | { type: "draft_opened"; context: "level" | "poi" }
-  | { type: "tech_selected"; techId: string; quality?: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC"; modifierIds?: string[] }
+  | { type: "tech_selected"; techId: string; quality?: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC"; modifierIds?: string[]; effectiveEffects?: readonly import("../tech/graph").TechEffect[] }
   | { type: "draft_reserved"; techId: string }
   | { type: "draft_rerolled"; rerollsLeft: number; prevIds: string[]; newIds: string[]; changed: number }
   | { type: "draft_reroll_unavailable" }

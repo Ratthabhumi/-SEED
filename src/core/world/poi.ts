@@ -1,6 +1,7 @@
 // Deterministic POI candidates + spacing/constraint filter. Stateless per chunk.
 import { deriveUint32, featureFloat01, FeatureSalt } from "../seed/hash";
 import type { TechNode } from "../tech/graph";
+import {classifyBiome,sampleFields,type BiomeId} from "./biome";
 
 export type POIType = "ruin" | "meteor" | "vault" | "signal" | "megasite" | "worldtree";
 
@@ -17,6 +18,16 @@ export interface POI {
 }
 
 const POI_FAMILIES: POIType[] = ["ruin", "meteor", "vault", "signal"];
+/** All mission families retain positive support; only type affinity changes. */
+export const BIOME_POI_WEIGHTS:Record<BiomeId,readonly number[]>={
+ verdant:[5,1,2,2], arid:[2,5,2,2], tundra:[3,1,5,2], badlands:[2,3,4,2],
+};
+export function biomePOIType(biome:BiomeId,roll:number):POIType {
+ const weights=BIOME_POI_WEIGHTS[biome],total=weights.reduce((a,b)=>a+b,0);
+ let target=Math.min(1-Number.EPSILON,Math.max(0,roll))*total;
+ for(let i=0;i<weights.length;i++){target-=weights[i]!;if(target<0)return POI_FAMILIES[i]!;}
+ return "signal";
+}
 
 /**
  * Families the world generator can actually place (P2-02 truth).
@@ -75,7 +86,8 @@ export function getPOIsForChunk(masterSeed: string, cx: number, cy: number, anom
   const roll = featureFloat01(terrainU32, cx, cy, FeatureSalt.poi);
   if (roll > density) return [];
   const typeRoll = featureFloat01(terrainU32, cx, cy, FeatureSalt.ruin);
-  const type = POI_FAMILIES[Math.floor(typeRoll * POI_FAMILIES.length) % POI_FAMILIES.length] as POIType;
+  const biome=classifyBiome(sampleFields(masterSeed,(cx+.5)*512,(cy+.5)*512));
+  const type = biomePOIType(biome,typeRoll);
   const ox = featureFloat01(terrainU32, cx, cy, FeatureSalt.anomaly);
   const oy = featureFloat01(terrainU32, cy, cx, FeatureSalt.biome);
   const lx = 64 + ox * 384;
