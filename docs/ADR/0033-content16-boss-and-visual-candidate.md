@@ -33,3 +33,8 @@ Green measurement execution does not mean render<8ms passed.
 New originals use the existing seed-content15-* original-art namespace with MIT
 source/normalized-file metadata, rather than the Kenney CC0 fallback category.
 Actual resize/slicing and both hashes remain enforced; no assertion weakened.
+
+The controlled historical material comparison restores the original Content14
+moss, cracked earth, ice and red strata textures as the current art candidate.
+Worldgen stays 3; periodic preparation, worker streaming and bounded uploads stay
+in place. This is a visible material choice, not an operator art approval.

@@ -1,10 +1,10 @@
 import type Phaser from "phaser";
 import type {ChunkDescriptor} from "../../core/world/chunks";
 import type {BiomeId} from "../../core/world/biome";
-import verdant from "../../../assets/seed/content15/verdant-floor-v1.png";
-import arid from "../../../assets/seed/content15/arid-floor-v1.png";
-import tundra from "../../../assets/seed/content15/tundra-floor-v1.png";
-import badlands from "../../../assets/seed/content15/badlands-floor-v1.png";
+import verdant from "../../../assets/seed/terrain/verdant-v2.png";
+import arid from "../../../assets/seed/terrain/arid-v1.png";
+import tundra from "../../../assets/seed/terrain/tundra-v1.png";
+import badlands from "../../../assets/seed/terrain/badlands-v1.png";
 import {TERRAIN_CELL as CELL,TERRAIN_STRIDE as STRIDE,TERRAIN_PAD as PAD} from "./terrainTile";
 import {TERRAIN_TYPED_UNPACK} from "./terrainUpload";
 import {periodicTerrainSource} from "./naturalTerrain";
