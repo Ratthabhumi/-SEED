@@ -161,14 +161,19 @@ P1/core closure and presentation integration must not be presented as GAME_COMPL
 
 ## 13. Branch, final SHA, Draft PR
 
-feat/content15-combat-world-ui-quality targets PR9's branch. Final SHA and one
-Draft PR URL are emitted after focused final verification; no main merge/tag/publish.
+feat/content15-combat-world-ui-quality targets PR9's branch in
+[Draft PR10](https://github.com/Ratthabhumi/-SEED/pull/10).
+Verified product SHA070098909d40cac810e2438311e54ba2c21d53ed; later evidence-only
+publication has distinct lineage. No main merge/tag/public release.
 
 ## 14. Exact-head CI and ZIP receipt
 
-Required: npm check, Analyze, native regression, ZIP and release:verify; verify
-four checks on the exact final head and official artifact CRC/root/licensing/SHA.
-Use final delivery receipt rather than candidate logs as proof of final package.
+Product exact-SHA push38500135128 and PR38500139907 passed4/4 each:
+check480 tests/53 provenance, Analyze6, browser147 PASS/1 existing capture skip,
+ZIP and release verification. Official CRC/root/licensing/compiled-SHA passed.
+[Delivery receipt](CONTENT15_DELIVERY_RECEIPT.md) records package hashes and
+all performance results, including open8ms renderer/ground budgets. Evidence-only
+publication CI is separate from the verified product SHA.
 
 ## 15. Single clean human retest procedure
 

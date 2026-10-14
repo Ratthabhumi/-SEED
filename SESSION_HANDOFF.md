@@ -1,3 +1,21 @@
+## Content15 evidence publication — 2026-10-14
+
+Product SHA070098909d40cac810e2438311e54ba2c21d53ed verified push38500135128
+and PR38500139907 CI4/4 each;480 unit/53 provenance/147 browser PASS,1 existing
+capture-only skip. Official Node22 ZIP CRC/root/licensing/SHA verified.
+Draft PR10 https://github.com/Ratthabhumi/-SEED/pull/10 stacks on PR9.
+This evidence-only publication changes docs/captures, not product source.
+See docs/CONTENT15_DELIVERY_RECEIPT.md for exact lineage, package hashes,
+all successful/failed performance scopes and selected real fixture captures.
+Final15min live500-foe run and boss/World2/restart have advancing canonical
+clocks and zero page errors; renderer CPU/API p95=12ms exceeds8ms target.
+Degraded repeat dense p95=50.1ms remains retained; fresh warm pair returns
+near16.7–16.8ms but candidate ground worst9.6ms still exceeds8ms.
+Performance/art/human gates remain open. Research is delegated to the user
+via docs/CONTENT15_RESEARCH_HANDOFF.md; no market research performed.
+Raw private QA preserved locally; sanitized evidence/source/original art
+uploaded. No main merge/tag/release or HUMAN_FUN_PASS.
+
 ## Content15 coordinated quality pass — 2026-10-14
 
 Corrective live-stress finding after e2c3811 publication: parent and candidate
