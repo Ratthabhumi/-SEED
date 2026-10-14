@@ -847,3 +847,22 @@ Final docs/evidence commit changes no canonical/runtime code after105b6c8.
 One stacked Draft targets PR11; final exact-SHA push/PR CI and official Node22/24
 ZIP hashes are maintained in its PR body to avoid a self-referential SHA loop.
 Quality remains PARTIAL; research questions are in the targeted research brief.
+
+## Content15.3 implementation in progress —15 October2026
+
+Verified PR12 ce63df35d52e8b3041d232f5e8e3438c087cecf8, clean starting tree;
+new feat/content153-playable-visual-boss-20261015. Original hostile painted
+ordinary/burst/boss-fan atlas, eight selected Hunters front Stone/Space attack/
+recovery poses via existing importer/sampler, shared periodic terrain fallback,
+144-case source-alpha occupancy audit and +12.5% Hero visual size implemented.
+Walk generation remains withheld: gait chronology unverified, no layered artist
+file fabricated. Native art quality is unaccepted until actual captures/review.
+Boss safe-boundary threshold and cross-first escalation changes canonical
+timing: WORLDGEN/CONTENT/SAVE3/16/2, old replays remain Content15. No HP/damage
+gate or lethal rescue. Exact-parent36 seeded arena comparison script added;
+no HP/phase writes during measured combat. All gates/evidence still pending.
+Local command startup/checks became exceptionally slow; redundant owned typecheck
+and focused-test processes were terminated to reduce overlap. No user processes
+or QA sessions targeted. Preserve unfinished logs; do not claim their completion.
+One Draft, full checks, native evidence, exact-head CI and official ZIP verification
+must finish before final delivery. No main merge/tag/release authorization.

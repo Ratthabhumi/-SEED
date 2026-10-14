@@ -7,6 +7,7 @@ import tundra from "../../../assets/seed/content15/tundra-floor-v1.png";
 import badlands from "../../../assets/seed/content15/badlands-floor-v1.png";
 import {TERRAIN_CELL as CELL,TERRAIN_STRIDE as STRIDE,TERRAIN_PAD as PAD} from "./terrainTile";
 import {TERRAIN_TYPED_UNPACK} from "./terrainUpload";
+import {periodicTerrainSource} from "./naturalTerrain";
 export const TERRAIN_TEXTURES={verdant,arid,tundra,badlands};
 const IDS:BiomeId[]=["verdant","arid","tundra","badlands"],ATLAS=2048,SLOTS=64,KEY="painted-ground-atlas";
 interface Entry{slot:number;used:number;serial:number;ready:boolean;readyAt:number;biome:BiomeId;}
@@ -27,17 +28,26 @@ export class TerrainPainter {
  private highContrast=false;
  private workerPaintMaxMs=0;
  private deliveredMs=0;private sentAt=0;private evictions=0;
+ private sourcePrepMs=0;
  diagnosticTargets(){return {tile:this.tileContext,backing:this.atlas.getContext()};}
  constructor(private scene:Phaser.Scene){
   this.atlas=(scene.textures.exists(KEY)?scene.textures.get(KEY):scene.textures.createCanvas(KEY,ATLAS,ATLAS)) as Phaser.Textures.CanvasTexture;
   this.atlas.setFilter(0); // No mip chain: subregion updates keep linear sampling valid.
   for(let i=0;i<SLOTS;i++)if(!this.atlas.has(String(i)))this.atlas.add(i,0,(i%8)*STRIDE+PAD,Math.floor(i/8)*STRIDE+PAD,CELL,CELL);
   this.tileCanvas=document.createElement("canvas");this.tileCanvas.width=this.tileCanvas.height=STRIDE;this.tileContext=this.tileCanvas.getContext("2d")!;
+  const preparationStart=performance.now();
+   const canvas=document.createElement("canvas");canvas.width=canvas.height=256;const ctx=canvas.getContext("2d",{willReadFrequently:true})!;
+   const sources=IDS.map(id=>{
+    const key=`terrain-periodic-${id}`;
+    if(scene.textures.exists(key))return (scene.textures.get(key) as Phaser.Textures.CanvasTexture).getContext().getImageData(0,0,256,256).data;
+    ctx.clearRect(0,0,256,256);ctx.drawImage(scene.textures.get(`terrain-${id}`).getSourceImage() as CanvasImageSource,0,0,256,256);
+    const pixels=periodicTerrainSource(ctx.getImageData(0,0,256,256).data);
+    const texture=scene.textures.createCanvas(key,256,256)!;texture.getContext().putImageData(new ImageData(pixels,256,256),0,0);texture.refresh();return pixels;
+   });
+  this.sourcePrepMs=performance.now()-preparationStart;
   if(typeof Worker!=="undefined"){
    this.worker=new Worker(new URL("./terrainWorker.ts",import.meta.url),{type:"module"});
-   const canvas=document.createElement("canvas");canvas.width=canvas.height=256;const ctx=canvas.getContext("2d",{willReadFrequently:true})!;
-   const sources=IDS.map(id=>{ctx.clearRect(0,0,256,256);ctx.drawImage(scene.textures.get(`terrain-${id}`).getSourceImage() as CanvasImageSource,0,0,256,256);return ctx.getImageData(0,0,256,256).data;});
-   this.worker.postMessage({type:"sources",sources},sources.map(s=>s.buffer));
+   this.worker.postMessage({type:"sources",prepared:true,sources},sources.map(s=>s.buffer));
    this.worker.onmessage=(event:MessageEvent<Result>)=>{this.deliveredMs=performance.now()-this.sentAt;this.busy=false;this.ready.push(event.data);};
    this.worker.onerror=(event)=>{event.preventDefault();this.workerFailed=true;this.worker?.terminate();this.worker=undefined;this.busy=false;this.jobs=[];this.ready=[];};
   }
@@ -96,7 +106,7 @@ export class TerrainPainter {
    if(this.assigned[index]!==entry){
     this.assigned[index]=entry;
     image.setTexture(KEY,entry.slot).setPosition(v.x*512,v.y*512).setDisplaySize(512,512);
-    fallback.setTexture(`terrain-${entry.biome}`).setPosition(v.x*512,v.y*512).setDisplaySize(512,512).setTint(0xb8b8b8).setFlip(false,false);
+    fallback.setTexture(`terrain-periodic-${entry.biome}`).setPosition(v.x*512,v.y*512).setDisplaySize(512,512).setTint(0xb8b8b8).setFlip(false,false);
    }
    image.setAlpha(alpha).setVisible(alpha>0);fallback.setVisible(alpha<1);
   }
@@ -117,6 +127,6 @@ export class TerrainPainter {
  }
  counts(){return {images:this.images.length,tiles:this.cache.size,atlasBytes:ATLAS*ATLAS*4,hits:this.hits,misses:this.misses,
   pending:this.jobs.length+(this.busy?1:0)+this.ready.length,uploads:this.uploads,uploadBytes:this.uploads*STRIDE*STRIDE*4,
-  paintMs:this.paintMs,workerPaintMaxMs:this.workerPaintMaxMs,deliveredMs:this.deliveredMs,evictions:this.evictions,uploadCallMs:this.uploadCallMs,uploadMaxMs:this.uploadMaxMs,workerFailed:this.workerFailed,
+  paintMs:this.paintMs,workerPaintMaxMs:this.workerPaintMaxMs,deliveredMs:this.deliveredMs,evictions:this.evictions,uploadCallMs:this.uploadCallMs,uploadMaxMs:this.uploadMaxMs,workerFailed:this.workerFailed,sourcePrepMs:this.sourcePrepMs,fallbackAtlasBytes:4*256*256*4,
   mode:this.worker?"worker-partial-upload":"source-fallback",ready:[...this.cache.values()].filter(e=>e.ready).length};}
 }

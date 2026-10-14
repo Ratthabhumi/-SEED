@@ -104,3 +104,11 @@ Content15.2 attachment/coverage update: see
 `docs/CONTENT15_2_ANIMATION_COVERAGE.md`. Motion frame coverage is unchanged;
 equipment grip-origin composition is corrected without claiming authored
 in-betweens or human artist approval.
+# Content15.3 candidate supplement
+
+Optional canonical-time clip overrides preserve legacy metadata. Reviewed front
+Stone/Space release/recovery uses four distinct frames per Age, per-frame hand
+points and fixed baseline through the existing PNG importer. Back/walk/other
+actions remain sparse; rejected walk is not counted as approved motion. Source
+PNG and extraction indices are genuine; no layered artist source is fabricated.
+Native clip/attachment review and human art acceptance remain required.

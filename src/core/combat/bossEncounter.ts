@@ -10,11 +10,16 @@ export const bossRecoveryDuration=(pattern:BossPattern):number=>pattern==="fan"?
 export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:(pattern:BossPattern,x:number,y:number)=>void):boolean {
   const a=e.encounter;if(!e.boss||!a)return false;
   const dx=px-e.x,dy=py-e.y,d=Math.max(1,Math.hypot(dx,dy));a.timer-=dt;
+  // Health can cross the threshold during a warning or recovery. Interrupt
+  // those safe states promptly, but finish an already committed attack first.
+  // Lethal damage remains lethal; this grants neither HP nor invulnerability.
+  if(!a.enraged&&e.hp>0&&e.hp<=e.maxHp*.5&&a.phase!=="commit"&&a.phase!=="attack"){
+    a.enraged=true;a.phase="phase-transition";a.timer=.8;a.cycle=0;return true;
+  }
   if(a.phase==="approach") {
-    if(!a.enraged&&e.hp<=e.maxHp*.5){a.enraged=true;a.phase="phase-transition";a.timer=.8;return true;}
     if(d>230){e.x+=dx/d*e.speed*dt;e.y+=dy/d*e.speed*dt;}
     if(a.timer<=0 && d<=600){
-      const patterns:BossPattern[]=a.enraged?["fan","slam","cross","fan","cross","slam"]:["slam","fan"];
+      const patterns:BossPattern[]=a.enraged?["cross","fan","slam","fan","cross","slam"]:["slam","fan"];
       a.pattern=patterns[a.cycle%patterns.length];a.aimX=px;a.aimY=py;
       a.phase="warning";a.timer=bossWarningDuration(a.pattern);
     }
