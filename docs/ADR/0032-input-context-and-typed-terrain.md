@@ -18,3 +18,10 @@ unreversed backing Canvas for restoration. This removes a DOM source upload
 path; performance improvement requires paired measurement and does not prove
 that prior31.6ms stalls were all DOM conversion. No new dependency, save/world/
 content version or canonical change. Existing performance budgets remain.
+Correction: native GPU probe proves typed arrays can be flipped by WebGL1.
+Explicit Worker reversal requires UNPACK_FLIP_Y=false; restore previous intended
+Phaser upload defaults after the partial update. Real WebGL1/2 midtone pixel
+equivalence tests replace the earlier incomplete CPU-only orientation assurance.
+HC geometry caching alone increased diagnostic GPU cost (8.655→14.880ms);
+reuse existing quad crop support with one-time CPU alpha bounds and2px gutters,
+retaining faint tips/empty-glyph vector fallback. No per-frame GPU readback.

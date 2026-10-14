@@ -106,3 +106,22 @@ Space, terrain arrival/seams, threat readability, HC mode and actual boss phase/
 recovery cues; test Pause/maps and high-scale Thai layout. Record exact SHA,
 viewport/mode, ratings and any interruption. Existing failed sessions remain
 INTERRUPTED_BY_BUG/QUALITY_GATE_FAILED; new machine fixtures are not human passes.
+## Corrective GPU findings before publication
+
+Actual WebGL1 byte probe showed UNPACK_FLIP_Y also flips typed arrays. Initial
+prototype reversed Worker rows AND enabled flipping, causing wrong tile edge
+colors. Controlled old-flag native tests failed both WebGL APIs; final typed
+upload disables unpack flip/premultiplication and restores the legacy state
+afterward. Native WebGL1/2 tests compare midtone RGBA to the original Canvas
+upload byte-for-byte. GPU readback/error checks occur only in tests, never the
+normal frame loop. The before image is our d500253 prototype, not PR11 evidence.
+Primary reference: [MDN pixelStorei](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei).
+
+The first HC cache8s diagnostic reduced geometry preparation but GPU p95 rose
+8.655→14.880ms. Retain these measurements. Crop only transparent quad area using
+one-time CPU Canvas alpha bounds plus2px filtering gutters; preserve all nonzero
+alpha pixels, trails, rotation and canonical count. Empty rasters fall back to
+original vectors. Existing Mesh2D crop mechanism is reused. `?friendly=fullquad`
+is a same-build diagnostic comparator. New bound tests preserve faint tips and
+cell-edge gutters. Final cropped diagnostics and uninstrumented paired/live
+measurements must supersede this prototype before any performance verdict.

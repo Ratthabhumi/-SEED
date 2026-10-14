@@ -825,3 +825,10 @@ yield retry8/8 PASS without RPC error. Final editable-focus guard prevents
 typing from moving/triggering game commands; focused native/QA and exact-head CI
 must cover it. Generated8×2 Hunter walk was withheld (foot-contact chronology
 unverified), actual source in docs/evidence/content152; no runtime allocation.
+Content15.2 GPU corrections: d500253 typed prototype double-flipped tiles.
+Native WebGL1/2 old-flag reproduction2FAIL; explicit unpack=false correction
+2PASS with midtone RGBA matching Canvas bytes. Before picture/probe retained.
+HC full96px quads raised short diagnostic GPU p95 from8.655 to14.880ms despite
+CPU savings. Crop transparent area using CPU alpha bounds+2px gutters; retain
+all real pixels/canonical shots and original fallback. Same-build fullquad
+comparator, alpha edge tests and final cropped measurements required.

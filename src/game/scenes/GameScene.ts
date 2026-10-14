@@ -302,7 +302,7 @@ export class GameScene extends Phaser.Scene {
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
     this.hostileBatch=new HostileProjectileBatch(this);
-    this.friendlyBatch=new FriendlyProjectileBatch(this);
+    this.friendlyBatch=new FriendlyProjectileBatch(this,new URLSearchParams(location.search).get("friendly")!=="fullquad");
     this.vectorHostiles=new URLSearchParams(location.search).get("hostile")==="vector";
     this.numericFeedback=new URLSearchParams(location.search).get("numbers")==="atlas"?new NumericFeedback(this):undefined;
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";

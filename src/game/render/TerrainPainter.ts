@@ -6,6 +6,7 @@ import arid from "../../../assets/seed/content15/arid-floor-v1.png";
 import tundra from "../../../assets/seed/content15/tundra-floor-v1.png";
 import badlands from "../../../assets/seed/content15/badlands-floor-v1.png";
 import {TERRAIN_CELL as CELL,TERRAIN_STRIDE as STRIDE,TERRAIN_PAD as PAD} from "./terrainTile";
+import {TERRAIN_TYPED_UNPACK} from "./terrainUpload";
 export const TERRAIN_TEXTURES={verdant,arid,tundra,badlands};
 const IDS:BiomeId[]=["verdant","arid","tundra","badlands"],ATLAS=2048,SLOTS=64,KEY="painted-ground-atlas";
 interface Entry{slot:number;used:number;serial:number;ready:boolean;readyAt:number;biome:BiomeId;}
@@ -109,8 +110,9 @@ export class TerrainPainter {
   if(!renderer.gl){this.atlas.refresh();return;}
   const gl=renderer.gl,units=renderer.glTextureUnits,texture=this.atlas.source[0]!.glTexture!,previous=units.units[0];
   units.bind(texture,0);
-  renderer.glWrapper.updateTexturing({texturing:{flipY:true,premultiplyAlpha:true}});
+  renderer.glWrapper.updateTexturing({texturing:TERRAIN_TYPED_UNPACK});
   gl.texSubImage2D(gl.TEXTURE_2D,0,ax,ATLAS-ay-STRIDE,STRIDE,STRIDE,gl.RGBA,gl.UNSIGNED_BYTE,uploadPixels);
+  renderer.glWrapper.updateTexturing({texturing:{flipY:true,premultiplyAlpha:true}});
   units.bind(previous??null,0);
  }
  counts(){return {images:this.images.length,tiles:this.cache.size,atlasBytes:ATLAS*ATLAS*4,hits:this.hits,misses:this.misses,
