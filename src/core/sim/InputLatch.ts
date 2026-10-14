@@ -24,6 +24,8 @@ export class InputLatch {
   pressDash(): void {
     this.dash = true;
   }
+  /** Explicit input-context transition only; ordinary zero-step frames retain it. */
+  discardEdges():void { this.dash=false; }
 
   /**
    * Build the InputFrame for step `stepIndex` of the current frame.

@@ -15,7 +15,7 @@ describe("deterministic warned boss counterplay",()=>{
     for(const dodge of [false,true]){
       const {sim,s,e}=arena();e.encounter!.phase="warning";e.encounter!.timer=.5;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;
       const hp=s.build.hp;if(dodge)s.py+=BOSS_ENCOUNTER.slamRadius+30;
-      for(let i=0;i<32;i++)sim.step(1/60,idle);
+      for(let i=0;i<60;i++)sim.step(1/60,idle);
       expect(s.build.hp).toBe(dodge?hp:hp-e.dmg);
       expect(e.encounter!.phase).toBe("recover");
     }
@@ -26,7 +26,7 @@ describe("deterministic warned boss counterplay",()=>{
     expect(bossAreaHit("slam",-250,0,0,0,0,0)).toBe(true);
   });
   it("fan fires six canonical projectiles with a central gap; state is hashed and pool reset",()=>{
-    const a=arena(),b=arena();for(const {sim,e} of [a,b]){e.encounter!.phase="warning";e.encounter!.pattern="fan";e.encounter!.timer=0;e.encounter!.aimX=0;e.encounter!.aimY=0;sim.step(1/60,idle);}
+    const a=arena(),b=arena();for(const {sim,e} of [a,b]){e.encounter!.phase="warning";e.encounter!.pattern="fan";e.encounter!.timer=0;e.encounter!.aimX=0;e.encounter!.aimY=0;for(let i=0;i<10;i++)sim.step(1/60,idle);}
     expect(a.s.projs.filter(p=>p.active&&p.src==="boss-fan")).toHaveLength(6);
     expect(a.sim.snapshot()).toBe(b.sim.snapshot());const hash=a.sim.hash();a.e.encounter!.cycle++;expect(a.sim.hash()).not.toBe(hash);
     const thresholdHash=b.sim.hash();b.e.maxHp*=2;expect(b.sim.hash()).not.toBe(thresholdHash);

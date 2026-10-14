@@ -21,11 +21,14 @@ export class HeroEquipment {
   draw(g:Phaser.GameObjects.Graphics,s:RunState,facing:number,reduced:boolean,highContrast=false){
     if(this.world!==s.worldNonce)this.reset(s.worldNonce);
     const enabled=activeFamilies(s.originId,s.expansionFamily);
-    const family=s.elapsed-this.released<.16&&enabled.includes(this.releasedFamily)?this.releasedFamily:enabled[0]!;
+    // Field traps and autonomous Defense units are separate world objects,
+    // never a second handheld weapon substituted into the primary mount.
+    const handheld=this.releasedFamily==="kinetic"||this.releasedFamily==="energy";
+    const family=s.elapsed-this.released<.16&&handheld&&enabled.includes(this.releasedFamily)?this.releasedFamily:enabled[0]!;
     const art=combatPresentation(s.originId,family,s.weaponStage[family]);
     const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
     const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
-    const x=s.px+nx*(20-fresh*4),y=s.py-4+ny*(20-fresh*4),len=art.weaponLength;
+    const x=s.px+nx*(20-fresh*4),y=s.py-16+ny*(20-fresh*4),len=art.weaponLength;
     if(this.scene&&!highContrast){
       const frame=equipmentFrame(s.originId,s.weaponStage[family]);
       if(!this.weapon)this.weapon=this.scene.add.image(0,0,"combat-equipment",frame).setDepth(5);

@@ -12,6 +12,8 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL: "http://127.0.0.1:4173",
+    // Opt-in physical Intel/D3D11 validation on Windows; CI keeps its backend.
+    launchOptions: process.env.SEED_BROWSER_HARDWARE === "1" ? {args:["--use-gl=angle","--use-angle=d3d11"]} : {},
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

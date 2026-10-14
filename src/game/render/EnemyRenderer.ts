@@ -169,9 +169,16 @@ export function drawEnemy(
   if (e.elite) {
     const w = opts.highContrast ? 4 : 3;
     g.lineStyle(w, VL.eliteRing, 1);
+    if(opts.highContrast){
     g.strokeCircle(e.x, e.y, r + 5);
     g.lineStyle(1, VL.eliteRingInner, 0.8);
     g.strokeCircle(e.x, e.y, r + 8);
+    }else{
+      const y=e.y-(opts.visualSize??r*3)*.6;
+      g.fillStyle(0x091018,.9);g.fillTriangle(e.x-11,y,e.x+11,y,e.x,y-12);
+      g.lineBetween(e.x-11,y,e.x,y-12);g.lineBetween(e.x,y-12,e.x+11,y);
+      g.lineBetween(e.x-7,y+4,e.x+7,y+4);
+    }
     if (e.affix !== "") affixGlyph(g, e.affix, e.x, e.y, r, opts.time);
   } else if (e.shield > 0) {
     g.lineStyle(1, 0x7fb8ff, 0.9);

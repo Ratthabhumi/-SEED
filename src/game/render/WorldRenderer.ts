@@ -236,7 +236,9 @@ function drawPoiGlyph(
 /** POI marker: unique family glyph (primary) + beacon pillar (secondary). */
 export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
   if(a.painted&&!a.highContrast){
-    g.lineStyle(1,VL.beacon,a.found?.3:.18);g.strokeCircle(a.wx,a.wy,30);return;
+      g.fillStyle(0x081016,.35);g.fillEllipse(a.wx,a.wy+8,70,18);
+      if(a.found){g.lineStyle(2,VL.beacon,.8);g.lineBetween(a.wx-14,a.wy+15,a.wx-5,a.wy+23);g.lineBetween(a.wx-5,a.wy+23,a.wx+15,a.wy+7);}
+      return;
   }
   if(a.type==="signal"){
     // A fractured alien monument. Uses the existing site's position and visibility only.

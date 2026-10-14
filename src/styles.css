@@ -282,6 +282,23 @@ button, input { font-family: inherit; }
 .toast-title { font-size: var(--font-heading); font-weight: 700; color: var(--accent); line-height: 1.7; }
 .toast-sub { color: var(--muted); font-size: var(--font-body); line-height: 1.7; }
 
+#notification-stack { position:absolute; top:72px; left:50%; transform:translateX(-50%); width:min(420px,calc(100vw - 48px)); display:flex; flex-direction:column; gap:8px; pointer-events:none; z-index:40; }
+#notification-stack .toast { position:relative; inset:auto; transform:none; opacity:1; width:100%; max-width:none; margin:0; overflow-wrap:anywhere; }
+#notification-stack .toast[data-priority="critical"] { border-color:var(--color-hostile); }
+#ui:has(>.screen) #notification-stack { visibility:hidden; }
+#ability-loadout { position:absolute; right:16px; bottom:170px; display:flex; flex-direction:column; gap:4px; width:min(240px,28vw); max-height:35vh; overflow:auto; pointer-events:auto; }
+.loadout-power { display:grid; grid-template-columns:40px 1fr; align-items:center; gap:6px; padding:4px 8px; text-align:left; color:var(--text); font:inherit; font-size:var(--font-caption); line-height:1.7; background:var(--panel); border:1px solid var(--color-border); border-radius:8px; cursor:pointer; }
+.loadout-power small { grid-column:1/-1; line-height:1.7; }
+.loadout-power:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.loadout-power { overflow-wrap:anywhere; }
+.hud-top-left { max-width:min(460px,calc(50vw - 230px)); }
+.panel,.card,.status-card,.knowledge-card { background-image:linear-gradient(145deg,rgba(255,233,192,.045),rgba(83,224,200,.018)); }
+#notification-stack { max-height:calc(100vh - 180px); }
+.loadout-icon { width:40px; height:40px; background-size:240px 160px; }
+@media(max-width:1300px) { #ability-loadout { bottom:150px; width:52px; max-height:30vh; } .loadout-power { grid-template-columns:40px; padding:4px; } .loadout-power>span:nth-child(2) { display:none; } #ability-loadout:focus-within { width:min(240px,40vw); } #ability-loadout:focus-within .loadout-power { grid-template-columns:40px 1fr; } #ability-loadout:focus-within .loadout-power>span:nth-child(2) { display:block; } }
+@media (max-width:1150px) { #notification-stack { top:60px; width:min(320px,calc(100vw - 48px)); } }
+@media (prefers-reduced-motion:reduce) { #notification-stack .toast { transition:none; } }
+
 /* Chronicle table */
 .chron { display: grid; grid-template-columns: auto auto; gap: 6px 24px; text-align: left; margin: 10px auto; font-size: var(--font-body); }
 .chron dt { color: var(--muted); } .chron dd { margin: 0; text-align: right; }

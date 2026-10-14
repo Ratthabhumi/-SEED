@@ -8,7 +8,7 @@ for(const lang of ['en','th'] as const)test('boss warnings, actual dodge, fan pr
     const state=()=>page.evaluate(()=>(window as any).__seedE2E.bossReviewState());
     expect((await state()).actors.some((a:any)=>a.texture==='boss-v2'&&Number(a.frame)===3)).toBe(true);
     if(pattern==='slam')await page.evaluate(()=>(window as any).__seedE2E.dodgeBossReview());
-    await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(1.2));
+    await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(2));
     const after=await state();expect(after.boss.encounter.phase).toBe('recover');
     if(pattern==='slam')expect(after.hp).toBe(initial.hp);
     if(pattern==='fan')expect(after.projectiles).toBe(6);
@@ -25,8 +25,8 @@ test('four distinct imported hero atlases and posed combat states',async({page})
     for(const kind of ['attack','hurt','special','dash'] as const){
       await page.evaluate(k=>(window as any).__seedE2E.heroActionReview(k),kind);await page.waitForTimeout(100);
       const hero=await page.evaluate(()=>(window as any).__seedE2E.actorPresentation()[0]);
-      expect(hero.texture).toBe('hero-v2-'+origin);expect(hero.rotation).toBe(0);
-      expect(Number(hero.frame)%8).toBe(kind==='attack'?3:kind==='hurt'?4:kind==='dash'?5:7);
+      expect(hero.texture).toBe('hero-neutral');expect(Math.abs(hero.rotation)).toBeLessThanOrEqual(.1);
+      expect(Number(hero.frame)%24).toBe(['hunters','engineers','resonant','sentinels'].indexOf(origin)*6+3);
       await page.screenshot({path:`test-results/browser/hero-v2-${origin}-${kind}.png`});
     }
   }

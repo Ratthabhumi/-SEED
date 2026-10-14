@@ -1,0 +1,386 @@
+[
+  {
+    "origin": 0,
+    "age": 0,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 101,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 1,
+    "direction": 0,
+    "visibleWidth": 94,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 2,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 98,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 3,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 102,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 4,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 102,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 5,
+    "direction": 0,
+    "visibleWidth": 94,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 0,
+    "direction": 0,
+    "visibleWidth": 81,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 1,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 102,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 2,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 3,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 104,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 4,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 101,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 5,
+    "direction": 0,
+    "visibleWidth": 95,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 0,
+    "direction": 0,
+    "visibleWidth": 86,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 1,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 102,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 2,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 104,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 3,
+    "direction": 0,
+    "visibleWidth": 97,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 4,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 104,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 5,
+    "direction": 0,
+    "visibleWidth": 80,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 0,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 1,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 2,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 101,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 3,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 4,
+    "direction": 0,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 5,
+    "direction": 0,
+    "visibleWidth": 94,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 0,
+    "direction": 1,
+    "visibleWidth": 86,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 1,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 2,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 101,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 3,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 4,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 0,
+    "age": 5,
+    "direction": 1,
+    "visibleWidth": 85,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 0,
+    "direction": 1,
+    "visibleWidth": 75,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 1,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 2,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 101,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 3,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 102,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 4,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 107,
+    "groundY": 116
+  },
+  {
+    "origin": 1,
+    "age": 5,
+    "direction": 1,
+    "visibleWidth": 80,
+    "visibleHeight": 108,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 0,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 101,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 1,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 2,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 3,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 4,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 2,
+    "age": 5,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 107,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 0,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 1,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 2,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 3,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 4,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 100,
+    "groundY": 116
+  },
+  {
+    "origin": 3,
+    "age": 5,
+    "direction": 1,
+    "visibleWidth": 100,
+    "visibleHeight": 108,
+    "groundY": 116
+  }
+]

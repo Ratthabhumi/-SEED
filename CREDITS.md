@@ -37,3 +37,12 @@ and12 landmark/codex/Guardian/impact-sample cells. The impact sample is unbound.
 Sources/prompts/packing records/normalized alpha/hashes are retained under
 assets/original/combat and the generation record. Human acceptance is pending;
 static six-tier weapons are not six animated costumes.
+
+Content15 original art (2026-10-14):48 weapon-neutral front/back costume cells
+for four Origins across six Ages and four quiet biome floor sources. Original
+project MIT artwork generated with OpenAI imagegen; exact three prompts/raw
+sources retained in assets/original/content15/GENERATION_RECORD.json. Five
+selected PNGs have source/production checksums in the manifest, including the
+additional back-source hash. Offline packing is reproducible with
+scripts/normalize-content15.py. Human review and full authored animation remain
+pending; procedural bob and weapon recoil are presentation, not animation assets.

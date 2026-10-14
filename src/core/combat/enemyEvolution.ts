@@ -4,7 +4,9 @@ export type EnemyAdaptation='rush'|'burst';
 export interface EnemyEvolutionState {id:EnemyAdaptation;phase:'ready'|'warning'|'attack'|'recover';timer:number;aimX:number;aimY:number;shots:number;}
 /** First human-validation slice: family, Age and elite identity remain independent. */
 export function adaptationFor(age:number,family:EnemyFamily,elite:boolean,boss:boolean):EnemyAdaptation|null {
- if(elite||boss)return null;
+ if(boss)return null;
+ if(elite&&family==='chaser')return 'rush';
+ if(elite&&family==='ranged')return 'burst';
  if(age===0&&family==='chaser')return 'rush';
  if(age===3&&family==='ranged')return 'burst';
  return null;
@@ -13,7 +15,7 @@ export function createEvolution(id:EnemyAdaptation):EnemyEvolutionState {return 
 export const EVOLUTION_DEFS={rush:{range:150,warning:0.75,attack:0.35,recovery:0.9,cooldown:3,speedMul:3},burst:{range:300,warning:0.8,interval:0.15,count:3,recovery:1.2,cooldown:3.3}} as const;
 /** No RNG, no density changes. Fixed target commitment creates a real dodge window. */
 export function stepEvolution(e:SimEnemy,px:number,py:number,dt:number,shot:(e:SimEnemy,x:number,y:number)=>void):boolean {
- const a=e.evolution;if(!a||e.siege||e.boss||e.elite)return false;
+ const a=e.evolution;if(!a||e.siege||e.boss)return false;
  const dx=px-e.x,dy=py-e.y,d=Math.max(1,Math.hypot(dx,dy));const def=EVOLUTION_DEFS[a.id];a.timer-=dt;
  if(a.phase==='ready'){
   if(a.id==='rush'||d>def.range){e.x+=dx/d*e.speed*dt;e.y+=dy/d*e.speed*dt;}

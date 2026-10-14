@@ -8,6 +8,8 @@
 //   input → player movement → age/mission → director/spawn + raids → enemy
 //   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
 //   collisions → mines → pickups/economy → territory upkeep → chunks/POI
+import type {ClaimStatus} from "../world/claimStatus";
+import {HAZARD_GEOMETRY} from "../combat/hazardGeometry";
 import {adaptationFor,createEvolution,stepEvolution} from "../combat/enemyEvolution";
 import { childKnowledgeFactor, childRaidInterval, childResearchBonusScale } from "../progression/childWorld";
 import { pathGuidance } from "../tech/pathGuidance";
@@ -579,6 +581,7 @@ export class RunSimulation {
       techId: node.id,
       quality: offer.quality,
       modifierIds: offer.modifierIds,
+      effectiveEffects: offer.effectiveEffects.map(effect=>({...effect})),
     });
     
     // Apply effective effects (with quality/modifiers already applied) EXACTLY ONCE
@@ -794,27 +797,39 @@ export class RunSimulation {
    * Discovered + unclaimed + in reach. `clear` reports the threat-free check.
    * Uses the last rebuilt spatial index (same freshness as weapon targeting).
    */
-  claimablePOIs(): Array<{ poiId: string; poiType: POIType; x: number; y: number; dist: number; clear: boolean }> {
-    const s = this.state;
-    const out: Array<{ poiId: string; poiType: POIType; x: number; y: number; dist: number; clear: boolean }> = [];
-    if (s.over) return out;
-    const claimed = new Set(s.territories.map((t) => t.poiId));
-    const { cx, cy } = worldToChunk(s.px, s.py);
-    for (let ox = -2; ox <= 2; ox++) {
-      for (let oy = -2; oy <= 2; oy++) {
-        const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
-        for (const poi of desc.poi) {
-          if (!s.poisWorld.includes(poi.id) || claimed.has(poi.id)) continue;
-          const dist = Math.hypot(poi.wx - s.px, poi.wy - s.py);
-          if (dist > CLAIM_REACH_RADIUS) continue;
-          this.scratch.length = 0;
-          const foes = this.queryRadius(poi.wx, poi.wy, CLAIM_CLEAR_RADIUS, this.scratch);
-          out.push({ poiId: poi.id, poiType: poi.type, x: poi.wx, y: poi.wy, dist, clear: foes.length === 0 });
-        }
-      }
+  /** Single read-only contract for mutation, keyboard and contextual UI. */
+  claimStatus(poiId: string): ClaimStatus {
+    const s=this.state;
+    if(s.over)return {poiId,reason:"INACTIVE_RUN"};
+    if(s.territories.some(t=>t.poiId===poiId))return {poiId,reason:"ALREADY_CLAIMED"};
+    if(!s.poisWorld.includes(poiId))return {poiId,reason:"NOT_DISCOVERED"};
+    const {cx,cy}=worldToChunk(s.px,s.py);
+    for(let ox=-2;ox<=2;ox++)for(let oy=-2;oy<=2;oy++){
+      const p=this.chunks.get(s.worldSeed,s.worldNonce,cx+ox,cy+oy).poi.find(p=>p.id===poiId);
+      if(!p)continue;
+      const distance=Math.hypot(p.wx-s.px,p.wy-s.py);
+      const facts={poiId,poiType:p.type,x:p.wx,y:p.wy,distance,remainingDistance:Math.max(0,distance-CLAIM_REACH_RADIUS)};
+      if(distance>CLAIM_REACH_RADIUS)return {...facts,reason:"TOO_FAR"};
+      this.scratch.length=0;
+      return {...facts,reason:this.queryRadius(p.wx,p.wy,CLAIM_CLEAR_RADIUS,this.scratch).length?"HOSTILES_NEARBY":"CLAIMABLE"};
     }
-    out.sort((a, b) => a.dist - b.dist);
-    return out;
+    // Discovered IDs outside the active neighborhood remain valid distant sites.
+    return {poiId,reason:"TOO_FAR"};
+  }
+
+  nearbyClaimSites(): ClaimStatus[] {
+    const s=this.state,out:ClaimStatus[]=[];
+    if(s.over)return out;
+    const {cx,cy}=worldToChunk(s.px,s.py),claimed=new Set(s.territories.map(t=>t.poiId));
+    for(let ox=-2;ox<=2;ox++)for(let oy=-2;oy<=2;oy++)
+      for(const p of this.chunks.get(s.worldSeed,s.worldNonce,cx+ox,cy+oy).poi)
+        if(s.poisWorld.includes(p.id)&&!claimed.has(p.id))out.push(this.claimStatus(p.id));
+    return out.sort((a,b)=>(a.distance??Infinity)-(b.distance??Infinity));
+  }
+
+  claimablePOIs(): Array<{poiId:string;poiType:POIType;x:number;y:number;dist:number;clear:boolean}> {
+    return this.nearbyClaimSites().filter(c=>c.reason==="CLAIMABLE"||c.reason==="HOSTILES_NEARBY")
+      .map(c=>({poiId:c.poiId,poiType:c.poiType!,x:c.x!,y:c.y!,dist:c.distance!,clear:c.reason==="CLAIMABLE"}));
   }
 
   /**
@@ -830,8 +845,9 @@ export class RunSimulation {
     if (s.over) return ev;
     if (s.territories.some((t) => t.poiId === poiId)) return ev;
     if (!s.poisWorld.includes(poiId)) return ev;
-    const cand = this.claimablePOIs().find((c) => c.poiId === poiId);
-    if (!cand || !cand.clear) return ev;
+    const status = this.claimStatus(poiId);
+    if(status.reason!=="CLAIMABLE")return ev;
+    const cand={poiType:status.poiType!,x:status.x!,y:status.y!};
     // Signal first-claim exemption (v0.23.1): always allow first Signal claim.
     // Other claims are gated by logistics at spec assignment (setOutpostSpec).
     // No hard limit on claim count; logistics is the constraint.
@@ -1730,7 +1746,7 @@ export class RunSimulation {
     return idx === -1 ? null : (this.state.enemies[idx] as SimEnemy);
   }
 
-  private evolutionShot=(e:SimEnemy,x:number,y:number):void=> { this.fireProjectile(e.x,e.y,x,y,260,e.dmg/3,0xff5a5a,"enemy-burst",false,6); };
+  private evolutionShot=(e:SimEnemy,x:number,y:number):void=> { this.fireProjectile(e.x,e.y,x,y,HAZARD_GEOMETRY.burstSpeed,e.dmg/3,0xff5a5a,"enemy-burst",false,HAZARD_GEOMETRY.burstRadius); };
 
   private fireProjectile(x: number, y: number, tx: number, ty: number, speed: number, dmg: number, color: number, src: string, friendly: boolean, radius = 6, ev?:SimEvent[]): void {
     for (const p of this.state.projs) {
@@ -1738,7 +1754,7 @@ export class RunSimulation {
       const d = Math.max(1, Math.hypot(tx - x, ty - y));
       p.active = true; p.x = x; p.y = y;
       p.vx = ((tx - x) / d) * speed; p.vy = ((ty - y) / d) * speed;
-      p.dmg = dmg; p.radius = radius; p.life = 2.2; p.friendly = friendly; p.color = color; p.src = src;
+      p.dmg = dmg; p.radius = radius; p.life = HAZARD_GEOMETRY.projectileLife; p.friendly = friendly; p.color = color; p.src = src;
       p.visualTier=(["kinetic","energy","defense","field"] as string[]).includes(src)?this.state.weaponStage[src as WeaponFamily]:this.state.ageIndex;
       if(ev && friendly && ["kinetic","energy","defense","field"].includes(src)) ev.push({type:"weapon_fired",family:src as WeaponFamily,x,y,tx,ty});
       return;
@@ -2047,6 +2063,7 @@ export class RunSimulation {
         }
       });
       if(e.encounter?.phase==="warning"&&bossPhase!=="warning")ev.push({type:"boss_attack_warning",pattern:e.encounter.pattern});
+      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition")ev.push({type:"boss_phase_changed",phase:2});
       const evolved=bossMoved||stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
       if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
       if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});
@@ -2063,7 +2080,7 @@ export class RunSimulation {
         e.x += (dx / d) * e.speed * dt;
         e.y += (dy / d) * e.speed * dt;
       }
-      if (d < e.radius + 14) this.hurtPlayer(e.dmg, ev);
+      if (d < e.radius + HAZARD_GEOMETRY.playerRadius) this.hurtPlayer(e.dmg, ev);
       if (s.over) return ev;
       // Command squad takes contact damage too (positioning matters).
       for (let ai = 0; ai < s.squad.length; ai++) {
@@ -2104,7 +2121,7 @@ export class RunSimulation {
           this.hurtEnemy(e, p.dmg, p.src, ev, ((e.x - p.x) / d) * kb, ((e.y - p.y) / d) * kb);
           p.active = false;
         }
-      } else if (Math.hypot(p.x - s.px, p.y - s.py) < p.radius + 14) {
+      } else if (Math.hypot(p.x - s.px, p.y - s.py) < p.radius + HAZARD_GEOMETRY.playerRadius) {
         p.active = false;
         this.hurtPlayer(p.dmg, ev);
         if (s.over) return ev;
