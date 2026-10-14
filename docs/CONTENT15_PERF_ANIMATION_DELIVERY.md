@@ -98,6 +98,13 @@ HUMAN_ART_ACCEPTANCE_PENDING and HUMAN_FUN_VERDICT_PENDING remain.
 
 ## Verification, evidence and next review
 
+First b6d43bf PR CI38525799632 passed150 browser cases, skipped1 existing case
+and failed the new cache fixture: glyph count0 after2.2 wall seconds on software
+rendering. Wall duration does not ensure an actual canonical shot. Corrective
+test polls for the real rendered glyph (30s cap), retaining positive count and
+≤64 pool assertions; no renderer/core/threshold change. Keep first failed run
+as evidence and use corrected exact-head CI for final acceptance.
+
 Local complete check483 tests/79 files,54 provenance/typecheck/build; Analyze6;
 physical native28 integration cases plus final4 video/real-input gait/restart cases.
 Final exact-head CI and official ZIP verification are recorded in the Draft PR

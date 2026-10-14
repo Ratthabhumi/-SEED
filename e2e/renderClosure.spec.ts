@@ -41,7 +41,10 @@ test('hostile glyph cache is bounded, profiler absent normally, numeric prototyp
  await prepareSave(page);await page.goto('/?e2e&numbers=atlas');await page.locator('#start-btn').click();
  await page.waitForFunction(()=>(window as any).__seedE2E?.canonicalStressStart);
  expect(await page.evaluate(()=>(window as any).__seedE2E.renderDiagnostics())).toBeNull();
- await page.evaluate(()=>(window as any).__seedE2E.canonicalStressStart(false));await page.waitForTimeout(2200);
+ await page.evaluate(()=>(window as any).__seedE2E.canonicalStressStart(false));
+ // Software-rendered CI can advance far less than2.2 simulation seconds in
+ //2.2 wall seconds. Require the real rendered shot; do not assume wall=sim.
+ await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.hostileBatchCounts().glyphs),{timeout:30000}).toBeGreaterThan(0);
  const counts=await page.evaluate(()=>(window as any).__seedE2E.hostileBatchCounts());expect(counts.glyphs).toBeGreaterThan(0);expect(counts.glyphs).toBeLessThanOrEqual(64);
  const before=await page.evaluate(()=>(window as any).__seedE2E.numericFeedbackCounts());expect(before.allocated).toBeLessThanOrEqual(12);
  await openPause(page);await page.locator('#pause-restart-btn').click();await page.waitForTimeout(500);

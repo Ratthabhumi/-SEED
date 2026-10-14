@@ -1,5 +1,12 @@
 ## Content15 renderer/animation closure candidate — 2026-10-14
 
+First b6d43bf PR CI38525799632:150 browser PASS/1 skip/1 failure. Numeric/cache
+fixture assumed2.2 wall seconds guarantees an actual enemy shot, but software
+rendering advances less canonical time and glyph count remained0. Wait/poll for
+the actual rendered shot with30s cap; keep positive glyph and≤64 pool assertions.
+This changes only test synchronization, not renderer/core or performance limits.
+Failed CI log/artifact retained. Full exact corrected-head CI must supersede it.
+
 Parent PR10 efef11ef9729c3bbc388061a45b605688b6a213e push38513285072/PR38513288712
 CI4/4 each verified. New branch feat/content15-perf-animation-closure-20261014
 targets that parent; no main merge/tag/public release or canonical version change.
