@@ -1,5 +1,16 @@
 ## Content15 coordinated quality pass — 2026-10-14
 
+Corrective live-stress finding after e2c3811 publication: parent and candidate
+restart retain destroyed floating Text canvases; actual stack is floatTextAt →
+setColor → Frame.updateUVs/drawImage, not terrain upload. Reset Text/Image pools
+and pending impacts at startRun. Corrected native energy-impact/restart/energy-
+impact fails on archived parent and passes after reset; initial wrong-hook/pause/
+CLI fixture attempts are retained separately. Skill icons now identify actual
+Origin, projectile/trap/drone, regen and Legacy roles instead of repeated bows.
+Final corrective exact-SHA/CI/package/hardware receipts supersede e2c3811.
+Corrective frozen check480/480 across78 files/53 provenance/typecheck/build PASS;
+native restart green and bilingual role-icon/notification checks3/3 PASS.
+
 Base PR9 fd171b239d00827d8100ae165d551d5766630cc7 verified local/origin/
 OPEN Draft and both CI runs4/4. New branch feat/content15-combat-world-ui-quality.
 Preserved6228 authentic incoming QA/handoff files with private SHA256 ledger.

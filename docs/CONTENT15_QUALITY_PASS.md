@@ -143,6 +143,15 @@ No new runtime dependency, copied game art/code or removed historical sources.
 
 ## 12. Known unresolved issues
 
+Live canonical stress additionally discovered a pre-existing restart crash:
+floating Text canvases destroyed by Phaser remained referenced in the pool.
+Corrected parent-native energy-impact/restart/energy-impact fails with the same
+floatTextAt/setColor/updateUVs null-drawImage stack; resetting Text/Image pools
+and pending impact data passes. Initial wrong-hook/pause/CLI fixture failures
+were preserved separately and are not product proof. The corrective receipt
+supersedes the first Content15 candidate e2c3811. Live dense median/tails differ
+from the paused renderer fixture; keep both scopes and unmet budgets explicit.
+
 Full authored animation, six-era enemy/Guardian/environment kits, final all-surface
 human art evaluation and natural run difficulty/fun acceptance remain pending.
 Source floor Worker fallback uses original source cells and can differ transiently

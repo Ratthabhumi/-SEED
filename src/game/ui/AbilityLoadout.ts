@@ -7,6 +7,7 @@ import type {EnKeys} from "../../i18n/en";
 import {COMBAT_ASSETS} from "../assets/combatAssets";
 import {originRow} from "../render/combatSpriteIdentity";
 import {BREAKTHROUGHS} from "../../core/tech/synergy";
+import {NEUTRAL_HERO_ATLAS} from "../assets/heroAssets";
 export class AbilityLoadout {
  private entries=new Map<string,HTMLButtonElement>();
  readonly node:HTMLElement;
@@ -31,9 +32,18 @@ export class AbilityLoadout {
    let button=this.entries.get(row.id);
    if(!button){button=document.createElement("button");button.type="button";button.className="loadout-power";button.dataset.power=row.id;this.entries.set(row.id,button);this.node.append(button);}
    const label=`${row.name} — ${row.description}`;
-   if(button.title===label)continue;
+   let url=COMBAT_ASSETS.equipment,columns=6,lines=4,frame=row.frame;
+   const family=families.find(f=>f===row.id);
+   if(row.id==="origin"){url=NEUTRAL_HERO_ATLAS;lines=8;}
+   else if(family){
+     const stage=getWeaponStage(family,s.weaponStage[family]);
+     if(family==="defense"&&stage.archetype==="summon"){url=COMBAT_ASSETS.props;columns=4;lines=3;frame=7+originRow(s.originId);}
+     else {url=COMBAT_ASSETS.projectiles;columns=lines=4;frame=(family==="energy"?4:family==="defense"?8:family==="field"&&stage.archetype==="mine"?12:0)+originRow(s.originId);}
+   }else if(row.id.startsWith("legacy-")||row.id==="regen"){url=COMBAT_ASSETS.props;columns=4;lines=3;frame=row.id==="regen"?5:6;}
+   const signature=`${label}|${url}|${frame}`;
+   if(button.dataset.signature===signature)continue;button.dataset.signature=signature;
    button.title=label;button.setAttribute("aria-label",label);
-   const icon=document.createElement("span");icon.className="loadout-icon";icon.style.backgroundImage=`url("${COMBAT_ASSETS.equipment}")`;icon.style.backgroundPosition=`${-(row.frame%6)*40}px ${-Math.floor(row.frame/6)*40}px`;
+   const icon=document.createElement("span");icon.className="loadout-icon";icon.style.backgroundImage=`url("${url}")`;icon.style.backgroundSize=`${columns*40}px ${lines*40}px`;icon.style.backgroundPosition=`${-(frame%columns)*40}px ${-Math.floor(frame/columns)*40}px`;
    const text=document.createElement("span");text.textContent=row.name;button.replaceChildren(icon,text);
    if(button.classList.contains("expanded")){const small=document.createElement("small");small.textContent=row.description;button.append(small);}
    button.setAttribute("aria-expanded",String(button.classList.contains("expanded")));

@@ -20,7 +20,9 @@ try{
    await page.locator('#legacy-screen .card').first().click();await page.locator('#origin-screen .card').first().click();await page.locator('#child-intro-screen button').click();
   }
   if(mode==='restart'){
+   await page.locator('.hud').evaluate(hud=>hud.dataset.stressBeforeRestart='true');
    await page.keyboard.press('Escape');await page.locator('#pause-restart-btn').click();await page.waitForFunction(()=>window.__seedE2E?.canonicalStressStart);
+   await page.waitForFunction(()=>!document.querySelector('.hud[data-stress-before-restart="true"]')&&document.querySelector('.hud'));
   }
   const start=await page.evaluate(b=>window.__seedE2E.canonicalStressStart(b),mode==='boss');
   await page.evaluate(()=>{window.__stressFrames=[];let last=0;const sample=t=>{if(last&&window.__stressFrames.length<110000)window.__stressFrames.push(t-last);last=t;window.__stressRaf=requestAnimationFrame(sample);};window.__stressRaf=requestAnimationFrame(sample);});
@@ -31,6 +33,7 @@ try{
    states.push(observation.state);samples.push(observation.samples);
    if(states.length%30===0)observation.state.heap=await pageDiagnostic.send('Runtime.getHeapUsage');
    if(observation.state.draft||observation.state.paused)throw Error('Canonical stress stopped stepping');
+   if(states.length>1&&observation.state.elapsed<=states[states.length-2].elapsed)throw Error('Canonical clock no longer advances');
   }
   const frames=await page.evaluate(()=>{cancelAnimationFrame(window.__stressRaf);return window.__stressFrames;});
   const summary={};for(const metric of ['frame','sim','rendererCpuSubmit']){const values=metric==='frame'?frames:samples.flatMap(s=>s[metric]);summary[metric]={p50:pct(values,50),p95:pct(values,95),p99:pct(values,99),worst:values.reduce((max,value)=>Math.max(max,value),0)};}

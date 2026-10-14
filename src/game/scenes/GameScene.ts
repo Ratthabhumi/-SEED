@@ -277,6 +277,10 @@ export class GameScene extends Phaser.Scene {
 
   /** Fresh run (and restart path): new simulation, clean adapter state. */
   private startRun(seed: string): void {
+    // Phaser destroys display objects on shutdown while reusing this Scene.
+    // A previous pooled Text/Image has a destroyed canvas/scene, not a free slot.
+    this.floatText=[];this.vfxPool=[];this.bursts=[];this.dmgNums=[];
+    this.displayedOffers=null;
     this.groundMaxMs=this.chunkReadMaxMs=0;
     this.lastAgeCardKey="";
     this.heroActions = new HeroActions();

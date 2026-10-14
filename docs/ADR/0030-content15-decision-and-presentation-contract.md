@@ -51,3 +51,12 @@ Bounded overflow summarizes alerts, so it is not a durable event audit log.
 
 Engineering tests, staged physical-GPU rendering, actual canonical stress and
 human visual/fun approval remain separate evidence. Never infer acceptance from CI.
+
+Live stress found a pre-existing restart failure on parent and first Content15
+candidate: retained floating Text objects had their canvases destroyed by Phaser
+shutdown. `floatTextAt.setColor` then threw in Frame.updateUVs/drawImage. The
+corrected native energy-impact → restart → energy-impact regression fails on
+the archived parent and passes after resetting Text/Image pools and pending
+impact data in startRun. Initial fixture setup errors remain private evidence;
+only the corrected null-drawImage failure proves the product issue. A benchmark
+waits for the new HUD before staging restarted combat, avoiding old-hook races.

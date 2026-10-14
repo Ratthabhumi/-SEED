@@ -16,6 +16,8 @@ for(const lang of ["en","th"] as const)test(`notification bursts, priority, paus
  expect(await page.evaluate(()=>(window as any).__seedE2E.notificationCounts())).toEqual(before);
  await page.keyboard.press("Escape");await expect(page.locator("#pause-screen")).toHaveCount(0);
  await expect(page.locator("#ability-loadout [data-power=origin]")).toBeVisible();
+ const icons=await page.locator("#ability-loadout .loadout-icon").evaluateAll(nodes=>nodes.map(n=>{const s=getComputedStyle(n);return s.backgroundImage+s.backgroundPosition;}));
+ expect(new Set(icons).size).toBeGreaterThanOrEqual(3);
  await page.locator("#ability-loadout [data-power=origin]").click();
  await expect(page.locator("#ability-loadout small")).toBeVisible();await assertNoRawKeys(page);
  await page.screenshot({path:`test-results/browser/content15-loadout-notifications-${lang}.png`});
