@@ -539,8 +539,10 @@ export class TechMapView {
     const frame = this.currentFrame(centerRoot);
     this.currentFocusIds.add(frame.recent);
     this.applyModeDim();
-    this.panzoom.zoom(frame.scale, { animate: true });
-    this.panzoom.pan(frame.x, frame.y, { animate: true });
+    // Explicit Center/Current must land in the viewport immediately; animating
+    // scale and pan independently can expose an offscreen intermediate frame.
+    this.panzoom.zoom(frame.scale, { animate: false });
+    this.panzoom.pan(frame.x, frame.y, { animate: false });
   }
 
   public fit(): void {

@@ -797,3 +797,23 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 .toast { top:64px; max-width:min(420px,calc(100vw - 48px)); box-sizing:border-box; padding:10px 14px; pointer-events:none; }
 .toast-title { font-size:var(--font-body); }
 @media (max-width:1150px) { .toast { top:12px; max-width:min(380px,calc(100vw - 48px)); } }
+/* Read-only encounter cues; phase and safe recovery come from canonical state. */
+.boss-encounter {position:absolute;top:64px;left:50%;transform:translateX(-50%);width:min(450px,40vw);padding:8px 12px;background:rgba(12,17,24,.92);border:1px solid #bf785e;border-radius:10px;text-align:center;display:grid;gap:2px;line-height:1.7;pointer-events:none;font-size:clamp(14px,1.2vw,20px)}
+.boss-encounter[hidden] {display:none}
+.boss-encounter strong {color:#ffdab6;letter-spacing:.04em}
+.boss-encounter small {color:#f4c6b6}
+.boss-encounter[data-phase="recover"] {border-color:#87d4bf}
+.boss-encounter[data-phase="recover"] span {color:#acf0db}
+@media(max-width:800px) {.boss-encounter {top:64px;width:46vw;padding:6px}}
+/* Menus keep requested text scaling; live HUD fits a readable viewport budget.
+   Prevent 200% text from covering the hero in 720p without shrinking controls. */
+.hud {
+ --font-micro:clamp(14px,calc(14px * var(--ui-scale)),18px);
+ --font-caption:clamp(16px,calc(16px * var(--ui-scale)),20px);
+ --font-body:clamp(18px,calc(18px * var(--ui-scale)),24px);
+ --font-body-strong:clamp(19px,calc(19px * var(--ui-scale)),26px);
+ --font-heading:clamp(22px,calc(22px * var(--ui-scale)),28px);
+}
+#notification-stack {--font-body:clamp(18px,calc(18px * var(--ui-scale)),22px)}
+#context-stack {--font-body:clamp(18px,calc(18px * var(--ui-scale)),24px);top:clamp(140px,24vh,260px);transform:none;max-height:25vh}
+#ui:has(.boss-encounter:not([hidden])) #notification-stack {top:180px}

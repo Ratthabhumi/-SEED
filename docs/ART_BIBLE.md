@@ -181,3 +181,11 @@ See ACTOR_COVERAGE.md and UI_DESIGN_SYSTEM.md. Cached original sprite strips rep
 
 ## Upright directional corrective slice (2026-10-12)
 Four humanoid strips now36 frames (18 front +18 authored back),2304×64; front idle/walk0/1/2 plus back offset18, stable horizontal flip, rotation0. Actual displacement controls gait; simulation time freezes animation on pause. Boss stays upright; insect/drone heading preserved.36-frame sprites keep pivot32,32 and six age equipment layers; cached raw actor pixels≈3.94MiB. Prior universal rotation/gait descriptions are superseded. ActorMotion and AGE_COMBAT_EVOLUTION.md define exact scope; authored attack/death/weapon mounts and expanded era/boss behavior remain partial.
+# Content15.2 integration note
+
+Handheld artwork uses source grip origins on the actual posed hand socket;
+no27u floating center offset. These provisional coordinates still need artist
+review across all costumes/angles. Existing painted threat art/reference poses
+are not declared production-ready. Live HUD font growth is bounded (body18–24px,
+heading22–28px) while menus retain the requested100–200% text scale, preserving
+combat visibility. Thai line-height remains≥1.7. See the15.2 coverage ledger.

@@ -18,7 +18,7 @@ MOVE → AUTO ATTACK → KILL → COLLECT KNOWLEDGE → LEVEL UP → CHOOSE 1 OF
 | Input | Action |
 |---|---|
 | WASD / Arrows | Move |
-| Space | Dash (brief invulnerability) |
+| Move + Space | Dash in the movement direction (brief invulnerability) |
 | 1 / 2 / 3 or click | Choose upgrade card |
 | Esc | Pause |
 | F3 | Debug / performance overlay |

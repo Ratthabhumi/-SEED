@@ -788,3 +788,34 @@ CI follow-up:6fb36f9 PR run38149414529 passed62 browser cases;3 responsive matri
 Visual evolution checkpointA: preserved2821 current evidence files before editing; live baseline PR2 remains781687a / green CI. FPS HUD reuses real-frame samples at2Hz and follows the top-left flow. QA launcher uses Node+Vite arguments without Windows shell. Full check394 PASS before the Archive checkpoint. Human completion report297 contains actual child120s and a negative difficulty comment, not a fun certification.
 
 CheckpointB: full check398 PASS. Schema2 migrates existing schema1 without erasing settings/history. Three bounded Archive purchases now have real root-start effects, explicit costs and guarded idempotent settlement; no first-attempt forced loss or hidden difficulty. QA observation completion is not a currency payout. See ADR0023.
+## Content15.2 integrated quality workstream — 2026-10-14
+
+Parent PR11 exact0fa6378 verified OPEN/Draft and CI4/4 push/PR. Branch
+feat/content15-integrated-human-quality-20261014 targets PR11, not main.
+Focused Space activation reproduced; native capture forbids Space throughout
+Draft. Physical movement tracking/context reset and explicit Phaser reset cover
+preventDefault keyups (KeyboardManager ignores them), blur/hidden/maps/pause.
+Hand grip origins replace27u detached centers; live localized boss phase/recovery
+cue; HUD typography bounded while full menu text scale remains available.
+HC friendly geometry cache64glyphs/1000quads/2.25MiB allocated only on first HC
+use, unchanged vector fallback and canonical counts. Terrain Worker transfers
+reversed RGBA for typed partial GPU upload, backing Canvas retained; fallback
+alternating mirroring removed. Versions3/15/2, no canonical/balance/new dependency.
+
+First full local browser run157PASS/5FAIL/1oldskip retained. Two input fixtures:
+stationary Dash cannot satisfy canonical direction requirement; new native
+keyup reset prevents stale Phaser keys. Tech Map Center exposed offscreen
+intermediate zoom/pan animation; explicit Current/Center now snaps. QA identity
+test correctly rejected dirty precommit build; rerun on clean committed source.
+Early fixture schema/negative timer mistakes and cohort RPC failure retained;
+no assertion threshold/timeout changes. Complete final gates/paired measurement/
+exact-SHA CI and official ZIP receipt follow in one final Draft PR.
+
+This remains PARTIAL, not a completed human quality milestone: full authored
+motion/threat art, natural boss DPS/exposure, historical terrain preference,
+all-mode performance and human art/fun/replay gates remain open until measured.
+See docs/CONTENT15_2_INTEGRATED_DELIVERY.md and independent31-row human ledger.
+Content15.2 cohort correction: all8 cases passed but two complete runs failed
+Vitest onTaskUpdate RPC acknowledgement after continuous CPU-bound execution.
+The harness yields via Node setImmediate between unchanged cases; no timeout,
+policy or assertion change. Retain both failed logs and require a clean retry.

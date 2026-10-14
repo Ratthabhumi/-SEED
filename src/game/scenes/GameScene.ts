@@ -86,6 +86,7 @@ function percentile(sorted: number[], p: number): number {
 
 import { AbilityLoadout } from "../ui/AbilityLoadout";
 import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
+import {FriendlyProjectileBatch} from "../render/FriendlyProjectileBatch";
 import { RenderDiagnostics } from "../render/RenderDiagnostics";
 import { HostileProjectileBatch } from "../render/HostileProjectileBatch";
 import { NumericFeedback } from "../render/NumericFeedback";
@@ -93,6 +94,7 @@ import { NumericFeedback } from "../render/NumericFeedback";
 export class GameScene extends Phaser.Scene {
   private diagnostics?:RenderDiagnostics;
   private hostileBatch!:HostileProjectileBatch;
+  private friendlyBatch!:FriendlyProjectileBatch;
   private vectorHostiles=false;
   private numericFeedback?:NumericFeedback;
   private loadout!: AbilityLoadout;
@@ -269,7 +271,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.decisionInput = new DecisionInputBoundary();
+    this.decisionInput = new DecisionInputBoundary(
+      () => !!this.sim && !this.paused && !this.sim.state.over && !this.sim.state.draftOpen && !this.blockingModal && !this.techMapOpen && !this.civMapOpen,
+      () => !!this.sim?.state.draftOpen,
+      () => { this.latch.setMove(0,0);this.latch.discardEdges();this.input.keyboard?.resetKeys(); },
+    );
     this.heroActions = new HeroActions();
     const save = loadSave(localStorage);
     setLang(save.settings.lang);
@@ -296,6 +302,7 @@ export class GameScene extends Phaser.Scene {
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
     this.hostileBatch=new HostileProjectileBatch(this);
+    this.friendlyBatch=new FriendlyProjectileBatch(this);
     this.vectorHostiles=new URLSearchParams(location.search).get("hostile")==="vector";
     this.numericFeedback=new URLSearchParams(location.search).get("numbers")==="atlas"?new NumericFeedback(this):undefined;
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
@@ -393,8 +400,9 @@ export class GameScene extends Phaser.Scene {
       };
       // P1-02: Space edge latches in the adapter (survives zero-step frames);
       // movement is level-polled per frame. Never JustDown() inside step timing.
-      on("keydown-SPACE", () => {
+      on("keydown-SPACE", (ev) => {
         if(this.sim.state.draftOpen||this.blockingModal||this.paused||this.sim.state.over)return;
+        if(this.techMapOpen||this.civMapOpen||!this.decisionInput.allows(ev))return;
         this.latch.pressDash();
       });
       on("keydown-F3", () => {
@@ -472,6 +480,7 @@ export class GameScene extends Phaser.Scene {
         renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
         referenceAnimation:()=>this.allyActors.referenceReview(),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
+        friendlyBatchCounts:()=>this.friendlyBatch.counts(),
         numericFeedbackCounts:()=>this.numericFeedback?.counts()??null,
         resetRenderDiagnostics:()=>this.diagnostics?.reset(),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
@@ -1166,6 +1175,8 @@ export class GameScene extends Phaser.Scene {
     const ascendWrap = el("div", "hud-ascend");
     topRight.appendChild(ascendWrap);
     hud.appendChild(topRight);
+    const encounter=el("section","boss-encounter");encounter.id="boss-encounter";encounter.hidden=true;
+    encounter.setAttribute("aria-live","polite");hud.appendChild(encounter);
     // Tech map button (T also works).
     const techBtn = document.createElement("button");
     techBtn.id = "techmap-btn";
@@ -1237,6 +1248,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   private refreshHUD(): void {
+    const encounter=document.getElementById("boss-encounter");
+    const boss=this.sim.state.enemies.find(e=>e.active&&e.boss);
+    if(encounter){
+      encounter.hidden=!boss;
+      if(boss?.encounter){
+        const a=boss.encounter,identity=`${a.enraged}:${a.phase}:${a.pattern}:${getLang()}`;
+        if(encounter.dataset.identity!==identity){
+          encounter.dataset.identity=identity;encounter.dataset.phase=a.phase;
+          encounter.replaceChildren(el("strong","",a.enraged?"combat.boss.phase2":"combat.boss.phase1"),el("span","",`combat.boss.${a.phase}` as EnKeys));
+          if(["warning","commit","attack"].includes(a.phase))encounter.appendChild(el("small","",`combat.boss.${a.pattern}` as EnKeys));
+        }
+      }
+    }
     this.loadout?.update(this.sim.state);
     const s = this.sim.state;
     const { stats, age, hpLine, hpFill, identLine, squadLine, knowNums, knowFill, ageCard, goals } = this.hud;
@@ -1834,6 +1858,7 @@ export class GameScene extends Phaser.Scene {
     if ((s.draftOpen && !fromDraft) || this.blockingModal) return;
     if (s.draftOpen) { const draft = document.getElementById("draft-screen"); if (draft) draft.hidden = true; }
     this.techMapOpen = true;
+    this.decisionInput.enter();this.latch.setMove(0,0);this.latch.discardEdges();
     this.surfaces.suspendContext();
     this.techMapSel = s.pinnedTarget;
     this.qa?.noteSimEvent("techmap_open", "open");
@@ -1876,6 +1901,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (s.draftOpen || this.blockingModal) return;
     this.civMapOpen = true;
+    this.decisionInput.enter();this.latch.setMove(0,0);this.latch.discardEdges();
     this.surfaces.suspendContext();
     this.qa?.noteSimEvent("civmap_open", "open");
     this.tutorial?.onCivMapOpened();
@@ -3490,10 +3516,10 @@ export class GameScene extends Phaser.Scene {
   private sampleMove(): void {
     let ix = 0;
     let iy = 0;
-    if (this.keys.A?.isDown || this.keys.LEFT?.isDown) ix -= 1;
-    if (this.keys.D?.isDown || this.keys.RIGHT?.isDown) ix += 1;
-    if (this.keys.W?.isDown || this.keys.UP?.isDown) iy -= 1;
-    if (this.keys.S?.isDown || this.keys.DOWN?.isDown) iy += 1;
+    if (this.decisionInput.moving("KeyA") || this.decisionInput.moving("ArrowLeft")) ix -= 1;
+    if (this.decisionInput.moving("KeyD") || this.decisionInput.moving("ArrowRight")) ix += 1;
+    if (this.decisionInput.moving("KeyW") || this.decisionInput.moving("ArrowUp")) iy -= 1;
+    if (this.decisionInput.moving("KeyS") || this.decisionInput.moving("ArrowDown")) iy += 1;
     if (ix !== 0 || iy !== 0) this.playerFacing = Math.atan2(iy, ix);
     this.latch.setMove(ix, iy);
   }
@@ -3562,6 +3588,7 @@ export class GameScene extends Phaser.Scene {
         if (this.sim.state.over || this.sim.state.draftOpen) break;
       }
     }
+    if (!stepping) { this.latch.setMove(0,0);this.latch.discardEdges(); }
     // P1-01: draft UI is a pure function of canonical sim state — exactly one
     // surface while draftOpen, zero otherwise. Never recursive ownership.
     this.syncDraftUI();
@@ -3709,6 +3736,7 @@ export class GameScene extends Phaser.Scene {
   private drawFrame(): void {
     this.combatSprites.begin();
     this.hostileBatch.begin();
+    this.friendlyBatch.begin();
     const s = this.sim.state;
     const g = this.gfx;
     g.clear();
@@ -3781,7 +3809,7 @@ export class GameScene extends Phaser.Scene {
     this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects,hc);
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
-      if (p.friendly) {if(hc)drawFriendlyProj(g,p,wopts);else this.combatSprites.projectile(p,s.originId);}
+      if (p.friendly) {if(hc){if(!this.friendlyBatch.draw(p,wopts))drawFriendlyProj(g,p,wopts);}else this.combatSprites.projectile(p,s.originId);}
       else if(this.vectorHostiles||!this.hostileBatch.draw(p,hc))drawHostileProj(g, p, wopts);
     }
     const b = s.build;
@@ -3816,6 +3844,7 @@ export class GameScene extends Phaser.Scene {
     }
     this.combatSprites.end();
     this.hostileBatch.end();
+    this.friendlyBatch.end();
     this.combatFeedback.syncWorld(s.worldNonce);
     this.combatFeedback.draw(g,s.elapsed,this.reducedEffects,vis);
     if(!this.reducedEffects && this.knowledgeCollectUntil>s.elapsed){

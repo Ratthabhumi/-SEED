@@ -20,12 +20,15 @@ import {RunSimulation as Before} from './progression-baseline-2222002/src/core/s
 import {RunSimulation as After} from '../src/core/sim/RunSimulation';
 import {progressionPolicy} from '../scripts/progressionPolicy';
 import fs from 'node:fs';
+import {setImmediate} from 'node:timers/promises';
 const results:any[]=[];
-for(const origin of ['hunters','engineers','resonant','sentinels'])for(const seed of ['EPOCH-GOLDEN-001','EPOCH-A7F2-K19X'])it(origin+' '+seed,()=>{
+for(const origin of ['hunters','engineers','resonant','sentinels'])for(const seed of ['EPOCH-GOLDEN-001','EPOCH-A7F2-K19X'])it(origin+' '+seed,async()=>{
   const before=progressionPolicy(new Before({masterSeed:seed,originId:origin}) as unknown as After);
   const after=progressionPolicy(new After({masterSeed:seed,originId:origin}));
   expect(Number.isFinite(after.seconds)).toBe(true);expect(after.logistics).toBeGreaterThanOrEqual(0);
   results.push({origin,seed,before,after});
   fs.writeFileSync('test-results/integrated-progression-cohort.json',JSON.stringify({classification:'SYNTHETIC_CANONICAL_POLICY',baselineSha:'${baseline}',policy:'responsive-route-planner-v2',limitations:'Same cohort/controller, different Content versions. No grants, teleports, god mode or hidden-POI inspection. Adaptive trajectories can differ; not human fun or isolated causal evidence.',results},null,2));
+  // Let worker IPC flush between CPU-bound cohorts; keep every case/assertion.
+  await setImmediate();
 });`);
 execFileSync(process.execPath,["node_modules/vitest/vitest.mjs","run","--config","scratch/cohort.vitest.config.ts","--reporter=verbose"],{stdio:"inherit"});
