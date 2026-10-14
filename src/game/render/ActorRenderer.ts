@@ -4,11 +4,17 @@ import { ACTOR_ASSETS, type ActorId } from "../assets/actorAssets";
 import { HERO_ASSETS } from "../assets/heroAssets";
 import type {HeroAction} from "./heroActions";
 import {originRow} from "./combatSpriteIdentity";
+import referenceMetadata from "../assets/hunters-reference-v1.json";
+import {ReferenceAnimation} from "./ReferenceAnimation";
+type ActorImage=Phaser.GameObjects.Image|Phaser.GameObjects.Sprite;
 /** Bound matches canonical enemy pool; allies use a separate bounded pool. */
 export class ActorRenderer {
-  private images: Phaser.GameObjects.Image[] = [];
+  private reference=new ReferenceAnimation(referenceMetadata);
+  private referenceActive=false;
+  referenceReview(){return this.referenceActive?this.reference.review():null;}
+  private images: ActorImage[] = [];
   private count = 0;
-  private styles=new WeakMap<Phaser.GameObjects.Image,{key:string;frame:string;size:number;origin:number;tint:number}>();
+  private styles=new WeakMap<ActorImage,{key:string;frame:string;size:number;origin:number;tint:number}>();
   constructor(private scene: Phaser.Scene, private max: number, private depth: number) {}
   static frames(scene: Phaser.Scene): void {
     const outposts=scene.textures.get("outposts-v2");
@@ -23,6 +29,12 @@ export class ActorRenderer {
     }
     const heroes=scene.textures.get("hero-neutral");
     for(let i=0;i<48;i++)if(!heroes.has(String(i)))heroes.add(i,0,(i%6)*128,Math.floor(i/6)*128,128,128);
+    const reference=scene.textures.get("hero-reference");
+    for(let i=0;i<36;i++)if(!reference.has(String(i)))reference.add(i,0,(i%9)*128,Math.floor(i/9)*128,128,128);
+    for(let row=0;row<4;row++)for(const [action,clip] of Object.entries(referenceMetadata.clips)){
+      const key=`reference-${row}-${action}`;
+      if(!scene.anims.exists(key))scene.anims.create({key,frames:clip.columns.map(col=>({key:"hero-reference",frame:String(row*9+col)})),frameRate:1000/clip.frameMs,repeat:clip.loop?-1:0});
+    }
     for (const id of ["guardian"] as const) {
       if (!scene.textures.exists("actor-" + id)) throw new Error("Mandatory actor art missing: " + id);
       const texture = scene.textures.get("actor-" + id);
@@ -35,7 +47,7 @@ export class ActorRenderer {
     let image=this.images[this.count++];if(!image){image=this.scene.add.image(0,0,"world-props",7+originRow(origin)).setDepth(this.depth);this.images.push(image);}
     this.sprite(image,"world-props",7+originRow(origin),x,y,size,.5,0,Math.cos(facing)<-.15,0xffffff);
   }
-  private sprite(image:Phaser.GameObjects.Image,key:string,frame:number,x:number,y:number,size:number,origin:number,rotation:number,flip:boolean,tint:number){
+  private sprite(image:ActorImage,key:string,frame:number,x:number,y:number,size:number,origin:number,rotation:number,flip:boolean,tint:number){
     let style=this.styles.get(image);
     if(!style){style={key:"",frame:"",size:-1,origin:-1,tint:-1};this.styles.set(image,style);}
     if(style.key!==key||style.frame!==String(frame)){image.setTexture(key,frame);style.key=key;style.frame=String(frame);style.size=-1;style.origin=-1;}
@@ -44,11 +56,24 @@ export class ActorRenderer {
     if(style.tint!==tint){image.setTint(tint);style.tint=tint;}
     image.setPosition(x,y).setRotation(rotation).setFlipX(flip).setVisible(true);
   }
-  draw(id: ActorId,x: number,y: number,size: number,facing: number,time: number,moving: boolean,tint = 0xffffff, age = 0, pose?:MotionPose, action?:HeroAction, bossPose?:number, enemyPose?:number,neutralHero=false): void {
+  draw(id: ActorId,x: number,y: number,size: number,facing: number,time: number,moving: boolean,tint = 0xffffff, age = 0, pose?:MotionPose, action?:HeroAction, bossPose?:number, enemyPose?:number,neutralHero=false,revision=0): void {
+    if(neutralHero){
+      this.referenceActive=id==="hunters"&&(age===0||age===5);
+    }
     if (this.count >= this.max) throw new Error("Actor pool exceeded " + this.max);
     let image = this.images[this.count++];
-    if (!image) { image=this.scene.add.image(0,0,"enemies-v2",0).setDepth(this.depth); this.images.push(image); }
+    if (!image) { image=(neutralHero?this.scene.add.sprite(0,0,"hero-neutral",0):this.scene.add.image(0,0,"enemies-v2",0)).setDepth(this.depth); this.images.push(image); }
     const upright=facingPolicy(id)==='upright';
+    if(neutralHero&&this.referenceActive){
+      const ref=this.reference.sample(age,pose?.back??false,action??"idle",time,revision);
+      if("anims" in image){
+        const row=Math.floor(ref.frame/9),key=`reference-${row}-${ref.action}`;
+        if(image.anims.currentAnim?.key!==key){image.play(key);image.anims.pause();}
+        const count=referenceMetadata.clips[ref.action as keyof typeof referenceMetadata.clips].columns.length;
+        image.anims.setProgress(count>1?ref.index/(count-1):0);
+      }
+      this.sprite(image,"hero-reference",ref.frame,x,y,size,.65,0,pose?.flip??false,tint);return;
+    }
     if(enemyPose!==undefined && ["chaser","ranged","tank","swarm"].includes(id)) {
       const row=["chaser","ranged","tank","swarm"].indexOf(id);
       const gliding=id==="ranged"&&(enemyPose===1||enemyPose===2);

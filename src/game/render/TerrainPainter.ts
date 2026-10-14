@@ -25,6 +25,8 @@ export class TerrainPainter {
  private uploadedFrame=-1;
  private highContrast=false;
  private workerPaintMaxMs=0;
+ private deliveredMs=0;private sentAt=0;private evictions=0;
+ diagnosticTargets(){return {tile:this.tileContext,backing:this.atlas.getContext()};}
  constructor(private scene:Phaser.Scene){
   this.atlas=(scene.textures.exists(KEY)?scene.textures.get(KEY):scene.textures.createCanvas(KEY,ATLAS,ATLAS)) as Phaser.Textures.CanvasTexture;
   this.atlas.setFilter(0); // No mip chain: subregion updates keep linear sampling valid.
@@ -35,7 +37,7 @@ export class TerrainPainter {
    const canvas=document.createElement("canvas");canvas.width=canvas.height=256;const ctx=canvas.getContext("2d",{willReadFrequently:true})!;
    const sources=IDS.map(id=>{ctx.clearRect(0,0,256,256);ctx.drawImage(scene.textures.get(`terrain-${id}`).getSourceImage() as CanvasImageSource,0,0,256,256);return ctx.getImageData(0,0,256,256).data;});
    this.worker.postMessage({type:"sources",sources},sources.map(s=>s.buffer));
-   this.worker.onmessage=(event:MessageEvent<Result>)=>{this.busy=false;this.ready.push(event.data);};
+   this.worker.onmessage=(event:MessageEvent<Result>)=>{this.deliveredMs=performance.now()-this.sentAt;this.busy=false;this.ready.push(event.data);};
    this.worker.onerror=(event)=>{event.preventDefault();this.workerFailed=true;this.worker?.terminate();this.worker=undefined;this.busy=false;this.jobs=[];this.ready=[];};
   }
   scene.events.once("shutdown",()=>{this.worker?.terminate();this.worker=undefined;this.jobs=[];this.ready=[];this.cache.clear();});
@@ -59,7 +61,7 @@ export class TerrainPainter {
    this.misses++;let slot=this.cache.size;
    if(slot>=SLOTS){let oldest="",used=Infinity;
     for(const [k,e] of this.cache)if(!protectedKeys.has(k)&&e.used<used){oldest=k;used=e.used;slot=e.slot;}
-    if(!oldest)continue;this.cache.delete(oldest);this.jobs=this.jobs.filter(j=>j.key!==oldest);
+    if(!oldest)continue;this.evictions++;this.cache.delete(oldest);this.jobs=this.jobs.filter(j=>j.key!==oldest);
    }
    const serial=++this.serial,ids:number[]=[];
    for(let ix=x-1;ix<=x+1;ix++)for(let iy=y-1;iy<=y+1;iy++)ids.push(IDS.indexOf(chunk(ix,iy).biome));
@@ -84,7 +86,7 @@ export class TerrainPainter {
     entry.ready=true;entry.readyAt=performance.now();
    }
   }
-  if(!this.highContrast&&this.worker&&!this.busy&&this.ready.length===0&&this.jobs.length){this.busy=true;this.worker.postMessage(this.jobs.shift()!);}
+  if(!this.highContrast&&this.worker&&!this.busy&&this.ready.length===0&&this.jobs.length){this.busy=true;this.sentAt=performance.now();this.worker.postMessage(this.jobs.shift()!);}
   const now=performance.now();let count=0;
   for(const v of this.visible){const entry=this.cache.get(v.key);if(!entry)continue;
    const index=count++,alpha=entry.ready?Math.min(1,(now-entry.readyAt)/160):0;
@@ -113,6 +115,6 @@ export class TerrainPainter {
  }
  counts(){return {images:this.images.length,tiles:this.cache.size,atlasBytes:ATLAS*ATLAS*4,hits:this.hits,misses:this.misses,
   pending:this.jobs.length+(this.busy?1:0)+this.ready.length,uploads:this.uploads,uploadBytes:this.uploads*STRIDE*STRIDE*4,
-  paintMs:this.paintMs,workerPaintMaxMs:this.workerPaintMaxMs,uploadCallMs:this.uploadCallMs,uploadMaxMs:this.uploadMaxMs,workerFailed:this.workerFailed,
+  paintMs:this.paintMs,workerPaintMaxMs:this.workerPaintMaxMs,deliveredMs:this.deliveredMs,evictions:this.evictions,uploadCallMs:this.uploadCallMs,uploadMaxMs:this.uploadMaxMs,workerFailed:this.workerFailed,
   mode:this.worker?"worker-partial-upload":"source-fallback",ready:[...this.cache.values()].filter(e=>e.ready).length};}
 }

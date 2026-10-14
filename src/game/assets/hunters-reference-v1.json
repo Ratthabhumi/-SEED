@@ -1,0 +1,877 @@
+{
+  "schema": 1,
+  "origin": "hunters",
+  "ages": [
+    0,
+    5
+  ],
+  "directions": [
+    "front",
+    "back"
+  ],
+  "columns": 9,
+  "cell": 128,
+  "atlas": [
+    1152,
+    512
+  ],
+  "rgbaBytes": 2359296,
+  "frameCount": 36,
+  "classification": "AUTHORED_KEY_POSES_SPARSE_WALK_ATTACK_CLIPS",
+  "humanArtAcceptance": "PENDING",
+  "sourceSha256": "1e2c58cd135f4b2a1dbc024025bc0d81d7578d051fa3de3eb939ab390b78c0c6",
+  "frames": [
+    {
+      "frame": 0,
+      "bounds": [
+        17,
+        18,
+        94,
+        98
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "7e05be8addabbb11ea2e8d310d27622286087007e2b3ef4d0789e2d625eac18e"
+    },
+    {
+      "frame": 1,
+      "bounds": [
+        19,
+        18,
+        89,
+        98
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "35395958b26cfe0e57bbe44023fa1ea533a28414703c48fa762bedda8a63f18a"
+    },
+    {
+      "frame": 2,
+      "bounds": [
+        14,
+        18,
+        99,
+        98
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "a617a8a0440ca4630ff7db58ad4665150dec143941f96b6533aa72b9ad3f06b1"
+    },
+    {
+      "frame": 3,
+      "bounds": [
+        12,
+        20,
+        104,
+        96
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        74,
+        65
+      ],
+      "sourcePoseHash": "c2880c53f48c74488d80a0ab14f9badb12220801a778c56ba13d1240124af1e3"
+    },
+    {
+      "frame": 4,
+      "bounds": [
+        12,
+        18,
+        104,
+        98
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        61,
+        65
+      ],
+      "sourcePoseHash": "e8f58a7cf47fc8f646482e116232f0c5150f35cfc1e1ec95c2d328d5c552d394"
+    },
+    {
+      "frame": 5,
+      "bounds": [
+        14,
+        29,
+        100,
+        87
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "7b51ec69dd4ef924b2506d73f55238df87dd82a442b616a1ccfee24f9ef65515"
+    },
+    {
+      "frame": 6,
+      "bounds": [
+        13,
+        28,
+        101,
+        88
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "fdf36365b704ceb168b9dd570b22f2317b2ff78d6652f63ed7e661d9d5bfa466"
+    },
+    {
+      "frame": 7,
+      "bounds": [
+        12,
+        12,
+        104,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "a071078eaf20d58b0df978ba813490b46245cbe039cf7fcb4192256b76f16066"
+    },
+    {
+      "frame": 8,
+      "bounds": [
+        16,
+        51,
+        96,
+        65
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "d1633c525b838138fc9745f03c3923997980aedf5464e97126804165b31c75ed"
+    },
+    {
+      "frame": 9,
+      "bounds": [
+        17,
+        14,
+        94,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "5b6e24b1df4d53128f4690fd7f0e9cad41452356c9bfbd041274e4658289f750"
+    },
+    {
+      "frame": 10,
+      "bounds": [
+        18,
+        14,
+        92,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "a24c0ef2f781dc6c70379ef1f7ed84eb9df497175b4072c9035e404db27f031d"
+    },
+    {
+      "frame": 11,
+      "bounds": [
+        16,
+        14,
+        96,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "a6393bd51b91d9b73d772d56cf10f7283f76012416fec320cbe769d4b1163b31"
+    },
+    {
+      "frame": 12,
+      "bounds": [
+        13,
+        14,
+        101,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        74,
+        65
+      ],
+      "sourcePoseHash": "1b156f138665713682e4255a556bfc926fbf6ff0ded38dcc651fcad05cf18da2"
+    },
+    {
+      "frame": 13,
+      "bounds": [
+        13,
+        14,
+        102,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        61,
+        65
+      ],
+      "sourcePoseHash": "ccf2ed8d230f871f2b7509833db748cebfde2f194b0583b4edbdac177360d602"
+    },
+    {
+      "frame": 14,
+      "bounds": [
+        13,
+        14,
+        102,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "a02e7d7ea39f5e17fcce9965e8ae6171e7581e0c8bbd6f8a325eed39c4b88bee"
+    },
+    {
+      "frame": 15,
+      "bounds": [
+        13,
+        14,
+        102,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "ed804efa41069af6dc66aadf69da5b0e88c74fde71ce357a73c9666be87245a2"
+    },
+    {
+      "frame": 16,
+      "bounds": [
+        13,
+        14,
+        102,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "06202d91d8bbcf3c9f4e0925d202825a9b452d0abd22c514b0a9a3c714371fb4"
+    },
+    {
+      "frame": 17,
+      "bounds": [
+        16,
+        14,
+        96,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "a830a0c75b5ab4ce14359e2aacff1645c0c42efdc8c07a23274f414c59393c54"
+    },
+    {
+      "frame": 18,
+      "bounds": [
+        19,
+        12,
+        90,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "9f5bbe868f7b9ed6d72d55e6787fc66afc0c0f55ccd8e92a1887c0f7f1c60439"
+    },
+    {
+      "frame": 19,
+      "bounds": [
+        16,
+        12,
+        95,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "72fa5defcb10f2e9a29e81be88447143240b6b8fcd32da5fdddf656688ed55c9"
+    },
+    {
+      "frame": 20,
+      "bounds": [
+        13,
+        12,
+        102,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "e1e72e150acf3aa7f177daa3ed45287859427aead059bf6864c98e4af92a417d"
+    },
+    {
+      "frame": 21,
+      "bounds": [
+        12,
+        12,
+        104,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        74,
+        65
+      ],
+      "sourcePoseHash": "3a1d2ae0033970a654147dcdf48b9fc11ed05bff2990a1476f884c56a333846d"
+    },
+    {
+      "frame": 22,
+      "bounds": [
+        12,
+        12,
+        104,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        61,
+        65
+      ],
+      "sourcePoseHash": "16b12c64b8c0da9b2698e245551003a79307ec5e90de2cd2e7bc0a152e97ff66"
+    },
+    {
+      "frame": 23,
+      "bounds": [
+        14,
+        12,
+        100,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "953d645311cd48ea72ea89a491cf80cf2abc0242589cc9971b7e260777debec1"
+    },
+    {
+      "frame": 24,
+      "bounds": [
+        14,
+        12,
+        99,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "7a6a0b286f11421f91d00ba45820aa120bf58eedbb5e04bd22fbc558329c7791"
+    },
+    {
+      "frame": 25,
+      "bounds": [
+        12,
+        12,
+        104,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "f106671d5580b3f439287aff9dbe366b315360aa1acc612e0222c40bf39d8128"
+    },
+    {
+      "frame": 26,
+      "bounds": [
+        16,
+        12,
+        96,
+        104
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "7dc546b8cb8cd5e5cc0472ef6ad809475cba9b457dda59c35a03f5c91b28613e"
+    },
+    {
+      "frame": 27,
+      "bounds": [
+        17,
+        16,
+        94,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "3d6ec8f019965bf9ac14a260b40d9ea057930ccf9019a232bc2f77a630912b8f"
+    },
+    {
+      "frame": 28,
+      "bounds": [
+        20,
+        16,
+        87,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "cb28ec71b312da6dfd64f888fa7cb6b3af4f10000364455c025c624225408307"
+    },
+    {
+      "frame": 29,
+      "bounds": [
+        16,
+        16,
+        96,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "79136a94ceced35a22f1e1e6157c2f3393f20ef82c4cea3206ce6386b374ac59"
+    },
+    {
+      "frame": 30,
+      "bounds": [
+        14,
+        16,
+        100,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        74,
+        65
+      ],
+      "sourcePoseHash": "a3cec4cb636f3a0c5051e452199ced021675eebcb68a957eb5a9a992357105ae"
+    },
+    {
+      "frame": 31,
+      "bounds": [
+        14,
+        16,
+        100,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        61,
+        65
+      ],
+      "sourcePoseHash": "88814b71e0787ccea497315f27343c3de59aa33d5b7227dbebd1603dbaa2769f"
+    },
+    {
+      "frame": 32,
+      "bounds": [
+        15,
+        16,
+        97,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "dc166413d7e195bc5c20e26ccca036f84bded3aa0b85567aaa69dcbb0ec14b0a"
+    },
+    {
+      "frame": 33,
+      "bounds": [
+        17,
+        16,
+        93,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "3be5d4ca0044b4632b87f6c8ee442440f30a404484be5552399bed23d80ce60d"
+    },
+    {
+      "frame": 34,
+      "bounds": [
+        14,
+        16,
+        100,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "b77e9a9b1593bd87526a3a1a440c1bbe55277fcd4f9b9c6694976f2fef8312fc"
+    },
+    {
+      "frame": 35,
+      "bounds": [
+        14,
+        16,
+        100,
+        100
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "collisionAnchor": [
+        64,
+        83.2
+      ],
+      "socket": [
+        64,
+        65
+      ],
+      "sourcePoseHash": "3e6f975655716e3e11cbe4e50fe059bbf94f21fde4b914e8f7f2348e87d586dd"
+    }
+  ],
+  "clips": {
+    "idle": {
+      "columns": [
+        0
+      ],
+      "frameMs": 1000,
+      "loop": true
+    },
+    "walk": {
+      "columns": [
+        1,
+        2
+      ],
+      "frameMs": 125,
+      "loop": true
+    },
+    "attack": {
+      "columns": [
+        3,
+        4
+      ],
+      "frameMs": 80,
+      "loop": false
+    },
+    "hurt": {
+      "columns": [
+        5
+      ],
+      "frameMs": 180,
+      "loop": false
+    },
+    "dash": {
+      "columns": [
+        6
+      ],
+      "frameMs": 160,
+      "loop": false
+    },
+    "special": {
+      "columns": [
+        7
+      ],
+      "frameMs": 350,
+      "loop": false
+    },
+    "death": {
+      "columns": [
+        8
+      ],
+      "frameMs": 1000,
+      "loop": false
+    },
+    "recover": {
+      "columns": [
+        4
+      ],
+      "frameMs": 80,
+      "loop": false
+    }
+  }
+}

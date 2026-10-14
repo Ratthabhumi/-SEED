@@ -7,6 +7,8 @@ import type {WeaponFamily} from "../../core/combat/weapons";
 import {equipmentFrame} from "./combatSpriteIdentity";
 /** Original equipment rig. Posed bodies remain original atlases, no fake attacks. */
 export class HeroEquipment {
+  private socketX=0;private socketY=-16;
+  socket(x:number,y:number){this.socketX=x;this.socketY=y;}
   private weapon?:Phaser.GameObjects.Image;
   constructor(private scene?:Phaser.Scene){}
   review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation}:null;}
@@ -29,7 +31,7 @@ export class HeroEquipment {
     const art=combatPresentation(s.originId,family,s.weaponStage[family]);
     const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
     const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
-    const x=s.px+nx*(20-fresh*4),y=s.py-16+ny*(20-fresh*4),len=art.weaponLength;
+    const x=s.px+this.socketX+nx*(20-fresh*4),y=s.py+this.socketY+ny*(20-fresh*4),len=art.weaponLength;
     if(this.scene&&!highContrast){
       const frame=equipmentFrame(s.originId,s.weaponStage[family]);
       if(!this.weapon)this.weapon=this.scene.add.image(0,0,"combat-equipment",frame).setDepth(5);

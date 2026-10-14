@@ -1,7 +1,7 @@
 {
   "version": 2,
   "generatedAt": "2026-09-30T22:28:32.312Z",
-  "totalAssets": 53,
+  "totalAssets": 54,
   "assets": [
     {
       "id": "kenney-input-q",
@@ -1285,6 +1285,30 @@
       "byteSize": 689973,
       "vendorSourceSha256": "4eaa77b42c092611eb1246865972c4d38ce663c03b66f4260cdcff4c9258e32d",
       "productionSha256": "cfbe5f4206e2ebbd4436cb0821d5b5b35256e4b42e18aa2a0789cd11366f4eb9"
+    },
+    {
+      "id": "seed-content15-hunters-reference-v1",
+      "projectPath": "assets/seed/content15-animation/hunters-reference-v1.png",
+      "vendorSourcePath": "assets/original/content15-animation/hunters-reference-v1.png",
+      "sourcePack": "Original -SEED reference key poses",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "hunters-reference-v1.png",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors with built-in imagegen",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "v1",
+      "sourceRelease": "content15-reference-v1",
+      "downloadedAt": "2026-10-14",
+      "modified": true,
+      "modifications": "Regular9x4 grid; per-row locked idle scale; alpha crop; feet116; no generated in-between frames or pose duplication; uniform resize and slicing",
+      "presentationTransform": "Canonical age/origin or biome rendering; no collision changes",
+      "attributionRequired": true,
+      "purpose": "Hunters Stone/Space front/back key poses; sparse walk/attack; human art approval pending",
+      "status": "art-review-pending",
+      "byteSize": 543771,
+      "vendorSourceSha256": "1e2c58cd135f4b2a1dbc024025bc0d81d7578d051fa3de3eb939ab390b78c0c6",
+      "productionSha256": "51779a809777d49c2ef7494612735e9317f12c0c565d668048e1e5cbf45d2d22"
     }
   ]
 }
