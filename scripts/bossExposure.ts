@@ -1,5 +1,4 @@
 import type {RunSimulation} from "../src/core/sim/RunSimulation";
-import {setImmediate} from "node:timers/promises";
 /** Canonical arena controller: no HP writes, fake damage or phase-state forcing. */
 export async function bossExposure(sim:RunSimulation,tier:number,seconds=180){
  const s=sim.state;s.ageIndex=5;s.elapsed=900;s.spawnT=s.eliteT=s.mineT=99999;
@@ -10,7 +9,7 @@ export async function bossExposure(sim:RunSimulation,tier:number,seconds=180){
  let firstWarning:number|null=null,phase2:number|null=null,attacks=0,recoveries=0,last="",t=0;
  for(let tick=0;tick<seconds*60&&e.active&&!s.over;tick++){
   // Flush worker IPC during long arenas without changing canonical dt/inputs.
-  if(tick%300===0)await setImmediate();
+  if(tick%300===0)await new Promise<void>(resolve=>setTimeout(resolve,0));
   const angle=tick/60*.8,tx=e.x+Math.cos(angle)*260,ty=e.y+Math.sin(angle)*260;
   const dx=tx-s.px,dy=ty-s.py,n=Math.hypot(dx,dy)||1;
   if(s.draftOpen)sim.skipDraft();

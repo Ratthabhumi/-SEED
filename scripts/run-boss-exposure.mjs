@@ -2,6 +2,7 @@
 import {execFileSync} from 'node:child_process';
 import {mkdirSync,existsSync,writeFileSync} from 'node:fs';
 const sha='ce63df35d52e8b3041d232f5e8e3438c087cecf8';
+try{execFileSync('git',['cat-file','-e',sha],{stdio:'pipe'});}catch{execFileSync('git',['fetch','origin',sha],{stdio:'inherit'});}
 mkdirSync('scratch',{recursive:true});mkdirSync('test-results',{recursive:true});
 if(!existsSync('scratch/boss-baseline-ce63/src/core/sim/RunSimulation.ts')){
  execFileSync('git',['archive','--format=zip','--output=scratch/boss-baseline-ce63.zip',sha,'--','src/core','src/content','src/i18n']);

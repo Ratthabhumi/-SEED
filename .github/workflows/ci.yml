@@ -68,9 +68,12 @@ jobs:
       - run: npm ci
       - run: npm run analyze
       - run: node scripts/run-progression-cohort.mjs
+      - run: node scripts/run-natural-boss.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: progression-cohort-${{ github.sha }}
-          path: test-results/integrated-progression-cohort.json
+          path: |
+            test-results/integrated-progression-cohort.json
+            test-results/content153-natural-boss.json
           if-no-files-found: error
           retention-days: 14

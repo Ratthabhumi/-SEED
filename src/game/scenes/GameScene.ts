@@ -89,6 +89,7 @@ import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
 import {FriendlyProjectileBatch} from "../render/FriendlyProjectileBatch";
 import hostileAttackArt from "../../../assets/seed/content153/hostile-attacks-v1.png";
 import attackArt from "../../../assets/seed/content153/hunters-attack-v2.png";
+import {naturalBossEvidence} from "../../../scripts/naturalBossEvidence";
 import { RenderDiagnostics } from "../render/RenderDiagnostics";
 import { HostileProjectileBatch } from "../render/HostileProjectileBatch";
 import { NumericFeedback } from "../render/NumericFeedback";
@@ -804,6 +805,11 @@ export class GameScene extends Phaser.Scene {
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
+        prepareNaturalBoss:(mode:"balanced"|"damage"|"survival"="balanced")=>{
+          if(this.sim.state.elapsed>2)throw Error("Natural boss policy requires a fresh run");
+          const report=naturalBossEvidence(this.sim,mode,true),s=this.sim.state;
+          this.paused=false;this.actorMotion.reset();this.decisionInput.enter();this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);this.refreshGround(true);this.refreshHUD();return report;
+        },
         startBossArena:(tier=5)=>{
           // Explicit isolated arena setup, not a natural progression claim.
           // After this call, HP/damage/phase advance only through real gameplay.

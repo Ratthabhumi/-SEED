@@ -866,3 +866,11 @@ and focused-test processes were terminated to reduce overlap. No user processes
 or QA sessions targeted. Preserve unfinished logs; do not claim their completion.
 One Draft, full checks, native evidence, exact-head CI and official ZIP verification
 must finish before final delivery. No main merge/tag/release authorization.
+
+First uploaded checkpoint43b751d CI38649134645 failed typecheck: offline arena
+helper imported node:timers/promises without project Node type declarations.
+Use a standard setTimeout macrotask yield; no new dependency/threshold change.
+Failed CI is retained, not a gameplay failure or a pass. Add full no-grants
+natural progression observer via the existing policy (4Origins×3seeds×3draft
+priorities); default cohort policy remains unchanged. Every defeat/unreached/
+phase-skipped result is retained; finite execution is not boss-quality approval.
