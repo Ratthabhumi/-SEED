@@ -306,7 +306,7 @@ export class GameScene extends Phaser.Scene {
     this.terrainPainter = new TerrainPainter(this);
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
-    this.hostileBatch=new HostileProjectileBatch(this);
+    this.hostileBatch=new HostileProjectileBatch(this,new URLSearchParams(location.search).get("hostile")!=="legacy");
     this.friendlyBatch=new FriendlyProjectileBatch(this,new URLSearchParams(location.search).get("friendly")!=="fullquad");
     this.vectorHostiles=new URLSearchParams(location.search).get("hostile")==="vector";
     this.numericFeedback=new URLSearchParams(location.search).get("numbers")==="atlas"?new NumericFeedback(this):undefined;
@@ -805,6 +805,14 @@ export class GameScene extends Phaser.Scene {
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
+        content153HostileFixture:()=>{const s=this.sim.state;for(let i=0;i<800;i++){const p=s.projs[i]!;p.friendly=false;p.src=["enemy-burst","enemy","boss-fan"][i%3]!;p.radius=i%3===2?8:i%3===1?6:4;p.color=i%3===2?0xff736d:0xff5a5a;}return {enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length,hash:this.sim.hash()};},
+        findTerrainBiome:(biome:string)=>{for(let x=-32;x<=32;x+=4)for(let y=-32;y<=32;y+=4)if(this.sim.chunks.get(this.sim.state.worldSeed,this.sim.state.worldNonce,x,y).biome===biome)return {x:x*512,y:y*512};throw Error("Biome absent in bounded visual probe");},
+        startOrdinaryHostileCapture:()=>{
+          const s=this.sim.state;if(s.elapsed>2)throw Error("Hostile capture requires fresh run");s.ageIndex=2;
+          for(const e of s.enemies)e.active=false;for(const f of ["kinetic","energy","defense","field"] as const)s.weaponCd[f]=999;
+          for(const a of s.squad)a.active=false;s.spawnT=s.eliteT=s.mineT=999;
+          this.sim.spawnEnemy("ranged",false,false,0,350,[]);this.paused=false;
+        },
         prepareNaturalBoss:(mode:"balanced"|"damage"|"survival"="balanced")=>{
           if(this.sim.state.elapsed>2)throw Error("Natural boss policy requires a fresh run");
           const report=naturalBossEvidence(this.sim,mode,true),s=this.sim.state;

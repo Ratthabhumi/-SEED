@@ -1311,7 +1311,7 @@
       "productionSha256": "51779a809777d49c2ef7494612735e9317f12c0c565d668048e1e5cbf45d2d22"
     },
     {
-      "id": "seed-content153-hostile-attacks-v1",
+      "id": "seed-content15-v153-hostile-attacks-v1",
       "projectPath": "assets/seed/content153/hostile-attacks-v1.png",
       "vendorSourcePath": "assets/original/content153/hostile-attacks-v1.png",
       "sourcePack": "Original -SEED hostile attacks",
@@ -1325,7 +1325,7 @@
       "sourceRelease": "content153-hostile-v1",
       "downloadedAt": "2026-10-15",
       "modified": true,
-      "modifications": "Four equal cells, alpha crop and uniform fit into128px cells; no invented simulation categories",
+      "modifications": "Four equal cells, alpha crop, uniform resize and slicing into128px cells; no invented simulation categories",
       "presentationTransform": "Canonical age/origin or biome rendering; no collision changes",
       "attributionRequired": true,
       "purpose": "Original directional hostile projectile materials; human art approval pending",
@@ -1335,7 +1335,7 @@
       "productionSha256": "a0b9b943f508f23d5c1af52867b664aa28268af8397919b105c69ea0b4dc17de"
     },
     {
-      "id": "seed-content153-hunters-attack-v2",
+      "id": "seed-content15-v153-hunters-attack-v2",
       "projectPath": "assets/seed/content153/hunters-attack-v2.png",
       "vendorSourcePath": "assets/original/content153/hunters-motion-experiment-v2.png",
       "sourcePack": "Original -SEED generated motion experiment",
@@ -1349,7 +1349,7 @@
       "sourceRelease": "content153-attack-v2",
       "downloadedAt": "2026-10-15",
       "modified": true,
-      "modifications": "Reviewed source rows1/3 columns3/5/6/7 only; locked per-row scale and foot baseline; per-frame sockets, no synthetic frames",
+      "modifications": "Reviewed source rows1/3 columns3/5/6/7 slicing, uniform resize, locked scale and foot baseline; per-frame sockets, no synthetic frames",
       "presentationTransform": "Canonical age/origin or biome rendering; no collision changes",
       "attributionRequired": true,
       "purpose": "Hunters Stone/Space front release and recovery only; walk withheld",

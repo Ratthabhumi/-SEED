@@ -15,7 +15,7 @@ export class HostileProjectileBatch {
   private frames=new Map<string,number>();
   private painted?:PaintedQuadBatch;
   private paintedShots=0;private paintedRoles=new Set<number>();
-  constructor(private scene:Phaser.Scene){
+  constructor(private scene:Phaser.Scene,private paintedEnabled=true){
     if(!("gl" in scene.game.renderer))return;
     this.atlas=(scene.textures.exists(KEY)?scene.textures.get(KEY):scene.textures.createCanvas(KEY,512,512)) as Phaser.Textures.CanvasTexture;
     // A fresh renderer object after restart reuses the source safely, rebuilding
@@ -26,7 +26,7 @@ export class HostileProjectileBatch {
   begin(){this.batch?.begin();this.painted?.begin();this.paintedShots=0;this.paintedRoles.clear();}
   draw(p:SimProj,highContrast:boolean):boolean {
     const role=hostileArtFrame(p.src);
-    if(!highContrast&&this.painted&&role!==undefined){
+    if(!highContrast&&this.paintedEnabled&&this.painted&&role!==undefined){
       const size=Math.max(24,p.radius*5);
       this.painted.draw(this.scene.textures.get("hostile-painted").get(role),p.x,p.y,size,size,Math.atan2(p.vy,p.vx));this.paintedShots++;this.paintedRoles.add(role);return true;
     }

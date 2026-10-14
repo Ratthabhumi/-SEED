@@ -1,4 +1,7 @@
 name: ci
+permissions:
+  contents: read
+  actions: read
 
 on:
   push:
@@ -6,6 +9,28 @@ on:
   pull_request:
 
 jobs:
+  render_evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: gh run download 38633785008 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content153-baseline-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: node scripts/measure-content153.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: render-evidence-${{ github.sha }}
+          path: test-results/content153-performance/
+          if-no-files-found: warn
+          retention-days: 14
   verify:
     strategy:
       matrix:
@@ -42,6 +67,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:e2e
+      - run: node scripts/capture-content153.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -50,6 +76,8 @@ jobs:
             test-results/browser/streaming-counters.json
             test-results/browser/*.webm
             test-results/browser/**/*.png
+            test-results/browser/content153/*.json
+            test-results/browser/content153/*.webm
             test-results/browser/**/trace.zip
             test-results/browser/**/error-context.md
             test-results/evolution-performance.json

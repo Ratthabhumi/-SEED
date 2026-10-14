@@ -21,3 +21,15 @@ presentation intervention; canonical collision/range/speed are unchanged.
 No new runtime dependency, new animation engine, new profiler or rewritten world
 generator. Final acceptance requires full regression, native captures, existing
 paired profiling and exact-head official packages, plus later human judgments.
+
+CI adds a fifth render_evidence job to isolate profiling from E2E. It reuses the
+existing five-block ABBA/BAAB protocol: verified official parent versus candidate,
+then same-build cached glyphs versus painted hostile art at equal500/800 counts.
+Both240-row datasets remain. Parent ZIP hash/served compiled SHA guard provenance.
+No new NPM dependency/action; GH CLI downloads the approved parent with read-only
+Actions permission. CI software/device measurements do not certify the laptop.
+Green measurement execution does not mean render<8ms passed.
+
+New originals use the existing seed-content15-* original-art namespace with MIT
+source/normalized-file metadata, rather than the Kenney CC0 fallback category.
+Actual resize/slicing and both hashes remain enforced; no assertion weakened.

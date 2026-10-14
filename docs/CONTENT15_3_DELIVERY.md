@@ -60,3 +60,24 @@ exact-head CI/artifact receipt belongs to the Draft PR body, avoiding a recursiv
 commit-SHA loop. One human retest after engineering gates: `npm run qa:human`,
 confirm displayed exact SHA, fresh Stone→Space→Boss→World2; record actual input,
 readability, terrain, attack animation, phase exposure, art/fun and interruptions.
+
+Full natural progression comparison reuses the existing controller with fixed
+balanced/damage/survival draft priorities:4Origins×3seeds×3priorities,1200s cap,
+exact parent/current simulations. No HP/stat grants or forced phases. Trace
+includes phase durations, attacks/recovery, real damage, actual researched builds,
+defeats/unreached/censored outcomes and one-tick lethal observations. This is
+automated canonical play, not human fun. Native Boss video starts from a real
+progression-earned build, then uses actual keyboard movement through the fight.
+
+CI has five jobs: the four prior engineering jobs plus isolated render evidence.
+The latter retains two240-row five-block comparisons (parent/candidate and
+same-build cached/painted hostile art), fixed500/800 counts, all three modes,
+720p/1080p and cold/warm. Devices/compiled SHAs are recorded. Software CI values
+cannot certify the operator's Intel hardware; green measurement execution is
+separate from strict render<8ms acceptance.
+
+Retained checkpoint failures:43b751d typecheck lacked Node timer declarations;
+45e40bf ran492/494 unit tests successfully but two asset-category checks failed.
+New original art is now classified in the existing Content15 MIT namespace with
+actual resize/slicing metadata and distinct raw/normalized hashes. No license,
+integrity, gameplay assertion or performance threshold was weakened.
