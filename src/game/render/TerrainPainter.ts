@@ -6,11 +6,12 @@ import arid from "../../../assets/seed/content15/arid-floor-v1.png";
 import tundra from "../../../assets/seed/content15/tundra-floor-v1.png";
 import badlands from "../../../assets/seed/content15/badlands-floor-v1.png";
 import {TERRAIN_CELL as CELL,TERRAIN_STRIDE as STRIDE,TERRAIN_PAD as PAD} from "./terrainTile";
+import {TERRAIN_TYPED_UNPACK} from "./terrainUpload";
 export const TERRAIN_TEXTURES={verdant,arid,tundra,badlands};
 const IDS:BiomeId[]=["verdant","arid","tundra","badlands"],ATLAS=2048,SLOTS=64,KEY="painted-ground-atlas";
 interface Entry{slot:number;used:number;serial:number;ready:boolean;readyAt:number;biome:BiomeId;}
 interface Job{key:string;epoch:number;serial:number;cx:number;cy:number;ids:number[];}
-interface Result{key:string;epoch:number;serial:number;pixels:Uint8ClampedArray;paintMs:number;}
+interface Result{key:string;epoch:number;serial:number;pixels:Uint8ClampedArray;uploadPixels:Uint8Array;paintMs:number;}
 /** Same Content14 pixels/atlas batching. CPU mixing runs off the frame thread;
  * at most one 256px subregion uploads per frame. Originals fill pending cells.
  */
@@ -81,7 +82,7 @@ export class TerrainPainter {
   const result=!this.highContrast&&this.uploadedFrame!==frame?this.ready.shift():undefined;
   if(result){const entry=this.cache.get(result.key);
    if(result.epoch===this.epoch&&entry?.serial===result.serial){
-    this.paintMs=result.paintMs;this.workerPaintMaxMs=Math.max(this.workerPaintMaxMs,result.paintMs);const start=performance.now();this.upload(entry.slot,result.pixels);
+    this.paintMs=result.paintMs;this.workerPaintMaxMs=Math.max(this.workerPaintMaxMs,result.paintMs);const start=performance.now();this.upload(entry.slot,result.pixels,result.uploadPixels);
     this.uploadCallMs=performance.now()-start;this.uploadMaxMs=Math.max(this.uploadMaxMs,this.uploadCallMs);this.uploads++;this.uploadedFrame=frame;
     entry.ready=true;entry.readyAt=performance.now();
    }
@@ -95,13 +96,13 @@ export class TerrainPainter {
    if(this.assigned[index]!==entry){
     this.assigned[index]=entry;
     image.setTexture(KEY,entry.slot).setPosition(v.x*512,v.y*512).setDisplaySize(512,512);
-    fallback.setTexture(`terrain-${entry.biome}`).setPosition(v.x*512,v.y*512).setDisplaySize(512,512).setTint(0xb8b8b8).setFlipX(Math.abs(v.x%2)===1).setFlipY(Math.abs(v.y%2)===1);
+    fallback.setTexture(`terrain-${entry.biome}`).setPosition(v.x*512,v.y*512).setDisplaySize(512,512).setTint(0xb8b8b8).setFlip(false,false);
    }
    image.setAlpha(alpha).setVisible(alpha>0);fallback.setVisible(alpha<1);
   }
   for(let i=count;i<this.images.length;i++){this.images[i]!.setVisible(false);this.fallbacks[i]!.setVisible(false);}
  }
- private upload(slot:number,pixels:Uint8ClampedArray):void{
+ private upload(slot:number,pixels:Uint8ClampedArray,uploadPixels:Uint8Array):void{
   const ax=(slot%8)*STRIDE,ay=Math.floor(slot/8)*STRIDE;
   this.tileContext.putImageData(new ImageData(pixels,STRIDE,STRIDE),0,0);
   this.atlas.getContext().drawImage(this.tileCanvas,ax,ay); // backing source survives WebGL context restoration
@@ -109,8 +110,9 @@ export class TerrainPainter {
   if(!renderer.gl){this.atlas.refresh();return;}
   const gl=renderer.gl,units=renderer.glTextureUnits,texture=this.atlas.source[0]!.glTexture!,previous=units.units[0];
   units.bind(texture,0);
+  renderer.glWrapper.updateTexturing({texturing:TERRAIN_TYPED_UNPACK});
+  gl.texSubImage2D(gl.TEXTURE_2D,0,ax,ATLAS-ay-STRIDE,STRIDE,STRIDE,gl.RGBA,gl.UNSIGNED_BYTE,uploadPixels);
   renderer.glWrapper.updateTexturing({texturing:{flipY:true,premultiplyAlpha:true}});
-  gl.texSubImage2D(gl.TEXTURE_2D,0,ax,ATLAS-ay-STRIDE,gl.RGBA,gl.UNSIGNED_BYTE,this.tileCanvas);
   units.bind(previous??null,0);
  }
  counts(){return {images:this.images.length,tiles:this.cache.size,atlasBytes:ATLAS*ATLAS*4,hits:this.hits,misses:this.misses,

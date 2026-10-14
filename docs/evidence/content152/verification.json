@@ -1,0 +1,29 @@
+{
+  "parentSha": "0fa6378a457606e4066055032e8ea52b22fc63b1",
+  "frozenProductSha": "105b6c836b054b683ffca9a8a8ba594c59dce98e",
+  "correctedProduct": {
+    "typecheck": "PASS",
+    "unitTests": 486,
+    "unitFiles": 81,
+    "assetProvenanceChecks": 54,
+    "productionBuild": "PASS",
+    "nativeFocusedE2E": {"passed": 17, "durationSeconds": 46.3},
+    "nativeBackend": "Intel UHD630 ANGLE D3D11",
+    "fullFinalE2E": "See exact final-head CI receipt in Draft PR"
+  },
+  "earlierClean6d00fce": {
+    "fullE2E": {"passed": 162, "skipped": 1, "minutes": 17.1},
+    "analyze": {"passed": 6},
+    "progressionCohort": {"passed": 8},
+    "zipAndReleaseVerify": "PASS; does not certify final package"
+  },
+  "retainedFailures": [
+    "Parent focused Space activated a Draft card before fix; input-before.png",
+    "Initial local full suite157PASS/5FAIL/1skip: two fixture errors, two Tech Center offscreen failures and correct rejection of dirty build",
+    "Initial cohort runs completed8 assertions but worker RPC acknowledgement failed; event-loop yielding between unchanged cases resolves it",
+    "Controlled old unpack-flag repro fails WebGL1 and WebGL2; final byte-equivalence tests pass",
+    "First full-quad HC cache increased GPU p95; retained in performance.json",
+    "Final paired HC1920 cold one run reaches8.00ms and fails strict render<8ms"
+  ],
+  "limitations": "Engineering fixtures are not human art, enjoyment, natural encounter balance or release acceptance. Historical interrupted human sessions remain unchanged. Final exact SHA, CI run links and official ZIP hashes are recorded in the Draft PR receipt."
+}

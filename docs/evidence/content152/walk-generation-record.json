@@ -1,0 +1,9 @@
+{
+  "source": "rejected-hunters-walk.png",
+  "status": "WITHHELD_FROM_RUNTIME_MOTION_CHRONOLOGY_UNVERIFIED",
+  "tool": "OpenAI image_gen",
+  "requested": "Original Stone Hunter 8-column 2-row transparent walk sheet; left contact/down/passing/up then right contact/down/passing/up; front/back; stable anatomy, scale, feet and empty grasp points; genuine limb/cape changes.",
+  "reference": "assets/original/content15-animation/hunters-reference-v1.png",
+  "sha256": "ed7b7ef304724bd69f86c714f4a489a22fdec9326dd30544df9cb65c549983f3",
+  "license": "Project-generated original artwork; MIT"
+}

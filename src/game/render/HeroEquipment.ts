@@ -11,7 +11,7 @@ export class HeroEquipment {
   socket(x:number,y:number){this.socketX=x;this.socketY=y;}
   private weapon?:Phaser.GameObjects.Image;
   constructor(private scene?:Phaser.Scene){}
-  review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation}:null;}
+  review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
   private world="";private released=-Infinity;private aim=0;
   private releasedFamily:WeaponFamily="kinetic";
   private ability="";private abilityAt=-Infinity;private abilityX=0;private abilityY=0;
@@ -31,12 +31,16 @@ export class HeroEquipment {
     const art=combatPresentation(s.originId,family,s.weaponStage[family]);
     const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
     const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
-    const x=s.px+this.socketX+nx*(20-fresh*4),y=s.py+this.socketY+ny*(20-fresh*4),len=art.weaponLength;
+    const x=s.px+this.socketX-nx*fresh*2,y=s.py+this.socketY-ny*fresh*2,len=art.weaponLength;
     if(this.scene&&!highContrast){
       const frame=equipmentFrame(s.originId,s.weaponStage[family]);
       if(!this.weapon)this.weapon=this.scene.add.image(0,0,"combat-equipment",frame).setDepth(5);
       if(this.weapon.frame.name!==String(frame))this.weapon.setTexture("combat-equipment",frame);
-      this.weapon.setPosition(x+nx*7,y+ny*7).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(ang).setVisible(!s.over);
+      // Original source grips, normalized to each 128px cell. The grip sits on
+      // the body's posed hand instead of placing the texture center 27u away.
+      const row=Math.floor(frame/6),col=frame%6;
+      const grip=row===0?(col<3?[92,64]:[43,74]):row===1?[49,93]:row===2?[30,64]:[63,67];
+      this.weapon.setOrigin(grip[0]!/128,grip[1]!/128).setPosition(x,y).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(ang).setVisible(!s.over);
     }else{
     this.weapon?.setVisible(false);
     // Age equipment: collar/material, physical braces and energy conduits.

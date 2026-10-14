@@ -100,3 +100,7 @@ timing, actual event correspondence, pool/texture lifecycle and native captures.
 Artist acceptance checks anatomy, pose appeal, motion spacing, continuity and
 readability at112px. Human gameplay acceptance checks comprehension/fun/replay.
 These are separate gates; automated assertions cannot approve the latter two.
+Content15.2 attachment/coverage update: see
+`docs/CONTENT15_2_ANIMATION_COVERAGE.md`. Motion frame coverage is unchanged;
+equipment grip-origin composition is corrected without claiming authored
+in-betweens or human artist approval.

@@ -1,0 +1,1321 @@
+{
+  "classification": "STAGED_NATIVE_PRESENTATION_NOT_HUMAN_ACCEPTANCE",
+  "sourceSha": "105b6c836b054b683ffca9a8a8ba594c59dce98e",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "seed": "EPOCH-GOLDEN-001",
+  "mode": "normal",
+  "browser": "153.0.8010.12",
+  "captures": [
+    {
+      "file": "hunters-0.png",
+      "origin": "hunters",
+      "age": 0,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -1.45,
+        -1.45,
+        -1.45
+      ],
+      "after": {
+        "p": [
+          10161.333333,
+          9886.333333,
+          0,
+          -220,
+          -2.75,
+          -2.75,
+          -2.75
+        ],
+        "actors": [
+          {
+            "texture": "hero-reference",
+            "frame": 12,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10161.333333333307,
+            "y": 9886.333333333352,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-hunters",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10111.835856809146,
+            "y": 9942.60322461301,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-hunters",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10094.768955659305,
+            "y": 9868.630318080614,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 0,
+          "width": 56,
+          "rotation": 1.3001814862423675,
+          "x": 10169.604377919906,
+          "y": 9868.681871298897,
+          "grip": [
+            0.71875,
+            0.5
+          ],
+          "socket": [
+            8.75,
+            -15.925000000000002
+          ]
+        },
+        "motion": {
+          "frame": 12,
+          "socket": [
+            74,
+            65
+          ],
+          "action": "attack",
+          "index": 0
+        }
+      }
+    },
+    {
+      "file": "hunters-5.png",
+      "origin": "hunters",
+      "age": 5,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -4.233333,
+        -4.233333,
+        -4.233333
+      ],
+      "after": {
+        "p": [
+          10157.666667,
+          9882.666667,
+          0,
+          0,
+          -5.533333,
+          -5.533333,
+          -0.1
+        ],
+        "actors": [
+          {
+            "texture": "hero-reference",
+            "frame": 28,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10157.66666666664,
+            "y": 9882.666666666686,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-hunters",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10108.169190826722,
+            "y": 9938.530232328949,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-hunters",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10091.102289050848,
+            "y": 9866.800968030242,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 5,
+          "width": 66,
+          "rotation": -1.5707963267948966,
+          "x": 10157.66666666664,
+          "y": 9866.741666666687,
+          "grip": [
+            0.3359375,
+            0.578125
+          ],
+          "socket": [
+            0,
+            -15.925000000000002
+          ]
+        },
+        "motion": {
+          "frame": 28,
+          "socket": [
+            64,
+            65
+          ],
+          "action": "walk",
+          "index": 0
+        }
+      }
+    },
+    {
+      "file": "engineers-0.png",
+      "origin": "engineers",
+      "age": 0,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -6.85,
+        -6.85,
+        -1.416667
+      ],
+      "after": {
+        "p": [
+          10157.666667,
+          9886.333333,
+          0,
+          0,
+          -8.133333,
+          -8.133333,
+          0
+        ],
+        "actors": [
+          {
+            "texture": "hero-neutral",
+            "frame": 30,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10157.66666666664,
+            "y": 9884.714252352489,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-engineers",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10108.16919003926,
+            "y": 9942.863565662283,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-engineers",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10091.102287537225,
+            "y": 9870.291496255082,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 6,
+          "width": 56,
+          "rotation": -1.5707963267948966,
+          "x": 10157.66666666664,
+          "y": 9870.333333333352,
+          "grip": [
+            0.3828125,
+            0.7265625
+          ],
+          "socket": [
+            0,
+            -16
+          ]
+        },
+        "motion": null
+      }
+    },
+    {
+      "file": "engineers-5.png",
+      "origin": "engineers",
+      "age": 5,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -9.433333,
+        -9.433333,
+        -1.3
+      ],
+      "after": {
+        "p": [
+          10172.333333,
+          9886.333333,
+          0,
+          -220,
+          -10.766667,
+          -10.766667,
+          -0.05
+        ],
+        "actors": [
+          {
+            "texture": "hero-neutral",
+            "frame": 35,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10172.333333333305,
+            "y": 9887.27347717532,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "world-props",
+            "frame": 8,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10121.890617447352,
+            "y": 9824.240399644816,
+            "width": 48,
+            "height": 48,
+            "screenWidth": 57.599999999999994,
+            "inView": true
+          },
+          {
+            "texture": "world-props",
+            "frame": 8,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10251.328749246057,
+            "y": 9873.695126784503,
+            "width": 48,
+            "height": 48,
+            "screenWidth": 57.599999999999994,
+            "inView": true
+          },
+          {
+            "texture": "world-props",
+            "frame": 8,
+            "rotation": 0,
+            "flipX": true,
+            "x": 10143.780633306505,
+            "y": 9961.064473570737,
+            "width": 48,
+            "height": 48,
+            "screenWidth": 57.599999999999994,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-engineers",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10122.835857569667,
+            "y": 9941.83464299095,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-engineers",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10105.768956202674,
+            "y": 9868.680972059909,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 11,
+          "width": 66,
+          "rotation": -1.5707963267948966,
+          "x": 10172.333333333305,
+          "y": 9870.333333333352,
+          "grip": [
+            0.3828125,
+            0.7265625
+          ],
+          "socket": [
+            0,
+            -16
+          ]
+        },
+        "motion": null
+      }
+    },
+    {
+      "file": "resonant-0.png",
+      "origin": "resonant",
+      "age": 0,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -12.2,
+        -12.2,
+        -1.483333
+      ],
+      "after": {
+        "p": [
+          10168.666667,
+          9886.333333,
+          0,
+          0,
+          -13.5,
+          -13.5,
+          -0.05
+        ],
+        "actors": [
+          {
+            "texture": "hero-neutral",
+            "frame": 36,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10168.666666666639,
+            "y": 9888.039757826784,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-resonant",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10119.169190816046,
+            "y": 9941.859047663986,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-resonant",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10102.10228304787,
+            "y": 9871.206893231005,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 12,
+          "width": 56,
+          "rotation": -1.5707963267948966,
+          "x": 10168.666666666639,
+          "y": 9870.333333333352,
+          "grip": [
+            0.234375,
+            0.5
+          ],
+          "socket": [
+            0,
+            -16
+          ]
+        },
+        "motion": null
+      }
+    },
+    {
+      "file": "resonant-5.png",
+      "origin": "resonant",
+      "age": 5,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -14.966667,
+        -14.966667,
+        -1.516667
+      ],
+      "after": {
+        "p": [
+          10161.333333,
+          9886.333333,
+          0,
+          -220,
+          -16.25,
+          -16.25,
+          -0.083333
+        ],
+        "actors": [
+          {
+            "texture": "hero-neutral",
+            "frame": 41,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10161.333333333307,
+            "y": 9888.305859846863,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-resonant",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10111.835856809146,
+            "y": 9942.60322461301,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-resonant",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10094.768953835222,
+            "y": 9870.593224842269,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 17,
+          "width": 66,
+          "rotation": -1.5707963267948966,
+          "x": 10161.333333333307,
+          "y": 9870.333333333352,
+          "grip": [
+            0.234375,
+            0.5
+          ],
+          "socket": [
+            0,
+            -16
+          ]
+        },
+        "motion": null
+      }
+    },
+    {
+      "file": "sentinels-0.png",
+      "origin": "sentinels",
+      "age": 0,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -17.516667,
+        -17.516667,
+        -1.35
+      ],
+      "after": {
+        "p": [
+          10161.333333,
+          9886.333333,
+          0,
+          0,
+          -18.85,
+          -18.85,
+          -0.083333
+        ],
+        "actors": [
+          {
+            "texture": "hero-neutral",
+            "frame": 42,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10161.333333333307,
+            "y": 9886.341326724378,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-sentinels",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10111.835856809146,
+            "y": 9942.60322461301,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-sentinels",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10094.768955855232,
+            "y": 9870.709682192703,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 18,
+          "width": 56,
+          "rotation": -1.5707963267948966,
+          "x": 10161.333333333307,
+          "y": 9870.333333333352,
+          "grip": [
+            0.4921875,
+            0.5234375
+          ],
+          "socket": [
+            0,
+            -16
+          ]
+        },
+        "motion": null
+      }
+    },
+    {
+      "file": "sentinels-5.png",
+      "origin": "sentinels",
+      "age": 5,
+      "before": [
+        10000,
+        10000,
+        0,
+        0,
+        -20.05,
+        -20.05,
+        -1.283333
+      ],
+      "after": {
+        "p": [
+          10157.666667,
+          9886.333333,
+          0,
+          -220,
+          -21.35,
+          -21.35,
+          0
+        ],
+        "actors": [
+          {
+            "texture": "hero-neutral",
+            "frame": 47,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10157.66666666664,
+            "y": 9885.35201142491,
+            "width": 112,
+            "height": 112,
+            "screenWidth": 134.4,
+            "inView": true
+          },
+          {
+            "texture": "world-props",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10209.492418448148,
+            "y": 9825.38998708225,
+            "width": 48,
+            "height": 48,
+            "screenWidth": 57.599999999999994,
+            "inView": true
+          },
+          {
+            "texture": "world-props",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": true,
+            "x": 10184.532276820972,
+            "y": 9961.687424071913,
+            "width": 48,
+            "height": 48,
+            "screenWidth": 57.599999999999994,
+            "inView": true
+          },
+          {
+            "texture": "world-props",
+            "frame": 10,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10078.975304730802,
+            "y": 9871.922588845891,
+            "width": 48,
+            "height": 48,
+            "screenWidth": 57.599999999999994,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-sentinels",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10108.16919003926,
+            "y": 9942.863565662283,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          },
+          {
+            "texture": "hero-v2-sentinels",
+            "frame": 9,
+            "rotation": 0,
+            "flipX": false,
+            "x": 10091.102288461254,
+            "y": 9871.464756439924,
+            "width": 56,
+            "height": 56,
+            "screenWidth": 67.2,
+            "inView": true
+          }
+        ],
+        "rig": {
+          "texture": "combat-equipment",
+          "frame": 23,
+          "width": 66,
+          "rotation": -1.5707963267948966,
+          "x": 10157.66666666664,
+          "y": 9870.333333333352,
+          "grip": [
+            0.4921875,
+            0.5234375
+          ],
+          "socket": [
+            0,
+            -16
+          ]
+        },
+        "motion": null
+      }
+    }
+  ],
+  "phases": [
+    {
+      "elapsed": 23.68333333333327,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 56,
+      "boss": {
+        "phase": "warning",
+        "timer": 1.2000000000000006,
+        "cycle": 0,
+        "pattern": "fan",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 24.783333333333207,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 109,
+      "boss": {
+        "phase": "warning",
+        "timer": 0.09999999999999992,
+        "cycle": 0,
+        "pattern": "fan",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 25.849999999999813,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 105,
+      "boss": {
+        "phase": "recover",
+        "timer": 0.7666666666666673,
+        "cycle": 1,
+        "pattern": "fan",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 26.983333333333082,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 94,
+      "boss": {
+        "phase": "approach",
+        "timer": 1.8333333333333348,
+        "cycle": 1,
+        "pattern": "fan",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 27.983333333333025,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 93,
+      "boss": {
+        "phase": "approach",
+        "timer": 0.8333333333333373,
+        "cycle": 1,
+        "pattern": "fan",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 29.466666666666274,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 100,
+      "boss": {
+        "phase": "warning",
+        "timer": 0.5166666666666656,
+        "cycle": 1,
+        "pattern": "slam",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 30.516666666666215,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 75,
+      "boss": {
+        "phase": "recover",
+        "timer": 1.6500000000000008,
+        "cycle": 2,
+        "pattern": "slam",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 31.566666666666155,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 107,
+      "boss": {
+        "phase": "recover",
+        "timer": 0.6000000000000019,
+        "cycle": 2,
+        "pattern": "slam",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 32.6166666666661,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 79,
+      "boss": {
+        "phase": "approach",
+        "timer": 1.7666666666666684,
+        "cycle": 2,
+        "pattern": "slam",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 33.63333333333271,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 88,
+      "boss": {
+        "phase": "approach",
+        "timer": 0.7500000000000037,
+        "cycle": 2,
+        "pattern": "slam",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 34.64999999999932,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 95,
+      "boss": {
+        "phase": "warning",
+        "timer": 1.1500000000000008,
+        "cycle": 2,
+        "pattern": "cross",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 35.71666666666592,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 82,
+      "boss": {
+        "phase": "warning",
+        "timer": 0.08333333333333326,
+        "cycle": 2,
+        "pattern": "cross",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 36.833333333332526,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 94,
+      "boss": {
+        "phase": "recover",
+        "timer": 1.1000000000000025,
+        "cycle": 3,
+        "pattern": "cross",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 37.849999999999135,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 91,
+      "boss": {
+        "phase": "recover",
+        "timer": 0.08333333333333476,
+        "cycle": 3,
+        "pattern": "cross",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 38.899999999999075,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 105,
+      "boss": {
+        "phase": "approach",
+        "timer": 1.2500000000000036,
+        "cycle": 3,
+        "pattern": "cross",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    },
+    {
+      "elapsed": 39.98333333333235,
+      "world": 1,
+      "draft": false,
+      "paused": false,
+      "enemies": 501,
+      "projectiles": 76,
+      "boss": {
+        "phase": "approach",
+        "timer": 0.16666666666666963,
+        "cycle": 3,
+        "pattern": "cross",
+        "aimX": 10157.66666666664,
+        "aimY": 9886.333333333352,
+        "enraged": true
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 64,
+        "atlasBytes": 16777216,
+        "hits": 392,
+        "misses": 98,
+        "pending": 0,
+        "uploads": 64,
+        "uploadBytes": 16777216,
+        "paintMs": 3.699999999254942,
+        "workerPaintMaxMs": 52.399999998509884,
+        "deliveredMs": 4.200000002980232,
+        "evictions": 34,
+        "uploadCallMs": 0.20000000298023224,
+        "uploadMaxMs": 23.400000002235174,
+        "workerFailed": false,
+        "mode": "worker-partial-upload",
+        "ready": 64
+      }
+    }
+  ],
+  "errors": [],
+  "limitations": "High-HP enemies, isolated roster and a forced canonical half-health transition. Authored motion coverage unchanged. No natural DPS, art approval or fun verdict."
+}

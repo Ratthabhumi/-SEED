@@ -788,3 +788,62 @@ CI follow-up:6fb36f9 PR run38149414529 passed62 browser cases;3 responsive matri
 Visual evolution checkpointA: preserved2821 current evidence files before editing; live baseline PR2 remains781687a / green CI. FPS HUD reuses real-frame samples at2Hz and follows the top-left flow. QA launcher uses Node+Vite arguments without Windows shell. Full check394 PASS before the Archive checkpoint. Human completion report297 contains actual child120s and a negative difficulty comment, not a fun certification.
 
 CheckpointB: full check398 PASS. Schema2 migrates existing schema1 without erasing settings/history. Three bounded Archive purchases now have real root-start effects, explicit costs and guarded idempotent settlement; no first-attempt forced loss or hidden difficulty. QA observation completion is not a currency payout. See ADR0023.
+## Content15.2 integrated quality workstream — 2026-10-14
+
+Parent PR11 exact0fa6378 verified OPEN/Draft and CI4/4 push/PR. Branch
+feat/content15-integrated-human-quality-20261014 targets PR11, not main.
+Focused Space activation reproduced; native capture forbids Space throughout
+Draft. Physical movement tracking/context reset and explicit Phaser reset cover
+preventDefault keyups (KeyboardManager ignores them), blur/hidden/maps/pause.
+Hand grip origins replace27u detached centers; live localized boss phase/recovery
+cue; HUD typography bounded while full menu text scale remains available.
+HC friendly geometry cache64glyphs/1000quads/2.25MiB allocated only on first HC
+use, unchanged vector fallback and canonical counts. Terrain Worker transfers
+reversed RGBA for typed partial GPU upload, backing Canvas retained; fallback
+alternating mirroring removed. Versions3/15/2, no canonical/balance/new dependency.
+
+First full local browser run157PASS/5FAIL/1oldskip retained. Two input fixtures:
+stationary Dash cannot satisfy canonical direction requirement; new native
+keyup reset prevents stale Phaser keys. Tech Map Center exposed offscreen
+intermediate zoom/pan animation; explicit Current/Center now snaps. QA identity
+test correctly rejected dirty precommit build; rerun on clean committed source.
+Early fixture schema/negative timer mistakes and cohort RPC failure retained;
+no assertion threshold/timeout changes. Complete final gates/paired measurement/
+exact-SHA CI and official ZIP receipt follow in one final Draft PR.
+
+This remains PARTIAL, not a completed human quality milestone: full authored
+motion/threat art, natural boss DPS/exposure, historical terrain preference,
+all-mode performance and human art/fun/replay gates remain open until measured.
+See docs/CONTENT15_2_INTEGRATED_DELIVERY.md and independent31-row human ledger.
+Content15.2 cohort correction: all8 cases passed but two complete runs failed
+Vitest onTaskUpdate RPC acknowledgement after continuous CPU-bound execution.
+The harness yields via Node setImmediate between unchanged cases; no timeout,
+policy or assertion change. Retain both failed logs and require a clean retry.
+Content15.2 clean6d00fce local full browser:162PASS/1oldskip,17.1minutes; full
+check484/54 provenance, Analyze6, ZIP source gates PASS. Cohort setImmediate
+yield retry8/8 PASS without RPC error. Final editable-focus guard prevents
+typing from moving/triggering game commands; focused native/QA and exact-head CI
+must cover it. Generated8×2 Hunter walk was withheld (foot-contact chronology
+unverified), actual source in docs/evidence/content152; no runtime allocation.
+Content15.2 GPU corrections: d500253 typed prototype double-flipped tiles.
+Native WebGL1/2 old-flag reproduction2FAIL; explicit unpack=false correction
+2PASS with midtone RGBA matching Canvas bytes. Before picture/probe retained.
+HC full96px quads raised short diagnostic GPU p95 from8.655 to14.880ms despite
+CPU savings. Crop transparent area using CPU alpha bounds+2px gutters; retain
+all real pixels/canonical shots and original fallback. Same-build fullquad
+comparator, alpha edge tests and final cropped measurements required.
+
+Content15.2 final publication checkpoint (15 October2026): corrected clean
+product105b6c8 check486/81files/54 provenance and native focused17/17 PASS.
+Paired240 rows completed without page errors; HC1920 cold median9.0→7.1ms,
+warm7.7→5.9ms. Strict render<8 still fails one candidate cold run at8.0ms;
+normal/reduced mixed, upload lifetime max29ms remains. Independent advancing
+Space901.313s/54,002 unique frames: sim p95=1.0ms, renderer=4.7ms, frame=16.7ms;
+boss/child/restart20s each advance without pause/errors. Staged HP/roster are
+explicit; not natural combat/fun evidence. All raw observations, corrected
+four-Origin Stone/Space gallery and native WebM committed under content152.
+Generated walk experiment remains withheld; source/runtime motion unchanged.
+Final docs/evidence commit changes no canonical/runtime code after105b6c8.
+One stacked Draft targets PR11; final exact-SHA push/PR CI and official Node22/24
+ZIP hashes are maintained in its PR body to avoid a self-referential SHA loop.
+Quality remains PARTIAL; research questions are in the targeted research brief.
