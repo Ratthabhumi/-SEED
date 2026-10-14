@@ -13,7 +13,8 @@
 |Friendly powers|combat/projectiles-v1, canonical family effects|Production candidates mixed with functional geometry|
 |Guardians/allies|world-props and original guardian|Functional/mixed candidates, modest visual enlargement; authored motion open|
 |POIs/outposts|world-props/outposts-v2|Painted candidates and meaningful state overlays; six-era coverage partial|
-|Biome floors|content15 source + shared periodic preparation|Source is retained; fallback now uses shared material; historic winner unselected|
+|Biome floors|Original Content14 moss/cracked earth/ice/red strata + shared periodic preparation|Distinct material candidate restored after controlled historical comparison; operator approval remains open|
+|Content15 fine-grain floors|Historical source retained|Unused by current terrain renderer; provenance preserved|
 |UI|existing theme tokens, localized EN/TH HUD|Functional consistent framework; human aesthetic approval open|
 |Historical SVG costumes|original/actors and guarded fallback paths|Legacy provenance retained; no blanket deletion of working accessibility paths|
 

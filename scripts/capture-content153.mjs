@@ -29,7 +29,15 @@ try{
  await page.evaluate(()=>window.__seedE2E.setLang('th'));await capture(page,'thai-hud');await page.close();await page.video().saveAs(join(out,'presentation.webm'));
  const hostile=await fresh();await hostile.evaluate(()=>window.__seedE2E.startOrdinaryHostileCapture());
  await hostile.waitForTimeout(4000);await capture(hostile,'ordinary-hostile-live');await hostile.close();await hostile.video().saveAs(join(out,'ordinary-hostile.webm'));
- const boss=await fresh(),begin=Date.now(),preparation=await boss.evaluate(()=>window.__seedE2E.prepareNaturalBoss('balanced')),preparedAt=Date.now(),states=[];
+ let boss=await fresh();const begin=Date.now(),attempts=[];
+ let preparation=await boss.evaluate(()=>window.__seedE2E.prepareNaturalBoss('balanced'));
+ attempts.push({mode:'balanced',result:preparation});
+ if(preparation.spawn===null){
+  await boss.close();await boss.video().saveAs(join(out,'natural-boss-balanced-unreached.webm'));
+  boss=await fresh();preparation=await boss.evaluate(()=>window.__seedE2E.prepareNaturalBoss('damage'));
+  attempts.push({mode:'damage',result:preparation});
+ }
+ const preparedAt=Date.now(),states=[];
  let held=new Set();
  if(preparation.spawn!==null)for(let i=0;i<600;i++){
   const s=await boss.evaluate(()=>window.__seedE2E.bossArenaState());states.push(s);if(s.killed||s.over||!s.boss)break;
@@ -40,6 +48,6 @@ try{
   await boss.waitForTimeout(100);
  }
  for(const k of held)await boss.keyboard.up(k);await capture(boss,'natural-progression-boss-final');
- writeFileSync(join(out,'index.json'),JSON.stringify({classification:'STAGED_ART_GALLERY_PLUS_CANONICAL_NATURAL_PROGRESSION_BOSS',sourceSha:build.sha,buildDirty:false,seed:'EPOCH-GOLDEN-001',gpu,browser:browser.version(),captures,preparation,preparationWallMs:preparedAt-begin,bossStates:states,bossWallMs:Date.now()-preparedAt,errors,limitations:'Gallery uses staged roster/ages. Boss build comes from actual movement/drafts/claims/combat, then real browser movement from spawn. Balanced automated policy and circular steering are not human play or a fun verdict. Failure/unreachable/censored outcomes retained; no HP/phase forcing.'},null,2));
+ writeFileSync(join(out,'index.json'),JSON.stringify({classification:'STAGED_ART_GALLERY_PLUS_CANONICAL_NATURAL_PROGRESSION_BOSS',sourceSha:build.sha,buildDirty:false,seed:'EPOCH-GOLDEN-001',gpu,browser:browser.version(),captures,attempts,preparation,preparationWallMs:preparedAt-begin,bossStates:states,bossWallMs:Date.now()-preparedAt,errors,limitations:'Gallery uses staged roster/ages. Boss build comes from actual movement/drafts/claims/combat, then real browser movement from spawn. Balanced policy is retained even when unreached; damage policy is a second documented attempt on a fresh run. Automated policies and circular steering are not human play or a fun verdict. Failure/unreachable/censored outcomes retained; no HP/phase forcing.'},null,2));
  await boss.close();await boss.video().saveAs(join(out,'natural-boss.webm'));if(errors.length)throw Error(errors.join('; '));
 }finally{await context.close();await browser.close();if(server)await new Promise(resolve=>server.httpServer.close(resolve));}
