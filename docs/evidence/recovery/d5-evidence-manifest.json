@@ -1,0 +1,53 @@
+{
+  "source": "d5de0238e4936730360a5d0adf778c3e105ce623",
+  "prTestMerge": "04adb0aee8d3aedcd875214e0c8fdc6a1582d9c6",
+  "parent": "7b9b164a4b6c5a565de7195b9050494e10da252d",
+  "classification": "FROZEN_PRE_PAUSE_CSS_CORRECTION_MEASUREMENTS_NOT_NEWER_HEAD_CERTIFICATION",
+  "limitations": "All synthetic. Private human QA excluded. Final correction changes only Pause CSS, tests and docs; current head still needs own complete CI/package receipt. Physical data uses Intel, CI uses SwiftShader. Selected artifact entry CRC, not whole outer archive SHA, was independently checked. Videos stay in14day Actions artifact.",
+  "files": {
+    "physical-d5-summary.json": {
+      "bytes": 7020,
+      "sha256": "eef6c36c1eaaa75fb1530104116a01eaf6b679b60fe383193c6047627fe6e408"
+    },
+    "natural-d5-outcomes.json": {
+      "bytes": 78957,
+      "sha256": "8f4536ec8d244ff763c259ad52a1e248140f50a2f969c408a3d5d95d7f55ef43"
+    },
+    "official-d5-inner-packages.json": {
+      "bytes": 2227,
+      "sha256": "7a054dc3505382bac3b237c01e3297e926c9cc8a2296c404c17ed10468b24a29"
+    },
+    "ci-d5-render-summary.json": {
+      "bytes": 24316,
+      "sha256": "387c0b6653c051037f3cecc8d614a119d77a28610debb47485dc49d8260dd5fa"
+    },
+    "physical-d5-240.json.gz": {
+      "bytes": 16269,
+      "sha256": "22f6501e60f1501ce0c0f9b656317cd43e314a620397d389b3b892650ff1c4a6"
+    },
+    "physical-d5-advancing.json.gz": {
+      "bytes": 4130,
+      "sha256": "fe5718d5e1b6ad81f64ac62bd949ee9e11406d59bbf5d4b98083932ed05a4c3f"
+    },
+    "ci-d5-parent-candidate-240.json.gz": {
+      "bytes": 19222,
+      "sha256": "c85e20fea4e7ee6578dac4bb335bedf4a004c180e086c751610e23debd43dcee"
+    },
+    "ci-d5-same-build-ground-240.json.gz": {
+      "bytes": 18997,
+      "sha256": "8768d940420e793e77f816881dbc7d851686039bd7a4e2a635c5302d9c175263"
+    },
+    "ci-d5-native-comparison-index.json.gz": {
+      "bytes": 22062,
+      "sha256": "ab3550bd82a4ed6c49897916c9ef36eac8c1b3048de0f00a85e09b1ed5cdc524"
+    },
+    "ci-d5-boss-gallery-index.json.gz": {
+      "bytes": 87044,
+      "sha256": "90e95a3164ba0b853d6530e18a5fb046fab16c0c7c3943e43a5a6d116e63751a"
+    },
+    "physical-d5-world2.png": {
+      "bytes": 2496501,
+      "sha256": "b9a04c20a6fe036534db4f0d1a245ad0c5e33b2bc17906b33969090dda686a76"
+    }
+  }
+}

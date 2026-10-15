@@ -1,0 +1,26 @@
+{
+  "classification": "NATIVE_SYNTHETIC_UI_REGRESSION_NOT_HUMAN_ACCEPTANCE",
+  "viewport": [
+    1280,
+    720
+  ],
+  "uiScale": 2,
+  "localBrowser": "Chromium D3D11",
+  "before": {
+    "compiledSource": "d5de0238e4936730360a5d0adf778c3e105ce623",
+    "en": "FAIL text outside button",
+    "th": "FAIL text outside button"
+  },
+  "after": {
+    "source": "precommit CSS correction; dirty build, final exact-head CI pending",
+    "en": "PASS",
+    "th": "PASS"
+  },
+  "cause": "Compact desktop rule forced nowrap, min-width0 and equal shrinkable button widths at200% font scale",
+  "fix": "Intrinsic label min-width, no flex shrink, wrapping. Font size/Thai line-height unchanged",
+  "preserved": "Keyboard Enter activation and persisted scale selection; bounded panel vertical scroll; existing typography",
+  "images": {
+    "pause-scale-before-th.png": "b4d1e6d85ccb79d76af544124b611ffef428d78b853b142ff6a8f9ada5a1604d",
+    "pause-scale-after-th.png": "0e5d4adaa4afd6e5819e211f52a1e6de48ad42581c989655f247b77d6bc0679f"
+  }
+}

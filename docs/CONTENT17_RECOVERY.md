@@ -1,5 +1,19 @@
 # Playable quality recovery —15 October2026
 
+Late native-image review found real Pause percentage-label overlap at720p/200%.
+The new EN/TH bounds test reproduced2 failures on d5de023; intrinsic button widths
+and flex wrapping correct it without smaller fonts/Thai line-height changes.
+Precommit focused retry2/2 passes with real text bounds and keyboard activation.
+Current source still requires its own exact-head full CI/package receipt.
+
+Frozen measured source d5de023: physical HC1080p warm median of run p95
+10.05→6.70ms;3/10 candidate warm runs and5/10 cold still exceed8ms. Across all
+120 runs per label strict failures21→8. Advancing dense/Boss render p95 remains
+9.4/8.8ms. All36 policy pairs reach24→24 and win21→21; low-DPS defeat unresolved.
+Raw bounded synthetic data, selected images and checksums are in
+docs/evidence/recovery/d5-evidence-manifest.json. These are measurements of d5,
+not a relabeling of newer UI source. No accepted animation family is added.
+
 Home starting local/remote7b9b164a4b6c5a565de7195b9050494e10da252d, PR14.
 Three existing untracked Content153 files were hash-verified and preserved in
 ignored scratch/home-sync-backup-20261015-183804. No tracked work lost.

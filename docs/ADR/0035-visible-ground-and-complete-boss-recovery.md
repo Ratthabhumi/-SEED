@@ -34,3 +34,11 @@ identity remains9. Old replays must not be relabeled.
 Acceptance: real old/new Canvas raster parity and nonblank coverage, canonical
 hash preservation, native WebGL review, unchanged five-block profiling/full
 regression. Green execution is distinct from strict8ms and human quality gates.
+
+Late native review: the compact-desktop Pause rule forced nowrap and equal
+shrinkable button widths, letting200% labels overlap. Actual text bounds fail
+in both EN/TH before the correction; intrinsic minimum width and wrapping pass.
+Font size, Thai line-height, keyboard activation and bounded panel scrolling
+stay intact. This CSS-only correction changes neither canonical Content18 nor
+renderer logic. Frozen d5 measurements keep their source identity; newer UI
+requires its own full exact-head CI/package evidence, not recycled green status.

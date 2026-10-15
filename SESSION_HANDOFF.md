@@ -1,5 +1,17 @@
 ## Home playable-quality recovery —2026-10-15 (read first)
 
+Native review of the d5de023 CI artifact exposed percentage-label overlap in
+Pause at1280x720/200% (EN and TH), despite earlier broad layout tests. New text
+Range bounds regression fails2/2 before the fix and passes2/2 afterward. Compact
+desktop nowrap/min-width0/equal shrink caused it; wrap with intrinsic minimum
+label width instead. Font scale/Thai line-height and keyboard activation retained.
+Before/after PNGs and exact provenance are under docs/evidence/recovery.
+No renderer/core/Content change in this correction: versions stay3/18/2.
+Frozen d5 measurements (240 physical/480 Push CI rows,36 policies, official
+packages) are durably committed with a manifest; they do not certify newer HEAD.
+Require final new-head full checks/176-browser expectation/Push+PR5/5 and new
+official package stamps in PR15's receipt. No thresholds/cases were reduced.
+
 Starting local/remote7b9b164, PR14 verified latest open Draft. Three untracked
 historical evidence files preserved with hashes in ignored scratch backup.
 Baseline Windows Node24 check506/87files,61 provenance/build; terrain browser5/5.

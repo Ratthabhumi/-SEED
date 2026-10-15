@@ -1,5 +1,17 @@
 # Home recovery evidence
 
+Frozen d5 measurements are now durable in this folder: physical240 rows and
+advancing observations, all36 outcomes plus selected adverse trace, Push CI480
+rows/48 summaries, native44-view comparison index/25-capture Boss gallery index,
+and four independently verified inner package receipts. See d5-evidence-manifest
+for bytes/SHA256 and source/merge/parent identities. Gzip is standard JSON
+compression, not missing data. Video artifacts retain their14day expiry.
+
+The before/after Pause PNGs and pause-scale-regression.json record a real
+native200% label-clipping defect (EN/TH2FAIL→2PASS). After image is a precommit
+dirty-build technical check; final current-source CI/package receipt is separate.
+Only Pause CSS/tests/docs change after d5; no renderer/core or version change.
+
 Runtime checkpoint a7545302cfc0a8e7e31f9db90a83ee916d41d073; final receipt and
 all verified source/merge stamps: https://github.com/Ratthabhumi/-SEED/pull/15.
 

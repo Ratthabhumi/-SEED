@@ -24,7 +24,7 @@ capture is not approval; report failures and artistic dependencies separately.
 |6|PASS scoped|Actual offered-path gold recommendation preserved|Full browser; I|PASS engineering; human choice U|
 |7|PARTIAL|Painted threats and intentional HC paths retained|Full browser; G/AB|PARTIAL; material consistency U|
 |8|PARTIAL|Camera/126u hero hierarchy unchanged|Full viewport browser; AB/G|PARTIAL; supported-screen readability U|
-|9|PARTIAL|Existing theme/Thai rules preserved|Parity/full browser; AB|PARTIAL; visual approval U|
+|9|PARTIAL|Pause200% scale labels wrap at intrinsic text width; Thai rules retained|pauseScaleText EN/TH; actual before/after PNGs; parity/full browser|PARTIAL; engineering clipping fix, visual approval U|
 |10|PARTIAL|Measured site contacts; bounded discovery→post-render recorder|siteArrival/content161; AB/G|PARTIAL; CPU observation is not display latency|
 |11|PASS distribution|Biome-weighted POIs unchanged|Full worldgen/cohort; I|PASS distribution; strategic depth U|
 |12|PARTIAL|Exact baked periodic materials, existing worker blend/fade|periodicMaterials/content161; AB|PARTIAL; transition art preference/seams U|

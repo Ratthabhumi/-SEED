@@ -1,0 +1,64 @@
+{
+  "classification": "OFFICIAL_INNER_PACKAGES_VERIFIED_OUTER_ARCHIVE_NOT_RETAINED_BY_GH_RUN_DOWNLOAD",
+  "head": "d5de0238e4936730360a5d0adf778c3e105ce623",
+  "merge": "04adb0aee8d3aedcd875214e0c8fdc6a1582d9c6",
+  "nodeContentIdenticalWithinEvent": true,
+  "packages": [
+    {
+      "event": "push",
+      "node": 22,
+      "compiledSha": "d5de0238e4936730360a5d0adf778c3e105ce623",
+      "buildDirty": false,
+      "crc": "PASS",
+      "safePaths": "PASS",
+      "rootIndex": true,
+      "licenses": "PASS",
+      "files": 89,
+      "bytes": 7950715,
+      "packageSha256": "5fdfec9fac98ebe99dc02d1dcc7722081916b55df35930223f11df6381a94264",
+      "contentTreeSha256": "29eba84d78179f978e4f5e8199763f153c5a846a0ee9bd3df114b3b636f57f42"
+    },
+    {
+      "event": "push",
+      "node": 24,
+      "compiledSha": "d5de0238e4936730360a5d0adf778c3e105ce623",
+      "buildDirty": false,
+      "crc": "PASS",
+      "safePaths": "PASS",
+      "rootIndex": true,
+      "licenses": "PASS",
+      "files": 89,
+      "bytes": 7950715,
+      "packageSha256": "432e018bca60f90f74cd28d093f44d0a0c278e5501fd1680b8e5e162e88faa35",
+      "contentTreeSha256": "29eba84d78179f978e4f5e8199763f153c5a846a0ee9bd3df114b3b636f57f42"
+    },
+    {
+      "event": "pr",
+      "node": 22,
+      "compiledSha": "04adb0aee8d3aedcd875214e0c8fdc6a1582d9c6",
+      "buildDirty": false,
+      "crc": "PASS",
+      "safePaths": "PASS",
+      "rootIndex": true,
+      "licenses": "PASS",
+      "files": 89,
+      "bytes": 7950714,
+      "packageSha256": "f4e0a3fc08d0daa024013b9fc2de8b874d02b081b582d5d836f12dc3e8908e65",
+      "contentTreeSha256": "f9405918987bd98e28412f70f0bbcf3ebbd97607b08195ff6f7247a243591c34"
+    },
+    {
+      "event": "pr",
+      "node": 24,
+      "compiledSha": "04adb0aee8d3aedcd875214e0c8fdc6a1582d9c6",
+      "buildDirty": false,
+      "crc": "PASS",
+      "safePaths": "PASS",
+      "rootIndex": true,
+      "licenses": "PASS",
+      "files": 89,
+      "bytes": 7950714,
+      "packageSha256": "f83fcebc5091dfb137e2db9c4140b0d1d0e056301bff5f3fd21d2d79c209d123",
+      "contentTreeSha256": "f9405918987bd98e28412f70f0bbcf3ebbd97607b08195ff6f7247a243591c34"
+    }
+  ]
+}
