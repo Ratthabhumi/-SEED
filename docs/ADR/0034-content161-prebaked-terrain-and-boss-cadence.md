@@ -7,22 +7,44 @@ Date: 2026-10-15. Parent: PR13 / 4d1dc0c.
 The parent measured source preparation up to34.2ms in CI. This is a measured
 constructor component, not proof of the root cause of render p95 spikes. Bake
 the existing periodicTerrainSource output offline using the same browser Canvas
-decoding. Load four256px PNG fallback textures plus one1MiB RGBA8 source buffer.
-Copy its four ranges before Worker transfer; never detach Phaser's cached source.
-This removes runtime Canvas decoding/readback/periodic conversion from production
-source setup. It does not remove atlas allocation, uploads, shaders or Worker work.
+decoding. Load one1MiB RGBA8 source buffer and populate four existing-size
+CanvasTexture fallbacks using putImageData/refresh, matching the parent upload
+path. Copy its four ranges before Worker transfer; never detach Phaser's cache.
+This removes original-image decoding/readback/periodic conversion from source
+setup. It retains explicit fallback upload, atlas allocation and Worker work.
 
 The existing64-slot atlas, one-upload/frame limit, typed orientation, gutters,
 epoch guards and160ms transition stay intact. No second renderer or dependency.
 PNG/byte/source hashes and a native four-material byte comparison gate parity.
-The old runtime preparation remains an explicit diagnostic control, selected by
-`?terrainSource=runtime`; it is not a second default production path.
+The old runtime preparation remains a diagnostic control (`?terrainSource=runtime`).
+Direct baked PNG fallback remains diagnostic-only (`?terrainSource=prebaked-png`).
 
 Tradeoff: cached CPU bytes add1MiB plus1MiB transient transferable copies. Four
-PNG textures replace the parent's four Canvas fallbacks; original source images
-are not uploaded on the default path. The original images remain packaged for
-the diagnostic/parity control. Transfer/readiness and whole-frame performance
+Canvas textures preserve the parent's fallback type; original source images are
+not uploaded by default. PNGs/original images remain packaged for diagnostic and
+parity controls. Transfer/readiness and whole-frame performance
 must be measured separately; reduced sourcePrepMs is not an FPS or8ms PASS.
+
+## Rejected first experiment
+
+Exact c40cf0c Push38685763415 / PR38685781809 passed5/5 engineering jobs and
+four official packages, but direct PNG defaults are REJECTED. Source preparation
+median fell28.8→0.7ms in PR data;1080p normal cold render p95 median regressed
+9.25→17.35ms (Push8.75→17.25ms). Both replicas retain all samples. See
+docs/evidence/content161/rejected-png-experiment.json. Pixel equality and warm
+passes cannot erase cold regressions. Test one correction: preserve the parent
+CanvasTexture creation/refresh path while supplying already-prepared pixels.
+Whether texture type/upload timing caused the regression is still a hypothesis;
+do not attribute shader/driver/thermal causes without evidence.
+
+The retained PR parent/candidate data also shows that every normal/reduced
+"warm" row still had16–31 pending terrain jobs (40/40 rows per mode); HC's49
+unused jobs are intentionally paused. Those old windows were post-cold, not
+fully prepared steady state. Correct the existing paired harness to wait for
+active painted terrain to drain before its1500ms settle/new3s warm sample.
+HC excludes unused terrain work. Record wait duration; preserve cold3s, all
+five blocks, populations, rows and strict budgets. This changes warm protocol;
+do not compare new warm windows to old windows as if they were identical.
 
 ## Ground contact decision
 

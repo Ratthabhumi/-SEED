@@ -7,11 +7,13 @@ release, tag, force push or unrelated history rewrite.
 
 ## Implemented candidate
 
-- Exact offline periodic sources: four256px fallback PNGs and a1MiB immutable
-  cached RGBA buffer. Original production preparation function and browser
+- Exact offline periodic sources: a1MiB immutable cached RGBA buffer populates
+  four256px CanvasTexture fallbacks through the parent upload path. Original
+  production preparation function and browser
   decoding generate them; native byte parity checks all1,048,576 channels.
-  Default startup avoids four Canvas readbacks/conversions/refreshes. Diagnostic
-  runtime control retained. Existing Worker/atlas/upload/lifecycle preserved.
+  Default startup avoids original-image readbacks and periodic conversion;
+  explicit CanvasTexture upload/refresh is retained. Runtime and direct-PNG
+  diagnostic controls remain. Existing Worker/atlas/upload/lifecycle preserved.
 - 18 existing painted site frames now use measured occupied-alpha ground pivots
   on the actual contact plane. No new art or changed canonical POI geometry.
 - Boss phase-two downtime .8→.4s transition,2.2→1.1s approach. Full telegraphs,
@@ -26,6 +28,19 @@ release, tag, force push or unrelated history rewrite.
  600s/180s host budget remains explicit. No smaller simulation or relaxed rule.
 
 ## Verification and review evidence
+
+First exact c40cf0c candidate passed both5/5 CI runs but its direct-PNG default
+is REJECTED for repeatable1080p cold regressions. Source setup28.8→0.7ms did not
+establish a renderer improvement: normal cold9.25→17.35ms in PR,8.75→17.25ms in
+Push. Corrected default keeps precomputation but restores the parent's Canvas
+fallback/upload path. All rejected measurements and package receipts remain
+under docs/evidence/content161/rejected-png-experiment.json and the original runs.
+Final correction-head acceptance must use its own CI, not the first green runs.
+Retained normal/reduced "warm" samples still had active terrain jobs. The same
+paired harness now waits for those jobs to drain before1500ms settling and a
+fresh3s warm sample; HC ignores its unused painted queue. Wait durations remain
+visible. Cold protocol, five blocks, populations and budgets are unchanged;
+old post-cold windows are not interchangeable with new drained warm windows.
 
 Final source/compiled merge identities, exact-head Push/PR jobs, full suites,
 official Node22/24 package digests/CRC/root/licenses and actual performance tables

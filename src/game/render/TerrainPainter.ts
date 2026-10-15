@@ -30,18 +30,29 @@ export class TerrainPainter {
  private deliveredMs=0;private sentAt=0;private evictions=0;
  private sourcePrepMs=0;
  diagnosticTargets(){return {tile:this.tileContext,backing:this.atlas.getContext()};}
- constructor(private scene:Phaser.Scene,runtimeSources=false){
+ constructor(private scene:Phaser.Scene,sourcePath:'runtime'|'prebaked-png'|'offline-canvas'='offline-canvas'){
   this.atlas=(scene.textures.exists(KEY)?scene.textures.get(KEY):scene.textures.createCanvas(KEY,ATLAS,ATLAS)) as Phaser.Textures.CanvasTexture;
   this.atlas.setFilter(0); // No mip chain: subregion updates keep linear sampling valid.
   for(let i=0;i<SLOTS;i++)if(!this.atlas.has(String(i)))this.atlas.add(i,0,(i%8)*STRIDE+PAD,Math.floor(i/8)*STRIDE+PAD,CELL,CELL);
   this.tileCanvas=document.createElement("canvas");this.tileCanvas.width=this.tileCanvas.height=STRIDE;this.tileContext=this.tileCanvas.getContext("2d")!;
   const preparationStart=performance.now();
+   const runtimeSources=sourcePath==='runtime';
    const packed=scene.cache.binary.get("terrain-periodic-bytes") as ArrayBuffer|undefined;
    if(!runtimeSources&&packed?.byteLength!==4*256*256*4)throw Error("Invalid prebaked terrain source bytes");
    // Copy before transfer: Phaser's cached bytes must survive restart/World2.
    const sources=runtimeSources?this.prepareRuntimeSources():IDS.map((_,i)=>new Uint8ClampedArray(packed!.slice(i*256*256*4,(i+1)*256*256*4)));
+   // Preserve the parent's CanvasTexture/upload path. Direct loaded PNG
+   // fallbacks reduced prep time but regressed1080p cold submission in both CI
+   // replicas; retain that experiment only as an explicit diagnostic control.
+   if(sourcePath==='offline-canvas')for(const [i,id] of IDS.entries()){
+    const key=`terrain-periodic-${id}`;
+    if(!scene.textures.exists(key)){
+     const texture=scene.textures.createCanvas(key,256,256)!;
+     texture.getContext().putImageData(new ImageData(sources[i]!,256,256),0,0);texture.refresh();
+    }
+   }
   this.sourcePrepMs=performance.now()-preparationStart;
-  this.sourceMode=runtimeSources?"runtime-canvas":"offline-exact-rgba";
+  this.sourceMode=runtimeSources?"runtime-canvas":sourcePath==='prebaked-png'?"offline-exact-rgba-png":"offline-exact-rgba-canvas";
   if(typeof Worker!=="undefined"){
    this.worker=new Worker(new URL("./terrainWorker.ts",import.meta.url),{type:"module"});
    this.worker.postMessage({type:"sources",prepared:true,sources},sources.map(s=>s.buffer));

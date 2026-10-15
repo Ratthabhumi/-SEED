@@ -26,6 +26,11 @@ Need real play feedback, not research claims that an automated kill is fun.
 
 **Optional ChatGPT Research only if data leaves a decision unresolved:** compare
 one bounded essential-path warmup against the measured startup cost breakdown.
+Read rejected-png-experiment.json first: direct PNG source prep28.8→0.7ms but
+1080p cold regressed in both CI replicas. The corrected source path uses prepared
+bytes through CanvasTexture. Old post-cold "warm" samples still had terrain
+work; corrected warm samples drain active work before settling. Do not compare
+the protocols as identical or assert a shader/upload root cause from correlation.
 Keep transfer/source-copy/upload/shader/CPU-submit/GPU-execution separate and
 strict8ms unchanged. Prefer official Phaser/WebGL sources and a small controlled
 experiment. Do not recommend renderer rewrites or chunk-threshold increases.

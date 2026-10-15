@@ -1,5 +1,33 @@
 ## Content16.1 continuation — 2026-10-15 (read first)
 
+Correction after c40cf0c's exact Push38685763415 and PR38685781809 both5/5:
+direct-PNG default REJECTED. Source prep median28.8→0.7ms, but1080p normal cold
+render median9.25→17.35ms (Push8.75→17.25ms). Four official packages were clean,
+CRC/root/licenses passed; PR merge4655cd7 tree matched source.172 browser PASS
+/1 skip per run. Those results certify c40cf0c only, not the correction.
+Keep measured evidence in docs/evidence/content161/rejected-png-experiment.json.
+Correction retains prebaked RGBA but restores parent CanvasTexture creation/
+refresh for fallbacks. Runtime and rejected PNG routes remain diagnostics;
+texture/upload causality is a hypothesis, not a proven shader/driver root cause.
+The first PR benchmark's normal/reduced "warm" rows all retained16–31 terrain
+jobs; HC's49 unused jobs are intentionally paused. Correct paired warm timing
+to await active terrain drain, then1500ms settling and a new3s window. Retain
+wait duration, all cold rows/populations/budgets. Old post-cold windows are not
+the same protocol as drained warm samples. This is an evidence correction,
+not evidence that cold hitches or physical performance are solved.
+Canvas-path correction passed local Windows full check506/506 (135.13s) and
+five focused browser tests (2.8min), including both diagnostic controls. The
+three-path rotated Windows SwiftShader probe is retained as INCONCLUSIVE:
+sparse/variable samples and large stalls cannot establish root cause or a
+physical budget pass. Full corrected-head CI and a clean Intel/D3D11 paired
+run are still required; use the original profiler with the corrected warm
+barrier, retaining all cold rows and warm-up waits. Do not relabel old c40cf0c
+measurements as proof of this correction. Final receipt belongs in PR14.
+The same36 natural pairs reached24/36; phase2 attacks remained21/24 reached,
+but total phase2 attacks67→86 and observed entry→first attack2.367→1.983s.
+Kills22→21, player defeats0→1;12 unreached are11 before-Space time limits and
+one revealed-Stronghold time limit. These are challenge data, not human fun PASS.
+
 Initial local/remote4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0; PR13 both
 Push38677388790 and PR38677393143 verified5/5. New single workstream
 feat/content16-production-quality-20261015 targets PR13's branch. Read

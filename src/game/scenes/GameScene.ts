@@ -228,7 +228,7 @@ export class GameScene extends Phaser.Scene {
     if(new URLSearchParams(location.search).get('terrainSource')==='runtime'){
       for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
     }else{
-      for(const [id,url] of Object.entries(PERIODIC_TERRAIN_TEXTURES))this.load.image(`terrain-periodic-${id}`,url);
+      if(new URLSearchParams(location.search).get('terrainSource')==='prebaked-png')for(const [id,url] of Object.entries(PERIODIC_TERRAIN_TEXTURES))this.load.image(`terrain-periodic-${id}`,url);
       this.load.binary('terrain-periodic-bytes',PERIODIC_TERRAIN_BYTES);
     }
     this.load.image("combat-projectiles",COMBAT_ASSETS.projectiles);
@@ -316,7 +316,8 @@ export class GameScene extends Phaser.Scene {
     this.groundMaxMs=this.chunkReadMaxMs=0;
     this.lastAgeCardKey="";
     this.heroActions = new HeroActions();
-    this.terrainPainter = new TerrainPainter(this,new URLSearchParams(location.search).get('terrainSource')==='runtime');
+    const terrainSource=new URLSearchParams(location.search).get('terrainSource');
+    this.terrainPainter = new TerrainPainter(this,terrainSource==='runtime'?'runtime':terrainSource==='prebaked-png'?'prebaked-png':'offline-canvas');
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
     this.hostileBatch=new HostileProjectileBatch(this,new URLSearchParams(location.search).get("hostile")!=="legacy");

@@ -6,7 +6,7 @@ test('prebaked material pixels equal original runtime preparation and survive re
  await startRun(page,'EPOCH-GOLDEN-001');
  const parity=await page.evaluate(()=>(window as any).__seedE2E.terrainSourceParity());
  expect(parity).toHaveLength(4);for(const row of parity){expect(row.different).toBe(0);expect(row.fallbackDifferent).toBe(0);expect(row.bytes).toBe(256*256*4);}
- expect(await page.evaluate(()=>(window as any).__seedE2E.content153Review().terrain.sourceMode)).toBe('offline-exact-rgba');
+ expect(await page.evaluate(()=>(window as any).__seedE2E.content153Review().terrain.sourceMode)).toBe('offline-exact-rgba-canvas');
  await openPause(page);await page.locator('#pause-restart-btn').click();await page.waitForFunction(()=>(window as any).__seedE2E?.content153Review());
  const again=await page.evaluate(()=>(window as any).__seedE2E.terrainSourceParity());expect(again).toEqual(parity);
 });
@@ -23,6 +23,12 @@ test('fallback remains complete without Worker and site bases use actual source 
 test('runtime material control remains available for isolated source-preparation comparisons',async({page})=>{
  await prepareSave(page);await page.goto('/?e2e&terrainSource=runtime');await page.locator('#start-btn').click();await page.waitForFunction(()=>(window as any).__seedE2E?.content153Review());
  expect(await page.evaluate(()=>(window as any).__seedE2E.content153Review().terrain.sourceMode)).toBe('runtime-canvas');
+});
+test('rejected direct PNG path remains an explicit pixel-identical diagnostic control',async({page})=>{
+ await prepareSave(page);await page.goto('/?e2e&terrainSource=prebaked-png');await page.locator('#start-btn').click();await page.waitForFunction(()=>(window as any).__seedE2E?.content153Review());
+ expect(await page.evaluate(()=>(window as any).__seedE2E.content153Review().terrain.sourceMode)).toBe('offline-exact-rgba-png');
+ const parity=await page.evaluate(()=>(window as any).__seedE2E.terrainSourceParity());
+ expect(parity).toHaveLength(4);for(const row of parity){expect(row.different).toBe(0);expect(row.fallbackDifferent).toBe(0);}
 });
 test('real canonical site discovery receives a visible post-render observation without revealing hidden sites',async({page})=>{
  await startRun(page,'EPOCH-GOLDEN-001');
