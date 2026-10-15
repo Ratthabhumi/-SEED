@@ -63,7 +63,10 @@ export const WORLDGEN_VERSION = 3;
 // Content14: reconciled reservations and gate-aware, transactional raid scheduling.
 // Content15: committed boss rhythm and family-specific elite attacks.
 // Worldgen3: biome-weighted POI types; density/locations/IDs stay unchanged.
-export const CONTENT_VERSION = 15;
+// Content16: responsive safe-boundary boss transition and cross-first escalation.
+// Damage, HP, world topology and persistent save schema remain unchanged.
+// Old input traces may diverge in encounter timing; never relabel old replays.
+export const CONTENT_VERSION = 16;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

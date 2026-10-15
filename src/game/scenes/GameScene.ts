@@ -87,6 +87,9 @@ function percentile(sorted: number[], p: number): number {
 import { AbilityLoadout } from "../ui/AbilityLoadout";
 import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
 import {FriendlyProjectileBatch} from "../render/FriendlyProjectileBatch";
+import hostileAttackArt from "../../../assets/seed/content153/hostile-attacks-v1.png";
+import attackArt from "../../../assets/seed/content153/hunters-attack-v2.png";
+import {naturalBossEvidence} from "../../../scripts/naturalBossEvidence";
 import { RenderDiagnostics } from "../render/RenderDiagnostics";
 import { HostileProjectileBatch } from "../render/HostileProjectileBatch";
 import { NumericFeedback } from "../render/NumericFeedback";
@@ -216,6 +219,8 @@ export class GameScene extends Phaser.Scene {
     this.load.image("hero-neutral",NEUTRAL_HERO_ATLAS);
     for(const [id,url] of Object.entries(HERO_ASSETS))this.load.image("hero-v2-"+id,url);
     this.load.image("hero-reference",REFERENCE_HERO_ATLAS);
+    this.load.spritesheet("hostile-painted",hostileAttackArt,{frameWidth:128,frameHeight:128});
+    this.load.spritesheet("hero-reference-attack",attackArt,{frameWidth:128,frameHeight:128});
     for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
     this.load.image("combat-projectiles",COMBAT_ASSETS.projectiles);
     this.load.image("combat-equipment",COMBAT_ASSETS.equipment);
@@ -301,7 +306,7 @@ export class GameScene extends Phaser.Scene {
     this.terrainPainter = new TerrainPainter(this);
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
-    this.hostileBatch=new HostileProjectileBatch(this);
+    this.hostileBatch=new HostileProjectileBatch(this,new URLSearchParams(location.search).get("hostile")!=="legacy");
     this.friendlyBatch=new FriendlyProjectileBatch(this,new URLSearchParams(location.search).get("friendly")!=="fullquad");
     this.vectorHostiles=new URLSearchParams(location.search).get("hostile")==="vector";
     this.numericFeedback=new URLSearchParams(location.search).get("numbers")==="atlas"?new NumericFeedback(this):undefined;
@@ -799,6 +804,31 @@ export class GameScene extends Phaser.Scene {
           this.refreshHUD();return {hp:s.build.hp,x:s.px,y:s.py};
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
+        content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
+        content153HostileFixture:()=>{const s=this.sim.state;for(let i=0;i<800;i++){const p=s.projs[i]!;p.friendly=false;p.src=["enemy-burst","enemy","boss-fan"][i%3]!;p.radius=i%3===2?8:i%3===1?6:4;p.color=i%3===2?0xff736d:0xff5a5a;}return {enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length,hash:this.sim.hash()};},
+        findTerrainBiome:(biome:string)=>{for(let x=-32;x<=32;x+=4)for(let y=-32;y<=32;y+=4)if(this.sim.chunks.get(this.sim.state.worldSeed,this.sim.state.worldNonce,x,y).biome===biome)return {x:x*512,y:y*512};throw Error("Biome absent in bounded visual probe");},
+        startOrdinaryHostileCapture:()=>{
+          const s=this.sim.state;if(s.elapsed>2)throw Error("Hostile capture requires fresh run");s.ageIndex=2;
+          for(const e of s.enemies)e.active=false;for(const f of ["kinetic","energy","defense","field"] as const)s.weaponCd[f]=999;
+          for(const a of s.squad)a.active=false;s.spawnT=s.eliteT=s.mineT=999;
+          this.sim.spawnEnemy("ranged",false,false,0,350,[]);this.paused=false;
+        },
+        prepareNaturalBoss:(mode:"balanced"|"damage"|"survival"="balanced")=>{
+          if(this.sim.state.elapsed>2)throw Error("Natural boss policy requires a fresh run");
+          const report=naturalBossEvidence(this.sim,mode,true),s=this.sim.state;
+          this.paused=false;this.actorMotion.reset();this.decisionInput.enter();this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);this.refreshGround(true);this.refreshHUD();return report;
+        },
+        startBossArena:(tier=5)=>{
+          // Explicit isolated arena setup, not a natural progression claim.
+          // After this call, HP/damage/phase advance only through real gameplay.
+          const s=this.sim.state;if(s.elapsed>2||s.build.maxHp>=1000)throw Error("Boss arena requires fresh unmodified player HP");
+          this.paused=false;s.ageIndex=5;s.elapsed=900;s.spawnT=s.eliteT=s.mineT=99999;s.px=s.py=0;
+          for(const e of s.enemies)e.active=false;for(const p of s.projs)p.active=false;for(const a of s.squad)a.active=false;
+          for(const f of ["kinetic","energy","defense","field"] as const){s.weaponStage[f]=tier;s.weaponCd[f]=0;}
+          for(let x=-2;x<=2;x++)for(let y=-2;y<=2;y++)for(const p of this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y).poi)if(!s.poisWorld.includes(p.id))s.poisWorld.push(p.id);
+          this.sim.spawnEnemy("tank",false,true,0,300,[]);this.actorMotion.reset();this.decisionInput.enter();this.refreshHUD();
+        },
+        bossArenaState:()=>{const s=this.sim.state,e=s.enemies.find(e=>e.active&&e.boss);return {elapsed:s.elapsed,player:{x:s.px,y:s.py,hp:s.build.hp},boss:e?{x:e.x,y:e.y,hp:e.hp,maxHp:e.maxHp,...e.encounter}:null,killed:s.stats.bosses>0,over:s.over,draft:s.draftOpen};},
         bossPhaseReview:()=>{const e=this.sim.state.enemies.find(e=>e.active&&e.boss)!;e.hp=e.maxHp*.4;e.encounter!.phase="approach";e.encounter!.timer=0;this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));},
         dodgeBossReview: () => {this.sim.state.py+=150;},
         heroActionReview: (kind:"attack"|"hurt"|"dash"|"special"|"death") => {

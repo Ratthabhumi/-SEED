@@ -3,7 +3,7 @@ import {worldToChunk} from "../src/core/world/chunks";
 import {AGE_DEFS,ageGates} from "../src/core/progression/ages";
 import {activeFamilies} from "../src/core/progression/origins";
 /** Synthetic policy: actual movement/drafts/claims/combat; no grants, teleports or stat edits. */
-export function progressionPolicy(sim:RunSimulation,limit=900){
+export function progressionPolicy(sim:RunSimulation,limit=900,options:{mode?:"balanced"|"damage"|"survival";onStep?:(sim:RunSimulation,events:ReturnType<RunSimulation["step"]>)=>boolean}={}){
   let target={x:0,y:0},lastAge=0,lastAgeAt=0,choices=0,bossVictories=0;const ages:any[]=[],raids:any[]=[],samples:any[]=[],worlds:any[]=[];
   const selected:string[]=[];let raidWait=0,overshoot=0;
   const observe=(events:ReturnType<RunSimulation["step"]>)=>{
@@ -15,7 +15,8 @@ export function progressionPolicy(sim:RunSimulation,limit=900){
       const route=sim.combinationRoute();
       const score=(i:number)=>{
         const offer=s.draftOffers[i]!;
-        return (offer.nodeId===route.next?.id?100:0)+offer.effectiveEffects.reduce((n,e)=>n+(["knowledgeMul","maxHpAdd","regenAdd","damageMul","cooldownMul","speedAdd","chainAdd"].includes(e.kind)?3:1),0);
+        const preferred=options.mode==="damage"?["damageMul","cooldownMul","chainAdd"]:options.mode==="survival"?["maxHpAdd","regenAdd","speedAdd"]:["knowledgeMul","maxHpAdd","regenAdd","damageMul","cooldownMul","speedAdd","chainAdd"];
+        return (offer.nodeId===route.next?.id?100:0)+offer.effectiveEffects.reduce((n,e)=>n+(preferred.includes(e.kind)?3:1),0);
       };
       const index=s.draftOffers.reduce((best,_,i)=>score(i)>score(best)?i:best,0);
       if(!s.draftOffers[index])break;
@@ -70,7 +71,8 @@ export function progressionPolicy(sim:RunSimulation,limit=900){
       const side=(s.px-p.x)*(-p.vy)+(s.py-p.y)*p.vx>=0?1:-1;dx=-p.vy*side;dy=p.vx*side;projectileDanger=true;break;
     }
     const distance=Math.max(1,Math.hypot(dx,dy));
-    observe(sim.step(1/60,{moveX:dx/distance,moveY:dy/distance,dashPressed:s.dashCd<=0&&(projectileDanger||!!foe&&close<95||!!warning&&warning.evolution!.timer<.2)}));
+    const events=sim.step(1/60,{moveX:dx/distance,moveY:dy/distance,dashPressed:s.dashCd<=0&&(projectileDanger||!!foe&&close<95||!!warning&&warning.evolution!.timer<.2)});
+    observe(events);if(options.onStep?.(sim,events))break;
     if(s.ageIndex!==lastAge){ages.push({world:s.ascension+1,from:lastAge,to:s.ageIndex,time:Number(s.elapsed.toFixed(2)),spent:Number((s.elapsed-lastAgeAt).toFixed(2)),knowledge:Math.floor(s.knowledgeTotal)});lastAge=s.ageIndex;lastAgeAt=s.elapsed;}
     if(s.ascendReady){
       bossVictories++;

@@ -1,3 +1,50 @@
+## Content15.3 continuation — 2026-10-15 (read first)
+
+Resumed Draft PR13 / feat/content153-playable-visual-boss-20261015 at
+081ec5b802de5a715fd050a0587df458850a2911, stacked on PR12 at
+ce63df35d52e8b3041d232f5e8e3438c087cecf8. Starting Push38657190200 and
+PR38657196755 both FAILED:4/5 jobs passed; E2E had8 failures. The candidate
+was not complete or release-ready. Historical/negative evidence below is intact.
+
+Corrections: active reference texture/frame/Age checks for the separate attack
+atlas,126/60 presentation sizes, Industrial burst instead of unsupported Space
+burst, explicit legacy glyph mode for the glyph-cache test. No deleted assertion,
+weaker gameplay/performance rule, canonical change or reduced entity cap.
+WORLDGEN/CONTENT/SAVE stays3/16/2. Final exact-head Push/PR CI and Node22/24
+ZIP receipts belong to PR13, avoiding a recursive evidence-commit SHA loop.
+
+Local Windows check exposed the unchanged900s×8 frontier policy audit's explicit
+180s timeout plus worker onTaskUpdate starvation (493/494 passed). It now yields
+every1024 canonical steps and uses the existing Windows600s host allowance;
+Linux retains180s. Seeds, simulation duration, policies, assertions and replay
+comparison are unchanged. Failed/interrupted local logs remain in ignored
+scratch/content153-continuation; no failed attempt is labeled PASS.
+Native capture also waits for an actually rendered ordinary hostile source,
+saves phase1/phase2 images and records explicit phase2-attack observation rather
+than treating successful capture execution as boss-quality acceptance.
+
+Durable selected prior evidence now in docs/evidence/content153/: four-build
+material comparison (missing historical rasters marked),144 alpha projections,
+boss encounter traces/builds for36 canonical policy pairs, all48 performance
+condition summaries. These identify source081ec5b and compiled PR mergec74079f
+separately, never certify the correction head.24/36 bosses reached and22 killed
+before/after; phase2 attacks19→21. Twelve unreached cases and strict8ms software
+CI cold failures remain. Intel hardware performance, authored continuous gait,
+full six-era kits, natural human boss quality, HUMAN_ART_PASS and HUMAN_FUN_PASS
+remain OPEN/BLOCKED individually. Rejected walk rows are not runtime assets.
+
+Ready ChatGPT/artist brief: docs/research/CONTENT15_3_REMAINING_QUESTIONS.md.
+No broad market research performed. Read-only stack audit:
+docs/STACK_INTEGRATION_READINESS_20261015.md. PR1–13 base/head ancestry passes,
+but PR1's own base still needs reviewed integration into main. No main merge,
+rebase/reset/tag/public release performed or authorized.
+
+Operator retest after engineering gates: npm run qa; open127.0.0.1:5173/?qa=1,
+verify compiled SHA/clean state; fresh Stone→six Ages→Boss→World2. Record real
+input, readability, terrain transitions, hostile art, actual phase exposure and
+explicit art/fun feedback. Keep raw QA local/gitignored; review privacy before
+committing sanitized evidence. Preserve reports402/403/session384.
+
 ## Content15 renderer/animation closure candidate — 2026-10-14
 
 First b6d43bf PR CI38525799632:150 browser PASS/1 skip/1 failure. Numeric/cache
@@ -847,3 +894,48 @@ Final docs/evidence commit changes no canonical/runtime code after105b6c8.
 One stacked Draft targets PR11; final exact-SHA push/PR CI and official Node22/24
 ZIP hashes are maintained in its PR body to avoid a self-referential SHA loop.
 Quality remains PARTIAL; research questions are in the targeted research brief.
+
+## Content15.3 implementation in progress —15 October2026
+
+Verified PR12 ce63df35d52e8b3041d232f5e8e3438c087cecf8, clean starting tree;
+new feat/content153-playable-visual-boss-20261015. Original hostile painted
+ordinary/burst/boss-fan atlas, eight selected Hunters front Stone/Space attack/
+recovery poses via existing importer/sampler, shared periodic terrain fallback,
+144-case source-alpha occupancy audit and +12.5% Hero visual size implemented.
+Walk generation remains withheld: gait chronology unverified, no layered artist
+file fabricated. Native art quality is unaccepted until actual captures/review.
+Boss safe-boundary threshold and cross-first escalation changes canonical
+timing: WORLDGEN/CONTENT/SAVE3/16/2, old replays remain Content15. No HP/damage
+gate or lethal rescue. Exact-parent36 seeded arena comparison script added;
+no HP/phase writes during measured combat. All gates/evidence still pending.
+Local command startup/checks became exceptionally slow; redundant owned typecheck
+and focused-test processes were terminated to reduce overlap. No user processes
+or QA sessions targeted. Preserve unfinished logs; do not claim their completion.
+One Draft, full checks, native evidence, exact-head CI and official ZIP verification
+must finish before final delivery. No main merge/tag/release authorization.
+
+First uploaded checkpoint43b751d CI38649134645 failed typecheck: offline arena
+helper imported node:timers/promises without project Node type declarations.
+Use a standard setTimeout macrotask yield; no new dependency/threshold change.
+Failed CI is retained, not a gameplay failure or a pass. Add full no-grants
+natural progression observer via the existing policy (4Origins×3seeds×3draft
+priorities); default cohort policy remains unchanged. Every defeat/unreached/
+phase-skipped result is retained; finite execution is not boss-quality approval.
+
+18033fd checkpoint: Node22/24 verify and Analyze (including natural36-case
+execution) succeeded; render evidence failed before measurement because4190
+is a Fetch-forbidden port. Use previously supported4187/4188, not a network
+security workaround. No rows from that infrastructure failure count as timing
+evidence. Existing strict8ms/five-block/500-800 requirements remain. Asset IDs
+are genuine Content15 original-art entries, not Kenney; metadata corrected,
+not integrity/license tests. Final native videos/480rows/ZIP receipt pending.
+
+Final source correction: initial release/recovery guard exposed a jump back to
+legacy chest-center sockets. Keep historical36-pose metadata immutable and add
+source-reviewed current hand overrides in the v2 supplement; guard→idle <12px
+regression, no projectile-origin change. Coordinates remain initial artist
+review candidates. Native capture records served binary identity, actual player
+coordinates/zoom, matching D700ms/W500ms comparison input, and separate preparation
+versus encounter wall times. Performance uses safe4187/4188 and preserves all
+failed rows before enforcing paused-state hash/density invariants. No new gates
+are certified until final exact-head CI/artifacts complete.

@@ -3,6 +3,14 @@
 **Status**: CANONICAL SPECIFICATION  
 **Scope**: Presentation, UI, Sprites, VFX, and Third-Party Asset Normalization
 
+Content16 amendment: presentation sizes are Hero126u/squad60u/Guardian54u;
+collision and camera remain canonical/unchanged. Three existing hostile sources
+use the original painted Content15.3 atlas in Normal/Reduced, while HC/unknown
+sources retain functional glyphs. Four original Content14 floor materials are
+the current candidate with shared periodic fallback/Worker preparation. The
+old112/56/48 dimensions below describe historical Content14. No continuous gait,
+full six-era production kit or human aesthetic acceptance is implied.
+
 ## Current default: Dark Science-Fantasy Civilization Survivor
 
 This contract supersedes historical geometric prototype requirements below.
@@ -189,3 +197,10 @@ review across all costumes/angles. Existing painted threat art/reference poses
 are not declared production-ready. Live HUD font growth is bounded (body18–24px,
 heading22–28px) while menus retain the requested100–200% text scale, preserving
 combat visibility. Thai line-height remains≥1.7. See the15.2 coverage ledger.
+# Content15.3 threat materials
+
+Original painted flechette/shell/boss spear distinguish the actual burst,
+ordinary and boss-fan sources. A generated energy illustration is not enabled
+without a canonical source. HC danger geometry stays functional and explicit.
+One0.25MiB bounded atlas; actual native-scale visibility must be reviewed before
+claiming production acceptance. Generated motion chronology is a separate gate.

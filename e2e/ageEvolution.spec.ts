@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {startRun,assertNoRawKeys} from './helpers';
+import {startRun,assertNoRawKeys,assertReferenceHero} from './helpers';
 for(const lang of ['en','th'] as const)test('upright movement, hold and reset '+lang,async({page})=>{
  await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
  await page.evaluate(()=>(window as any).__seedE2E.stageEvolution('hunters',0));
@@ -20,7 +20,9 @@ for(const lang of ['en','th'] as const)for(let age=0;age<6;age++)test('Age roste
  await page.setViewportSize({width:lang==='en'?1920:1280,height:lang==='en'?1080:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
  for(const origin of ['hunters','engineers','resonant','sentinels']){
   await page.evaluate(({origin,age})=>(window as any).__seedE2E.stageEvolution(origin,age),{origin,age});await page.waitForTimeout(180);
-  const actors=await page.evaluate(()=>(window as any).__seedE2E.actorPresentation());const hero=actors[0];expect(hero.texture).toBe(origin==='hunters'&&(age===0||age===5)?'hero-reference':'hero-neutral');expect(hero.rotation).toBe(0);expect(hero.inView).toBe(true);expect(Number(hero.frame)).toBeGreaterThanOrEqual(0);expect(Number(hero.frame)).toBeLessThan(hero.texture==='hero-reference'?36:48);
+  const actors=await page.evaluate(()=>(window as any).__seedE2E.actorPresentation());const hero=actors[0];
+  if(origin==='hunters'&&(age===0||age===5))await assertReferenceHero(page,age);else expect(hero.texture).toBe('hero-neutral');
+  expect(hero.rotation).toBe(0);expect(hero.inView).toBe(true);expect(Number(hero.frame)).toBeGreaterThanOrEqual(0);expect(Number(hero.frame)).toBeLessThan(hero.texture==='hero-reference-attack'?8:hero.texture==='hero-reference'?36:48);
   const guardians=actors.filter((a:any)=>a.texture==='world-props'&&Number(a.frame)>=7&&Number(a.frame)<=10);const expected=(origin==='engineers'||origin==='sentinels')&&age>=2?(age===2?1:age===3?2:3):0;
   // Painted Guardian body frames identify Origin; canonical age still controls
   // the unchanged enabled/count contract. Six authored Guardian costumes remain open.

@@ -1,5 +1,5 @@
 import {test,expect} from "@playwright/test";
-import {startRun,assertNoRawKeys} from "./helpers";
+import {startRun,assertNoRawKeys,assertReferenceHero} from "./helpers";
 for(const lang of ["en","th"] as const)test(`notification bursts, priority, pause and power HUD ${lang}`,async({page})=>{
  await page.setViewportSize({width:1600,height:900});await startRun(page,"EPOCH-GOLDEN-001",{lang});
  for(const count of [5,10,20]){
@@ -29,7 +29,7 @@ for(const origin of ["hunters","engineers","resonant","sentinels"])test(`neutral
   await page.waitForTimeout(100);
   const hero=(await page.evaluate(()=>(window as any).__seedE2E.actorPresentation()))[0];
   if(origin==="hunters"&&(age===0||age===5)){
-    expect(hero.texture).toBe("hero-reference");expect(Math.floor(Number(hero.frame)/18)).toBe(age===5?1:0);
+    await assertReferenceHero(page,age);
   }else{expect(hero.texture).toBe("hero-neutral");expect(Number(hero.frame)%24).toBe(["hunters","engineers","resonant","sentinels"].indexOf(origin)*6+age);}
   await assertNoRawKeys(page);await page.screenshot({path:`test-results/browser/content15-body-${origin}-${age}.png`});
  }

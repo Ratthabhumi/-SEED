@@ -5,11 +5,12 @@ import { HERO_ASSETS } from "../assets/heroAssets";
 import type {HeroAction} from "./heroActions";
 import {originRow} from "./combatSpriteIdentity";
 import referenceMetadata from "../assets/hunters-reference-v1.json";
+import attackMetadata from "../assets/hunters-attack-v2.json";
 import {ReferenceAnimation} from "./ReferenceAnimation";
 type ActorImage=Phaser.GameObjects.Image|Phaser.GameObjects.Sprite;
 /** Bound matches canonical enemy pool; allies use a separate bounded pool. */
 export class ActorRenderer {
-  private reference=new ReferenceAnimation(referenceMetadata);
+  private reference=new ReferenceAnimation({...referenceMetadata,overrides:attackMetadata.overrides,socketOverrides:attackMetadata.socketOverrides});
   private referenceActive=false;
   referenceReview(){return this.referenceActive?this.reference.review():null;}
   private images: ActorImage[] = [];
@@ -30,6 +31,10 @@ export class ActorRenderer {
     const heroes=scene.textures.get("hero-neutral");
     for(let i=0;i<48;i++)if(!heroes.has(String(i)))heroes.add(i,0,(i%6)*128,Math.floor(i/6)*128,128,128);
     const reference=scene.textures.get("hero-reference");
+    for(const [id,clip] of Object.entries(attackMetadata.overrides)){
+      const key=`reference-extra-${id}`;
+      if(!scene.anims.exists(key))scene.anims.create({key,frames:clip.frames.map(frame=>({key:"hero-reference-attack",frame})),frameRate:1000/clip.frameMs,repeat:clip.loop?-1:0});
+    }
     for(let i=0;i<36;i++)if(!reference.has(String(i)))reference.add(i,0,(i%9)*128,Math.floor(i/9)*128,128,128);
     for(let row=0;row<4;row++)for(const [action,clip] of Object.entries(referenceMetadata.clips)){
       const key=`reference-${row}-${action}`;
@@ -67,12 +72,12 @@ export class ActorRenderer {
     if(neutralHero&&this.referenceActive){
       const ref=this.reference.sample(age,pose?.back??false,action??"idle",time,revision);
       if("anims" in image){
-        const row=Math.floor(ref.frame/9),key=`reference-${row}-${ref.action}`;
+        const row=Math.floor(ref.frame/9),key=ref.texture?`reference-extra-${age}:front:${ref.action}`:`reference-${row}-${ref.action}`;
         if(image.anims.currentAnim?.key!==key){image.play(key);image.anims.pause();}
-        const count=referenceMetadata.clips[ref.action as keyof typeof referenceMetadata.clips].columns.length;
+        const count=ref.texture?4:referenceMetadata.clips[ref.action as keyof typeof referenceMetadata.clips].columns.length;
         image.anims.setProgress(count>1?ref.index/(count-1):0);
       }
-      this.sprite(image,"hero-reference",ref.frame,x,y,size,.65,0,pose?.flip??false,tint);return;
+      this.sprite(image,ref.texture??"hero-reference",ref.frame,x,y,size,.65,0,pose?.flip??false,tint);return;
     }
     if(enemyPose!==undefined && ["chaser","ranged","tank","swarm"].includes(id)) {
       const row=["chaser","ranged","tank","swarm"].indexOf(id);

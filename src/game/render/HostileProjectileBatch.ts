@@ -2,6 +2,7 @@ import type Phaser from "phaser";
 import type {SimProj} from "../../core/sim/RunState";
 import {PaintedQuadBatch} from "./PaintedQuadBatch";
 import {VL} from "./VisualLanguage";
+import {hostileArtFrame} from "./hostileArt";
 
 const KEY="hostile-vector-glyphs",CELL=64,MAX=64;
 /** Cache the existing six-point threat glyph, exact radius/outline/tip geometry.
@@ -12,15 +13,23 @@ export class HostileProjectileBatch {
   private atlas?:Phaser.Textures.CanvasTexture;
   private batch?:PaintedQuadBatch;
   private frames=new Map<string,number>();
-  constructor(private scene:Phaser.Scene){
+  private painted?:PaintedQuadBatch;
+  private paintedShots=0;private paintedRoles=new Set<number>();
+  constructor(private scene:Phaser.Scene,private paintedEnabled=true){
     if(!("gl" in scene.game.renderer))return;
     this.atlas=(scene.textures.exists(KEY)?scene.textures.get(KEY):scene.textures.createCanvas(KEY,512,512)) as Phaser.Textures.CanvasTexture;
     // A fresh renderer object after restart reuses the source safely, rebuilding
     // metadata; texture source itself remains manager-owned until game destroy.
     this.batch=new PaintedQuadBatch(scene,KEY,1000,7);
+    this.painted=new PaintedQuadBatch(scene,"hostile-painted",1000,7);
   }
-  begin(){this.batch?.begin();}
+  begin(){this.batch?.begin();this.painted?.begin();this.paintedShots=0;this.paintedRoles.clear();}
   draw(p:SimProj,highContrast:boolean):boolean {
+    const role=hostileArtFrame(p.src);
+    if(!highContrast&&this.paintedEnabled&&this.painted&&role!==undefined){
+      const size=Math.max(24,p.radius*5);
+      this.painted.draw(this.scene.textures.get("hostile-painted").get(role),p.x,p.y,size,size,Math.atan2(p.vy,p.vx));this.paintedShots++;this.paintedRoles.add(role);return true;
+    }
     if(!this.batch||!this.atlas)return false;
     const id=`${p.radius}:${p.color}:${highContrast?3:2}`;
     let frame=this.frames.get(id);
@@ -39,6 +48,6 @@ export class HostileProjectileBatch {
     }
     this.batch.draw(this.atlas.get(frame),p.x,p.y,CELL,CELL,Math.atan2(p.vy,p.vx));return true;
   }
-  end(){this.batch?.end();}
-  counts(){return {glyphs:this.frames.size,maxGlyphs:MAX,atlasBytes:this.atlas?512*512*4:0};}
+  end(){this.batch?.end();this.painted?.end();}
+  counts(){return {glyphs:this.frames.size,maxGlyphs:MAX,atlasBytes:this.atlas?512*512*4:0,paintedAtlasBytes:512*128*4,paintedShots:this.paintedShots,paintedRoles:[...this.paintedRoles]};}
 }

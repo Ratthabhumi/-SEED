@@ -31,14 +31,16 @@ for(const age of [0,5])test(`reference key poses, frame progression, pause and s
  for(const action of ['attack','hurt','dash','special','death']){
   await page.evaluate(k=>(window as any).__seedE2E.heroActionReview(k),action);await page.waitForTimeout(70);
   const sample=await page.evaluate(()=>({pose:(window as any).__seedE2E.referenceAnimation(),hero:(window as any).__seedE2E.actorPresentation()[0]}));
-  expect(sample.hero.texture).toBe('hero-reference');expect(sample.hero.rotation).toBe(0);expect(sample.pose.action).toBe(action);expect(sample.pose.socket).toHaveLength(2);
+  expect(sample.hero.texture).toBe(sample.pose.texture??'hero-reference');expect(Number(sample.hero.frame)).toBe(sample.pose.frame);expect(sample.hero.rotation).toBe(0);expect(sample.pose.action).toBe(action);expect(sample.pose.socket).toHaveLength(2);
   await page.waitForTimeout(100);expect(await page.evaluate(()=>(window as any).__seedE2E.referenceAnimation())).toEqual(sample.pose);
   await page.screenshot({path:`test-results/browser/reference-${age}-${action}.png`});
  }
 });
 
 test('hostile glyph cache is bounded, profiler absent normally, numeric prototype restart safe',async({page})=>{
- await prepareSave(page);await page.goto('/?e2e&numbers=atlas');await page.locator('#start-btn').click();
+ // Exercise the intentionally retained legacy/HC glyph path explicitly.
+ // Painted canonical attacks are covered separately by content153.spec.ts.
+ await prepareSave(page);await page.goto('/?e2e&numbers=atlas&hostile=legacy');await page.locator('#start-btn').click();
  await page.waitForFunction(()=>(window as any).__seedE2E?.canonicalStressStart);
  expect(await page.evaluate(()=>(window as any).__seedE2E.renderDiagnostics())).toBeNull();
  await page.evaluate(()=>(window as any).__seedE2E.canonicalStressStart(false));
