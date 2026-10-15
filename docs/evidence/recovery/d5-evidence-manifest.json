@@ -6,16 +6,28 @@
   "limitations": "All synthetic. Private human QA excluded. Final correction changes only Pause CSS, tests and docs; current head still needs own complete CI/package receipt. Physical data uses Intel, CI uses SwiftShader. Selected artifact entry CRC, not whole outer archive SHA, was independently checked. Videos stay in14day Actions artifact.",
   "files": {
     "physical-d5-summary.json": {
-      "bytes": 7020,
-      "sha256": "eef6c36c1eaaa75fb1530104116a01eaf6b679b60fe383193c6047627fe6e408"
+      "bytes": 6783,
+      "sha256": "17b550bccd1beae416bc15d505ddc7ba5cc2f700346ce55850d3a3f5f9b22201",
+      "windowsWorkingCopyBeforeNormalization": {
+        "bytes": 7020,
+        "sha256": "eef6c36c1eaaa75fb1530104116a01eaf6b679b60fe383193c6047627fe6e408"
+      }
     },
     "natural-d5-outcomes.json": {
-      "bytes": 78957,
-      "sha256": "8f4536ec8d244ff763c259ad52a1e248140f50a2f969c408a3d5d95d7f55ef43"
+      "bytes": 76197,
+      "sha256": "d9074e2c7d4247d62e740dc5c40bda6b879575494a62bb6bffd73209cc72047c",
+      "windowsWorkingCopyBeforeNormalization": {
+        "bytes": 78957,
+        "sha256": "8f4536ec8d244ff763c259ad52a1e248140f50a2f969c408a3d5d95d7f55ef43"
+      }
     },
     "official-d5-inner-packages.json": {
-      "bytes": 2227,
-      "sha256": "7a054dc3505382bac3b237c01e3297e926c9cc8a2296c404c17ed10468b24a29"
+      "bytes": 2164,
+      "sha256": "87542fa49b4f5fbb74984d7e43b8211388b6268381b792c169b45b5ca6df4441",
+      "windowsWorkingCopyBeforeNormalization": {
+        "bytes": 2227,
+        "sha256": "7a054dc3505382bac3b237c01e3297e926c9cc8a2296c404c17ed10468b24a29"
+      }
     },
     "ci-d5-render-summary.json": {
       "bytes": 24316,
@@ -49,5 +61,6 @@
       "bytes": 2496501,
       "sha256": "b9a04c20a6fe036534db4f0d1a245ad0c5e33b2bc17906b33969090dda686a76"
     }
-  }
+  },
+  "digestBasis": "Published Git blob bytes; Git-normalized JSON uses LF. Original Windows working-copy digests retained where different. Binary compressed/PNG bytes unchanged."
 }

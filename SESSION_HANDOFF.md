@@ -6,6 +6,9 @@ Range bounds regression fails2/2 before the fix and passes2/2 afterward. Compact
 desktop nowrap/min-width0/equal shrink caused it; wrap with intrinsic minimum
 label width instead. Font scale/Thai line-height and keyboard activation retained.
 Before/after PNGs and exact provenance are under docs/evidence/recovery.
+Digest follow-up: three JSON summaries normalize CRLF→LF in Git. The manifest
+now verifies published Git-blob bytes and retains original Windows digests;
+binary gzip/PNG and logical observations are unchanged. All11 entries rechecked.
 No renderer/core/Content change in this correction: versions stay3/18/2.
 Frozen d5 measurements (240 physical/480 Push CI rows,36 policies, official
 packages) are durably committed with a manifest; they do not certify newer HEAD.

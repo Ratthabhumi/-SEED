@@ -6,6 +6,8 @@ rows/48 summaries, native44-view comparison index/25-capture Boss gallery index,
 and four independently verified inner package receipts. See d5-evidence-manifest
 for bytes/SHA256 and source/merge/parent identities. Gzip is standard JSON
 compression, not missing data. Video artifacts retain their14day expiry.
+Hashes use published Git-blob bytes (LF for normalized JSON). Original Windows
+working-copy hashes remain recorded where different; binary evidence is unchanged.
 
 The before/after Pause PNGs and pause-scale-regression.json record a real
 native200% label-clipping defect (EN/TH2FAIL→2PASS). After image is a precommit
