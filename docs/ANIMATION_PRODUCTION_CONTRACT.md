@@ -1,5 +1,19 @@
 # Animation production contract — Content15 reference
 
+## Content16 amendment (2026-10-15)
+
+This amendment supersedes the Content15 dimensions/coverage below; historical
+source/frame identities remain preserved. Runtime Hero/squad/Guardian sizes are
+126/60/54 world units. Collision geometry and camera zoom are unchanged.
+Hunters Stone/Space **front attack only** uses four release/recovery frames per
+Age from hunters-attack-v2.json, with explicit sockets and the existing native
+Phaser/canonical-time sampler. Back attack remains two legacy poses; walk still
+uses two sparse legacy poses. The rejected generated gait is never selected.
+This is not a continuous authored motion family or artist approval.
+Additional resident allocations: eight128px attack cells≈0.5MiB, hostile art
+512×128≈0.25MiB, shared periodic fallback≈1MiB. Texture-manager reuse and bounded
+restart/World2 lifecycle remain mandatory. See CONTENT15_3_ART_COVERAGE.md.
+
 This extends the existing dark painted fantasy/science-fiction direction. It does
 not change Worldgen3 / Content15 / Save2, simulation geometry, damage or input.
 

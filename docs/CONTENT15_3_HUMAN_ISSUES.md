@@ -4,6 +4,15 @@ Parent ledger: [all22 historical and9 newer](CONTENT15_2_HUMAN_ISSUES.md).
 Every original row remains an independent issue; inherited PASS is engineering
 scope only and requires this candidate's full regression, not old CI alone.
 
+Continuation provenance: starting source081ec5b failed8 browser cases in both
+Push38657190200 / PR38657196755. Existing gameplay changes are retained; current
+fixes update stale fixture/texture/size contracts without weakening gameplay or
+performance assertions. Exact correction-head regression verdict belongs to the
+final PR13 receipt, applying to every inherited scoped PASS below. Until that
+receipt is green, all inherited PASS engineering rows remain conditional.
+Source/art facts and all36 synthetic boss traces are retained at
+[evidence index](evidence/content153/README.md). No artistic/fun PASS is inferred.
+
 |#|Current scope/status|Content15.3 action / remaining acceptance|
 |--|--|--|
 |1|PARTIAL|One integrated candidate; continuous walk still blocked|

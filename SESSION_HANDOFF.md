@@ -1,3 +1,50 @@
+## Content15.3 continuation — 2026-10-15 (read first)
+
+Resumed Draft PR13 / feat/content153-playable-visual-boss-20261015 at
+081ec5b802de5a715fd050a0587df458850a2911, stacked on PR12 at
+ce63df35d52e8b3041d232f5e8e3438c087cecf8. Starting Push38657190200 and
+PR38657196755 both FAILED:4/5 jobs passed; E2E had8 failures. The candidate
+was not complete or release-ready. Historical/negative evidence below is intact.
+
+Corrections: active reference texture/frame/Age checks for the separate attack
+atlas,126/60 presentation sizes, Industrial burst instead of unsupported Space
+burst, explicit legacy glyph mode for the glyph-cache test. No deleted assertion,
+weaker gameplay/performance rule, canonical change or reduced entity cap.
+WORLDGEN/CONTENT/SAVE stays3/16/2. Final exact-head Push/PR CI and Node22/24
+ZIP receipts belong to PR13, avoiding a recursive evidence-commit SHA loop.
+
+Local Windows check exposed the unchanged900s×8 frontier policy audit's explicit
+180s timeout plus worker onTaskUpdate starvation (493/494 passed). It now yields
+every1024 canonical steps and uses the existing Windows600s host allowance;
+Linux retains180s. Seeds, simulation duration, policies, assertions and replay
+comparison are unchanged. Failed/interrupted local logs remain in ignored
+scratch/content153-continuation; no failed attempt is labeled PASS.
+Native capture also waits for an actually rendered ordinary hostile source,
+saves phase1/phase2 images and records explicit phase2-attack observation rather
+than treating successful capture execution as boss-quality acceptance.
+
+Durable selected prior evidence now in docs/evidence/content153/: four-build
+material comparison (missing historical rasters marked),144 alpha projections,
+boss encounter traces/builds for36 canonical policy pairs, all48 performance
+condition summaries. These identify source081ec5b and compiled PR mergec74079f
+separately, never certify the correction head.24/36 bosses reached and22 killed
+before/after; phase2 attacks19→21. Twelve unreached cases and strict8ms software
+CI cold failures remain. Intel hardware performance, authored continuous gait,
+full six-era kits, natural human boss quality, HUMAN_ART_PASS and HUMAN_FUN_PASS
+remain OPEN/BLOCKED individually. Rejected walk rows are not runtime assets.
+
+Ready ChatGPT/artist brief: docs/research/CONTENT15_3_REMAINING_QUESTIONS.md.
+No broad market research performed. Read-only stack audit:
+docs/STACK_INTEGRATION_READINESS_20261015.md. PR1–13 base/head ancestry passes,
+but PR1's own base still needs reviewed integration into main. No main merge,
+rebase/reset/tag/public release performed or authorized.
+
+Operator retest after engineering gates: npm run qa; open127.0.0.1:5173/?qa=1,
+verify compiled SHA/clean state; fresh Stone→six Ages→Boss→World2. Record real
+input, readability, terrain transitions, hostile art, actual phase exposure and
+explicit art/fun feedback. Keep raw QA local/gitignored; review privacy before
+committing sanitized evidence. Preserve reports402/403/session384.
+
 ## Content15 renderer/animation closure candidate — 2026-10-14
 
 First b6d43bf PR CI38525799632:150 browser PASS/1 skip/1 failure. Numeric/cache

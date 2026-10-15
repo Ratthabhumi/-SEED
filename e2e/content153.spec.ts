@@ -4,7 +4,9 @@ test.beforeEach(async({page})=>{
  await page.goto('/?e2e');await page.locator('#seed-input').fill('EPOCH-GOLDEN-001');await page.locator('#start-btn').click();await page.waitForFunction(()=>!!(window as any).__seedE2E?.content153Review);
 });
 test('real canonical burst uses painted art and bounded atlas',async({page})=>{
- await page.evaluate(()=>(window as any).__seedE2E.stageEvolution('hunters',5,'burst'));
+ // The canonical burst archetype exists in Industrial; Space ranged enemies
+ // use a different behavior and do not have this evolution state.
+ await page.evaluate(()=>(window as any).__seedE2E.stageEvolution('hunters',3,'burst'));
  let painted=false;
  for(let i=0;i<25&&!painted;i++){
   await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(.1));await page.waitForTimeout(25);

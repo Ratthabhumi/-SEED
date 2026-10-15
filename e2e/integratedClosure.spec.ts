@@ -24,7 +24,8 @@ test("four viewport scale and blended floor atlas remain bounded",async({page})=
     await page.setViewportSize({width,height});await page.waitForTimeout(150);
     const data=await page.evaluate(()=>(window as any).__seedE2E.integratedReview());
     expect(data.actors.length).toBeGreaterThanOrEqual(3);
-    expect(data.actors[0].width).toBe(112);expect(data.actors[1].width).toBe(56);
+    // Content16 deliberately enlarges only presentation bodies; collision and camera stay unchanged.
+    expect(data.actors[0].width).toBe(126);expect(data.actors[1].width).toBe(60);
     expect(data.zoom).toBeGreaterThanOrEqual(1);expect(data.zoom).toBeLessThanOrEqual(1.25);
     expect(data.terrain.tiles).toBeLessThanOrEqual(64);expect(data.terrain.atlasBytes).toBe(16777216);
     await page.screenshot({path:`test-results/browser/integrated-scale-${width}.png`});

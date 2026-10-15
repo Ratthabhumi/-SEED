@@ -4,6 +4,28 @@ Verified parent PR12 `ce63df35d52e8b3041d232f5e8e3438c087cecf8`.
 Branch `feat/content153-playable-visual-boss-20261015`; one stacked Draft.
 No main merge, tag, public release or historical evidence rewrite.
 
+## Continuation audit — 2026-10-15
+
+Starting exact081ec5b had4/5 jobs green, but Push38657190200 and
+PR38657196755 E2E FAILED with8 cases; it was not a completed delivery. Corrected
+browser checks now verify actual selected attack/legacy texture, exact frame/Age,
+the intentional126/60 body sizing, Industrial canonical burst and explicit legacy
+glyph mode. Production gameplay is unchanged by this continuation. Final exact
+correction-head Push/PR CI and Node22/24 ZIP receipts belong to PR13; old green
+jobs never certify a newer head.
+
+Local build warning remains: minified entry≈2178kB (gzip≈533kB) exceeds Vite's
+1500kB warning threshold. The threshold was not raised and no dependency/cache
+split is advertised as an FPS fix. This warning and strict renderer/human gates
+remain visible even when an engineering command exits0.
+
+Durable prior measurements and material comparison:
+[evidence index](evidence/content153/README.md).36 policies reached24 bosses and
+killed22 before/after; phase2 attacks19→21. Twelve unreached cases and strict8ms
+software-CI cold failures remain. These are not human/physical-device passes.
+See [stack audit](STACK_INTEGRATION_READINESS_20261015.md) and
+[ready ChatGPT/artist brief](research/CONTENT15_3_REMAINING_QUESTIONS.md).
+
 ## Playable changes
 
 - Existing hostile `enemy-burst`, `enemy`, `boss-fan` receive original painted

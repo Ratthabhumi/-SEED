@@ -6,9 +6,10 @@ import {attemptReward} from "../../src/core/progression/archiveLedger";
 import {AGES} from "../../src/core/tech/graph";
 import {calculateLogisticsCost} from "../../src/core/emergence/outpostLogistics";
 import {CONTENT_VERSION} from "../../src/core/seed/versions";
+import {WINDOWS_TEST_HOST} from "../../scripts/testHost";
 declare const require:(m:string)=>any;
 const fs=require("fs");
-function run(seed:string,policy:string,limit=900){
+async function run(seed:string,policy:string,limit=900){
  const sim=new RunSimulation({masterSeed:seed,originId:"hunters"});let target={x:0,y:0};
  let choices=0,claims=0;const signatures=new Set<string>();
  for(let tick=0;tick<limit*60&&!sim.state.over;tick++){
@@ -53,15 +54,20 @@ function run(seed:string,policy:string,limit=900){
   }
   const len=Math.max(1,Math.hypot(x,y));
   sim.step(1/60,{moveX:x/len,moveY:y/len,dashPressed:policy!=="stationary"&&tick%240===0});
+  // Canonical inputs/steps stay identical; let Vitest drain its worker RPC on
+  // slower Windows hosts instead of monopolizing the event loop for minutes.
+  if(tick%1024===0)await new Promise<void>(resolve=>setTimeout(resolve,0));
   if(s.stats.bosses>0)sim.finishAttempt();
   for(const id of s.breakthroughs)signatures.add(id);
  }
  const s=sim.state;expect(Number.isFinite(s.build.hp)).toBe(true);expect(s.techNodes.length).toBeLessThanOrEqual(128);
  return {seed,policy,outcome:s.over?(s.build.hp>0?"victory":"defeat"):"time-limit",seconds:Number(s.runElapsed.toFixed(2)),age:s.runHighestAge,kills:s.runKills,choices,claims,bosses:s.stats.bosses,bossEncountered:s.bossSpawned,eligibleInsight:s.over?attemptReward(s.runElapsed,AGES.indexOf(s.runHighestAge),s.stats.bosses>0):0,persistedInsight:0,capacity:s.logistics,capacityMax:s.maxLogistics,fusions:[...signatures],hp:Number(s.build.hp.toFixed(2)),hash:sim.hash()};
 }
-it("measures four bounded strategies over two seeds without pretending to measure human fun",()=>{
- const report={contentVersion:CONTENT_VERSION,classification:"SYNTHETIC_POLICY_AUDIT",maxSeconds:900,archivePerks:[],rows:["EPOCH-GOLDEN-001","FRONTIER-POLICY-002"].flatMap(seed=>["novice","kiter","explorer","planner"].map(p=>run(seed,p)))};
- expect(run("POLICY-REPLAY","planner",30)).toEqual(run("POLICY-REPLAY","planner",30));
+it("measures four bounded strategies over two seeds without pretending to measure human fun",async()=>{
+ const rows=[];
+ for(const seed of ["EPOCH-GOLDEN-001","FRONTIER-POLICY-002"])for(const policy of ["novice","kiter","explorer","planner"])rows.push(await run(seed,policy));
+ const report={contentVersion:CONTENT_VERSION,classification:"SYNTHETIC_POLICY_AUDIT",maxSeconds:900,archivePerks:[],rows};
+ expect(await run("POLICY-REPLAY","planner",30)).toEqual(await run("POLICY-REPLAY","planner",30));
  fs.mkdirSync("test-results",{recursive:true});fs.writeFileSync("test-results/frontier-policy.json",JSON.stringify(report,null,2));
  console.table(report.rows.map(({seed,policy,outcome,seconds,age,kills,claims})=>({seed,policy,outcome,seconds,age,kills,claims})));
-},180000);
+},WINDOWS_TEST_HOST?600000:180000);

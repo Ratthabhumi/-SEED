@@ -28,7 +28,9 @@ try{
  for(const mode of ['normal','reduced','contrast']){await page.evaluate(m=>window.__seedE2E.streamingFixture(0,0,true,m==='reduced',m==='contrast'),mode);await page.waitForTimeout(700);await capture(page,'dense-'+mode);}
  await page.evaluate(()=>window.__seedE2E.setLang('th'));await capture(page,'thai-hud');await page.close();await page.video().saveAs(join(out,'presentation.webm'));
  const hostile=await fresh();await hostile.evaluate(()=>window.__seedE2E.startOrdinaryHostileCapture());
- await hostile.waitForTimeout(4000);await capture(hostile,'ordinary-hostile-live');await hostile.close();await hostile.video().saveAs(join(out,'ordinary-hostile.webm'));
+ // A wall-clock delay cannot prove a shot was fired/rendered on software WebGL.
+ await hostile.waitForFunction(()=>window.__seedE2E.content153Review().hostiles.paintedRoles.includes(1),null,{timeout:30000});
+ await capture(hostile,'ordinary-hostile-live');await hostile.close();await hostile.video().saveAs(join(out,'ordinary-hostile.webm'));
  let boss=await fresh();const begin=Date.now(),attempts=[];
  let preparation=await boss.evaluate(()=>window.__seedE2E.prepareNaturalBoss('balanced'));
  attempts.push({mode:'balanced',result:preparation});
@@ -38,9 +40,11 @@ try{
   attempts.push({mode:'damage',result:preparation});
  }
  const preparedAt=Date.now(),states=[];
- let held=new Set();
+ let held=new Set();const bossCaptures=new Set();
  if(preparation.spawn!==null)for(let i=0;i<600;i++){
   const s=await boss.evaluate(()=>window.__seedE2E.bossArenaState());states.push(s);if(s.killed||s.over||!s.boss)break;
+  const evidence=s.boss.enraged?(s.boss.cycle>0?'phase2-attack':'phase2-transition'):s.boss.phase==='warning'?'phase1-warning':null;
+  if(evidence&&!bossCaptures.has(evidence)){bossCaptures.add(evidence);await capture(boss,'natural-'+evidence);}
   if(s.draft){await boss.locator('#draft-skip-btn').click();continue;}
   const angle=(s.elapsed-preparation.spawn)*.8,tx=s.boss.x+Math.cos(angle)*260,ty=s.boss.y+Math.sin(angle)*260,dx=tx-s.player.x,dy=ty-s.player.y;
   const next=new Set([...(Math.abs(dx)>10?[dx>0?'d':'a']:[]),...(Math.abs(dy)>10?[dy>0?'s':'w']:[])]);
@@ -48,6 +52,8 @@ try{
   await boss.waitForTimeout(100);
  }
  for(const k of held)await boss.keyboard.up(k);await capture(boss,'natural-progression-boss-final');
- writeFileSync(join(out,'index.json'),JSON.stringify({classification:'STAGED_ART_GALLERY_PLUS_CANONICAL_NATURAL_PROGRESSION_BOSS',sourceSha:build.sha,buildDirty:false,seed:'EPOCH-GOLDEN-001',gpu,browser:browser.version(),captures,attempts,preparation,preparationWallMs:preparedAt-begin,bossStates:states,bossWallMs:Date.now()-preparedAt,errors,limitations:'Gallery uses staged roster/ages. Boss build comes from actual movement/drafts/claims/combat, then real browser movement from spawn. Balanced policy is retained even when unreached; damage policy is a second documented attempt on a fresh run. Automated policies and circular steering are not human play or a fun verdict. Failure/unreachable/censored outcomes retained; no HP/phase forcing.'},null,2));
+ const phase2Observed=states.some(s=>s.boss?.enraged),phase2AttackObserved=states.some(s=>s.boss?.enraged&&s.boss.cycle>0);
+ const bossEvidence={reached:preparation.spawn!==null,phase2Observed,phase2AttackObserved,killed:states.some(s=>s.killed),playerDied:states.some(s=>s.over),simSeconds:states.length?states[states.length-1].elapsed-states[0].elapsed:0,qualityGate:phase2AttackObserved?'NATIVE_PHASE2_OBSERVED_NOT_HUMAN_FUN_PASS':'OPEN_NO_NATIVE_PHASE2_ATTACK_PROOF'};
+ writeFileSync(join(out,'index.json'),JSON.stringify({classification:'STAGED_ART_GALLERY_PLUS_CANONICAL_NATURAL_PROGRESSION_BOSS',sourceSha:build.sha,buildDirty:false,seed:'EPOCH-GOLDEN-001',gpu,browser:browser.version(),captures,attempts,preparation,preparationWallMs:preparedAt-begin,bossEvidence,bossStates:states,bossWallMs:Date.now()-preparedAt,errors,limitations:'Gallery uses staged roster/ages. Boss build comes from actual movement/drafts/claims/combat, then real browser movement from spawn. Balanced policy is retained even when unreached; damage policy is a second documented attempt on a fresh run. Automated policies and circular steering are not human play or a fun verdict. Failure/unreachable/censored outcomes retained; no HP/phase forcing. Native phase2 attack is stated explicitly; successful capture execution is not universal encounter or human quality acceptance.'},null,2));
  await boss.close();await boss.video().saveAs(join(out,'natural-boss.webm'));if(errors.length)throw Error(errors.join('; '));
 }finally{await context.close();await browser.close();if(server)await new Promise(resolve=>server.httpServer.close(resolve));}

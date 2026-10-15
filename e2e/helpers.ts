@@ -8,6 +8,21 @@ import { expect } from "@playwright/test";
 
 export const SAVE_KEY = "seed-game-save-v1";
 
+/** Verify the actual canonical-time reference pose, including Content16's
+ * separate Stone/Space attack atlas. A texture-name whitelist alone can hide
+ * a wrong age, stale frame or animation/renderer mismatch. */
+export async function assertReferenceHero(page: Page, age: number): Promise<void> {
+  const sample = await page.evaluate(() => {
+    const hook = (window as any).__seedE2E;
+    return { hero: hook.actorPresentation()[0], pose: hook.referenceAnimation() };
+  });
+  expect(sample.pose).not.toBeNull();
+  expect(sample.hero.texture).toBe(sample.pose.texture ?? "hero-reference");
+  expect(Number(sample.hero.frame)).toBe(sample.pose.frame);
+  const perAge = sample.pose.texture === "hero-reference-attack" ? 4 : 18;
+  expect(Math.floor(Number(sample.hero.frame) / perAge)).toBe(age === 5 ? 1 : 0);
+}
+
 export interface TestSaveOptions {
   tutorialCompleted?: boolean;
   lang?: "en" | "th";
