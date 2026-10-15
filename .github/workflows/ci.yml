@@ -20,7 +20,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - run: gh run download 38677388790 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content153-baseline-official
+      - run: gh run download 38693697822 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content153-baseline-official
         env:
           GH_TOKEN: ${{ github.token }}
       - run: node scripts/measure-content153.mjs

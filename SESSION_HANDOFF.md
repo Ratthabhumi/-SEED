@@ -1,4 +1,16 @@
-## Content16.1 continuation — 2026-10-15 (read first)
+## Home playable-quality recovery —2026-10-15 (read first)
+
+Starting local/remote7b9b164, PR14 verified latest open Draft. Three untracked
+historical evidence files preserved with hashes in ignored scratch backup.
+Baseline Windows Node24 check506/87files,61 provenance/build; terrain browser5/5.
+Measured Intel UHD630 D3D11 HC ground13ms p95 inclusive diagnostic. Candidate
+removes offscreen floor commands without extra textures, protects complete boss
+recovery before half-HP escalation. Versions3/18/2; actual canonical timing change.
+Focused boss10/10 and four-boundary raster/canonical parity browser1/1 pass.
+Full exact-head gates pending. See docs/CONTENT17_RECOVERY.md and ADR0035.
+Animation production remains BLOCKED, human visual/fun OPEN; no merge/tag/release.
+
+## Content16.1 continuation — 2026-10-15
 
 Correction after c40cf0c's exact Push38685763415 and PR38685781809 both5/5:
 direct-PNG default REJECTED. Source prep median28.8→0.7ms, but1080p normal cold

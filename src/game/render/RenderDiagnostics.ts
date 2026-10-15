@@ -71,6 +71,12 @@ export class RenderDiagnostics {
       const at=performance.now();
       try{return Reflect.apply(fn,this,args);}finally{
         const end=performance.now();self.add(label,end-at);
+        // Phaser4 snapshots render steps at object construction, so wrapping an
+        // instance afterward misses it. Identify the actual src argument here.
+        if(label==="render.Graphics"){
+          const source=args[1] as {name?:string}|undefined;
+          self.add("graphics."+(source?.name||"other"),end-at);
+        }
         if(self.trace){performance.measure("seed."+label,{start:at,end});performance.clearMeasures("seed."+label);}
       }
     };

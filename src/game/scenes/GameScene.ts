@@ -5,6 +5,8 @@ import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
 import Phaser from "phaser";
+import {groundViewport,groundBoundsKey} from "../render/groundViewport";
+import {groundRasterReview} from "../render/groundRasterReview";
 import { beginAttempt, attemptReward, settleAttempt } from "../../core/progression/archiveLedger";
 import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
@@ -376,6 +378,7 @@ export class GameScene extends Phaser.Scene {
     this.ground = this.add.graphics().setDepth(-10);
     this.gfx = this.add.graphics().setDepth(0);
     this.equipmentGraphics=this.add.graphics().setDepth(5);
+    this.ground.setName("ground");this.gfx.setName("combat");this.equipmentGraphics.setName("equipment");
     this.playerArc = this.add.circle(0, 0, 16, 0xffd166) as unknown as Phaser.GameObjects.Arc;
     // Camera anchor only — the player body is drawn by PlayerRenderer.
     this.playerArc.setVisible(false);
@@ -497,6 +500,8 @@ export class GameScene extends Phaser.Scene {
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
+        groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom),commands:this.ground.commandBuffer.length}),
+        groundRasterReview:()=>{const s=this.sim.state,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},s.px-320,s.py-180);},
         referenceAnimation:()=>this.allyActors.referenceReview(),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
         friendlyBatchCounts:()=>this.friendlyBatch.counts(),
@@ -3662,7 +3667,9 @@ export class GameScene extends Phaser.Scene {
     // Ground follows chunk/age/POI discovery; CAMERA moves every frame (R4).
     const { cx, cy } = worldToChunk(s.px, s.py);
     const terrSig = s.territories.map((t) => `${t.poiId}:${t.spec}:${t.tier}:${t.disabled ? 0 : 1}:${t.disabled && t.repairT>0 ? 1 : 0}`).join("|");
-    const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}:t${terrSig}`;
+    const camera=this.cameras.main;
+    const viewKey=this.highContrast()?groundBoundsKey(groundViewport(camera.scrollX,camera.scrollY,this.scale.width,this.scale.height,camera.zoom)):"painted";
+    const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}:t${terrSig}:v${viewKey}`;
     if (gk !== this.lastGroundKey) {
       this.lastGroundKey = gk;
       this.refreshGround(false);
@@ -3717,6 +3724,7 @@ export class GameScene extends Phaser.Scene {
     const getChunk=(x:number,y:number)=>{const begin=performance.now();const result=this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y);this.chunkReadMs+=performance.now()-begin;return result;};
     drawGround(g, {
       texturedGround:true,
+      bounds:new URLSearchParams(location.search).get("ground")==="unculled"?undefined:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom),
       getChunk,
       styleFor: (biome) => BIOME_STYLE[biome],
       civColor: civ.color,

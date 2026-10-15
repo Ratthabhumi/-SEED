@@ -14,6 +14,7 @@ import { fillPoly, strokePoly } from "./paths";
 import type { OutpostSpec } from "../../core/world/territory";
 import { drawSpecializedOutpost } from "./OutpostVisualRegistry";
 import { phaserColors as colors } from "../../theme/tokens";
+import type {GroundBounds} from "./groundViewport";
 
 export interface GroundDrawArgs {
   getChunk: (cx: number, cy: number) => ChunkDescriptor;
@@ -29,6 +30,7 @@ export interface GroundDrawArgs {
   time: number;
   highContrast: boolean;
   texturedGround?: boolean;
+  bounds?:GroundBounds;
 }
 
 function chunkRand(worldSeed: string, cx: number, cy: number, salt: string, mod: number): number {
@@ -40,6 +42,7 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
     for (let oy = -a.radius; oy <= a.radius; oy++) {
       const ccx = a.cx + ox;
       const ccy = a.cy + oy;
+      if(a.bounds&&(ccx<a.bounds.left||ccx>a.bounds.right||ccy<a.bounds.top||ccy>a.bounds.bottom))continue;
       const desc = a.getChunk(ccx, ccy);
       // Authored blended floor replaces every legacy flat block/decor glyph.
       if(a.texturedGround&&!a.highContrast)continue;

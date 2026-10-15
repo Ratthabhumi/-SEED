@@ -3,6 +3,7 @@
 import {chromium} from '@playwright/test';
 import {writeFileSync,mkdirSync,openSync,writeSync,closeSync} from 'node:fs';
 import {dirname} from 'node:path';
+import {readPreviewBuild} from './read-preview-build.mjs';
 const [url='http://127.0.0.1:4184',output='test-results/render-phases.json',seconds='20',trace='0',variant='',fixture='live']=process.argv.slice(2);
 const browser=await chromium.launch({headless:true,...(process.platform==='win32'?{args:['--use-gl=angle','--use-angle=d3d11']}: {})});
 mkdirSync(dirname(output),{recursive:true});
@@ -18,6 +19,7 @@ try{
  await page.waitForTimeout(Number(seconds)*1000);
  const result=await page.evaluate(()=>({diagnostics:window.__seedE2E.renderDiagnostics(),performance:window.__seedE2E.performanceSamples(),state:window.__seedE2E.canonicalStressState(),foreground:document.visibilityState}));
  result.gpu=info.gpu.auxAttributes?.glRenderer;result.errors=errors;result.browser=browser.version();result.durationSeconds=Number(seconds);result.variant=variant;result.fixture=fixture;
+ result.build=await readPreviewBuild(url);
  if(trace==='1'){
   const complete=new Promise(resolve=>client.once('Tracing.tracingComplete',resolve));await client.send('Tracing.end');const {stream}=await complete;
   const path=output.replace('.json','.trace.json'),fd=openSync(path,'w');

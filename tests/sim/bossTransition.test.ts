@@ -12,14 +12,22 @@ describe("boss safe-boundary phase transition",()=>{
   expect(fired[0]).toBeLessThan(2.1);expect(fired.length).toBeGreaterThanOrEqual(3);
   expect(bossRecoveryDuration('cross')).toBe(1.8);expect(bossRecoveryDuration('fan')).toBe(1.4);
  });
- for(const phase of ["approach","warning","recover"] as const)it(`responds to half HP in ${phase} without waiting for approach`,()=>{
+ for(const phase of ["approach","warning"] as const)it(`responds to half HP in ${phase} without waiting for approach`,()=>{
   const e=boss();e.encounter={...createBossEncounter(),phase,timer:2};e.hp=e.maxHp*.49;
   stepBossEncounter(e,0,0,1/60,()=>{throw Error("uncommitted attack fired");});
   expect(e.encounter.phase).toBe("phase-transition");expect(e.encounter.enraged).toBe(true);expect(e.hp).toBe(e.maxHp*.49);
  });
+ it("preserves the complete stationary punish window when damage crosses half HP during recovery",()=>{
+  const e=boss();e.encounter={...createBossEncounter(),phase:"recover",timer:1.8};e.hp=e.maxHp*.49;
+  const position=[e.x,e.y];
+  for(let i=0;i<107;i++)stepBossEncounter(e,300,300,1/60,()=>{throw Error("recovery fired an attack");});
+  expect(e.encounter.phase).toBe("recover");expect(e.encounter.enraged).toBe(false);expect([e.x,e.y]).toEqual(position);
+  for(let i=0;i<2;i++)stepBossEncounter(e,300,300,1/60,()=>{throw Error("transition fired an attack");});
+  expect(e.encounter.phase).toBe("phase-transition");expect(e.encounter.enraged).toBe(true);expect(e.hp).toBe(e.maxHp*.49);
+ });
  it("finishes one committed attack, then escalates with a warned cross",()=>{
   const e=boss(),fired:string[]=[];e.hp=e.maxHp*.49;e.encounter={...createBossEncounter(),phase:"commit",timer:0};
-  for(let i=0;i<240;i++)stepBossEncounter(e,0,0,1/60,p=>fired.push(p));
+  for(let i=0;i<300;i++)stepBossEncounter(e,0,0,1/60,p=>fired.push(p));
   expect(fired.slice(0,2)).toEqual(["slam","cross"]);expect(e.encounter.enraged).toBe(true);
  });
  it("does not rescue lethal damage or change healthy warning targets",()=>{

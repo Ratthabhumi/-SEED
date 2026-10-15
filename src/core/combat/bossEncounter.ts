@@ -10,10 +10,10 @@ export const bossRecoveryDuration=(pattern:BossPattern):number=>pattern==="fan"?
 export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:(pattern:BossPattern,x:number,y:number)=>void):boolean {
   const a=e.encounter;if(!e.boss||!a)return false;
   const dx=px-e.x,dy=py-e.y,d=Math.max(1,Math.hypot(dx,dy));a.timer-=dt;
-  // Health can cross the threshold during a warning or recovery. Interrupt
-  // those safe states promptly, but finish an already committed attack first.
+  // Cancel uncommitted warnings, but finish a committed attack AND its full
+  // stationary recovery. Crossing half HP must not steal the punish window.
   // Lethal damage remains lethal; this grants neither HP nor invulnerability.
-  if(!a.enraged&&e.hp>0&&e.hp<=e.maxHp*.5&&a.phase!=="commit"&&a.phase!=="attack"){
+  if(!a.enraged&&e.hp>0&&e.hp<=e.maxHp*.5&&a.phase!=="commit"&&a.phase!=="attack"&&(a.phase!=="recover"||a.timer<=0)){
     a.enraged=true;a.phase="phase-transition";a.timer=BOSS_ENCOUNTER.transition;a.cycle=0;return true;
   }
   if(a.phase==="approach") {
