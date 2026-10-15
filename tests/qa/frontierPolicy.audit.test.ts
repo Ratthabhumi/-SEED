@@ -1,5 +1,5 @@
 // Canonical synthetic policies: real movement, offers, claims; no grants/teleports/stat edits.
-import {it,expect} from "vitest";
+import {it,expect,afterAll} from "vitest";
 import {RunSimulation} from "../../src/core/sim/RunSimulation";
 import {worldToChunk} from "../../src/core/world/chunks";
 import {attemptReward} from "../../src/core/progression/archiveLedger";
@@ -9,7 +9,9 @@ import {CONTENT_VERSION} from "../../src/core/seed/versions";
 import {WINDOWS_TEST_HOST} from "../../scripts/testHost";
 declare const require:(m:string)=>any;
 const fs=require("fs");
+const host=require("node:process"),timings:unknown[]=[];
 async function run(seed:string,policy:string,limit=900){
+ const wallStart=Date.now(),cpuStart=host.cpuUsage(),rssBefore=host.memoryUsage().rss;let sliceStart=wallStart,maxSliceWallMs=0,yields=0;
  const sim=new RunSimulation({masterSeed:seed,originId:"hunters"});let target={x:0,y:0};
  let choices=0,claims=0;const signatures=new Set<string>();
  for(let tick=0;tick<limit*60&&!sim.state.over;tick++){
@@ -56,18 +58,30 @@ async function run(seed:string,policy:string,limit=900){
   sim.step(1/60,{moveX:x/len,moveY:y/len,dashPressed:policy!=="stationary"&&tick%240===0});
   // Canonical inputs/steps stay identical; let Vitest drain its worker RPC on
   // slower Windows hosts instead of monopolizing the event loop for minutes.
-  if(tick%1024===0)await new Promise<void>(resolve=>setTimeout(resolve,0));
+  if(tick%128===0){maxSliceWallMs=Math.max(maxSliceWallMs,Date.now()-sliceStart);await new Promise<void>(resolve=>setTimeout(resolve,0));sliceStart=Date.now();yields++;}
   if(s.stats.bosses>0)sim.finishAttempt();
   for(const id of s.breakthroughs)signatures.add(id);
  }
  const s=sim.state;expect(Number.isFinite(s.build.hp)).toBe(true);expect(s.techNodes.length).toBeLessThanOrEqual(128);
+ maxSliceWallMs=Math.max(maxSliceWallMs,Date.now()-sliceStart);
+ const cpu=host.cpuUsage(cpuStart);timings.push({seed,policy,limit,wallMs:Date.now()-wallStart,cpuUserMs:cpu.user/1000,cpuSystemMs:cpu.system/1000,rssBefore,rssAfter:host.memoryUsage().rss,maxSliceWallMs,yields,workers:1,platform:host.platform});
  return {seed,policy,outcome:s.over?(s.build.hp>0?"victory":"defeat"):"time-limit",seconds:Number(s.runElapsed.toFixed(2)),age:s.runHighestAge,kills:s.runKills,choices,claims,bosses:s.stats.bosses,bossEncountered:s.bossSpawned,eligibleInsight:s.over?attemptReward(s.runElapsed,AGES.indexOf(s.runHighestAge),s.stats.bosses>0):0,persistedInsight:0,capacity:s.logistics,capacityMax:s.maxLogistics,fusions:[...signatures],hp:Number(s.build.hp.toFixed(2)),hash:sim.hash()};
 }
-it("measures four bounded strategies over two seeds without pretending to measure human fun",async()=>{
- const rows=[];
- for(const seed of ["EPOCH-GOLDEN-001","FRONTIER-POLICY-002"])for(const policy of ["novice","kiter","explorer","planner"])rows.push(await run(seed,policy));
- const report={contentVersion:CONTENT_VERSION,classification:"SYNTHETIC_POLICY_AUDIT",maxSeconds:900,archivePerks:[],rows};
+const cases=["EPOCH-GOLDEN-001","FRONTIER-POLICY-002"].flatMap(seed=>["novice","kiter","explorer","planner"].map(policy=>({seed,policy})));
+const rows:Awaited<ReturnType<typeof run>>[]=[],auditBudget=WINDOWS_TEST_HOST?600000:180000;
+let auditStarted=0;
+for(const {seed,policy} of cases)it(`canonical900s policy ${seed} / ${policy}`,async()=>{
+ if(!auditStarted)auditStarted=Date.now();
+ rows.push(await run(seed,policy));
+ // Separate transport/test boundaries without granting a larger total budget.
+ expect(Date.now()-auditStarted).toBeLessThan(auditBudget);
+},auditBudget);
+it("replays the identical planner policy",async()=>{
  expect(await run("POLICY-REPLAY","planner",30)).toEqual(await run("POLICY-REPLAY","planner",30));
+ expect(Date.now()-auditStarted).toBeLessThan(auditBudget);
+});
+afterAll(()=>{
+ const report={contentVersion:CONTENT_VERSION,classification:"SYNTHETIC_POLICY_AUDIT",maxSeconds:900,archivePerks:[],rows,timings,auditWallMs:auditStarted?Date.now()-auditStarted:0,auditBudgetMs:auditBudget,complete:rows.length===cases.length};
  fs.mkdirSync("test-results",{recursive:true});fs.writeFileSync("test-results/frontier-policy.json",JSON.stringify(report,null,2));
  console.table(report.rows.map(({seed,policy,outcome,seconds,age,kills,claims})=>({seed,policy,outcome,seconds,age,kills,claims})));
-},WINDOWS_TEST_HOST?600000:180000);
+});

@@ -57,6 +57,9 @@ import {HeroActions} from "../render/heroActions";
 import {drawBossTelegraph} from "../render/BossTelegraph";
 import {bossWarningDuration} from "../../core/combat/bossEncounter";
 import {TerrainPainter,TERRAIN_TEXTURES} from "../render/TerrainPainter";
+import {PERIODIC_TERRAIN_TEXTURES,PERIODIC_TERRAIN_BYTES} from "../assets/periodicTerrain";
+import {siteOriginY} from '../render/siteGrounding';
+import {SiteArrival} from '../render/siteArrival';
 import {COMBAT_ASSETS,combatFrames} from "../assets/combatAssets";
 import {CombatSprites} from "../render/CombatSprites";
 import {HeroEquipment} from "../render/HeroEquipment";
@@ -195,6 +198,7 @@ export class GameScene extends Phaser.Scene {
   private heroActions = new HeroActions();
   private lastAgeCardKey="";
   private terrainPainter!:TerrainPainter;
+  private siteArrival=new SiteArrival();
   private groundRefreshMs=0;
   private chunkReadMs=0;
   private groundMaxMs=0;
@@ -221,7 +225,12 @@ export class GameScene extends Phaser.Scene {
     this.load.image("hero-reference",REFERENCE_HERO_ATLAS);
     this.load.spritesheet("hostile-painted",hostileAttackArt,{frameWidth:128,frameHeight:128});
     this.load.spritesheet("hero-reference-attack",attackArt,{frameWidth:128,frameHeight:128});
-    for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
+    if(new URLSearchParams(location.search).get('terrainSource')==='runtime'){
+      for(const [id,url] of Object.entries(TERRAIN_TEXTURES))this.load.image(`terrain-${id}`,url);
+    }else{
+      for(const [id,url] of Object.entries(PERIODIC_TERRAIN_TEXTURES))this.load.image(`terrain-periodic-${id}`,url);
+      this.load.binary('terrain-periodic-bytes',PERIODIC_TERRAIN_BYTES);
+    }
     this.load.image("combat-projectiles",COMBAT_ASSETS.projectiles);
     this.load.image("combat-equipment",COMBAT_ASSETS.equipment);
     this.load.image("world-props",COMBAT_ASSETS.props);
@@ -296,6 +305,10 @@ export class GameScene extends Phaser.Scene {
 
   /** Fresh run (and restart path): new simulation, clean adapter state. */
   private startRun(seed: string): void {
+    this.siteArrival.reset();
+    const observeSites=()=>this.siteArrival.afterRender((x,y)=>this.cameras.main.worldView.contains(x,y),this.game.loop.frame,performance.now());
+    this.game.events.on('postrender',observeSites);
+    this.events.once('shutdown',()=>this.game.events.off('postrender',observeSites));
     // Phaser destroys display objects on shutdown while reusing this Scene.
     // A previous pooled Text/Image has a destroyed canvas/scene, not a free slot.
     this.floatText=[];this.vfxPool=[];this.bursts=[];this.dmgNums=[];
@@ -303,7 +316,7 @@ export class GameScene extends Phaser.Scene {
     this.groundMaxMs=this.chunkReadMaxMs=0;
     this.lastAgeCardKey="";
     this.heroActions = new HeroActions();
-    this.terrainPainter = new TerrainPainter(this);
+    this.terrainPainter = new TerrainPainter(this,new URLSearchParams(location.search).get('terrainSource')==='runtime');
     this.heroEquipment=new HeroEquipment(this);
     this.combatSprites=new CombatSprites(this);
     this.hostileBatch=new HostileProjectileBatch(this,new URLSearchParams(location.search).get("hostile")!=="legacy");
@@ -805,6 +818,10 @@ export class GameScene extends Phaser.Scene {
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
+        terrainArrivalReview:()=>this.terrainPainter.arrivals(),
+        siteArrivalReview:()=>this.siteArrival.review(),
+        terrainSourceParity:()=>this.terrainPainter.sourceParity(),
+        siteArtReview:()=>this.landmarkArt.filter(a=>a.visible).map(a=>({texture:a.texture.key,frame:Number(a.frame.name),originY:a.originY,x:a.x,y:a.y,width:a.displayWidth,height:a.displayHeight})),
         content153HostileFixture:()=>{const s=this.sim.state;for(let i=0;i<800;i++){const p=s.projs[i]!;p.friendly=false;p.src=["enemy-burst","enemy","boss-fan"][i%3]!;p.radius=i%3===2?8:i%3===1?6:4;p.color=i%3===2?0xff736d:0xff5a5a;}return {enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length,hash:this.sim.hash()};},
         findTerrainBiome:(biome:string)=>{for(let x=-32;x<=32;x+=4)for(let y=-32;y<=32;y+=4)if(this.sim.chunks.get(this.sim.state.worldSeed,this.sim.state.worldNonce,x,y).biome===biome)return {x:x*512,y:y*512};throw Error("Biome absent in bounded visual probe");},
         startOrdinaryHostileCapture:()=>{
@@ -3444,6 +3461,7 @@ export class GameScene extends Phaser.Scene {
           this.qa?.noteSimEvent("age_reached", e.age);
           break;
         case "poi_discovered":
+          this.siteArrival.discover(s.worldNonce,s.poisWorld,s.elapsed,performance.now());
           sfx.age();
           toast("ui.poiFound", t(`poi.${e.poiType}.name` as EnKeys), `+${Math.floor(e.knowledge)} ${t("ui.knowledge")}`);
           this.qa?.noteSimEvent("poi_discovered", `${e.poiType}:+${Math.floor(e.knowledge)}`);
@@ -3688,6 +3706,7 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     const g = this.ground;
     if (!g) return;
+    this.siteArrival.discover(s.worldNonce,s.poisWorld,s.elapsed,performance.now());
     g.clear();
     const { cx, cy } = worldToChunk(s.px, s.py);
     // Visual radius extends one chunk beyond the simulated active radius.
@@ -3709,7 +3728,7 @@ export class GameScene extends Phaser.Scene {
       time: now,
       highContrast: this.highContrast(),
     });
-    this.terrainPainter.refresh(cx,cy,R,getChunk,this.highContrast(),s.worldNonce);
+    this.terrainPainter.refresh(cx,cy,R,getChunk,this.highContrast(),s.worldNonce,s.elapsed);
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     // Claimed territories get age-dressing: the map grows a civilization.
     const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
@@ -3721,6 +3740,7 @@ export class GameScene extends Phaser.Scene {
           // Environmental visibility follows explored chunks; distant hidden
           // sites are not disclosed by the render neighborhood/prewarm cache.
           if(!(desc.x===cx&&desc.y===cy)&&!s.chunksWorld.includes(`${desc.x},${desc.y}`))continue;
+          this.siteArrival.drawn(poi.id,poi.wx,poi.wy);
 
           drawPoi(g, {
             painted:!this.highContrast(),
@@ -3737,7 +3757,7 @@ export class GameScene extends Phaser.Scene {
             if (!art) { art = this.add.image(0,0,"world-props",0).setDepth(-5); this.landmarkArt.push(art); }
             const frame=["ruin","meteor","vault","signal","megasite","worldtree"].indexOf(poi.type);
             const size=poi.type==="signal"||poi.type==="megasite"?144:112;
-            art.setTexture("world-props",Math.max(0,frame)).setVisible(true).setPosition(poi.wx,poi.wy-24).setDisplaySize(size,size).setAlpha(s.poisWorld.includes(poi.id)?.7:1);
+            art.setTexture("world-props",Math.max(0,frame)).setOrigin(.5,siteOriginY('world-props',Math.max(0,frame))).setVisible(true).setPosition(poi.wx,poi.wy+8).setDisplaySize(size,size).setAlpha(s.poisWorld.includes(poi.id)?.7:1);
           }
           if (terr) {
             if(terr.spec && landmarkCount<48) {
@@ -3746,7 +3766,7 @@ export class GameScene extends Phaser.Scene {
               const row=terr.spec==="research"?0:terr.spec==="military"?1:2;
               const state=terr.disabled?(terr.repairT>0?3:2):terr.tier>=2?1:0;
               const size=terr.tier>=2?WORLD_SCALE.outpost2:WORLD_SCALE.outpost1;
-              art.setTexture("outposts-v2",row*4+state).setVisible(true).setPosition(poi.wx,poi.wy-12).setDisplaySize(size,size).setAlpha(1);
+              art.setTexture("outposts-v2",row*4+state).setOrigin(.5,siteOriginY('outposts-v2',row*4+state)).setVisible(true).setPosition(poi.wx,poi.wy+8).setDisplaySize(size,size).setAlpha(1);
             }
             drawTerritoryDressing(g, {
               x: poi.wx, y: poi.wy,

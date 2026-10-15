@@ -1,4 +1,42 @@
-## Content15.3 continuation — 2026-10-15 (read first)
+## Content16.1 continuation — 2026-10-15 (read first)
+
+Initial local/remote4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0; PR13 both
+Push38677388790 and PR38677393143 verified5/5. New single workstream
+feat/content16-production-quality-20261015 targets PR13's branch. Read
+docs/CONTENT16_1_DELIVERY.md, CONTENT16_1_HUMAN_ISSUES.md and ADR0034.
+
+Candidate: exact offline periodic PNG/RGBA material preparation;18 measured
+painted site support anchors; shorter phase2 transition/approach downtime with
+full warnings/recoveries unchanged; bounded terrain/site arrival observations.
+Existing atlas/typed uploads/epoch guards/pools/FOG and one primary weapon stay.
+CONTENT16→17 for actual canonical boss timing and existing child-law identity;
+WORLDGEN3 / SAVE2 unchanged. No new dependency or fabricated artistic approval.
+
+Windows audit now splits the same eight900s policies at transport boundaries
+and yields every128 steps; CPU/wall/RSS/slices recorded. First attempt completed
+all8 policy cases plus replay in166868ms under the unchanged600s aggregate
+budget, while the full check FAILED3 asset-manifest assertions (502 passed).
+Original-source/derivation manifest entries corrected; no assertion weakened.
+Second full Windows npm run check PASS:87 files/506 tests, provenance61 assets,
+production build; audit8 policies+replay142134ms. Focused new native browser
+suite4/4 PASS (51.5s; D3D11 requested). Initial new fallback fixture mistakenly
+read the snapshot's p array as an object; fixed to p[0]/p[1], assertions retained.
+Pixel comparison: all1,048,576 material channels and fallback pixels equal;
+cached bytes survive restart; Worker-unavailable fallback and source-ground
+pivots verified. Staged teleport→real canonical discovery observed169.7ms to
+CPU post-render in one sample; not physical display latency or human arrival.
+Initial failed log retained in ignored scratch. Final full Windows/CI verdicts,
+source vs compiled merge SHA, all measured modes and four official package
+receipts belong to the final Draft PR, avoiding recursive evidence-SHA commits.
+
+Continuous painted gait/complete action family still BLOCKED by actual editable
+anatomy/timeline production. No new source frames or distorted whole-body walk
+were enabled. Existing source/rejected rows preserved. Specific artist/operator
+handoff: docs/research/CONTENT16_1_REMAINING.md. No broad Research repeated.
+Human visual/fun and strict physical performance gates remain OPEN separately.
+Raw human QA stays private/ignored. No merge/tag/release/history rewrite.
+
+## Content15.3 continuation — 2026-10-15
 
 Resumed Draft PR13 / feat/content153-playable-visual-boss-20261015 at
 081ec5b802de5a715fd050a0587df458850a2911, stacked on PR12 at

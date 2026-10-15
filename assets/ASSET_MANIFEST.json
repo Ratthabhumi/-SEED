@@ -1,7 +1,7 @@
 {
   "version": 2,
   "generatedAt": "2026-09-30T22:28:32.312Z",
-  "totalAssets": 54,
+  "totalAssets": 61,
   "assets": [
     {
       "id": "kenney-input-q",
@@ -1357,6 +1357,168 @@
       "byteSize": 160491,
       "vendorSourceSha256": "4b2b9d8d6b9fd9c7c65c21d4d7f07ef2922ee1189260553577cdcc1606243ca0",
       "productionSha256": "2ae69bb7892e88cf15af7f3d747768edf82d4afd336b40f8947c35288430ddb8"
+    },
+    {
+      "id": "seed-terrain-periodic-verdant",
+      "projectPath": "assets/seed/terrain/periodic/verdant.png",
+      "vendorSourcePath": "assets/original/terrain/verdant-v2.png",
+      "sourcePack": "-SEED generated Verdant floor",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "assets/original/terrain/verdant-v2.png",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors; OpenAI image generation",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "verdant-v2-1",
+      "downloadedAt": "2026-10-13",
+      "modified": true,
+      "modifications": "Offline exact periodic preparation after original source resize; no new artwork",
+      "presentationTransform": "Walkable cosmetic floor; cached512u chunks; high contrast disables texture",
+      "attributionRequired": true,
+      "purpose": "Prebaked periodic terrain fallback and Worker source; human art review pending",
+      "status": "art-review-pending",
+      "byteSize": 89444,
+      "vendorSourceSha256": "8a9905f6e9ea103e44ca0715db24b08567bc5640180bfe327b778ab687aa5d7f",
+      "productionSha256": "e489a395d8f833f85477600f537fb5bf941fd3137f1fb8a6e3a0ac091231049e",
+      "sourceRelease": "original-art-v2",
+      "additionalSources": [
+        {
+          "path": "assets/seed/terrain/verdant-v2.png",
+          "sha256": "6d5f60954b3957e3781175a420918a7e4d84f5faa51a05813a4465bf2833e2a0"
+        }
+      ]
+    },
+    {
+      "id": "seed-terrain-periodic-arid",
+      "projectPath": "assets/seed/terrain/periodic/arid.png",
+      "vendorSourcePath": "assets/original/terrain/arid-v1.png",
+      "sourcePack": "-SEED generated arid floor",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "assets/original/terrain/arid-v1.png",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors; OpenAI image generation",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "arid-v1-1",
+      "downloadedAt": "2026-10-13",
+      "modified": true,
+      "modifications": "Offline exact periodic preparation after original source resize; no new artwork",
+      "presentationTransform": "Cached blended ground atlas;128px samples displayed512 world units; no collision",
+      "attributionRequired": true,
+      "purpose": "Prebaked periodic terrain fallback and Worker source; human art review pending",
+      "status": "art-review-pending",
+      "byteSize": 92635,
+      "vendorSourceSha256": "fc7ea6ca75aeec8543c22c17523e79d7420f4519066671f3b1cfdc27b42a9f48",
+      "productionSha256": "5d0ddf960d38ecb39c3efa7e26c3d941817451c89c147bdb1c13abab1251dff4",
+      "sourceRelease": "original-art-v2",
+      "additionalSources": [
+        {
+          "path": "assets/seed/terrain/arid-v1.png",
+          "sha256": "40ab95f7912ca3a29b2cb56e472480eaeb1b00c66dd7c550012af5cae273111a"
+        }
+      ]
+    },
+    {
+      "id": "seed-terrain-periodic-tundra",
+      "projectPath": "assets/seed/terrain/periodic/tundra.png",
+      "vendorSourcePath": "assets/original/terrain/tundra-v1.png",
+      "sourcePack": "-SEED generated tundra floor",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "assets/original/terrain/tundra-v1.png",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors; OpenAI image generation",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "tundra-v1-1",
+      "downloadedAt": "2026-10-13",
+      "modified": true,
+      "modifications": "Offline exact periodic preparation after original source resize; no new artwork",
+      "presentationTransform": "Cached blended ground atlas;128px samples displayed512 world units; no collision",
+      "attributionRequired": true,
+      "purpose": "Prebaked periodic terrain fallback and Worker source; human art review pending",
+      "status": "art-review-pending",
+      "byteSize": 97394,
+      "vendorSourceSha256": "4d4652dafb4bfee14ba9b7563467f7b11e9e88f565a74ab160eb0eb030b1345d",
+      "productionSha256": "b50f9d2ea9bd5e70cbac799dfbb6976a7616ddae09b63ae070dab9151c42c79a",
+      "sourceRelease": "original-art-v2",
+      "additionalSources": [
+        {
+          "path": "assets/seed/terrain/tundra-v1.png",
+          "sha256": "77f1106100a5b52041b3cd8ac35a3a166e02b55294fdb527992c8e80e999516e"
+        }
+      ]
+    },
+    {
+      "id": "seed-terrain-periodic-badlands",
+      "projectPath": "assets/seed/terrain/periodic/badlands.png",
+      "vendorSourcePath": "assets/original/terrain/badlands-v1.png",
+      "sourcePack": "-SEED generated badlands floor",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "assets/original/terrain/badlands-v1.png",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors; OpenAI image generation",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "badlands-v1-1",
+      "downloadedAt": "2026-10-13",
+      "modified": true,
+      "modifications": "Offline exact periodic preparation after original source resize; no new artwork",
+      "presentationTransform": "Cached blended ground atlas;128px samples displayed512 world units; no collision",
+      "attributionRequired": true,
+      "purpose": "Prebaked periodic terrain fallback and Worker source; human art review pending",
+      "status": "art-review-pending",
+      "byteSize": 88576,
+      "vendorSourceSha256": "a46a6bfa4384c99a3ebaa2e6072a58ce591e8dfe9b16a4538898519840c55ea6",
+      "productionSha256": "0ef8bc2f794008b4e664a38af4dd9a5482188a8e89e3ff8a7e56a86fa951626e",
+      "sourceRelease": "original-art-v2",
+      "additionalSources": [
+        {
+          "path": "assets/seed/terrain/badlands-v1.png",
+          "sha256": "2c67c01aa252f76d51af5b9660d6a500e3d8731b55ae730130f80d429b537a3f"
+        }
+      ]
+    },
+    {
+      "id": "seed-terrain-periodic-packed",
+      "projectPath": "assets/seed/terrain/periodic/materials.rgba",
+      "vendorSourcePath": "assets/original/terrain-periodic/manifest.json",
+      "sourcePack": "-SEED generated Verdant floor",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "assets/original/terrain/verdant-v2.png",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors; OpenAI image generation",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "verdant-v2-1",
+      "downloadedAt": "2026-10-13",
+      "modified": true,
+      "modifications": "Concatenated RGBA8 slicing after exact periodic preparation of resized original sources",
+      "presentationTransform": "Walkable cosmetic floor; cached512u chunks; high contrast disables texture",
+      "attributionRequired": true,
+      "purpose": "Avoid startup Canvas readback/conversion before Worker transfer",
+      "status": "art-review-pending",
+      "byteSize": 1048576,
+      "vendorSourceSha256": "9b71099520274d3f596405ffe13e92127e01511e1d2cc5dd38422e1bc6ab7f10",
+      "productionSha256": "07529de1c53d149505ab331efca413a921fbd1a445f70fd25870114b2abc1ab7",
+      "sourceRelease": "original-art-v2",
+      "additionalSources": [
+        {
+          "path": "assets/seed/terrain/periodic/verdant.png",
+          "sha256": "e489a395d8f833f85477600f537fb5bf941fd3137f1fb8a6e3a0ac091231049e"
+        },
+        {
+          "path": "assets/seed/terrain/periodic/arid.png",
+          "sha256": "5d0ddf960d38ecb39c3efa7e26c3d941817451c89c147bdb1c13abab1251dff4"
+        },
+        {
+          "path": "assets/seed/terrain/periodic/tundra.png",
+          "sha256": "b50f9d2ea9bd5e70cbac799dfbb6976a7616ddae09b63ae070dab9151c42c79a"
+        },
+        {
+          "path": "assets/seed/terrain/periodic/badlands.png",
+          "sha256": "0ef8bc2f794008b4e664a38af4dd9a5482188a8e89e3ff8a7e56a86fa951626e"
+        }
+      ]
     }
   ]
 }

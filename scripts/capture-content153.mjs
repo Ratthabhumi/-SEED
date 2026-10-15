@@ -15,7 +15,7 @@ const browser=await chromium.launch({headless:true,...(process.platform==='win32
 const context=await browser.newContext({viewport:{width:1920,height:1080},recordVideo:{dir:out,size:{width:1920,height:1080}}}),errors=[],captures=[];
 const client=await browser.newBrowserCDPSession(),gpu=(await client.send('SystemInfo.getInfo')).gpu.auxAttributes?.glRenderer;
 const fresh=async()=>{const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(()=>localStorage.setItem('seed-game-save-v1',JSON.stringify({schema:1,settings:{lang:'en',volume:0,uiScale:1,tutorialCompleted:true},archive:[],history:[],best:{}})));await p.goto(url+'/?e2e');await p.locator('#seed-input').fill('EPOCH-GOLDEN-001');await p.locator('#start-btn').click();await p.waitForFunction(()=>window.__seedE2E?.content153Review);return p;};
-const capture=async(p,name)=>{await p.screenshot({path:join(out,name+'.png')});captures.push({file:name+'.png',review:await p.evaluate(()=>{const h=window.__seedE2E;return {...h.content153Review(),position:JSON.parse(h.snapshot()).p,zoom:h.integratedReview().zoom};})});};
+const capture=async(p,name)=>{await p.screenshot({path:join(out,name+'.png')});captures.push({file:name+'.png',review:await p.evaluate(()=>{const h=window.__seedE2E;return {...h.content153Review(),position:JSON.parse(h.snapshot()).p,zoom:h.integratedReview().zoom,sites:h.siteArtReview?.(),terrainArrival:h.terrainArrivalReview?.(),siteArrival:h.siteArrivalReview?.()};})});};
 try{
  const page=await fresh();
  for(const origin of ['hunters','engineers','resonant','sentinels'])for(const age of [0,2,5]){

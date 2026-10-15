@@ -1,0 +1,46 @@
+{
+  "method": "Browser Canvas decode -> periodicTerrainSource -> exact RGBA8 / PNG",
+  "license": "MIT",
+  "width": 256,
+  "height": 256,
+  "browser": "153.0.8010.12",
+  "packedSha256": "07529de1c53d149505ab331efca413a921fbd1a445f70fd25870114b2abc1ab7",
+  "materials": [
+    {
+      "id": "verdant",
+      "source": "assets/seed/terrain/verdant-v2.png",
+      "sourceSha256": "6d5f60954b3957e3781175a420918a7e4d84f5faa51a05813a4465bf2833e2a0",
+      "path": "assets/seed/terrain/periodic/verdant.png",
+      "pngSha256": "e489a395d8f833f85477600f537fb5bf941fd3137f1fb8a6e3a0ac091231049e",
+      "rgbaSha256": "166cedc142758e04d35aec50176fb2933bfd26a69ebc685d5efec146f5eb75c0",
+      "offset": 0
+    },
+    {
+      "id": "arid",
+      "source": "assets/seed/terrain/arid-v1.png",
+      "sourceSha256": "40ab95f7912ca3a29b2cb56e472480eaeb1b00c66dd7c550012af5cae273111a",
+      "path": "assets/seed/terrain/periodic/arid.png",
+      "pngSha256": "5d0ddf960d38ecb39c3efa7e26c3d941817451c89c147bdb1c13abab1251dff4",
+      "rgbaSha256": "06cbc6943603c13f9c8b2c4c761181919e78754deed2049cb68796fa713bf264",
+      "offset": 262144
+    },
+    {
+      "id": "tundra",
+      "source": "assets/seed/terrain/tundra-v1.png",
+      "sourceSha256": "77f1106100a5b52041b3cd8ac35a3a166e02b55294fdb527992c8e80e999516e",
+      "path": "assets/seed/terrain/periodic/tundra.png",
+      "pngSha256": "b50f9d2ea9bd5e70cbac799dfbb6976a7616ddae09b63ae070dab9151c42c79a",
+      "rgbaSha256": "b9ab33ad89c43fb48fb03a261fea7509986b2bfd7ba38e983469cc9f9ce95807",
+      "offset": 524288
+    },
+    {
+      "id": "badlands",
+      "source": "assets/seed/terrain/badlands-v1.png",
+      "sourceSha256": "2c67c01aa252f76d51af5b9660d6a500e3d8731b55ae730130f80d429b537a3f",
+      "path": "assets/seed/terrain/periodic/badlands.png",
+      "pngSha256": "0ef8bc2f794008b4e664a38af4dd9a5482188a8e89e3ff8a7e56a86fa951626e",
+      "rgbaSha256": "a22ef160876f9cc2433ea18e645d7a2026bbfa945e9758f5a80fd8753c285bec",
+      "offset": 786432
+    }
+  ]
+}

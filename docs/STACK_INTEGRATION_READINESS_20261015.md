@@ -16,7 +16,15 @@ Snapshot2026-10-15 before continuation fixes. No merge/rebase/reset was performe
 |#10|feat/content15-combat-world-ui-quality|feat/content14-stutter-art-consistency-20261013|YES|`efef11ef9729c3bbc388061a45b605688b6a213e`|
 |#11|feat/content15-perf-animation-closure-20261014|feat/content15-combat-world-ui-quality|YES|`0fa6378a457606e4066055032e8ea52b22fc63b1`|
 |#12|feat/content15-integrated-human-quality-20261014|feat/content15-perf-animation-closure-20261014|YES|`ce63df35d52e8b3041d232f5e8e3438c087cecf8`|
-|#13|feat/content153-playable-visual-boss-20261015|feat/content15-integrated-human-quality-20261014|YES|`081ec5b802de5a715fd050a0587df458850a2911`|
+|#13|feat/content153-playable-visual-boss-20261015|feat/content15-integrated-human-quality-20261014|YES|`4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0`|
+
+Content16.1 recheck: main5e6d5c65ea905bc3859f115e73bfd02913988d45 is an ancestor
+of PR1's base d3814a6b7e94182a05be66e341eb36c0914eabc0; main...base has0 left /
+108 right commits. Thus the missing base is a real108-commit integration boundary,
+not an absent ancestry relationship. It still has not been merged into main.
+The new feat/content16-production-quality-20261015 workstream descends directly
+from PR13/4d1dc0c and targets that branch. Its actual new Draft number/head and
+exact CI/package receipt belong to its PR. Existing PRs are not retargeted.
 
 Main remains5e6d5c65ea905bc3859f115e73bfd02913988d45. PR1 itself targets feat/v0261-outpost-softlock-20261008, so merging only PR1–13 would not integrate the missing base into main. That base also needs an explicit reviewed integration plan. No approval to merge is inferred.
 

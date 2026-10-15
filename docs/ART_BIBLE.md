@@ -3,6 +3,11 @@
 **Status**: CANONICAL SPECIFICATION  
 **Scope**: Presentation, UI, Sprites, VFX, and Third-Party Asset Normalization
 
+Content17 presentation note: original biome pixels are baked exactly offline;
+no new material winner is asserted. Existing18 site frames use measured alpha
+support origins on the existing contact shadow plane. No canonical site/claim
+coordinates or hero dimensions change. Painted continuous motion remains blocked.
+
 Content16 amendment: presentation sizes are Hero126u/squad60u/Guardian54u;
 collision and camera remain canonical/unchanged. Three existing hostile sources
 use the original painted Content15.3 atlas in Normal/Reduced, while HC/unknown
