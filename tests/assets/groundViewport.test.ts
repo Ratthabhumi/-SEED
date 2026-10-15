@@ -10,3 +10,8 @@ it("retains every viewport chunk plus a full chunk at negative coordinates and s
   }
  }
 });
+it("keeps the new followed actor view during the first World2 frame before the camera catches up",()=>{
+ const camera=groundViewport(3000,2000,1920,1080,1.2),actor=groundViewport(-960,-540,1920,1080,1.2);
+ const b=groundViewport(3000,2000,1920,1080,1.2,{x:0,y:0});
+ for(const view of [camera,actor]){expect(b.left).toBeLessThanOrEqual(view.left);expect(b.right).toBeGreaterThanOrEqual(view.right);expect(b.top).toBeLessThanOrEqual(view.top);expect(b.bottom).toBeGreaterThanOrEqual(view.bottom);}
+});

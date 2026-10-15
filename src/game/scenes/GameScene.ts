@@ -500,7 +500,7 @@ export class GameScene extends Phaser.Scene {
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
-        groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom),commands:this.ground.commandBuffer.length}),
+        groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:this.sim.state.px,y:this.sim.state.py}),commands:this.ground.commandBuffer.length}),
         groundRasterReview:()=>{const s=this.sim.state,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},s.px-320,s.py-180);},
         referenceAnimation:()=>this.allyActors.referenceReview(),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
@@ -3668,7 +3668,7 @@ export class GameScene extends Phaser.Scene {
     const { cx, cy } = worldToChunk(s.px, s.py);
     const terrSig = s.territories.map((t) => `${t.poiId}:${t.spec}:${t.tier}:${t.disabled ? 0 : 1}:${t.disabled && t.repairT>0 ? 1 : 0}`).join("|");
     const camera=this.cameras.main;
-    const viewKey=this.highContrast()?groundBoundsKey(groundViewport(camera.scrollX,camera.scrollY,this.scale.width,this.scale.height,camera.zoom)):"painted";
+    const viewKey=this.highContrast()?groundBoundsKey(groundViewport(camera.scrollX,camera.scrollY,this.scale.width,this.scale.height,camera.zoom,{x:s.px,y:s.py})):"painted";
     const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}:t${terrSig}:v${viewKey}`;
     if (gk !== this.lastGroundKey) {
       this.lastGroundKey = gk;
@@ -3724,7 +3724,7 @@ export class GameScene extends Phaser.Scene {
     const getChunk=(x:number,y:number)=>{const begin=performance.now();const result=this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y);this.chunkReadMs+=performance.now()-begin;return result;};
     drawGround(g, {
       texturedGround:true,
-      bounds:new URLSearchParams(location.search).get("ground")==="unculled"?undefined:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom),
+      bounds:new URLSearchParams(location.search).get("ground")==="unculled"?undefined:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:s.px,y:s.py}),
       getChunk,
       styleFor: (biome) => BIOME_STYLE[biome],
       civColor: civ.color,
