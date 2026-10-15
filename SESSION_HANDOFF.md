@@ -10,6 +10,16 @@ Focused boss10/10 and four-boundary raster/canonical parity browser1/1 pass.
 Full exact-head gates pending. See docs/CONTENT17_RECOVERY.md and ADR0035.
 Animation production remains BLOCKED, human visual/fun OPEN; no merge/tag/release.
 
+Runtime correction checkpoint a754530 preserves the new followed actor's view
+until the camera catches up during World2/teleport; original neighborhood cap
+stays49. Current31-row ledger: docs/CONTENT17_HUMAN_ISSUES.md. One Draft PR15:
+https://github.com/Ratthabhumi/-SEED/pull/15. Its durable final receipt records
+the immutable final source/merge SHA, exact Push/PR jobs, official Node22/24
+packages, complete policies and all measured failures. Earlier green checks
+never certify a newer HEAD. Baseline diagnostic raw/screenshot are committed
+under docs/evidence/recovery; they are not stamped product performance acceptance.
+Final physical five-block source identity is read from the actually served bundle.
+
 ## Content16.1 continuation — 2026-10-15
 
 Correction after c40cf0c's exact Push38685763415 and PR38685781809 both5/5:

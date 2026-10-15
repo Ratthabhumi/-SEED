@@ -14,7 +14,8 @@ passes; final complete gates and exact-head source/merge receipts pending.
 
 ## Independent complaint and quality gates
 
-All31 inherited rows remain in CONTENT16_1_HUMAN_ISSUES.md. This delta applies to
+All31 current rows are in CONTENT17_HUMAN_ISSUES.md, preserving the inherited
+CONTENT16_1_HUMAN_ISSUES.md taxonomy. This delta applies to
 #7/#12/N1/N7/N9 (ground work; no art preference claim) and #17/N6 (complete boss
 recovery). #15/N8 remain BLOCKED full animation; other scoped statuses require
 final full regression. No blanket31-row quality pass.

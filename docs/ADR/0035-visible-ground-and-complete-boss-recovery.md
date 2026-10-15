@@ -12,6 +12,8 @@ Zero instance spans were not evidence. Raw diagnostic remains separately scoped.
 Cull static HC floor commands outside camera bounds plus a full safety chunk.
 Retain original primitive order, all POIs/fog and dynamic danger geometry.
 Quantized camera bounds invalidate redraw on travel/resize/zoom. Comparator:
+During World2/teleport camera lag, union the followed actor's view before
+clipping the original7x7 floor neighborhood. No extra chunks are generated.
 ?ground=unculled. No texture/cache allocation, topology or canonical density change.
 
 Whole-neighborhood Canvas/DynamicTexture baking is not selected:7x7x512px needs
