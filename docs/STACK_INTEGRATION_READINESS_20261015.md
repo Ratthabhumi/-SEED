@@ -1,5 +1,13 @@
 # PR stack integration readiness — read-only audit
 
+Home continuation snapshot: PR14 open Draft at7b9b164a4b6c5a565de7195b9050494e10da252d,
+base PR13/4d1dc0c. PR15 open Draft at runtime checkpoint
+a7545302cfc0a8e7e31f9db90a83ee916d41d073, base PR14/7b9b164. Parent is an
+ancestor; final documentation/receipt HEAD may advance normally. PR1–14 remain
+untouched. Main-to-missing-base boundary rechecked:0 left /108 right. Review
+the missing base explicitly before any proposed bottom-up integration; no merge
+is performed or authorized. Final source/merge/checks are in PR15's receipt.
+
 Snapshot2026-10-15 before continuation fixes. No merge/rebase/reset was performed. Preserve the stack and review bottom-up after human quality gates.
 
 |PR|Head|Base|Base ancestor of head|Remote SHA|

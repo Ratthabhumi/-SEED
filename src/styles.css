@@ -767,8 +767,8 @@ button, input { font-family: inherit; }
   #pause-screen .pause-panel {padding:16px;gap:8px 20px;}
   #pause-screen .pause-sec {gap:6px;}
   #pause-screen .pause-display .settings-row {margin:4px 0;gap:6px;}
-  #pause-screen .pause-display .lang-row {width:100%;flex-wrap:nowrap;gap:4px;}
-  #pause-screen .pause-display .lang-row .btn {min-width:0;flex:1 1 0;padding:6px 8px;min-height:44px;}
+  #pause-screen .pause-display .lang-row {width:100%;flex-wrap:wrap;gap:6px;}
+  #pause-screen .pause-display .lang-row .btn {min-width:max-content;flex:1 0 auto;padding:6px 8px;min-height:44px;}
 }
 
 @media (min-width:1100px) and (max-height:800px) {

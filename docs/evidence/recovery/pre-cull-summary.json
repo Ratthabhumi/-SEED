@@ -1,0 +1,34 @@
+{
+  "classification": "INSTRUMENTED_TARGET_IDENTIFICATION_NOT_STAMPED_PRODUCT_ACCEPTANCE",
+  "limitations": "Uncommitted diagnostic build before floor culling; actual source commit stamp was not captured. Canonical Content18 recovery edit already present. No full-parent performance attribution, no GPU-only claim; inclusive spans overlap. Raw failed zero-instance instrumentation attempts were not interpreted as isolated spans. Use final clean five-block A/B for acceptance.",
+  "rows": [
+    {
+      "fixture": "live",
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "frames": 600,
+      "errors": [],
+      "p95": {
+        "renderer.total": 5,
+        "render.Graphics": 2.300000000046566,
+        "graphics.ground": 0,
+        "graphics.combat": 2.300000000046566,
+        "graphics.equipment": 0.10000000009313226
+      }
+    },
+    {
+      "fixture": "contrast",
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "frames": 554,
+      "errors": [],
+      "p95": {
+        "renderer.total": 16.300000000046566,
+        "render.Graphics": 13.600000000093132,
+        "graphics.ground": 13,
+        "graphics.combat": 0.30000000004656613,
+        "graphics.equipment": 1
+      }
+    }
+  ]
+}

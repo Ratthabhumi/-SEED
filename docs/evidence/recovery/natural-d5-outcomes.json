@@ -1,0 +1,2761 @@
+{
+  "source": "d5de0238e4936730360a5d0adf778c3e105ce623",
+  "baseline": "7b9b164a4b6c5a565de7195b9050494e10da252d",
+  "classification": "FULL_CANONICAL_PROGRESSION_POLICIES_NOT_HUMAN_PLAY",
+  "protocol": "All4 Origins x3 seeds x3 fixed draft priorities;1200s cap, same responsive route controller, no grants/HP edits/phase forcing. Every unreachable/defeat/phase-skipped outcome retained. Finite execution is engineering verification, NOT boss-quality acceptance.",
+  "outcomes": [
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 962.9999999994528,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 12.516666666655283,
+        "phase2Attacks": 1,
+        "duration": 18.7999999999829,
+        "damageReceived": 49,
+        "maxDamageStep": 1036.5240730459482,
+        "lethalStepFromHp": 379.8761688184461,
+        "dps": 1183.8638297879631
+      },
+      "after": {
+        "spawn": 962.9999999994528,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 12.516666666655283,
+        "phase2Attacks": 1,
+        "duration": 18.7999999999829,
+        "damageReceived": 49,
+        "maxDamageStep": 1036.5240730459482,
+        "lethalStepFromHp": 379.8761688184461,
+        "dps": 1183.8638297879631
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "spawn": 495.3333333332115,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 8.06666666665933,
+        "phase2Attacks": 1,
+        "duration": 12.183333333322253,
+        "damageReceived": 0,
+        "maxDamageStep": 482.06812430974503,
+        "lethalStepFromHp": 141.2649724513118,
+        "dps": 684.1141814871106
+      },
+      "after": {
+        "spawn": 495.3333333332115,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 8.06666666665933,
+        "phase2Attacks": 1,
+        "duration": 12.183333333322253,
+        "damageReceived": 0,
+        "maxDamageStep": 482.06812430974503,
+        "lethalStepFromHp": 141.2649724513118,
+        "dps": 684.1141814871106
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "spawn": 1130.9833333326335,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 3.899999999996453,
+        "phase2Attacks": 0,
+        "duration": 4.716666666662377,
+        "damageReceived": 0,
+        "maxDamageStep": 2135.440964347886,
+        "lethalStepFromHp": 503.0043679840546,
+        "dps": 2572.100447586848
+      },
+      "after": {
+        "spawn": 1130.9833333326335,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 4.716666666662377,
+        "damageReceived": 0,
+        "maxDamageStep": 2135.440964347886,
+        "lethalStepFromHp": 503.0043679840546,
+        "dps": 2572.100447586848
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "spawn": 545.7999999998323,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 8.94999999999186,
+        "phase2Attacks": 1,
+        "duration": 13.58333333332098,
+        "damageReceived": 0,
+        "maxDamageStep": 355.85274404291613,
+        "lethalStepFromHp": 173.16582058802072,
+        "dps": 635.7972024544924
+      },
+      "after": {
+        "spawn": 545.7999999998323,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 8.94999999999186,
+        "phase2Attacks": 1,
+        "duration": 13.58333333332098,
+        "damageReceived": 0,
+        "maxDamageStep": 355.85274404291613,
+        "lethalStepFromHp": 173.16582058802072,
+        "dps": 635.7972024544924
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": 392.68333333330486,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.783333333326254,
+        "phase2Attacks": 1,
+        "duration": 11.899999999989177,
+        "damageReceived": 49,
+        "maxDamageStep": 522.8447922418877,
+        "lethalStepFromHp": 226.75599715487112,
+        "dps": 811.0954248373212
+      },
+      "after": {
+        "spawn": 392.68333333330486,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.783333333326254,
+        "phase2Attacks": 1,
+        "duration": 11.899999999989177,
+        "damageReceived": 49,
+        "maxDamageStep": 522.8447922418877,
+        "lethalStepFromHp": 226.75599715487112,
+        "dps": 811.0954248373212
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 479.5833333332258,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.0333333333269366,
+        "phase2Attacks": 1,
+        "duration": 10.083333333324163,
+        "damageReceived": 0,
+        "maxDamageStep": 628.5371413145886,
+        "lethalStepFromHp": 201.7299692343978,
+        "dps": 1021.5757575766071
+      },
+      "after": {
+        "spawn": 479.5833333332258,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.0333333333269366,
+        "phase2Attacks": 1,
+        "duration": 10.083333333324163,
+        "damageReceived": 0,
+        "maxDamageStep": 628.5371413145886,
+        "lethalStepFromHp": 201.7299692343978,
+        "dps": 1021.5757575766071
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "spawn": 440.79999999992776,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 8.61666666665883,
+        "phase2Attacks": 1,
+        "duration": 12.38333333332207,
+        "damageReceived": 0,
+        "maxDamageStep": 426.82514137525686,
+        "lethalStepFromHp": 8.14084168077494,
+        "dps": 808.4500672954429
+      },
+      "after": {
+        "spawn": 440.79999999992776,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 8.61666666665883,
+        "phase2Attacks": 1,
+        "duration": 12.38333333332207,
+        "damageReceived": 0,
+        "maxDamageStep": 426.82514137525686,
+        "lethalStepFromHp": 8.14084168077494,
+        "dps": 808.4500672954429
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-after-stronghold-revealed",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-after-stronghold-revealed",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 958.3166666661238,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 12.26666666665551,
+        "phase2Attacks": 4,
+        "duration": 30.73333333330538,
+        "damageReceived": 106.75,
+        "maxDamageStep": 1195.7840043532588,
+        "lethalStepFromHp": 569.0285810466685,
+        "dps": 722.365177151567
+      },
+      "after": {
+        "spawn": 958.3166666661238,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 12.26666666665551,
+        "phase2Attacks": 4,
+        "duration": 30.73333333330538,
+        "damageReceived": 106.75,
+        "maxDamageStep": 1195.7840043532588,
+        "lethalStepFromHp": 569.0285810466685,
+        "dps": 722.365177151567
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "spawn": 896.2499999995135,
+        "unreachedCause": null,
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 303.74999999972385,
+        "damageReceived": 360.25,
+        "maxDamageStep": 231.67418358487885,
+        "lethalStepFromHp": null,
+        "dps": 21.99551602787936
+      },
+      "after": {
+        "spawn": 896.2499999995135,
+        "unreachedCause": null,
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 303.74999999972385,
+        "damageReceived": 360.25,
+        "maxDamageStep": 231.67418358487885,
+        "lethalStepFromHp": null,
+        "dps": 21.99551602787936
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "spawn": 665.2499999997236,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 5.96666666666124,
+        "phase2Attacks": 1,
+        "duration": 8.61666666665883,
+        "damageReceived": 0,
+        "maxDamageStep": 758.8121060435847,
+        "lethalStepFromHp": 665.3254341190727,
+        "dps": 1085.0785299814531
+      },
+      "after": {
+        "spawn": 665.2499999997236,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 5.96666666666124,
+        "phase2Attacks": 1,
+        "duration": 8.61666666665883,
+        "damageReceived": 0,
+        "maxDamageStep": 758.8121060435847,
+        "lethalStepFromHp": 665.3254341190727,
+        "dps": 1085.0785299814531
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "spawn": 898.1833333328451,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 105.0333333332378,
+        "phase2Attacks": 30,
+        "duration": 238.41666666644994,
+        "damageReceived": 510.75,
+        "maxDamageStep": 372.0130292081676,
+        "lethalStepFromHp": 233.1664885170359,
+        "dps": 45.052003262291336
+      },
+      "after": {
+        "spawn": 898.1833333328451,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 105.0333333332378,
+        "phase2Attacks": 30,
+        "duration": 238.41666666644994,
+        "damageReceived": 510.75,
+        "maxDamageStep": 372.0130292081676,
+        "lethalStepFromHp": 233.1664885170359,
+        "dps": 45.052003262291336
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": 419.69999999994695,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 14.9166666666531,
+        "phase2Attacks": 11,
+        "duration": 65.39999999994052,
+        "damageReceived": 78.75,
+        "maxDamageStep": 462.06064299315074,
+        "lethalStepFromHp": 96.496931579832,
+        "dps": 150.6691131499781
+      },
+      "after": {
+        "spawn": 419.69999999994695,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 16.58333333331825,
+        "phase2Attacks": 7,
+        "duration": 45.566666666625224,
+        "damageReceived": 110.25,
+        "maxDamageStep": 800.1050095119494,
+        "lethalStepFromHp": 432.15294619234567,
+        "dps": 216.2493050477374
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 551.7999999998268,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.266666666660058,
+        "phase2Attacks": 2,
+        "duration": 14.866666666653146,
+        "damageReceived": 0,
+        "maxDamageStep": 1067.8760544462948,
+        "lethalStepFromHp": 23.63438977736132,
+        "dps": 729.155156951249
+      },
+      "after": {
+        "spawn": 551.7999999998268,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.266666666660058,
+        "phase2Attacks": 2,
+        "duration": 14.866666666653146,
+        "damageReceived": 0,
+        "maxDamageStep": 1067.8760544462948,
+        "lethalStepFromHp": 23.63438977736132,
+        "dps": 729.155156951249
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "spawn": 526.683333333183,
+        "unreachedCause": null,
+        "killed": false,
+        "playerDead": true,
+        "phase2": 22.43333333331293,
+        "phase2Attacks": 7,
+        "duration": 50.983333333286964,
+        "damageReceived": 364,
+        "maxDamageStep": 563.9326409386067,
+        "lethalStepFromHp": null,
+        "dps": 143.8171154726174
+      },
+      "after": {
+        "spawn": 526.683333333183,
+        "unreachedCause": null,
+        "killed": false,
+        "playerDead": true,
+        "phase2": 22.43333333331293,
+        "phase2Attacks": 7,
+        "duration": 50.983333333286964,
+        "damageReceived": 364,
+        "maxDamageStep": 563.9326409386067,
+        "lethalStepFromHp": null,
+        "dps": 143.8171154726174
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": 995.2666666660901,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 12.916666666654919,
+        "phase2Attacks": 4,
+        "duration": 31.499999999971465,
+        "damageReceived": 208.25,
+        "maxDamageStep": 943.0405525430779,
+        "lethalStepFromHp": 287.600248830412,
+        "dps": 718.7974320991981
+      },
+      "after": {
+        "spawn": 995.2666666660901,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 12.916666666654919,
+        "phase2Attacks": 4,
+        "duration": 31.499999999971465,
+        "damageReceived": 208.25,
+        "maxDamageStep": 943.0405525430779,
+        "lethalStepFromHp": 287.600248830412,
+        "dps": 718.7974320991981
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 614.8833333331028,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 9.349999999991496,
+        "phase2Attacks": 1,
+        "duration": 13.749999999987494,
+        "damageReceived": 49,
+        "maxDamageStep": 797.0772014028771,
+        "lethalStepFromHp": 16.086158897363816,
+        "dps": 1316.204088889886
+      },
+      "after": {
+        "spawn": 614.8833333331028,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 9.349999999991496,
+        "phase2Attacks": 1,
+        "duration": 13.749999999987494,
+        "damageReceived": 49,
+        "maxDamageStep": 797.0772014028771,
+        "lethalStepFromHp": 16.086158897363816,
+        "dps": 1316.204088889886
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "spawn": 561.116666666485,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.649999999993042,
+        "phase2Attacks": 1,
+        "duration": 11.083333333323253,
+        "damageReceived": 110.25,
+        "maxDamageStep": 584.7726321803771,
+        "lethalStepFromHp": 72.98555428861562,
+        "dps": 787.4649824567587
+      },
+      "after": {
+        "spawn": 561.116666666485,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 7.649999999993042,
+        "phase2Attacks": 1,
+        "duration": 11.083333333323253,
+        "damageReceived": 110.25,
+        "maxDamageStep": 584.7726321803771,
+        "lethalStepFromHp": 72.98555428861562,
+        "dps": 787.4649824567587
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "spawn": 634.2166666664185,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 6.51666666666074,
+        "phase2Attacks": 1,
+        "duration": 10.199999999990723,
+        "damageReceived": 98,
+        "maxDamageStep": 720.069965904142,
+        "lethalStepFromHp": 139.2100391353465,
+        "dps": 898.469368192393
+      },
+      "after": {
+        "spawn": 634.2166666664185,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 6.51666666666074,
+        "phase2Attacks": 1,
+        "duration": 10.199999999990723,
+        "damageReceived": 98,
+        "maxDamageStep": 720.069965904142,
+        "lethalStepFromHp": 139.2100391353465,
+        "dps": 898.469368192393
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "spawn": 666.3666666663893,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 9.466666666658057,
+        "phase2Attacks": 3,
+        "duration": 20.64999999998122,
+        "damageReceived": 49,
+        "maxDamageStep": 440.76149206764694,
+        "lethalStepFromHp": 288.81741807672057,
+        "dps": 453.0958945389383
+      },
+      "after": {
+        "spawn": 666.3666666663893,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 10.849999999990132,
+        "phase2Attacks": 1,
+        "duration": 17.199999999984357,
+        "damageReceived": 147,
+        "maxDamageStep": 440.76149206764694,
+        "lethalStepFromHp": 272.78972745607877,
+        "dps": 543.9785012923882
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": 481.69999999989057,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 9.466666666658057,
+        "phase2Attacks": 3,
+        "duration": 21.949999999980037,
+        "damageReceived": 49,
+        "maxDamageStep": 414.6265281731705,
+        "lethalStepFromHp": 31.415646694742804,
+        "dps": 470.00880789712534
+      },
+      "after": {
+        "spawn": 481.69999999989057,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 10.849999999990132,
+        "phase2Attacks": 4,
+        "duration": 28.316666666640913,
+        "damageReceived": 0,
+        "maxDamageStep": 445.72351778615825,
+        "lethalStepFromHp": 39.51971065449129,
+        "dps": 364.33290170718897
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 936.9166666661432,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 5.183333333328619,
+        "phase2Attacks": 1,
+        "duration": 7.749999999992951,
+        "damageReceived": 98,
+        "maxDamageStep": 1009.5710063166698,
+        "lethalStepFromHp": 580.9747794392148,
+        "dps": 1769.760573477808
+      },
+      "after": {
+        "spawn": 936.9166666661432,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 5.549999999994952,
+        "phase2Attacks": 1,
+        "duration": 7.749999999992951,
+        "damageReceived": 49,
+        "maxDamageStep": 1009.5710063166698,
+        "lethalStepFromHp": 580.9747794392148,
+        "dps": 1769.760573477808
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "spawn": 1105.799999999323,
+        "unreachedCause": null,
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 94.19999999991433,
+        "damageReceived": 433.3,
+        "maxDamageStep": 151.71959002199947,
+        "lethalStepFromHp": null,
+        "dps": 7.457355592346711
+      },
+      "after": {
+        "spawn": 1105.799999999323,
+        "unreachedCause": null,
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 94.19999999991433,
+        "damageReceived": 433.3,
+        "maxDamageStep": 151.71959002199947,
+        "lethalStepFromHp": null,
+        "dps": 7.457355592346711
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "spawn": 1011.0833333327424,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 13.366666666654623,
+        "phase2Attacks": 7,
+        "duration": 44.69999999995946,
+        "damageReceived": 197.75,
+        "maxDamageStep": 684.6139383252885,
+        "lethalStepFromHp": 98.81318491987258,
+        "dps": 319.2264479246254
+      },
+      "after": {
+        "spawn": 1011.0833333327424,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 13.366666666654623,
+        "phase2Attacks": 7,
+        "duration": 44.69999999995946,
+        "damageReceived": 197.75,
+        "maxDamageStep": 684.6139383252885,
+        "lethalStepFromHp": 98.81318491987258,
+        "dps": 319.2264479246254
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "spawn": 512.8999999998622,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 16.866666666651327,
+        "phase2Attacks": 4,
+        "duration": 35.28333333330124,
+        "damageReceived": 26.25,
+        "maxDamageStep": 373.727993081259,
+        "lethalStepFromHp": 112.65329403326842,
+        "dps": 298.9982050073283
+      },
+      "after": {
+        "spawn": 512.8999999998622,
+        "unreachedCause": null,
+        "killed": true,
+        "playerDead": false,
+        "phase2": 16.866666666651327,
+        "phase2Attacks": 4,
+        "duration": 35.28333333330124,
+        "damageReceived": 26.25,
+        "maxDamageStep": 373.727993081259,
+        "lethalStepFromHp": 112.65329403326842,
+        "dps": 298.9982050073283
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      },
+      "after": {
+        "spawn": null,
+        "unreachedCause": "time-limit-before-space",
+        "killed": false,
+        "playerDead": false,
+        "phase2": null,
+        "phase2Attacks": 0,
+        "duration": 0,
+        "damageReceived": 0,
+        "maxDamageStep": 0,
+        "lethalStepFromHp": null,
+        "dps": null
+      }
+    }
+  ],
+  "unresolvedLowDpsCase": {
+    "origin": "engineers",
+    "seed": "EPOCH-STRESS-001",
+    "mode": "survival",
+    "before": {
+      "spawn": 526.683333333183,
+      "unreachedCause": null,
+      "killed": false,
+      "playerDead": true,
+      "phase2": 22.43333333331293,
+      "phase2Attacks": 7,
+      "duration": 50.983333333286964,
+      "damageReceived": 364,
+      "maxDamageStep": 563.9326409386067,
+      "lethalStepFromHp": null,
+      "dps": 143.8171154726174,
+      "trace": [
+        {
+          "t": 0,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 1.016666666665742,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 2.0166666666648325,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 2.2166666666646506,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 3.016666666663923,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 3.3666666666636047,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 3.5166666666634683,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 3.699999999996635,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 4.0166666666630135,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 5.016666666662104,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 5.566666666661604,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 6.0166666666611945,
+          "hp": 10420.204901132556,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 7.016666666660285,
+          "hp": 9760.403711234381,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 7.783333333326254,
+          "hp": 9016.012625195417,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 8.016666666659376,
+          "hp": 9016.012625195417,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 9.016666666658466,
+          "hp": 8903.226097007695,
+          "playerHp": 270.65999999999985,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 9.133333333325027,
+          "hp": 8903.226097007695,
+          "playerHp": 270.7299999999998,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 9.28333333332489,
+          "hp": 8649.456408585322,
+          "playerHp": 270.8199999999997,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 9.466666666658057,
+          "hp": 8339.293456069088,
+          "playerHp": 270.9299999999996,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 10.016666666657557,
+          "hp": 8113.720399693645,
+          "playerHp": 271.2599999999993,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 10.866666666656783,
+          "hp": 8113.720399693645,
+          "playerHp": 271.76999999999884,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 11.016666666656647,
+          "hp": 8113.720399693645,
+          "playerHp": 271.85999999999876,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 12.016666666655738,
+          "hp": 7888.147343318203,
+          "playerHp": 272.4599999999982,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 13.016666666654828,
+          "hp": 7521.591126708108,
+          "playerHp": 273.0599999999977,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 13.083333333321434,
+          "hp": 7521.591126708108,
+          "playerHp": 273.09999999999764,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 14.016666666653919,
+          "hp": 7155.034910098014,
+          "playerHp": 273.6599999999971,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 14.233333333320388,
+          "hp": 7155.034910098014,
+          "playerHp": 273.789999999997,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 14.383333333320252,
+          "hp": 7155.034910098014,
+          "playerHp": 273.8799999999969,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 14.566666666653418,
+          "hp": 6732.085429394059,
+          "playerHp": 273.9899999999968,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 15.016666666653009,
+          "hp": 6619.298901206338,
+          "playerHp": 274.2599999999966,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 16.0166666666521,
+          "hp": 6365.529212783965,
+          "playerHp": 274.85999999999603,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 16.433333333318387,
+          "hp": 5942.57973208001,
+          "playerHp": 275.1099999999958,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 17.01666666665119,
+          "hp": 5942.57973208001,
+          "playerHp": 250.9599999999955,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 18.01666666665028,
+          "hp": 5829.793203892289,
+          "playerHp": 251.55999999999494,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 18.649999999983038,
+          "hp": 5829.793203892289,
+          "playerHp": 251.9399999999946,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 19.01666666664937,
+          "hp": 5829.793203892289,
+          "playerHp": 252.1599999999944,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 19.99999999998181,
+          "hp": 5717.006675704568,
+          "playerHp": 252.74999999999386,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 20.01666666664846,
+          "hp": 5717.006675704568,
+          "playerHp": 252.75999999999385,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 20.149999999981674,
+          "hp": 5717.006675704568,
+          "playerHp": 252.83999999999378,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 20.33333333331484,
+          "hp": 5717.006675704568,
+          "playerHp": 252.94999999999368,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 21.016666666647552,
+          "hp": 5717.006675704568,
+          "playerHp": 253.3599999999933,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 21.733333333313567,
+          "hp": 5463.236987282195,
+          "playerHp": 204.78999999999292,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 22.016666666646643,
+          "hp": 5463.236987282195,
+          "playerHp": 204.95999999999276,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 22.43333333331293,
+          "hp": 5237.663930906752,
+          "playerHp": 205.20999999999253,
+          "phase": "phase-transition",
+          "enraged": true
+        },
+        {
+          "t": 22.849999999979218,
+          "hp": 5237.663930906752,
+          "playerHp": 205.4599999999923,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 22.86666666664587,
+          "hp": 5237.663930906752,
+          "playerHp": 205.4699999999923,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 23.016666666645733,
+          "hp": 5237.663930906752,
+          "playerHp": 205.55999999999221,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 24.016666666644824,
+          "hp": 4560.944761780424,
+          "playerHp": 206.15999999999167,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 24.266666666644596,
+          "hp": 4560.944761780424,
+          "playerHp": 206.30999999999153,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 24.41666666664446,
+          "hp": 4560.944761780424,
+          "playerHp": 157.39999999999145,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 24.599999999977626,
+          "hp": 4560.944761780424,
+          "playerHp": 157.50999999999135,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 25.016666666643914,
+          "hp": 4250.781809264191,
+          "playerHp": 157.75999999999112,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 26.016666666643005,
+          "hp": 3912.4222247010275,
+          "playerHp": 109.35999999999103,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 26.41666666664264,
+          "hp": 3658.6525362786547,
+          "playerHp": 109.59999999999116,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 27.016666666642095,
+          "hp": 3658.6525362786547,
+          "playerHp": 85.45999999999134,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 27.51666666664164,
+          "hp": 3658.6525362786547,
+          "playerHp": 85.75999999999149,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 28.016666666641186,
+          "hp": 3658.6525362786547,
+          "playerHp": 86.05999999999165,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 28.866666666640413,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.06999999999158,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 29.016666666640276,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.15999999999156,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 29.199999999973443,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.26999999999154,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 30.016666666639367,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.75999999999144,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 30.59999999997217,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.10999999999137,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 31.016666666638457,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.359999999991324,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 31.69999999997117,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.76999999999124,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 32.01666666663755,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.959999999991204,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 32.84999999997012,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.45999999999142,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 32.99999999996999,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.54999999999147,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 33.01666666663664,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.55999999999148,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 33.18333333330315,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.65999999999153,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 34.01666666663573,
+          "hp": 3658.6525362786547,
+          "playerHp": 65.15999999999178,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 35.01666666663482,
+          "hp": 3658.6525362786547,
+          "playerHp": 65.75999999999209,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 35.04999999996812,
+          "hp": 3658.6525362786547,
+          "playerHp": 65.7799999999921,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 36.01666666663391,
+          "hp": 3658.6525362786547,
+          "playerHp": 69.1099999999921,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 36.14999999996712,
+          "hp": 3658.6525362786547,
+          "playerHp": 69.18999999999214,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 37.016666666633,
+          "hp": 3545.8660080909335,
+          "playerHp": 69.7099999999924,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 37.499999999965894,
+          "hp": 3545.8660080909335,
+          "playerHp": 69.99999999999255,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 37.64999999996576,
+          "hp": 3545.8660080909335,
+          "playerHp": 70.0899999999926,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 37.833333333298924,
+          "hp": 3545.8660080909335,
+          "playerHp": 70.19999999999266,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 38.01666666663209,
+          "hp": 3545.8660080909335,
+          "playerHp": 61.55999999999269,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 39.01666666663118,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.15999999999257,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 39.23333333329765,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.289999999992546,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 40.01666666663027,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.75999999999245,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 40.33333333329665,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.949999999992414,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 41.01666666662936,
+          "hp": 3545.8660080909335,
+          "playerHp": 63.35999999999233,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 41.73333333329538,
+          "hp": 3545.8660080909335,
+          "playerHp": 63.78999999999225,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 41.88333333329524,
+          "hp": 3545.8660080909335,
+          "playerHp": 14.87999999999223,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 42.01666666662845,
+          "hp": 3545.8660080909335,
+          "playerHp": 14.959999999992228,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 42.06666666662841,
+          "hp": 3545.8660080909335,
+          "playerHp": 14.989999999992227,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 43.01666666662754,
+          "hp": 3545.8660080909335,
+          "playerHp": 15.559999999992215,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 43.88333333329342,
+          "hp": 3545.8660080909335,
+          "playerHp": 16.079999999992218,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 44.016666666626634,
+          "hp": 3545.8660080909335,
+          "playerHp": 16.15999999999223,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 44.98333333329242,
+          "hp": 3320.292951715491,
+          "playerHp": 16.73999999999232,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 45.016666666625724,
+          "hp": 3320.292951715491,
+          "playerHp": 16.759999999992324,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 46.016666666624815,
+          "hp": 3320.292951715491,
+          "playerHp": 17.359999999992418,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 46.133333333291375,
+          "hp": 3320.292951715491,
+          "playerHp": 17.42999999999243,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 46.28333333329124,
+          "hp": 3320.292951715491,
+          "playerHp": 17.519999999992443,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 46.466666666624405,
+          "hp": 3320.292951715491,
+          "playerHp": 17.62999999999246,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 47.016666666623905,
+          "hp": 3320.292951715491,
+          "playerHp": 17.95999999999251,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 48.016666666622996,
+          "hp": 3320.292951715491,
+          "playerHp": 18.559999999992606,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 48.333333333289374,
+          "hp": 3320.292951715491,
+          "playerHp": 18.749999999992635,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 49.016666666622086,
+          "hp": 3320.292951715491,
+          "playerHp": 19.1599999999927,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 49.433333333288374,
+          "hp": 3320.292951715491,
+          "playerHp": 19.40999999999274,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 50.01666666662118,
+          "hp": 3320.292951715491,
+          "playerHp": 19.759999999992793,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 50.8333333332871,
+          "hp": 3320.292951715491,
+          "playerHp": 20.24999999999287,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 50.983333333286964,
+          "hp": 3320.292951715491,
+          "playerHp": 0,
+          "phase": "attack",
+          "enraged": true
+        }
+      ],
+      "phaseDurations": {
+        "approach": 16.183333333318615,
+        "warning": 14.199999999987085,
+        "commit": 1.6499999999984993,
+        "attack": 1.833333333331666,
+        "recover": 16.69999999998481,
+        "phase-transition": 0.4166666666662877
+      },
+      "attacksByPhase": {
+        "phase1": 4,
+        "phase2": 7
+      },
+      "build": {
+        "owned": [
+          "spine-tools",
+          "foundation-science",
+          "foundation-warfare",
+          "foundation-industry",
+          "foundation-culture",
+          "stone-fire",
+          "stone-tools",
+          "application-defense-0",
+          "web:application-defense-0:1",
+          "web:web:application-defense-0:1:1",
+          "application-defense-1",
+          "web:application-defense-1:1",
+          "application-kinetic-1",
+          "weave-stone-science-warfare",
+          "web:application-defense-0:0",
+          "spine-metallurgy",
+          "web:stone-tools:1",
+          "web:web:application-defense-0:1:0",
+          "web:web:web:application-defense-0:1:1:1",
+          "web:application-defense-1:0",
+          "web:web:application-defense-1:1:1",
+          "web:web:application-defense-0:0:0",
+          "spine-ironwork",
+          "web:web:web:application-defense-1:1:1:1",
+          "web:web:application-defense-0:0:1",
+          "web:web:web:application-defense-0:1:1:0",
+          "web:web:stone-tools:1:0",
+          "weave-iron-science-warfare",
+          "spine-steam",
+          "stone-totem",
+          "web:web:web:stone-tools:1:0:1",
+          "web:application-kinetic-1:1",
+          "web:web:application-defense-1:0:0",
+          "industrial-turret",
+          "spine-fission",
+          "web:industrial-turret:1",
+          "atomic-plasma",
+          "weave-industrial-industry-culture",
+          "spine-orbital",
+          "web:web:web:web:application-defense-0:1:1:0:0",
+          "web:weave-stone-science-warfare:0",
+          "web:web:web:application-defense-0:0:0:0"
+        ],
+        "damageMul": 2.819663204693034,
+        "maxHp": 310,
+        "stages": {
+          "kinetic": 5,
+          "energy": 5,
+          "defense": 5,
+          "field": 5
+        }
+      }
+    },
+    "after": {
+      "spawn": 526.683333333183,
+      "unreachedCause": null,
+      "killed": false,
+      "playerDead": true,
+      "phase2": 22.43333333331293,
+      "phase2Attacks": 7,
+      "duration": 50.983333333286964,
+      "damageReceived": 364,
+      "maxDamageStep": 563.9326409386067,
+      "lethalStepFromHp": null,
+      "dps": 143.8171154726174,
+      "trace": [
+        {
+          "t": 0,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 1.016666666665742,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 2.0166666666648325,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 2.2166666666646506,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 3.016666666663923,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 3.3666666666636047,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 3.5166666666634683,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 3.699999999996635,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 4.0166666666630135,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 5.016666666662104,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 5.566666666661604,
+          "hp": 10652.568888887767,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 6.0166666666611945,
+          "hp": 10420.204901132556,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 7.016666666660285,
+          "hp": 9760.403711234381,
+          "playerHp": 295,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 7.783333333326254,
+          "hp": 9016.012625195417,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 8.016666666659376,
+          "hp": 9016.012625195417,
+          "playerHp": 295,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 9.016666666658466,
+          "hp": 8903.226097007695,
+          "playerHp": 270.65999999999985,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 9.133333333325027,
+          "hp": 8903.226097007695,
+          "playerHp": 270.7299999999998,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 9.28333333332489,
+          "hp": 8649.456408585322,
+          "playerHp": 270.8199999999997,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 9.466666666658057,
+          "hp": 8339.293456069088,
+          "playerHp": 270.9299999999996,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 10.016666666657557,
+          "hp": 8113.720399693645,
+          "playerHp": 271.2599999999993,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 10.866666666656783,
+          "hp": 8113.720399693645,
+          "playerHp": 271.76999999999884,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 11.016666666656647,
+          "hp": 8113.720399693645,
+          "playerHp": 271.85999999999876,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 12.016666666655738,
+          "hp": 7888.147343318203,
+          "playerHp": 272.4599999999982,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 13.016666666654828,
+          "hp": 7521.591126708108,
+          "playerHp": 273.0599999999977,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 13.083333333321434,
+          "hp": 7521.591126708108,
+          "playerHp": 273.09999999999764,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 14.016666666653919,
+          "hp": 7155.034910098014,
+          "playerHp": 273.6599999999971,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 14.233333333320388,
+          "hp": 7155.034910098014,
+          "playerHp": 273.789999999997,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 14.383333333320252,
+          "hp": 7155.034910098014,
+          "playerHp": 273.8799999999969,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 14.566666666653418,
+          "hp": 6732.085429394059,
+          "playerHp": 273.9899999999968,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 15.016666666653009,
+          "hp": 6619.298901206338,
+          "playerHp": 274.2599999999966,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 16.0166666666521,
+          "hp": 6365.529212783965,
+          "playerHp": 274.85999999999603,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 16.433333333318387,
+          "hp": 5942.57973208001,
+          "playerHp": 275.1099999999958,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 17.01666666665119,
+          "hp": 5942.57973208001,
+          "playerHp": 250.9599999999955,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 18.01666666665028,
+          "hp": 5829.793203892289,
+          "playerHp": 251.55999999999494,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 18.649999999983038,
+          "hp": 5829.793203892289,
+          "playerHp": 251.9399999999946,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 19.01666666664937,
+          "hp": 5829.793203892289,
+          "playerHp": 252.1599999999944,
+          "phase": "warning",
+          "enraged": false
+        },
+        {
+          "t": 19.99999999998181,
+          "hp": 5717.006675704568,
+          "playerHp": 252.74999999999386,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 20.01666666664846,
+          "hp": 5717.006675704568,
+          "playerHp": 252.75999999999385,
+          "phase": "commit",
+          "enraged": false
+        },
+        {
+          "t": 20.149999999981674,
+          "hp": 5717.006675704568,
+          "playerHp": 252.83999999999378,
+          "phase": "attack",
+          "enraged": false
+        },
+        {
+          "t": 20.33333333331484,
+          "hp": 5717.006675704568,
+          "playerHp": 252.94999999999368,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 21.016666666647552,
+          "hp": 5717.006675704568,
+          "playerHp": 253.3599999999933,
+          "phase": "recover",
+          "enraged": false
+        },
+        {
+          "t": 21.733333333313567,
+          "hp": 5463.236987282195,
+          "playerHp": 204.78999999999292,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 22.016666666646643,
+          "hp": 5463.236987282195,
+          "playerHp": 204.95999999999276,
+          "phase": "approach",
+          "enraged": false
+        },
+        {
+          "t": 22.43333333331293,
+          "hp": 5237.663930906752,
+          "playerHp": 205.20999999999253,
+          "phase": "phase-transition",
+          "enraged": true
+        },
+        {
+          "t": 22.849999999979218,
+          "hp": 5237.663930906752,
+          "playerHp": 205.4599999999923,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 22.86666666664587,
+          "hp": 5237.663930906752,
+          "playerHp": 205.4699999999923,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 23.016666666645733,
+          "hp": 5237.663930906752,
+          "playerHp": 205.55999999999221,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 24.016666666644824,
+          "hp": 4560.944761780424,
+          "playerHp": 206.15999999999167,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 24.266666666644596,
+          "hp": 4560.944761780424,
+          "playerHp": 206.30999999999153,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 24.41666666664446,
+          "hp": 4560.944761780424,
+          "playerHp": 157.39999999999145,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 24.599999999977626,
+          "hp": 4560.944761780424,
+          "playerHp": 157.50999999999135,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 25.016666666643914,
+          "hp": 4250.781809264191,
+          "playerHp": 157.75999999999112,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 26.016666666643005,
+          "hp": 3912.4222247010275,
+          "playerHp": 109.35999999999103,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 26.41666666664264,
+          "hp": 3658.6525362786547,
+          "playerHp": 109.59999999999116,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 27.016666666642095,
+          "hp": 3658.6525362786547,
+          "playerHp": 85.45999999999134,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 27.51666666664164,
+          "hp": 3658.6525362786547,
+          "playerHp": 85.75999999999149,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 28.016666666641186,
+          "hp": 3658.6525362786547,
+          "playerHp": 86.05999999999165,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 28.866666666640413,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.06999999999158,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 29.016666666640276,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.15999999999156,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 29.199999999973443,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.26999999999154,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 30.016666666639367,
+          "hp": 3658.6525362786547,
+          "playerHp": 62.75999999999144,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 30.59999999997217,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.10999999999137,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 31.016666666638457,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.359999999991324,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 31.69999999997117,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.76999999999124,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 32.01666666663755,
+          "hp": 3658.6525362786547,
+          "playerHp": 63.959999999991204,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 32.84999999997012,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.45999999999142,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 32.99999999996999,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.54999999999147,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 33.01666666663664,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.55999999999148,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 33.18333333330315,
+          "hp": 3658.6525362786547,
+          "playerHp": 64.65999999999153,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 34.01666666663573,
+          "hp": 3658.6525362786547,
+          "playerHp": 65.15999999999178,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 35.01666666663482,
+          "hp": 3658.6525362786547,
+          "playerHp": 65.75999999999209,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 35.04999999996812,
+          "hp": 3658.6525362786547,
+          "playerHp": 65.7799999999921,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 36.01666666663391,
+          "hp": 3658.6525362786547,
+          "playerHp": 69.1099999999921,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 36.14999999996712,
+          "hp": 3658.6525362786547,
+          "playerHp": 69.18999999999214,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 37.016666666633,
+          "hp": 3545.8660080909335,
+          "playerHp": 69.7099999999924,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 37.499999999965894,
+          "hp": 3545.8660080909335,
+          "playerHp": 69.99999999999255,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 37.64999999996576,
+          "hp": 3545.8660080909335,
+          "playerHp": 70.0899999999926,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 37.833333333298924,
+          "hp": 3545.8660080909335,
+          "playerHp": 70.19999999999266,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 38.01666666663209,
+          "hp": 3545.8660080909335,
+          "playerHp": 61.55999999999269,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 39.01666666663118,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.15999999999257,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 39.23333333329765,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.289999999992546,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 40.01666666663027,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.75999999999245,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 40.33333333329665,
+          "hp": 3545.8660080909335,
+          "playerHp": 62.949999999992414,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 41.01666666662936,
+          "hp": 3545.8660080909335,
+          "playerHp": 63.35999999999233,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 41.73333333329538,
+          "hp": 3545.8660080909335,
+          "playerHp": 63.78999999999225,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 41.88333333329524,
+          "hp": 3545.8660080909335,
+          "playerHp": 14.87999999999223,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 42.01666666662845,
+          "hp": 3545.8660080909335,
+          "playerHp": 14.959999999992228,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 42.06666666662841,
+          "hp": 3545.8660080909335,
+          "playerHp": 14.989999999992227,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 43.01666666662754,
+          "hp": 3545.8660080909335,
+          "playerHp": 15.559999999992215,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 43.88333333329342,
+          "hp": 3545.8660080909335,
+          "playerHp": 16.079999999992218,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 44.016666666626634,
+          "hp": 3545.8660080909335,
+          "playerHp": 16.15999999999223,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 44.98333333329242,
+          "hp": 3320.292951715491,
+          "playerHp": 16.73999999999232,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 45.016666666625724,
+          "hp": 3320.292951715491,
+          "playerHp": 16.759999999992324,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 46.016666666624815,
+          "hp": 3320.292951715491,
+          "playerHp": 17.359999999992418,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 46.133333333291375,
+          "hp": 3320.292951715491,
+          "playerHp": 17.42999999999243,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 46.28333333329124,
+          "hp": 3320.292951715491,
+          "playerHp": 17.519999999992443,
+          "phase": "attack",
+          "enraged": true
+        },
+        {
+          "t": 46.466666666624405,
+          "hp": 3320.292951715491,
+          "playerHp": 17.62999999999246,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 47.016666666623905,
+          "hp": 3320.292951715491,
+          "playerHp": 17.95999999999251,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 48.016666666622996,
+          "hp": 3320.292951715491,
+          "playerHp": 18.559999999992606,
+          "phase": "recover",
+          "enraged": true
+        },
+        {
+          "t": 48.333333333289374,
+          "hp": 3320.292951715491,
+          "playerHp": 18.749999999992635,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 49.016666666622086,
+          "hp": 3320.292951715491,
+          "playerHp": 19.1599999999927,
+          "phase": "approach",
+          "enraged": true
+        },
+        {
+          "t": 49.433333333288374,
+          "hp": 3320.292951715491,
+          "playerHp": 19.40999999999274,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 50.01666666662118,
+          "hp": 3320.292951715491,
+          "playerHp": 19.759999999992793,
+          "phase": "warning",
+          "enraged": true
+        },
+        {
+          "t": 50.8333333332871,
+          "hp": 3320.292951715491,
+          "playerHp": 20.24999999999287,
+          "phase": "commit",
+          "enraged": true
+        },
+        {
+          "t": 50.983333333286964,
+          "hp": 3320.292951715491,
+          "playerHp": 0,
+          "phase": "attack",
+          "enraged": true
+        }
+      ],
+      "phaseDurations": {
+        "approach": 16.183333333318615,
+        "warning": 14.199999999987085,
+        "commit": 1.6499999999984993,
+        "attack": 1.833333333331666,
+        "recover": 16.69999999998481,
+        "phase-transition": 0.4166666666662877
+      },
+      "attacksByPhase": {
+        "phase1": 4,
+        "phase2": 7
+      },
+      "build": {
+        "owned": [
+          "spine-tools",
+          "foundation-science",
+          "foundation-warfare",
+          "foundation-industry",
+          "foundation-culture",
+          "stone-fire",
+          "stone-tools",
+          "application-defense-0",
+          "web:application-defense-0:1",
+          "web:web:application-defense-0:1:1",
+          "application-defense-1",
+          "web:application-defense-1:1",
+          "application-kinetic-1",
+          "weave-stone-science-warfare",
+          "web:application-defense-0:0",
+          "spine-metallurgy",
+          "web:stone-tools:1",
+          "web:web:application-defense-0:1:0",
+          "web:web:web:application-defense-0:1:1:1",
+          "web:application-defense-1:0",
+          "web:web:application-defense-1:1:1",
+          "web:web:application-defense-0:0:0",
+          "spine-ironwork",
+          "web:web:web:application-defense-1:1:1:1",
+          "web:web:application-defense-0:0:1",
+          "web:web:web:application-defense-0:1:1:0",
+          "web:web:stone-tools:1:0",
+          "weave-iron-science-warfare",
+          "spine-steam",
+          "stone-totem",
+          "web:web:web:stone-tools:1:0:1",
+          "web:application-kinetic-1:1",
+          "web:web:application-defense-1:0:0",
+          "industrial-turret",
+          "spine-fission",
+          "web:industrial-turret:1",
+          "atomic-plasma",
+          "weave-industrial-industry-culture",
+          "spine-orbital",
+          "web:web:web:web:application-defense-0:1:1:0:0",
+          "web:weave-stone-science-warfare:0",
+          "web:web:web:application-defense-0:0:0:0"
+        ],
+        "damageMul": 2.819663204693034,
+        "maxHp": 310,
+        "stages": {
+          "kinetic": 5,
+          "energy": 5,
+          "defense": 5,
+          "field": 5
+        }
+      }
+    }
+  }
+}

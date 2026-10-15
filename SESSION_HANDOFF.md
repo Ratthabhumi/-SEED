@@ -1,4 +1,41 @@
-## Content16.1 continuation — 2026-10-15 (read first)
+## Home playable-quality recovery —2026-10-15 (read first)
+
+Native review of the d5de023 CI artifact exposed percentage-label overlap in
+Pause at1280x720/200% (EN and TH), despite earlier broad layout tests. New text
+Range bounds regression fails2/2 before the fix and passes2/2 afterward. Compact
+desktop nowrap/min-width0/equal shrink caused it; wrap with intrinsic minimum
+label width instead. Font scale/Thai line-height and keyboard activation retained.
+Before/after PNGs and exact provenance are under docs/evidence/recovery.
+Digest follow-up: three JSON summaries normalize CRLF→LF in Git. The manifest
+now verifies published Git-blob bytes and retains original Windows digests;
+binary gzip/PNG and logical observations are unchanged. All11 entries rechecked.
+No renderer/core/Content change in this correction: versions stay3/18/2.
+Frozen d5 measurements (240 physical/480 Push CI rows,36 policies, official
+packages) are durably committed with a manifest; they do not certify newer HEAD.
+Require final new-head full checks/176-browser expectation/Push+PR5/5 and new
+official package stamps in PR15's receipt. No thresholds/cases were reduced.
+
+Starting local/remote7b9b164, PR14 verified latest open Draft. Three untracked
+historical evidence files preserved with hashes in ignored scratch backup.
+Baseline Windows Node24 check506/87files,61 provenance/build; terrain browser5/5.
+Measured Intel UHD630 D3D11 HC ground13ms p95 inclusive diagnostic. Candidate
+removes offscreen floor commands without extra textures, protects complete boss
+recovery before half-HP escalation. Versions3/18/2; actual canonical timing change.
+Focused boss10/10 and four-boundary raster/canonical parity browser1/1 pass.
+Full exact-head gates pending. See docs/CONTENT17_RECOVERY.md and ADR0035.
+Animation production remains BLOCKED, human visual/fun OPEN; no merge/tag/release.
+
+Runtime correction checkpoint a754530 preserves the new followed actor's view
+until the camera catches up during World2/teleport; original neighborhood cap
+stays49. Current31-row ledger: docs/CONTENT17_HUMAN_ISSUES.md. One Draft PR15:
+https://github.com/Ratthabhumi/-SEED/pull/15. Its durable final receipt records
+the immutable final source/merge SHA, exact Push/PR jobs, official Node22/24
+packages, complete policies and all measured failures. Earlier green checks
+never certify a newer HEAD. Baseline diagnostic raw/screenshot are committed
+under docs/evidence/recovery; they are not stamped product performance acceptance.
+Final physical five-block source identity is read from the actually served bundle.
+
+## Content16.1 continuation — 2026-10-15
 
 Correction after c40cf0c's exact Push38685763415 and PR38685781809 both5/5:
 direct-PNG default REJECTED. Source prep median28.8→0.7ms, but1080p normal cold
