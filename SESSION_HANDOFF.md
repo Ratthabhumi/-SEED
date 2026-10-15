@@ -1,4 +1,70 @@
-## Content15.3 continuation — 2026-10-15 (read first)
+## Content16.1 continuation — 2026-10-15 (read first)
+
+Correction after c40cf0c's exact Push38685763415 and PR38685781809 both5/5:
+direct-PNG default REJECTED. Source prep median28.8→0.7ms, but1080p normal cold
+render median9.25→17.35ms (Push8.75→17.25ms). Four official packages were clean,
+CRC/root/licenses passed; PR merge4655cd7 tree matched source.172 browser PASS
+/1 skip per run. Those results certify c40cf0c only, not the correction.
+Keep measured evidence in docs/evidence/content161/rejected-png-experiment.json.
+Correction retains prebaked RGBA but restores parent CanvasTexture creation/
+refresh for fallbacks. Runtime and rejected PNG routes remain diagnostics;
+texture/upload causality is a hypothesis, not a proven shader/driver root cause.
+The first PR benchmark's normal/reduced "warm" rows all retained16–31 terrain
+jobs; HC's49 unused jobs are intentionally paused. Correct paired warm timing
+to await active terrain drain, then1500ms settling and a new3s window. Retain
+wait duration, all cold rows/populations/budgets. Old post-cold windows are not
+the same protocol as drained warm samples. This is an evidence correction,
+not evidence that cold hitches or physical performance are solved.
+Canvas-path correction passed local Windows full check506/506 (135.13s) and
+five focused browser tests (2.8min), including both diagnostic controls. The
+three-path rotated Windows SwiftShader probe is retained as INCONCLUSIVE:
+sparse/variable samples and large stalls cannot establish root cause or a
+physical budget pass. Full corrected-head CI and a clean Intel/D3D11 paired
+run are still required; use the original profiler with the corrected warm
+barrier, retaining all cold rows and warm-up waits. Do not relabel old c40cf0c
+measurements as proof of this correction. Final receipt belongs in PR14.
+The same36 natural pairs reached24/36; phase2 attacks remained21/24 reached,
+but total phase2 attacks67→86 and observed entry→first attack2.367→1.983s.
+Kills22→21, player defeats0→1;12 unreached are11 before-Space time limits and
+one revealed-Stronghold time limit. These are challenge data, not human fun PASS.
+
+Initial local/remote4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0; PR13 both
+Push38677388790 and PR38677393143 verified5/5. New single workstream
+feat/content16-production-quality-20261015 targets PR13's branch. Read
+docs/CONTENT16_1_DELIVERY.md, CONTENT16_1_HUMAN_ISSUES.md and ADR0034.
+
+Candidate: exact offline periodic PNG/RGBA material preparation;18 measured
+painted site support anchors; shorter phase2 transition/approach downtime with
+full warnings/recoveries unchanged; bounded terrain/site arrival observations.
+Existing atlas/typed uploads/epoch guards/pools/FOG and one primary weapon stay.
+CONTENT16→17 for actual canonical boss timing and existing child-law identity;
+WORLDGEN3 / SAVE2 unchanged. No new dependency or fabricated artistic approval.
+
+Windows audit now splits the same eight900s policies at transport boundaries
+and yields every128 steps; CPU/wall/RSS/slices recorded. First attempt completed
+all8 policy cases plus replay in166868ms under the unchanged600s aggregate
+budget, while the full check FAILED3 asset-manifest assertions (502 passed).
+Original-source/derivation manifest entries corrected; no assertion weakened.
+Second full Windows npm run check PASS:87 files/506 tests, provenance61 assets,
+production build; audit8 policies+replay142134ms. Focused new native browser
+suite4/4 PASS (51.5s; D3D11 requested). Initial new fallback fixture mistakenly
+read the snapshot's p array as an object; fixed to p[0]/p[1], assertions retained.
+Pixel comparison: all1,048,576 material channels and fallback pixels equal;
+cached bytes survive restart; Worker-unavailable fallback and source-ground
+pivots verified. Staged teleport→real canonical discovery observed169.7ms to
+CPU post-render in one sample; not physical display latency or human arrival.
+Initial failed log retained in ignored scratch. Final full Windows/CI verdicts,
+source vs compiled merge SHA, all measured modes and four official package
+receipts belong to the final Draft PR, avoiding recursive evidence-SHA commits.
+
+Continuous painted gait/complete action family still BLOCKED by actual editable
+anatomy/timeline production. No new source frames or distorted whole-body walk
+were enabled. Existing source/rejected rows preserved. Specific artist/operator
+handoff: docs/research/CONTENT16_1_REMAINING.md. No broad Research repeated.
+Human visual/fun and strict physical performance gates remain OPEN separately.
+Raw human QA stays private/ignored. No merge/tag/release/history rewrite.
+
+## Content15.3 continuation — 2026-10-15
 
 Resumed Draft PR13 / feat/content153-playable-visual-boss-20261015 at
 081ec5b802de5a715fd050a0587df458850a2911, stacked on PR12 at

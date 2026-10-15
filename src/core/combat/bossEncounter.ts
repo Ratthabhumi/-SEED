@@ -1,7 +1,7 @@
 import type {SimEnemy} from "../sim/RunState";
 export type BossPattern="slam"|"fan"|"cross";
 export interface BossEncounter {phase:"approach"|"warning"|"commit"|"attack"|"recover"|"phase-transition";timer:number;cycle:number;pattern:BossPattern;aimX:number;aimY:number;enraged:boolean;}
-export const BOSS_ENCOUNTER={warning:1.15,recovery:1.6,cooldown:2.2,slamRadius:105,crossHalfWidth:24,crossLength:360,shotSpeed:230} as const;
+export const BOSS_ENCOUNTER={warning:1.15,recovery:1.6,cooldown:2.2,phase2Cooldown:1.1,transition:.4,slamRadius:105,crossHalfWidth:24,crossLength:360,shotSpeed:230} as const;
 export const createBossEncounter=():BossEncounter=>({phase:"approach",timer:2.2,cycle:0,pattern:"slam",aimX:0,aimY:0,enraged:false});
 export const bossWarningDuration=(pattern:BossPattern):number=>pattern==="fan"?1.35:pattern==="cross"?1.4:BOSS_ENCOUNTER.warning;
 export const bossRecoveryDuration=(pattern:BossPattern):number=>pattern==="fan"?1.4:pattern==="cross"?1.8:1.85;
@@ -14,7 +14,7 @@ export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:
   // those safe states promptly, but finish an already committed attack first.
   // Lethal damage remains lethal; this grants neither HP nor invulnerability.
   if(!a.enraged&&e.hp>0&&e.hp<=e.maxHp*.5&&a.phase!=="commit"&&a.phase!=="attack"){
-    a.enraged=true;a.phase="phase-transition";a.timer=.8;a.cycle=0;return true;
+    a.enraged=true;a.phase="phase-transition";a.timer=BOSS_ENCOUNTER.transition;a.cycle=0;return true;
   }
   if(a.phase==="approach") {
     if(d>230){e.x+=dx/d*e.speed*dt;e.y+=dy/d*e.speed*dt;}
@@ -31,7 +31,7 @@ export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:
     a.phase="recover";a.timer=bossRecoveryDuration(a.pattern);
   } else if(a.phase==="phase-transition" && a.timer<=0) {
     a.phase="approach";a.timer=0;
-  } else if(a.phase==="recover" && a.timer<=0) {a.phase="approach";a.timer=BOSS_ENCOUNTER.cooldown;}
+  } else if(a.phase==="recover" && a.timer<=0) {a.phase="approach";a.timer=a.enraged?BOSS_ENCOUNTER.phase2Cooldown:BOSS_ENCOUNTER.cooldown;}
   return true;
 }
 export function bossAreaHit(pattern:BossPattern,originX:number,originY:number,aimX:number,aimY:number,x:number,y:number):boolean {

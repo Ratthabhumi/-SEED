@@ -1,5 +1,10 @@
 # Animation production contract — Content15 reference
 
+Content16.1 / canonical Content17: motion coverage is unchanged. No new gait,
+editable painted rig or full action family was produced; those remain BLOCKED.
+Existing native clock/socket/one-weapon paths and rejected sources are retained.
+See docs/research/CONTENT16_1_REMAINING.md for the actual artist deliverable.
+
 ## Content16 amendment (2026-10-15)
 
 This amendment supersedes the Content15 dimensions/coverage below; historical

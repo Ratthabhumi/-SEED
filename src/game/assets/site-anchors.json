@@ -1,0 +1,198 @@
+{
+  "classification": "MEASURED_ALPHA_BASE_NOT_ARTIST_ACCEPTANCE",
+  "threshold": 32,
+  "textures": {
+    "world-props": {
+      "path": "assets/seed/combat/world-props-v1.png",
+      "sha256": "6040c79ce8e2ecddc33ef9b571e9bc17c7254ce18e0112e9f9786c1fc6ca4436",
+      "frames": [
+        {
+          "frame": 0,
+          "bounds": [
+            15,
+            20,
+            103,
+            115
+          ],
+          "groundY": 115
+        },
+        {
+          "frame": 1,
+          "bounds": [
+            29,
+            18,
+            114,
+            107
+          ],
+          "groundY": 107
+        },
+        {
+          "frame": 2,
+          "bounds": [
+            28,
+            33,
+            100,
+            108
+          ],
+          "groundY": 108
+        },
+        {
+          "frame": 3,
+          "bounds": [
+            35,
+            15,
+            105,
+            115
+          ],
+          "groundY": 115
+        },
+        {
+          "frame": 4,
+          "bounds": [
+            14,
+            19,
+            109,
+            114
+          ],
+          "groundY": 114
+        },
+        {
+          "frame": 5,
+          "bounds": [
+            24,
+            21,
+            110,
+            116
+          ],
+          "groundY": 116
+        }
+      ]
+    },
+    "outposts-v2": {
+      "path": "assets/seed/structures/outposts-v2.png",
+      "sha256": "90d501ef336c7842abd74aa838d94b322a58a4b881ea3dcd030d61ccb8610e15",
+      "frames": [
+        {
+          "frame": 0,
+          "bounds": [
+            27,
+            27,
+            106,
+            108
+          ],
+          "groundY": 108
+        },
+        {
+          "frame": 1,
+          "bounds": [
+            18,
+            21,
+            114,
+            113
+          ],
+          "groundY": 113
+        },
+        {
+          "frame": 2,
+          "bounds": [
+            19,
+            33,
+            109,
+            111
+          ],
+          "groundY": 111
+        },
+        {
+          "frame": 3,
+          "bounds": [
+            21,
+            28,
+            108,
+            113
+          ],
+          "groundY": 113
+        },
+        {
+          "frame": 4,
+          "bounds": [
+            20,
+            20,
+            105,
+            118
+          ],
+          "groundY": 118
+        },
+        {
+          "frame": 5,
+          "bounds": [
+            14,
+            18,
+            114,
+            118
+          ],
+          "groundY": 118
+        },
+        {
+          "frame": 6,
+          "bounds": [
+            14,
+            29,
+            113,
+            112
+          ],
+          "groundY": 112
+        },
+        {
+          "frame": 7,
+          "bounds": [
+            18,
+            22,
+            110,
+            118
+          ],
+          "groundY": 118
+        },
+        {
+          "frame": 8,
+          "bounds": [
+            17,
+            18,
+            114,
+            104
+          ],
+          "groundY": 104
+        },
+        {
+          "frame": 9,
+          "bounds": [
+            14,
+            24,
+            114,
+            112
+          ],
+          "groundY": 112
+        },
+        {
+          "frame": 10,
+          "bounds": [
+            14,
+            21,
+            112,
+            111
+          ],
+          "groundY": 111
+        },
+        {
+          "frame": 11,
+          "bounds": [
+            16,
+            18,
+            110,
+            106
+          ],
+          "groundY": 106
+        }
+      ]
+    }
+  }
+}

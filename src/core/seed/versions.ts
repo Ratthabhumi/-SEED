@@ -66,7 +66,9 @@ export const WORLDGEN_VERSION = 3;
 // Content16: responsive safe-boundary boss transition and cross-first escalation.
 // Damage, HP, world topology and persistent save schema remain unchanged.
 // Old input traces may diverge in encounter timing; never relabel old replays.
-export const CONTENT_VERSION = 16;
+// Content17: phase-two transition .8 -> .4s; inter-pattern approach 2.2 -> 1.1s.
+// Full warnings/recoveries and lethal damage stay intact; encounter traces differ.
+export const CONTENT_VERSION = 17;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

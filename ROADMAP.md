@@ -1,5 +1,11 @@
 # -SEED Development Roadmap
 
+Content16.1 continuation (2026-10-15), parent PR13/4d1dc0c: exact prebaked
+terrain sources, painted site contact anchors, tighter fully warned Boss phase2
+cadence and measured Windows audit scheduling. Canonical identity3/17/2.
+See docs/CONTENT16_1_DELIVERY.md and the same31-issue ledger. Motion production
+is BLOCKED; human visual/fun and strict physical performance remain OPEN.
+
 Content13 review checkpoint (2026-10-13): guaranteed voluntary Fire/Tools recovery, explicit combination objective, original painted actor/outpost/Verdant assets, all-family combat feedback and three-pattern boss counterplay are under review in PR7. See `docs/QUALITY_CLOSURE_REVIEW.md` for the seventeen-area evidence matrix. Production multi-frame animation, painted equipment eras/other biomes, hardware budgets and fresh human acceptance remain incomplete. No milestone/release-ready declaration.
 
 ## 1. North Star

@@ -1,0 +1,583 @@
+{
+  "classification": "REJECTED_DIRECT_PNG_DEFAULT_COLD_RENDER_REGRESSION",
+  "source": "c40cf0c673edae7f4fbbe5e9536a13799d894968",
+  "compiledPrMerge": "4655cd7302d6801fe9776e589fa0b2c1940e9c06",
+  "baseline": "4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0",
+  "pushRun": 38685763415,
+  "prRun": 38685781809,
+  "archives": [
+    {
+      "id": 11951142724,
+      "name": "pr-render",
+      "digest": "2063cff868242afe2d0b5c642f709eae22273572a9010bf2f20d84d5438d5458",
+      "archiveHash": "PASS",
+      "crc": "PASS"
+    },
+    {
+      "id": 11952076246,
+      "name": "push-render",
+      "digest": "f29c4bc9477756c710dc5505ce08f4d13560b9b548116dd6ed963dca68aa6c3b",
+      "archiveHash": "PASS",
+      "crc": "PASS"
+    },
+    {
+      "id": 11950386526,
+      "name": "pr-progression",
+      "digest": "87c90536c656e18618865cfceae7898ca1080557cc6e5481fac7cfa07d730219",
+      "archiveHash": "PASS",
+      "crc": "PASS"
+    }
+  ],
+  "results": {
+    "pr": {
+      "sourcePreparation": {
+        "A": {
+          "n": 60,
+          "median": 28.800000000017462,
+          "max": 35
+        },
+        "B": {
+          "n": 60,
+          "median": 0.7000000000698492,
+          "max": 1
+        }
+      },
+      "conditions": [
+        {
+          "width": 1280,
+          "mode": "normal",
+          "cache": "cold",
+          "before": 7.7999999999810825,
+          "after": 6.7500000000873115,
+          "beforeFails": 2,
+          "afterFails": 4
+        },
+        {
+          "width": 1280,
+          "mode": "normal",
+          "cache": "warm",
+          "before": 3.1499999999941792,
+          "after": 3.800000000046566,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1280,
+          "mode": "reduced",
+          "cache": "cold",
+          "before": 7.5,
+          "after": 7.25,
+          "beforeFails": 3,
+          "afterFails": 4
+        },
+        {
+          "width": 1280,
+          "mode": "reduced",
+          "cache": "warm",
+          "before": 3.099999999976717,
+          "after": 2.3000000000174623,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1280,
+          "mode": "contrast",
+          "cache": "cold",
+          "before": 34.39999999999418,
+          "after": 34.90000000002328,
+          "beforeFails": 10,
+          "afterFails": 10
+        },
+        {
+          "width": 1280,
+          "mode": "contrast",
+          "cache": "warm",
+          "before": 4.600000000005821,
+          "after": 4.799999999959255,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1920,
+          "mode": "normal",
+          "cache": "cold",
+          "before": 9.25,
+          "after": 17.35000000006403,
+          "beforeFails": 7,
+          "afterFails": 9
+        },
+        {
+          "width": 1920,
+          "mode": "normal",
+          "cache": "warm",
+          "before": 4.449999999982538,
+          "after": 3.6499999999941792,
+          "beforeFails": 1,
+          "afterFails": 0
+        },
+        {
+          "width": 1920,
+          "mode": "reduced",
+          "cache": "cold",
+          "before": 9.049999999988358,
+          "after": 16.800000000046566,
+          "beforeFails": 6,
+          "afterFails": 7
+        },
+        {
+          "width": 1920,
+          "mode": "reduced",
+          "cache": "warm",
+          "before": 3.8999999999650754,
+          "after": 4.849999999918509,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1920,
+          "mode": "contrast",
+          "cache": "cold",
+          "before": 33.34999999997672,
+          "after": 31.54999999998836,
+          "beforeFails": 10,
+          "afterFails": 10
+        },
+        {
+          "width": 1920,
+          "mode": "contrast",
+          "cache": "warm",
+          "before": 4.80000000000291,
+          "after": 5.149999999965075,
+          "beforeFails": 0,
+          "afterFails": 0
+        }
+      ],
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+      "native": {
+        "captures": 44,
+        "errors": [],
+        "builds": {
+          "A": {
+            "sha": "4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0",
+            "dirty": false,
+            "asset": "http://127.0.0.1:4187/assets/index-DZ2T0e53.js"
+          },
+          "B": {
+            "sha": "4655cd7302d6801fe9776e589fa0b2c1940e9c06",
+            "dirty": false,
+            "asset": "http://127.0.0.1:4188/assets/index-Duptdb2E.js"
+          }
+        }
+      }
+    },
+    "push": {
+      "sourcePreparation": {
+        "A": {
+          "n": 60,
+          "median": 28.399999999950523,
+          "max": 31.5
+        },
+        "B": {
+          "n": 60,
+          "median": 0.7500000000582077,
+          "max": 1.1000000000058208
+        }
+      },
+      "conditions": [
+        {
+          "width": 1280,
+          "mode": "normal",
+          "cache": "cold",
+          "before": 7.4500000000116415,
+          "after": 7.500000000014552,
+          "beforeFails": 1,
+          "afterFails": 4
+        },
+        {
+          "width": 1280,
+          "mode": "normal",
+          "cache": "warm",
+          "before": 4.049999999930151,
+          "after": 3.6499999999941792,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1280,
+          "mode": "reduced",
+          "cache": "cold",
+          "before": 6.9500000000116415,
+          "after": 7.599999999976717,
+          "beforeFails": 2,
+          "afterFails": 4
+        },
+        {
+          "width": 1280,
+          "mode": "reduced",
+          "cache": "warm",
+          "before": 2.000000000029104,
+          "after": 2.999999999970896,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1280,
+          "mode": "contrast",
+          "cache": "cold",
+          "before": 37.80000000000291,
+          "after": 36.550000000046566,
+          "beforeFails": 10,
+          "afterFails": 10
+        },
+        {
+          "width": 1280,
+          "mode": "contrast",
+          "cache": "warm",
+          "before": 4.600000000034925,
+          "after": 5.050000000046566,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1920,
+          "mode": "normal",
+          "cache": "cold",
+          "before": 8.75,
+          "after": 17.25,
+          "beforeFails": 6,
+          "afterFails": 9
+        },
+        {
+          "width": 1920,
+          "mode": "normal",
+          "cache": "warm",
+          "before": 4.349999999947613,
+          "after": 4.500000000058208,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1920,
+          "mode": "reduced",
+          "cache": "cold",
+          "before": 7.600000000005821,
+          "after": 9.55000000000291,
+          "beforeFails": 4,
+          "afterFails": 6
+        },
+        {
+          "width": 1920,
+          "mode": "reduced",
+          "cache": "warm",
+          "before": 4.250000000058208,
+          "after": 4.349999999976717,
+          "beforeFails": 0,
+          "afterFails": 0
+        },
+        {
+          "width": 1920,
+          "mode": "contrast",
+          "cache": "cold",
+          "before": 32.14999999999418,
+          "after": 31.599999999976717,
+          "beforeFails": 10,
+          "afterFails": 10
+        },
+        {
+          "width": 1920,
+          "mode": "contrast",
+          "cache": "warm",
+          "before": 4.800000000104774,
+          "after": 4.750000000029104,
+          "beforeFails": 0,
+          "afterFails": 0
+        }
+      ],
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+      "native": {
+        "captures": 44,
+        "errors": [],
+        "builds": {
+          "A": {
+            "sha": "4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0",
+            "dirty": false,
+            "asset": "http://127.0.0.1:4187/assets/index-DZ2T0e53.js"
+          },
+          "B": {
+            "sha": "c40cf0c673edae7f4fbbe5e9536a13799d894968",
+            "dirty": false,
+            "asset": "http://127.0.0.1:4188/assets/index-BJQOskfC.js"
+          }
+        }
+      }
+    }
+  },
+  "boss": {
+    "baselineSha": "4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0",
+    "before": {
+      "runs": 36,
+      "reached": 24,
+      "killed": 22,
+      "playerDead": 0,
+      "phase2": 22,
+      "phase2AttackCases": 21,
+      "totalPhase2Attacks": 67,
+      "unreachedCauses": {
+        "time-limit-before-space": 11,
+        "time-limit-after-stronghold-revealed": 1
+      },
+      "medianDurationReached": 15.03333333331966,
+      "phase2FirstAttackObservedMedian": 2.366666666664514,
+      "phase2FirstAttackObservedN": 21,
+      "recoveries": 191,
+      "damageReceivedIncludingAdds": 2702.55
+    },
+    "after": {
+      "runs": 36,
+      "reached": 24,
+      "killed": 21,
+      "playerDead": 1,
+      "phase2": 22,
+      "phase2AttackCases": 21,
+      "totalPhase2Attacks": 86,
+      "unreachedCauses": {
+        "time-limit-before-space": 11,
+        "time-limit-after-stronghold-revealed": 1
+      },
+      "medianDurationReached": 16.833333333318024,
+      "phase2FirstAttackObservedMedian": 1.9833333333315295,
+      "phase2FirstAttackObservedN": 21,
+      "recoveries": 210,
+      "damageReceivedIncludingAdds": 2837.3
+    },
+    "baselineDpsTertiles": [
+      {
+        "group": "low",
+        "n": 8,
+        "before": {
+          "runs": 8,
+          "reached": 8,
+          "killed": 6,
+          "playerDead": 0,
+          "phase2": 6,
+          "phase2AttackCases": 6,
+          "totalPhase2Attacks": 49,
+          "unreachedCauses": {},
+          "medianDurationReached": 63.39166666660901,
+          "phase2FirstAttackObservedMedian": 2.366666666664514,
+          "phase2FirstAttackObservedN": 6,
+          "recoveries": 153,
+          "damageReceivedIncludingAdds": 1906.3
+        },
+        "after": {
+          "runs": 8,
+          "reached": 8,
+          "killed": 5,
+          "playerDead": 1,
+          "phase2": 6,
+          "phase2AttackCases": 6,
+          "totalPhase2Attacks": 62,
+          "unreachedCauses": {},
+          "medianDurationReached": 58.19166666661374,
+          "phase2FirstAttackObservedMedian": 1.9833333333315295,
+          "phase2FirstAttackObservedN": 6,
+          "recoveries": 166,
+          "damageReceivedIncludingAdds": 2020.05
+        }
+      },
+      {
+        "group": "middle",
+        "n": 8,
+        "before": {
+          "runs": 8,
+          "reached": 8,
+          "killed": 8,
+          "playerDead": 0,
+          "phase2": 8,
+          "phase2AttackCases": 8,
+          "totalPhase2Attacks": 10,
+          "unreachedCauses": {},
+          "medianDurationReached": 12.883333333321616,
+          "phase2FirstAttackObservedMedian": 2.366666666664514,
+          "phase2FirstAttackObservedN": 8,
+          "recoveries": 20,
+          "damageReceivedIncludingAdds": 355.25
+        },
+        "after": {
+          "runs": 8,
+          "reached": 8,
+          "killed": 8,
+          "playerDead": 0,
+          "phase2": 8,
+          "phase2AttackCases": 8,
+          "totalPhase2Attacks": 14,
+          "unreachedCauses": {},
+          "medianDurationReached": 12.983333333321525,
+          "phase2FirstAttackObservedMedian": 1.9833333333315295,
+          "phase2FirstAttackObservedN": 8,
+          "recoveries": 24,
+          "damageReceivedIncludingAdds": 416.5
+        }
+      },
+      {
+        "group": "high",
+        "n": 8,
+        "before": {
+          "runs": 8,
+          "reached": 8,
+          "killed": 8,
+          "playerDead": 0,
+          "phase2": 8,
+          "phase2AttackCases": 7,
+          "totalPhase2Attacks": 8,
+          "unreachedCauses": {},
+          "medianDurationReached": 10.141666666657443,
+          "phase2FirstAttackObservedMedian": 2.366666666664514,
+          "phase2FirstAttackObservedN": 7,
+          "recoveries": 18,
+          "damageReceivedIncludingAdds": 441
+        },
+        "after": {
+          "runs": 8,
+          "reached": 8,
+          "killed": 8,
+          "playerDead": 0,
+          "phase2": 8,
+          "phase2AttackCases": 7,
+          "totalPhase2Attacks": 10,
+          "unreachedCauses": {},
+          "medianDurationReached": 10.141666666657443,
+          "phase2FirstAttackObservedMedian": 1.9833333333315295,
+          "phase2FirstAttackObservedN": 7,
+          "recoveries": 20,
+          "damageReceivedIncludingAdds": 400.75
+        }
+      }
+    ]
+  },
+  "decision": "Keep pixels/art source and rejection evidence. Test prebaked RGBA through the parent CanvasTexture creation/refresh path; direct PNG fallback is diagnostic-only. Reduced source setup cost is not a renderer budget pass; texture type/upload causality is a hypothesis until controlled measurement.",
+  "officialPackages": {
+    "head": "c40cf0c673edae7f4fbbe5e9536a13799d894968",
+    "merge": "4655cd7302d6801fe9776e589fa0b2c1940e9c06",
+    "base": "4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0",
+    "classification": "OFFICIAL_NODE22_NODE24_PUSH_AND_PR_PACKAGES_VERIFIED",
+    "packages": [
+      {
+        "id": 11950395491,
+        "run": 38685781809,
+        "name": "seed-web-0.2.0-dev.0-node22",
+        "artifactSha256": "86e97cccc5da2c5618330514496cf723a7ec512c143e551050cea87e5ec1a087",
+        "packageSha256": "128b1286fb3661f3bb3b9db3579d9bf3ce8aee5ac313502e2b53158c689a7b92",
+        "contentTreeSha256": "892a04c98b882c70d7f5337b58622dbad4ac801d8f0a8853ebe40fe1d279daff",
+        "compiledSha": "4655cd7302d6801fe9776e589fa0b2c1940e9c06",
+        "buildDirty": false,
+        "crc": "PASS",
+        "rootIndex": true,
+        "licenses": "PASS",
+        "files": 89,
+        "assets": 82,
+        "bytes": 7949576,
+        "entryBytes": 2184484
+      },
+      {
+        "id": 11950365436,
+        "run": 38685781809,
+        "name": "seed-web-0.2.0-dev.0-node24",
+        "artifactSha256": "77d03e27ccdd8c3151bcb50bc86ebfea5449ad0fe4e9497999c8a621f6a007c7",
+        "packageSha256": "6961de3e6c36fa90a437362ed56b30b92519caab4b4d75fdc775d7973f82b52f",
+        "contentTreeSha256": "892a04c98b882c70d7f5337b58622dbad4ac801d8f0a8853ebe40fe1d279daff",
+        "compiledSha": "4655cd7302d6801fe9776e589fa0b2c1940e9c06",
+        "buildDirty": false,
+        "crc": "PASS",
+        "rootIndex": true,
+        "licenses": "PASS",
+        "files": 89,
+        "assets": 82,
+        "bytes": 7949576,
+        "entryBytes": 2184484
+      },
+      {
+        "id": 11950460343,
+        "run": 38685763415,
+        "name": "seed-web-0.2.0-dev.0-node24",
+        "artifactSha256": "96fab7d47425b9917e9d1707426610d0176164310df9d453ec176cee9ac07486",
+        "packageSha256": "74af6c27589dabca9ac18dfe9a4ea87422ff282d272cab523340bbdad072fe9b",
+        "contentTreeSha256": "fb443a6dc2a3298148c0ff162e2085ae42d5781c258dd768cfddf442875c0a0e",
+        "compiledSha": "c40cf0c673edae7f4fbbe5e9536a13799d894968",
+        "buildDirty": false,
+        "crc": "PASS",
+        "rootIndex": true,
+        "licenses": "PASS",
+        "files": 89,
+        "assets": 82,
+        "bytes": 7949577,
+        "entryBytes": 2184484
+      },
+      {
+        "id": 11950365487,
+        "run": 38685763415,
+        "name": "seed-web-0.2.0-dev.0-node22",
+        "artifactSha256": "2741cf9fa90a95b2fbd590133cb04ff4215136840e431a29dd1438e33965c016",
+        "packageSha256": "a55d4a6042650204af3928b9360bca20ca304ee4315e361e636b47e884b3706e",
+        "contentTreeSha256": "fb443a6dc2a3298148c0ff162e2085ae42d5781c258dd768cfddf442875c0a0e",
+        "compiledSha": "c40cf0c673edae7f4fbbe5e9536a13799d894968",
+        "buildDirty": false,
+        "crc": "PASS",
+        "rootIndex": true,
+        "licenses": "PASS",
+        "files": 89,
+        "assets": 82,
+        "bytes": 7949577,
+        "entryBytes": 2184484
+      }
+    ]
+  },
+  "oldWarmWindowAudit": {
+    "pr": {
+      "normal": {
+        "rows": 40,
+        "pendingRows": 40,
+        "pendingMin": 18,
+        "pendingMax": 31,
+        "interpretation": "Old post-cold windows were not fully prepared steady state"
+      },
+      "reduced": {
+        "rows": 40,
+        "pendingRows": 40,
+        "pendingMin": 16,
+        "pendingMax": 30,
+        "interpretation": "Old post-cold windows were not fully prepared steady state"
+      },
+      "contrast": {
+        "rows": 40,
+        "pendingRows": 40,
+        "pendingMin": 49,
+        "pendingMax": 49,
+        "interpretation": "Unused painted queue intentionally paused"
+      }
+    },
+    "push": {
+      "normal": {
+        "rows": 40,
+        "pendingRows": 40,
+        "pendingMin": 16,
+        "pendingMax": 29,
+        "interpretation": "Old post-cold windows were not fully prepared steady state"
+      },
+      "reduced": {
+        "rows": 40,
+        "pendingRows": 40,
+        "pendingMin": 16,
+        "pendingMax": 29,
+        "interpretation": "Old post-cold windows were not fully prepared steady state"
+      },
+      "contrast": {
+        "rows": 40,
+        "pendingRows": 40,
+        "pendingMin": 49,
+        "pendingMax": 49,
+        "interpretation": "Unused painted queue intentionally paused"
+      }
+    }
+  }
+}
