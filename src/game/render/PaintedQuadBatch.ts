@@ -13,7 +13,8 @@ export class PaintedQuadBatch {
   this.mesh.setUseOrderedIndices(true);this.mesh.indicesOrdered=[];
  }
  begin(){this.count=0;}
- draw(frame:Phaser.Textures.Frame,x:number,y:number,w:number,h:number,angle=0,bounds?:{x:number;y:number;w:number;h:number;cell:number}){
+ style(key:string,tint:number){this.mesh.setTexture(key);(this.mesh as Phaser.GameObjects.Mesh2D&{tint:number}).tint=tint;}
+ draw(frame:Phaser.Textures.Frame,x:number,y:number,w:number,h:number,angle=0,bounds?:{x:number;y:number;w:number;h:number;cell:number},flipX=false){
   if(this.count>=this.cap)return;
   const offset=this.count++*16,cs=Math.cos(angle),sn=Math.sin(angle);
   let u0=frame.u0,v0=frame.v0,u1=frame.u1,v1=frame.v1;
@@ -24,6 +25,7 @@ export class PaintedQuadBatch {
    v0=frame.v0+(frame.v1-frame.v0)*bounds.y/bounds.cell;v1=frame.v0+(frame.v1-frame.v0)*(bounds.y+bounds.h)/bounds.cell;
    w*=bounds.w/bounds.cell;h*=bounds.h/bounds.cell;
   }
+  if(flipX)[u0,u1]=[u1,u0];
   const hx=w/2,hy=h/2;
   const vx=cs*hx,vy=sn*hx,ux=-sn*hy,uy=cs*hy;
   const v=this.vertices;

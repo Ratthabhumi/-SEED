@@ -1399,12 +1399,12 @@ export class RunSimulation {
   }
 
   // ------------------------------------------------------------------ combat
-  private hurtPlayer(dmg: number, ev: SimEvent[]): void {
+  private hurtPlayer(dmg: number, ev: SimEvent[], source="unknown"): void {
     const s = this.state;
     if (s.over || s.iframe > 0) return;
     s.build.hp -= dmg;
     s.iframe = 0.6;
-    ev.push({ type: "player_hurt", damage: dmg });
+    ev.push({ type: "player_hurt", damage: dmg, source });
     if (s.build.hp <= 0) {
       s.build.hp = 0;
       s.over = true;
@@ -1605,7 +1605,7 @@ export class RunSimulation {
     }
     if (def && def.volatileRadius > 0) {
       const d = Math.hypot(deathX - s.px, deathY - s.py);
-      if (d <= def.volatileRadius) this.hurtPlayer(def.volatileDamage, ev);
+      if (d <= def.volatileRadius) this.hurtPlayer(def.volatileDamage, ev,"volatile");
       // Blast catches nearby allies too (squad positioning matters).
       for (let ai = 0; ai < s.squad.length; ai++) {
         const a = s.squad[ai] as (typeof s.squad)[number];
@@ -2058,7 +2058,7 @@ export class RunSimulation {
           // Deliberate central gap; warnings expose this safe direction.
           for(const offset of [-.6,-.4,-.2,.2,.4,.6])this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
         } else {
-          if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev);
+          if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev,"boss-"+pattern);
           for(let i=0;i<s.squad.length;i++){const a=s.squad[i];if(a.active&&bossAreaHit(pattern,e.x,e.y,x,y,a.x,a.y))this.damageAlly(i,e.dmg);}
         }
       });
@@ -2080,7 +2080,7 @@ export class RunSimulation {
         e.x += (dx / d) * e.speed * dt;
         e.y += (dy / d) * e.speed * dt;
       }
-      if (d < e.radius + HAZARD_GEOMETRY.playerRadius) this.hurtPlayer(e.dmg, ev);
+      if (d < e.radius + HAZARD_GEOMETRY.playerRadius) this.hurtPlayer(e.dmg, ev,e.boss?"boss-contact":"contact-"+e.family);
       if (s.over) return ev;
       // Command squad takes contact damage too (positioning matters).
       for (let ai = 0; ai < s.squad.length; ai++) {
@@ -2123,7 +2123,7 @@ export class RunSimulation {
         }
       } else if (Math.hypot(p.x - s.px, p.y - s.py) < p.radius + HAZARD_GEOMETRY.playerRadius) {
         p.active = false;
-        this.hurtPlayer(p.dmg, ev);
+        this.hurtPlayer(p.dmg, ev,"projectile-"+p.src);
         if (s.over) return ev;
       }
     }

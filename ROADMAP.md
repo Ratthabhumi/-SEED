@@ -1,5 +1,12 @@
 # -SEED Development Roadmap
 
+16October native-render continuation: one stacked PR15 child verifies actual
+camera semantics, consecutive enemy quad submission, offscreen-source warning
+visibility and damage-source diagnosis. Canonical identity stays3/18/2; this
+is quality recovery, not a new package milestone. See CONTENT18_RENDER_CLOSURE.
+Performance and human gates require their separate final receipts; continuous
+painted animation remains BLOCKED, with the same31-issue ledger preserved.
+
 Content16.1 continuation (2026-10-15), parent PR13/4d1dc0c: exact prebaked
 terrain sources, painted site contact anchors, tighter fully warned Boss phase2
 cadence and measured Windows audit scheduling. Canonical identity3/17/2.

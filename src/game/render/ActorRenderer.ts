@@ -7,6 +7,7 @@ import {originRow} from "./combatSpriteIdentity";
 import referenceMetadata from "../assets/hunters-reference-v1.json";
 import attackMetadata from "../assets/hunters-attack-v2.json";
 import {ReferenceAnimation} from "./ReferenceAnimation";
+import {OrderedActorBatch} from "./OrderedActorBatch";
 type ActorImage=Phaser.GameObjects.Image|Phaser.GameObjects.Sprite;
 /** Bound matches canonical enemy pool; allies use a separate bounded pool. */
 export class ActorRenderer {
@@ -15,8 +16,11 @@ export class ActorRenderer {
   referenceReview(){return this.referenceActive?this.reference.review():null;}
   private images: ActorImage[] = [];
   private count = 0;
+  private ordered?:OrderedActorBatch;
   private styles=new WeakMap<ActorImage,{key:string;frame:string;size:number;origin:number;tint:number}>();
-  constructor(private scene: Phaser.Scene, private max: number, private depth: number) {}
+  constructor(private scene: Phaser.Scene, private max: number, private depth: number, ordered=false) {
+    if(ordered&&"gl" in scene.game.renderer)this.ordered=new OrderedActorBatch(scene,max,depth);
+  }
   static frames(scene: Phaser.Scene): void {
     const outposts=scene.textures.get("outposts-v2");
     for(let i=0;i<12;i++)if(!outposts.has(String(i)))outposts.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
@@ -46,7 +50,7 @@ export class ActorRenderer {
       for (let frame = 0; frame < (humanoid(id as ActorId)?36:18); frame++) if (!texture.has(String(frame))) texture.add(frame,0,frame*64,0,64,64);
     }
   }
-  begin(): void { this.count = 0; }
+  begin(): void { this.count = 0;this.ordered?.begin(); }
   guardian(origin:string,x:number,y:number,size:number,facing:number):void{
     if(this.count>=this.max)throw new Error("Actor pool exceeded "+this.max);
     let image=this.images[this.count++];if(!image){image=this.scene.add.image(0,0,"world-props",7+originRow(origin)).setDepth(this.depth);this.images.push(image);}
@@ -62,6 +66,15 @@ export class ActorRenderer {
     image.setPosition(x,y).setRotation(rotation).setFlipX(flip).setVisible(true);
   }
   draw(id: ActorId,x: number,y: number,size: number,facing: number,time: number,moving: boolean,tint = 0xffffff, age = 0, pose?:MotionPose, action?:HeroAction, bossPose?:number, enemyPose?:number,neutralHero=false,revision=0): void {
+    if(this.ordered){
+      if(enemyPose!==undefined&&["chaser","ranged","tank","swarm"].includes(id)){
+        const row=["chaser","ranged","tank","swarm"].indexOf(id),gliding=id==="ranged"&&(enemyPose===1||enemyPose===2);
+        const frame=gliding?(Math.cos(facing)<-.15?2:1):enemyPose;
+        this.ordered.draw("enemies-v2",row*4+frame,x,y,size,.65,gliding?false:Math.cos(facing)<-.15,tint);return;
+      }
+      if(id==="boss"&&bossPose!==undefined){this.ordered.draw("boss-v2",bossPose,x,y,size,.65,false,tint);return;}
+      throw Error("Ordered enemy batch requires explicit enemy or boss pose");
+    }
     if(neutralHero){
       this.referenceActive=id==="hunters"&&(age===0||age===5);
     }
@@ -102,7 +115,8 @@ export class ActorRenderer {
     const frame=Math.max(0,Math.min(5,age))*3+(moving?1+Math.floor(time*8)%2:0)+(humanoid(id)&&pose?.back?18:0);
     this.sprite(image,"actor-"+id,frame,x,y,size,.5,upright?0:facing+Math.PI/2,upright?(pose?.flip??Math.cos(facing)<-0.15):false,tint);
   }
-  end(): void { for(let i=this.count;i<this.images.length;i++)this.images[i]!.setVisible(false); }
-  get size(): number { return this.images.length; }
-  review():unknown[] { return this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y,width:i.displayWidth,height:i.displayHeight,screenWidth:i.displayWidth*this.scene.cameras.main.zoom,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
+  end(): void { this.ordered?.end();for(let i=this.count;i<this.images.length;i++)this.images[i]!.setVisible(false); }
+  get size(): number { return this.ordered?.size??this.images.length; }
+  batchCounts(){return this.ordered?.counts()??null;}
+  review():unknown[] { return this.ordered?.review()??this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y,width:i.displayWidth,height:i.displayHeight,screenWidth:i.displayWidth*this.scene.cameras.main.zoom,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
 }
