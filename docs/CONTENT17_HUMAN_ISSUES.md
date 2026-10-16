@@ -76,6 +76,15 @@ complaints merely because31 rows or green tests exist.
 
 ##16 October live-floor / counterplay continuation delta
 
+Playable-slice follow-up: N9's Cross warning now follows the actual finite
+hit-rectangle union, with a filled interior/closed caps and backed edge;
+Slam edge receives the same backing. No timing/damage change. This is a
+specific engineering/readability delta, not human fairness or fun acceptance.
+#15/N8 remain BLOCKED on real layered painted source/timeline. The31 issues
+are unchanged; no new taxonomy or blanket closure. Performance remains OPEN:
+two unproven ground-cache prototypes were rejected, not enabled by default.
+See ADR0038 and CONTENT18_PLAYABLE_SLICE for the human QA procedure.
+
 The same31 issues above remain the source of truth. ADR0037 scopes decorative
 ink culling and separate experimental warning-aware evaluation. Original Boss
 balance and baseline Natural36 stay unchanged. Native, engineering and physical
