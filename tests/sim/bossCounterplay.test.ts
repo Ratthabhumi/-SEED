@@ -20,6 +20,15 @@ describe("deterministic warned boss counterplay",()=>{
       expect(e.encounter!.phase).toBe("recover");
     }
   });
+  it("attributes accepted slam damage without changing its amount or iframe rejection",()=>{
+    const {sim,s,e}=arena();e.encounter!.phase="commit";e.encounter!.timer=0;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;
+    const hp=s.build.hp,events=sim.step(1/60,idle);
+    expect(events.filter(event=>event.type==="player_hurt")).toEqual([{type:"player_hurt",damage:e.dmg,source:"boss-slam"}]);
+    expect(s.build.hp).toBe(hp-e.dmg);
+    e.encounter!.phase="commit";e.encounter!.timer=0;
+    expect(sim.step(1/60,idle).some(event=>event.type==="player_hurt")).toBe(false);
+    expect(s.build.hp).toBe(hp-e.dmg);
+  });
   it("cross leaves genuine diagonal safety and fixed-width damaging lanes",()=>{
     expect(bossAreaHit("cross",-250,0,0,0,100,0)).toBe(true);
     expect(bossAreaHit("cross",-250,0,0,0,80,80)).toBe(false);

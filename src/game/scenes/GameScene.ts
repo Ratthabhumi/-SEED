@@ -5,7 +5,7 @@ import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
 import Phaser from "phaser";
-import {groundViewport,groundBoundsKey} from "../render/groundViewport";
+import {groundViewport,groundBoundsKey,type GroundBounds} from "../render/groundViewport";
 import {groundRasterReview} from "../render/groundRasterReview";
 import { beginAttempt, attemptReward, settleAttempt } from "../../core/progression/archiveLedger";
 import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
@@ -208,6 +208,9 @@ export class GameScene extends Phaser.Scene {
   private heroEquipment=new HeroEquipment();
   private combatSprites!:CombatSprites;
   private equipmentGraphics!:Phaser.GameObjects.Graphics;
+  private submittedGroundBounds?:GroundBounds;
+  private actorReviewCleanup?:()=>void;
+  private reviewActors?:ActorRenderer;
   private deathResponse!:DeathResponse;
   private techMapSel = "";
   private techMapView: TechMapView | null = null;
@@ -343,7 +346,7 @@ export class GameScene extends Phaser.Scene {
     this.deathPersisted = false;
     ActorRenderer.frames(this);
     combatFrames(this);
-    this.enemyActors = new ActorRenderer(this,650,2);
+    this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images");
     this.allyActors = new ActorRenderer(this,128,4);
     this.deathResponse=new DeathResponse(this);
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
@@ -501,6 +504,27 @@ export class GameScene extends Phaser.Scene {
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
         groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:this.sim.state.px,y:this.sim.state.py}),commands:this.ground.commandBuffer.length}),
+        cameraGroundReview:()=>{const c=this.cameras.main,v=c.worldView;return {scroll:[c.scrollX,c.scrollY],zoom:c.zoom,viewport:[c.width,c.height],view:{left:v.x,top:v.y,right:v.right,bottom:v.bottom},corners:[[0,0],[c.width,c.height]].map(([x,y])=>{const p=c.getWorldPoint(x!,y!);return {x:p.x,y:p.y};}),bounds:this.submittedGroundBounds,actor:{x:this.sim.state.px,y:this.sim.state.py},hash:this.sim.hash()};},
+        cameraReviewSet:(zoom:number,scroll?:[number,number])=>{const c=this.cameras.main;c.setZoom(zoom);if(scroll)c.setScroll(scroll[0],scroll[1]);this.refreshGround(true);},
+        cameraGroundRaster:()=>{const s=this.sim.state,c=this.cameras.main,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},c.worldView.x,c.worldView.y,c.width,c.height,c.zoom,this.submittedGroundBounds);},
+        actorBatchCounts:()=>this.enemyActors.batchCounts(),
+        actorRasterFixture:(ordered:boolean,x=0,y=0,zoom=1)=>{
+          this.paused=true;this.actorReviewCleanup?.();const before=this.children.list.slice();
+          const c=this.cameras.main;c.stopFollow();c.setZoom(zoom);c.setScroll(x-c.width/2,y-c.height/2);
+          this.add.rectangle(x,y,4000,4000,0x102030).setDepth(100);
+          const actors=new ActorRenderer(this,650,101,ordered);actors.begin();
+          const ids=["chaser","ranged","tank","swarm"] as const;
+          // Overlap and alternating texture/tint runs deliberately preserve painter order.
+          for(let i=0;i<96;i++)actors.draw(ids[i%4]!,x-350+i%16*44,y-150+Math.floor(i/16)*48,92,i%2?Math.PI:0,10,true,i%3===0?0xffbbbb:0xffffff,5,undefined,undefined,undefined,i%4);
+          for(let i=0;i<3;i++){
+            actors.draw("boss",x-120+i*90,y+180,240,0,10,false,0xffffff,5,undefined,undefined,i*2);
+            actors.draw("chaser",x-100+i*90,y+190,92,Math.PI,10,true,0xffbbbb,5,undefined,undefined,undefined,3);
+          }
+          actors.end();this.reviewActors=actors;const owned=this.children.list.filter(child=>!before.includes(child));
+          this.actorReviewCleanup=()=>{for(const child of owned)child.destroy();};
+          return {actors:actors.review(),batch:actors.batchCounts(),hash:this.sim.hash()};
+        },
+        actorRasterState:()=>this.reviewActors?.review(),
         groundRasterReview:()=>{const s=this.sim.state,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},s.px-320,s.py-180);},
         referenceAnimation:()=>this.allyActors.referenceReview(),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
@@ -689,7 +713,7 @@ export class GameScene extends Phaser.Scene {
           this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;
           return {fixture:true,enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length};
         },
-        canonicalStressState:()=>({elapsed:this.sim.state.elapsed,world:this.sim.state.ascension+1,draft:this.sim.state.draftOpen,paused:this.paused,enemies:this.sim.state.enemies.filter(e=>e.active).length,projectiles:this.sim.state.projs.filter(p=>p.active).length,boss:this.sim.state.enemies.find(e=>e.active&&e.boss)?.encounter,terrain:this.terrainPainter.counts()}),
+        canonicalStressState:()=>({elapsed:this.sim.state.elapsed,hash:this.sim.hash(),actors:this.enemyActors.batchCounts(),world:this.sim.state.ascension+1,draft:this.sim.state.draftOpen,paused:this.paused,enemies:this.sim.state.enemies.filter(e=>e.active).length,projectiles:this.sim.state.projs.filter(p=>p.active).length,boss:this.sim.state.enemies.find(e=>e.active&&e.boss)?.encounter,terrain:this.terrainPainter.counts()}),
         seed: () => this.masterSeed,
         cleanPresentation: () => {
           const s = this.sim.state;
@@ -823,6 +847,7 @@ export class GameScene extends Phaser.Scene {
           this.refreshHUD();return {hp:s.build.hp,x:s.px,y:s.py};
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
+        offscreenWarningFixture:(warning:boolean)=>{const s=this.sim.state,e=s.enemies.find(e=>e.active&&e.boss)!;const c=this.cameras.main;e.x=s.px+c.width/c.zoom;e.y=s.py;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;e.encounter!.phase=warning?"warning":"approach";e.encounter!.timer=.5;},
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
         terrainArrivalReview:()=>this.terrainPainter.arrivals(),
         siteArrivalReview:()=>this.siteArrival.review(),
@@ -3722,9 +3747,10 @@ export class GameScene extends Phaser.Scene {
     const civ = CIV_LAYER[AGES[s.ageIndex] as AgeId];
     const now = performance.now() / 1000;
     const getChunk=(x:number,y:number)=>{const begin=performance.now();const result=this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y);this.chunkReadMs+=performance.now()-begin;return result;};
+    this.submittedGroundBounds=new URLSearchParams(location.search).get("ground")==="unculled"?undefined:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:s.px,y:s.py});
     drawGround(g, {
       texturedGround:true,
-      bounds:new URLSearchParams(location.search).get("ground")==="unculled"?undefined:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:s.px,y:s.py}),
+      bounds:this.submittedGroundBounds,
       getChunk,
       styleFor: (biome) => BIOME_STYLE[biome],
       civColor: civ.color,
@@ -3838,7 +3864,10 @@ export class GameScene extends Phaser.Scene {
     this.enemyActors.begin();
     this.allyActors.begin();
     for (const e of s.enemies) {
-      if (!e.active || !vis(e.x, e.y)) continue;
+      if (!e.active) continue;
+      // A body outside the viewport can still aim a slam/cross or a long rush
+      // into it. Body culling must never suppress the locked danger geometry.
+      if (!vis(e.x,e.y)) {drawEnemyTelegraph(g,e,hc);drawBossTelegraph(g,e);continue;}
       const facing=enemyDisplayHeading(e,s.px,s.py);
       drawEnemy(g, e, {
         bodyColor: ENEMY_LINEAGE[e.family].color[AGES[s.ageIndex] as AgeId],

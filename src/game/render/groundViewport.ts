@@ -3,6 +3,9 @@ export interface GroundBounds {left:number;right:number;top:number;bottom:number
 /** Extra chunk protects decoration overhang and one-frame camera lag.
  * Quantized bounds rebuild only at edges; no texture or canonical-world cache. */
 export function groundViewport(scrollX:number,scrollY:number,width:number,height:number,zoom:number,focus?:{x:number;y:number}):GroundBounds {
+ // Phaser4.2.1 Camera.preRender uses pixel half-width for the center, then
+ // width/zoom for worldView extent. Verified against native getWorldPoint,
+ // not against a test that copies this formula (cameraNativeGround.spec.ts).
  const cx=scrollX+width/2,cy=scrollY+height/2,hw=width/zoom/2,hh=height/zoom/2;
  // World2/teleport can move the followed actor before Camera.preRender catches
  // up. Keep both views until then; still intersect the original7x7 neighborhood.

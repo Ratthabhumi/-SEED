@@ -1,5 +1,15 @@
 # Same31 complaints — home playable quality recovery
 
+16October continuation uses the same31 rows. See CONTENT18_RENDER_CLOSURE.md:
+#8 now has an independent native camera/worldView oracle; #17/N6 retain all36
+outcomes plus source-attributed damage/entry-health evidence; N9 corrects the
+offscreen-source/on-screen Slam warning. #3/#7/N3 use bounded consecutive enemy
+quads with native Image parity (far fractional case11 channels at1/255;
+explicit bound/rejected experiment in ADR0036); #9 extends actual glyph bounds to
+draft and Boss decisions at EN/TH200%. These are engineering deltas, not human
+art/fun approval. Final exact-head checks and physical performance are separate
+pending receipts. #15/N8 remain BLOCKED; no replacement gait/source fabricated.
+
 Inherited rows/names remain [Content15.2](CONTENT15_2_HUMAN_ISSUES.md), with
 [15.3 deltas](CONTENT15_3_HUMAN_ISSUES.md). This is one continuation, not a new
 taxonomy. PASS below means engineering scope only, conditional on the final

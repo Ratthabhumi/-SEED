@@ -51,7 +51,7 @@ export type SimEvent =
   | { type: "ascension_ready" }
   | { type: "legacy_granted"; id: string }
   | { type: "ascended"; worldSeed: string; ascension: number }
-  | { type: "player_hurt"; damage: number }
+  | { type: "player_hurt"; damage: number; source?: string }
   | { type: "player_died" }
   | {type:"enemy_attack_fired";kind:"rush"|"burst"}
   | { type: "enemy_attack_warning";kind:"rush"|"burst";x:number;y:number }

@@ -1,4 +1,28 @@
-## Home playable-quality recovery —2026-10-15 (read first)
+## Native render/warning continuation —2026-10-16 (read first)
+
+Parent local/remote PR15 b909802, clean; both exact-head workflows5/5 verified.
+One feat/content18-render-boss-art-closure-20261016 branch targets PR15.
+See docs/CONTENT18_RENDER_CLOSURE.md and ADR0036. Consecutive enemy Mesh runs
+preserve native Images order/tint/flip/anchors with no extra atlas (two native
+conditions exact; far positive/zoom1.25 differs11 channels by1/255, ADR0036);
+Canvas and ?actors=images retain the old comparator. New native warning
+regression exposed an offscreen Boss source hiding an on-screen locked Slam
+(before0 changed pixels). Preserve the danger independently of body culling.
+Actual Phaser camera formula agrees with groundViewport; verify using native
+worldView/getWorldPoint and submitted bounds, never a copied formula.
+Player damage-source telemetry adds diagnosis, not balance. Natural36 compares
+against exact PR15 and asserts final canonical snapshot equality. Identity stays
+Worldgen3/Content18/Save2; package version unchanged. No fabricated art source:
+bounded GUI-install inventory found no DCC; painted continuous motion remains
+BLOCKED. Same31 ledger/human gates retained. Local509-test check passed. Native
+camera test passed (120 rows including World2); six further physical native
+tests pass (3 actor conditions, missing warning, EN/TH glyph bounds). Selected
+precommit evidence is in docs/evidence/content18; dirty provenance is explicit.
+Full current-source browser suite, physical comparisons and exact-head CI/package receipts remain
+pending until explicitly recorded in the new Draft PR. Do not certify an older
+build as a newer source. No merge/tag/release or history rewrite.
+
+## Home playable-quality recovery —2026-10-15 (historical)
 
 Native review of the d5de023 CI artifact exposed percentage-label overlap in
 Pause at1280x720/200% (EN and TH), despite earlier broad layout tests. New text

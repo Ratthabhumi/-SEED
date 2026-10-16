@@ -5,7 +5,7 @@ import {readPreviewBuild} from './read-preview-build.mjs';
 export async function captureWorldComparison(before,after,out){
  mkdirSync(out,{recursive:true});const rows=[],errors=[],positions={},builds={A:await readPreviewBuild(before),B:await readPreviewBuild(after)};
  if(builds.A.dirty||builds.B.dirty)throw Error('Comparison requires clean compiled builds');
- if(builds.A.sha!=='7b9b164a4b6c5a565de7195b9050494e10da252d')throw Error('Expected exact PR14 Push baseline');
+ if(builds.A.sha!=='b909802d5fa18e5bbef11ce7ff5ae38a30b1bb37')throw Error('Expected exact PR15 Push baseline');
  const browser=await chromium.launch({headless:true,...(process.platform==='win32'?{args:['--use-gl=angle','--use-angle=d3d11']}: {})});
  try{
   const cdp=await browser.newBrowserCDPSession(),gpu=(await cdp.send('SystemInfo.getInfo')).gpu.auxAttributes?.glRenderer;

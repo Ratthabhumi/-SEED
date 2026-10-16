@@ -1,0 +1,25 @@
+{
+  "digestBasis": "published bytes; JSON normalized to LF explicitly",
+  "files": {
+    "content18-offscreen-warning-false.png": {
+      "bytes": 134248,
+      "sha256": "2f9a2ca68a76a8f498c0b8a4fbc3dc5e2cab0b2955978b9a5d85067762f7bd9a"
+    },
+    "content18-offscreen-warning-true.png": {
+      "bytes": 140209,
+      "sha256": "d36f679306b31a761cce4be40de503bc83d3d42d01f2575e032c44e85797dd1c"
+    },
+    "content18-offscreen-warning.json": {
+      "bytes": 96,
+      "sha256": "9b99afbf91682243d0455ba613efb0be2e60d5eae2c2b8abf821852b9b90353f"
+    },
+    "engineering-receipt.json": {
+      "bytes": 2986,
+      "sha256": "52ad2d758cb2e957ca5b5b4d7942a53e33ef53487d4f85b435184b663bde756c"
+    },
+    "parent-live-diagnostic.json.gz": {
+      "bytes": 60468,
+      "sha256": "4d9fad9c6763b7173acbc47fb0ba8f89e14407f353b1568d82fbcba82febb4cb"
+    }
+  }
+}
