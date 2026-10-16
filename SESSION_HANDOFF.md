@@ -1,3 +1,15 @@
+## Pinned visual-baseline preflight correction —2026-10-16
+
+Completed9236b75 render CI exposed a tool defect after measurements: capture
+still hardcoded PR15 while the measurement caller correctly pinned PR16.
+Preserve the failure. Pass expected PR16 explicitly, preserve PR15 legacy
+default, and reject wrong/dirty compiled parents before any lengthy benchmark.
+Two regression tests protect the contract. No renderer/core/runtime source
+changes. Physical32fbff6 data remains labelled32fbff6; verify runtime/source
+and normalized compiled-bundle identity if relating it to this tooling-only
+HEAD. Never restamp older physical measurements. New exact-head CI/packages
+and native captures/videos are required. Final receipts live in PR17.
+
 ## Native video publication correction —2026-10-16
 
 PR17 source9236b75 completed local513/12native/16experimental and both CI193browser

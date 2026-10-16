@@ -2,10 +2,14 @@ import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {readPreviewBuild} from './read-preview-build.mjs';
 /** Same Worldgen3 coordinates and supported presentation; staged visual review. */
-export async function captureWorldComparison(before,after,out){
- mkdirSync(out,{recursive:true});const rows=[],errors=[],positions={},builds={A:await readPreviewBuild(before),B:await readPreviewBuild(after)};
+export const LEGACY_WORLD_BASELINE='b909802d5fa18e5bbef11ce7ff5ae38a30b1bb37';
+export function assertComparisonBuilds(builds,expectedBaseline=LEGACY_WORLD_BASELINE){
  if(builds.A.dirty||builds.B.dirty)throw Error('Comparison requires clean compiled builds');
- if(builds.A.sha!=='b909802d5fa18e5bbef11ce7ff5ae38a30b1bb37')throw Error('Expected exact PR15 Push baseline');
+ if(builds.A.sha!==expectedBaseline)throw Error('Expected exact baseline '+expectedBaseline+'; served '+builds.A.sha);
+}
+export async function captureWorldComparison(before,after,out,expectedBaseline=LEGACY_WORLD_BASELINE){
+ mkdirSync(out,{recursive:true});const rows=[],errors=[],positions={},builds={A:await readPreviewBuild(before),B:await readPreviewBuild(after)};
+ assertComparisonBuilds(builds,expectedBaseline);
  const browser=await chromium.launch({headless:true,...(process.platform==='win32'?{args:['--use-gl=angle','--use-angle=d3d11']}: {})});
  try{
   const cdp=await browser.newBrowserCDPSession(),gpu=(await cdp.send('SystemInfo.getInfo')).gpu.auxAttributes?.glRenderer;
@@ -36,7 +40,7 @@ export async function captureWorldComparison(before,after,out){
    }
    await context.close();
   }
-  writeFileSync(out+'/index.json',JSON.stringify({classification:'MATCHED_WORLDGEN3_STAGED_PRESENTATION_NOT_HUMAN_ART_OR_FUN_PASS',builds,gpu,rows,errors,limitations:'Same seed/coordinates, age, zoom and graphics mode per A/B material pair. Worker-disabled fallbacks and fully prepared states are separate. CPU post-render observations do not certify photons/GPU execution. Source-art preference and animation production remain human gates.'},null,2));
+  writeFileSync(out+'/index.json',JSON.stringify({classification:'MATCHED_WORLDGEN3_STAGED_PRESENTATION_NOT_HUMAN_ART_OR_FUN_PASS',expectedBaseline,builds,gpu,rows,errors,limitations:'Same seed/coordinates, age, zoom and graphics mode per A/B material pair. Worker-disabled fallbacks and fully prepared states are separate. CPU post-render observations do not certify photons/GPU execution. Source-art preference and animation production remain human gates.'},null,2));
   if(errors.length)throw Error(JSON.stringify(errors));
  }finally{await browser.close();}
 }
