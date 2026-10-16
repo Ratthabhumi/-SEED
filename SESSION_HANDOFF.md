@@ -1,3 +1,22 @@
+## Playable slice / warning union —2026-10-16 (current)
+
+Start clean local/fetched PR17 f6281228d711ab206b2e1285ccffb534a4bbc231.
+Branch feat/content18-playable-slice-stabilization-20261016 targets PR17.
+ADR0038: finite Cross hit-union perimeter/interior and dark warning backing;
+no canonical rule/version change (3/18/2). Small physical diagnostic found
+ground/Combat comparable; FillPath and prepared StrokePath prototypes did
+not show repeatable benefit and were removed. Rejected dirty receipts remain
+in docs/evidence/content18-slice, never restamped as final source. Performance
+OPEN; no proven performance optimization claimed. profile-matched-control
+records clean-source A/A frozen hashes/host telemetry before a future change.
+Animation remains BLOCKED on actual layered painted limb/timeline source;
+no new generated gait or fake rig. Same31 ledger. Human QA procedure and
+seven requested real ratings: docs/CONTENT18_PLAYABLE_SLICE.md.
+PR17 official Push Node22 is the pinned comparison source; digest checked
+before capture. Full local/final exact-head CI/native/package/representative
+physical receipts belong in the new Draft PR; pending is not PASS. No main
+integration, tag, release, retarget or public-history rewrite.
+
 ## Pinned visual-baseline preflight correction —2026-10-16
 
 Completed9236b75 render CI exposed a tool defect after measurements: capture
