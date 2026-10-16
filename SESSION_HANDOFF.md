@@ -1,3 +1,14 @@
+## Native video publication correction —2026-10-16
+
+PR17 source9236b75 completed local513/12native/16experimental and both CI193browser
+checks; physical240 paused rows and12 live cases are retained as that exact
+build. New nested Playwright warning videos were recorded locally but omitted
+from the prior top-level-only Actions upload glob. Correct **/*.webm; this is
+an evidence-delivery change only, with no runtime/source/art/balance change.
+Re-run exact new-head CI/packages and physical receipts without restamping
+9236b75 data. Existing natural-boss video was uploaded, but does not substitute
+for verifying the eight new per-case clips. Final immutable receipts in PR17.
+
 ## Live floor/counterplay continuation —2026-10-16 (read first)
 
 Start local/fetched remote PR16 a9d0af4460a9c38dd24d62e8075489ca6ee4d6fa,
