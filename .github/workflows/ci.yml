@@ -20,7 +20,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - run: gh run download 38743028304 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content18-baseline-official
+      - run: gh run download 38853201640 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content18-baseline-official
         env:
           GH_TOKEN: ${{ github.token }}
       - run: node scripts/measure-content153.mjs
@@ -74,7 +74,7 @@ jobs:
           name: visual-evidence-${{ github.sha }}
           path: |
             test-results/browser/streaming-counters.json
-            test-results/browser/*.webm
+            test-results/browser/**/*.webm
             test-results/browser/**/*.png
             test-results/browser/content153/*.json
             test-results/browser/content161-*.json
@@ -99,11 +99,13 @@ jobs:
       - run: npm run analyze
       - run: node scripts/run-progression-cohort.mjs
       - run: node scripts/run-natural-boss.mjs
+      - run: node scripts/run-boss-policy-experiment.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: progression-cohort-${{ github.sha }}
           path: |
             test-results/integrated-progression-cohort.json
             test-results/content153-natural-boss.json
+            test-results/content18-boss-policy-experiment.json
           if-no-files-found: error
           retention-days: 14

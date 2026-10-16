@@ -1,3 +1,46 @@
+## Pinned visual-baseline preflight correction —2026-10-16
+
+Completed9236b75 render CI exposed a tool defect after measurements: capture
+still hardcoded PR15 while the measurement caller correctly pinned PR16.
+Preserve the failure. Pass expected PR16 explicitly, preserve PR15 legacy
+default, and reject wrong/dirty compiled parents before any lengthy benchmark.
+Two regression tests protect the contract. No renderer/core/runtime source
+changes. Physical32fbff6 data remains labelled32fbff6; verify runtime/source
+and normalized compiled-bundle identity if relating it to this tooling-only
+HEAD. Never restamp older physical measurements. New exact-head CI/packages
+and native captures/videos are required. Final receipts live in PR17.
+
+## Native video publication correction —2026-10-16
+
+PR17 source9236b75 completed local513/12native/16experimental and both CI193browser
+checks; physical240 paused rows and12 live cases are retained as that exact
+build. New nested Playwright warning videos were recorded locally but omitted
+from the prior top-level-only Actions upload glob. Correct **/*.webm; this is
+an evidence-delivery change only, with no runtime/source/art/balance change.
+Re-run exact new-head CI/packages and physical receipts without restamping
+9236b75 data. Existing natural-boss video was uploaded, but does not substitute
+for verifying the eight new per-case clips. Final immutable receipts in PR17.
+
+## Live floor/counterplay continuation —2026-10-16 (read first)
+
+Start local/fetched remote PR16 a9d0af4460a9c38dd24d62e8075489ca6ee4d6fa,
+clean; latest continuation PR16. Branch feat/content18-live-performance-counterplay-20261016
+stacks on PR16. See docs/CONTENT18_LIVE_COUNTERPLAY.md and ADR0037.
+Native physical attribution measured ground Graphics12.9ms p95 vs Combat3.7ms
+(inclusive instrumented); do not assume Combat is the primary live cost.
+Cull wholly offscreen decorative ink only, keep floors/sites/warnings intact;
+no texture cache. ?decor=all retains the same-build comparator.
+Unique drained POST_RENDER/step rows coexist with legacy overlapping rolling240
+metrics. Original progressionPolicy/Natural36 are unchanged; explicitly separate
+visible-locked-area-v1 evaluates150/300/450ms warning reaction in four adverse/
+burst cases with exact Boss-entry equality. No core balance/input/version edit.
+The first16-assertion evaluation encountered worker RPC starvation: error-free
+runner with inter-test yields is required, no case/assertion reduction.
+New exact-head full CI/physical/native/policy/package receipts belong to the
+new stacked Draft PR; precommit data stays explicitly dirty. No blanket budget
+PASS, no human/art approval, no merge/tag/release. Same31 ledger, versions3/18/2.
+Animation remains BLOCKED by accepted editable painted-source dependency.
+
 ## Native render/warning continuation —2026-10-16 (read first)
 
 Late review: clean3b19720 Windows full browser183PASS/1skip, but actual200%

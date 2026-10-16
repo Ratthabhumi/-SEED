@@ -1,0 +1,43 @@
+{
+  "classification": "ENGINEERING_PRECOMMIT_EVIDENCE_NOT_FINAL_HEAD_OR_HUMAN_PASS",
+  "parent": "a9d0af4460a9c38dd24d62e8075489ca6ee4d6fa",
+  "candidateDirty": true,
+  "originalNatural36": "UNCHANGED_SOURCE; final exact-head Analyze receipt required",
+  "files": [
+    {
+      "path": "candidate-precommit-diagnostic.json.gz",
+      "bytes": 80954,
+      "sha256": "bb582182a169e0a6e9ccc265b1a1359c9c49075a35b3b0af2e18cfb2d8e9830b"
+    },
+    {
+      "path": "experimental16-precommit.json.gz",
+      "bytes": 271504,
+      "sha256": "2ab6d12e2fd997e2369c82cec7155cb05878571b9c6637f868394471ef78b045"
+    },
+    {
+      "path": "native-camera-120.json.gz",
+      "bytes": 7683,
+      "sha256": "506320bcb55fc00345b5ca161162d55d024559c101207537e1014204235acd59"
+    },
+    {
+      "path": "native-floor-parity.json.gz",
+      "bytes": 313,
+      "sha256": "110abc5d2c2317111044dd6bf35fc709e541516b42599226cbcaaaf88fec69e2"
+    },
+    {
+      "path": "parent-diagnostic.json.gz",
+      "bytes": 78109,
+      "sha256": "2171d16bcfdde137623c870b6aeff38c3a5f439b9733e2f063f173d31b3de749"
+    },
+    {
+      "path": "warning-contrast-slam-source-off-true.png",
+      "bytes": 160105,
+      "sha256": "2440a7ee62cf5726ca77dbac5fb42b731b2d020eeee202d9b5da77bfa9acf870"
+    },
+    {
+      "path": "warning-reduced-cross-partial-true.png",
+      "bytes": 1169678,
+      "sha256": "60e45f03517de27a54beba26f3bbedd72a5feec310351f2eb8a35ac93e5b70bf"
+    }
+  ]
+}

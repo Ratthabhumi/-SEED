@@ -11,9 +11,10 @@ try{
  const client=await browser.newBrowserCDPSession();const info=await client.send('SystemInfo.getInfo');
  const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>localStorage.setItem('seed-game-save-v1',JSON.stringify({schema:1,settings:{lang:'en',volume:0,uiScale:1,tutorialCompleted:true},archive:[],best:{},history:[]})));
- await page.goto(url+'/?e2e&profile=1'+(trace==='1'?'&profileTrace=1':'')+(variant?'&'+variant:''));
+ const target=new URL(url);target.searchParams.set('e2e','1');target.searchParams.set('profile','1');if(trace==='1')target.searchParams.set('profileTrace','1');if(variant){const [key,value='1']=variant.split('=');target.searchParams.set(key,value);}
+ await page.goto(target.href);
  await page.locator('#seed-input').fill('EPOCH-GOLDEN-001');await page.locator('#start-btn').click();await page.waitForFunction(()=>window.__seedE2E?.canonicalStressStart);
- await page.evaluate(mode=>mode==='contrast'?window.__seedE2E.streamingFixture(0,0,true,false,true):window.__seedE2E.canonicalStressStart(false),fixture);await page.waitForTimeout(3000);
+ await page.evaluate(mode=>{const h=window.__seedE2E;if(mode==='live-contrast'){h.stageEvolution('hunters',5);h.streamingFixture(0,0,false,false,true);h.canonicalStressStart(false);}else if(mode==='contrast')h.streamingFixture(0,0,true,false,true);else h.canonicalStressStart(false);},fixture);await page.waitForTimeout(3000);
  await page.evaluate(()=>{window.__seedE2E.resetRenderDiagnostics();window.__seedE2E.resetPerformanceSamples();});
  if(trace==='1')await client.send('Tracing.start',{categories:'devtools.timeline,blink.user_timing,toplevel,v8,gpu',transferMode:'ReturnAsStream'});
  await page.waitForTimeout(Number(seconds)*1000);

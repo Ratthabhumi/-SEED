@@ -26,6 +26,7 @@ export class RenderDiagnostics {
   private gpuDisjoint=0;
   private observer?:PerformanceObserver;
   private longTasks:Array<{at:number;ms:number}>=[];
+  private graphicsSource='';
   constructor(private scene:Phaser.Scene) {
     this.trace=new URLSearchParams(location.search).get("profileTrace")==="1";
     const renderer=scene.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
@@ -69,8 +70,22 @@ export class RenderDiagnostics {
     const own=Object.prototype.hasOwnProperty.call(obj,key),self=this;
     const wrapped=function(this:unknown,...args:unknown[]){
       const at=performance.now();
+      const parentSource=self.graphicsSource;
+      if(label==='render.Graphics'){
+        const source=args[1] as {name?:string;commandBuffer?:unknown[]}|undefined;
+        self.graphicsSource='graphics.'+(source?.name||'other');
+        const key=self.graphicsSource+'.commands';self.current.calls[key]=(self.current.calls[key]??0)+(source?.commandBuffer?.length??0);
+      }
       try{return Reflect.apply(fn,this,args);}finally{
         const end=performance.now();self.add(label,end-at);
+        if(label.startsWith('gl.')&&self.graphicsSource)self.add(self.graphicsSource+'.'+label,end-at);
+        if(['gl.bufferData','gl.bufferSubData','gl.texImage2D','gl.texSubImage2D'].includes(label)){
+          // Typed buffer payload bytes only; DOM texture/pixel-format allocation
+          // and driver/GPU residency cannot be inferred from API arguments.
+          const arg=args[label==='gl.bufferSubData'?2:label==='gl.bufferData'?1:args.length-1] as {byteLength?:number}|number|undefined;
+          const bytes=typeof arg==='number'&&label==='gl.bufferData'?arg:typeof arg==='object'&&arg?arg.byteLength??0:0;
+          const key='payloadBytes.'+label;self.current.calls[key]=(self.current.calls[key]??0)+bytes;
+        }
         // Phaser4 snapshots render steps at object construction, so wrapping an
         // instance afterward misses it. Identify the actual src argument here.
         if(label==="render.Graphics"){
@@ -78,6 +93,7 @@ export class RenderDiagnostics {
           self.add("graphics."+(source?.name||"other"),end-at);
         }
         if(self.trace){performance.measure("seed."+label,{start:at,end});performance.clearMeasures("seed."+label);}
+        self.graphicsSource=parentSource;
       }
     };
     obj[key]=wrapped;

@@ -73,3 +73,12 @@ PERFORMANCE_ACCEPTANCE OPEN; ANIMATION_PRODUCTION BLOCKED;
 HUMAN_VISUAL_ACCEPTANCE OPEN; HUMAN_FUN_ACCEPTANCE OPEN. Windows/Linux outcomes
 and all failed samples stay independent. This ledger does not close31 human
 complaints merely because31 rows or green tests exist.
+
+##16 October live-floor / counterplay continuation delta
+
+The same31 issues above remain the source of truth. ADR0037 scopes decorative
+ink culling and separate experimental warning-aware evaluation. Original Boss
+balance and baseline Natural36 stay unchanged. Native, engineering and physical
+measurements do not close human readability/fun/art items. New stacked Draft PR
+receipts carry exact source, every failed timing/outcome and package inspection.
+No new animation family; painted editable-source dependency remains BLOCKED.
