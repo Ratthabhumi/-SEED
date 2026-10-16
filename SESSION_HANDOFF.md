@@ -1,3 +1,23 @@
+## Live floor/counterplay continuation —2026-10-16 (read first)
+
+Start local/fetched remote PR16 a9d0af4460a9c38dd24d62e8075489ca6ee4d6fa,
+clean; latest continuation PR16. Branch feat/content18-live-performance-counterplay-20261016
+stacks on PR16. See docs/CONTENT18_LIVE_COUNTERPLAY.md and ADR0037.
+Native physical attribution measured ground Graphics12.9ms p95 vs Combat3.7ms
+(inclusive instrumented); do not assume Combat is the primary live cost.
+Cull wholly offscreen decorative ink only, keep floors/sites/warnings intact;
+no texture cache. ?decor=all retains the same-build comparator.
+Unique drained POST_RENDER/step rows coexist with legacy overlapping rolling240
+metrics. Original progressionPolicy/Natural36 are unchanged; explicitly separate
+visible-locked-area-v1 evaluates150/300/450ms warning reaction in four adverse/
+burst cases with exact Boss-entry equality. No core balance/input/version edit.
+The first16-assertion evaluation encountered worker RPC starvation: error-free
+runner with inter-test yields is required, no case/assertion reduction.
+New exact-head full CI/physical/native/policy/package receipts belong to the
+new stacked Draft PR; precommit data stays explicitly dirty. No blanket budget
+PASS, no human/art approval, no merge/tag/release. Same31 ledger, versions3/18/2.
+Animation remains BLOCKED by accepted editable painted-source dependency.
+
 ## Native render/warning continuation —2026-10-16 (read first)
 
 Late review: clean3b19720 Windows full browser183PASS/1skip, but actual200%

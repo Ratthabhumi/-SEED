@@ -5,7 +5,7 @@ import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
 // Browser input → InputFrame → RunSimulation.step() → state → Phaser render.
 // SimEvent → DOM / audio / camera. Restart = NEW RunSimulation instance.
 import Phaser from "phaser";
-import {groundViewport,groundBoundsKey,type GroundBounds} from "../render/groundViewport";
+import {groundViewport,groundDetailViewport,groundBoundsKey,type GroundBounds} from "../render/groundViewport";
 import {groundRasterReview} from "../render/groundRasterReview";
 import { beginAttempt, attemptReward, settleAttempt } from "../../core/progression/archiveLedger";
 import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
@@ -191,7 +191,14 @@ export class GameScene extends Phaser.Scene {
   private renderSamples: number[] = [];
   private renderStart = 0;
   private onPreRender = () => { this.renderStart = performance.now(); };
-  private onPostRender = () => { if (this.renderStart) this.pushSample(this.renderSamples, performance.now() - this.renderStart); };
+  private onPostRender = () => {
+    if(!this.renderStart)return;
+    const at=performance.now(),render=at-this.renderStart;this.pushSample(this.renderSamples,render);
+    if(this.uniqueTiming){const s=this.sim.state;this.uniqueFrames.push({frame:this.game.loop.frame,at,rendererCpuSubmit:render,sim:this.uniqueSim,elapsed:s.elapsed,world:s.ascension,
+      enemies:s.enemies.filter(e=>e.active).length,friendly:s.projs.filter(p=>p.active&&p.friendly).length,hostile:s.projs.filter(p=>p.active&&!p.friendly).length,
+      warnings:s.enemies.filter(e=>e.active&&(e.encounter?.phase==="warning"||e.evolution?.phase==="warning")).length,camera:[this.cameras.main.scrollX,this.cameras.main.scrollY,this.cameras.main.zoom]});
+      this.uniqueSim=[];if(this.uniqueFrames.length>1200)this.uniqueFrames.shift();}
+  };
   private fpsEMA = 60;
   private fpsHud: HTMLElement | null = null;
   private fpsHudT = 0;
@@ -209,6 +216,11 @@ export class GameScene extends Phaser.Scene {
   private combatSprites!:CombatSprites;
   private equipmentGraphics!:Phaser.GameObjects.Graphics;
   private submittedGroundBounds?:GroundBounds;
+  private submittedDetailBounds?:GroundBounds;
+  private groundProbe?:Phaser.GameObjects.Graphics;
+  private uniqueTiming=false;
+  private uniqueSim:number[]=[];
+  private uniqueFrames:Array<{frame:number;at:number;rendererCpuSubmit:number;sim:number[];elapsed:number;world:number;enemies:number;friendly:number;hostile:number;warnings:number;camera:number[]}>=[];
   private actorReviewCleanup?:()=>void;
   private reviewActors?:ActorRenderer;
   private deathResponse!:DeathResponse;
@@ -358,10 +370,11 @@ export class GameScene extends Phaser.Scene {
     this.knowledgeHintShown=false;this.knowledgeCollectUntil=-Infinity;
     this.artLastX=this.sim.state.px; this.artLastY=this.sim.state.py;
     this.landmarkArt = []; this.arcs=[];this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
-    this.lastGroundKey = "";
+    this.lastGroundKey = "";this.groundProbe=undefined;
     this.simSamples = [];
     this.frameSamples = []; this.lastFrameAt = 0;
     this.renderSamples = [];
+    this.uniqueTiming=new URLSearchParams(location.search).has("e2e");this.uniqueFrames=[];this.uniqueSim=[];
     this.game.events.on(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
     this.game.events.on(Phaser.Core.Events.POST_RENDER, this.onPostRender);
     if(new URLSearchParams(location.search).get("profile")==="1"){
@@ -506,7 +519,11 @@ export class GameScene extends Phaser.Scene {
         groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:this.sim.state.px,y:this.sim.state.py}),commands:this.ground.commandBuffer.length}),
         cameraGroundReview:()=>{const c=this.cameras.main,v=c.worldView;return {scroll:[c.scrollX,c.scrollY],zoom:c.zoom,viewport:[c.width,c.height],view:{left:v.x,top:v.y,right:v.right,bottom:v.bottom},corners:[[0,0],[c.width,c.height]].map(([x,y])=>{const p=c.getWorldPoint(x!,y!);return {x:p.x,y:p.y};}),bounds:this.submittedGroundBounds,actor:{x:this.sim.state.px,y:this.sim.state.py},hash:this.sim.hash()};},
         cameraReviewSet:(zoom:number,scroll?:[number,number])=>{const c=this.cameras.main;c.setZoom(zoom);if(scroll)c.setScroll(scroll[0],scroll[1]);this.refreshGround(true);},
-        cameraGroundRaster:()=>{const s=this.sim.state,c=this.cameras.main,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},c.worldView.x,c.worldView.y,c.width,c.height,c.zoom,this.submittedGroundBounds);},
+        cameraGroundRaster:()=>{const s=this.sim.state,c=this.cameras.main,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},c.worldView.x,c.worldView.y,c.width,c.height,c.zoom,this.submittedGroundBounds,this.submittedDetailBounds);},
+        groundDetailReview:(enabled:boolean)=>{const s=this.sim.state,c=this.cameras.main,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];
+          this.groundProbe??=this.add.graphics().setDepth(100);this.groundProbe.clear();c.ignore(this.children.list.filter(child=>child!==this.groundProbe));
+          drawGround(this.groundProbe,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true,
+            bounds:this.submittedGroundBounds,detailBounds:enabled?this.submittedDetailBounds:undefined});return this.sim.hash();},
         actorBatchCounts:()=>this.enemyActors.batchCounts(),
         actorRasterFixture:(ordered:boolean,x=0,y=0,zoom=1)=>{
           this.paused=true;this.actorReviewCleanup?.();const before=this.children.list.slice();
@@ -621,6 +638,7 @@ export class GameScene extends Phaser.Scene {
           arcs:this.arcs.filter(a=>a.until>this.sim.state.elapsed).length,
           elapsed:this.sim.state.elapsed,hp:this.sim.state.enemies.filter(e=>e.active).map(e=>e.hp),chain:this.sim.state.build.chainUnlocked,reduced:this.reducedEffects,hash:this.sim.hash()}),
         evolutionState: () => ({enemies:this.sim.state.enemies.filter(e=>e.active).map(e=>({family:e.family,x:e.x,y:e.y,evolution:e.evolution})),projs:this.sim.state.projs.filter(p=>p.active).map(p=>({src:p.src,visualTier:p.visualTier,vx:p.vx,vy:p.vy,dmg:p.dmg})),squadMode:this.sim.state.squadMode}),
+        takeUniquePerformanceFrames:()=>{const rows=this.uniqueFrames;this.uniqueFrames=[];return rows;},
         performanceSamples: () => ({ frame: [...this.frameSamples], sim: [...this.simSamples], rendererCpuSubmit: [...this.renderSamples], rendererType: this.game.renderer.type, sceneObjects:this.children.length, pools:{mites:0,enemyActors:this.enemyActors.size,allyActors:this.allyActors.size,landmarks:this.landmarkArt.length,vfx:this.vfxPool.length,arcs:this.arcs.length}, viewport: [window.innerWidth, window.innerHeight], ascension: this.sim.state.ascension, age: this.sim.state.ageIndex }),
         readyAscend: () => {
           // Test-only shortcut for the boss-kill trigger; ascend() itself
@@ -847,7 +865,9 @@ export class GameScene extends Phaser.Scene {
           this.refreshHUD();return {hp:s.build.hp,x:s.px,y:s.py};
         },
         bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
-        offscreenWarningFixture:(warning:boolean)=>{const s=this.sim.state,e=s.enemies.find(e=>e.active&&e.boss)!;const c=this.cameras.main;e.x=s.px+c.width/c.zoom;e.y=s.py;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;e.encounter!.phase=warning?"warning":"approach";e.encounter!.timer=.5;},
+        offscreenWarningFixture:(warning:boolean,layout="source-off",zoom?:number)=>{const s=this.sim.state,e=s.enemies.find(e=>e.active&&e.boss)!;const c=this.cameras.main;if(zoom)c.setZoom(zoom);
+          e.x=layout==="hazard-off"?s.px:s.px+c.width/c.zoom;e.y=s.py;e.encounter!.aimX=s.px+(layout==="edge"?c.width/c.zoom/2-20:layout==="partial"?c.width/c.zoom/2+100:layout==="hazard-off"?c.width/c.zoom+600:0);e.encounter!.aimY=s.py;
+          e.encounter!.phase=warning?"warning":"approach";e.encounter!.timer=.5;return {source:[e.x,e.y],aim:[e.encounter!.aimX,e.encounter!.aimY],zoom:c.zoom};},
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
         terrainArrivalReview:()=>this.terrainPainter.arrivals(),
         siteArrivalReview:()=>this.siteArrival.review(),
@@ -3674,7 +3694,7 @@ export class GameScene extends Phaser.Scene {
         // frame leaves the latch untouched (P1-02).
         const t0 = performance.now();
         const ev = this.sim.step(SIM_DT, this.latch.frameForStep(i));
-        this.pushSample(this.simSamples, performance.now() - t0); // step-only
+        const simMs=performance.now()-t0;this.pushSample(this.simSamples,simMs);if(this.uniqueTiming)this.uniqueSim.push(simMs); // step-only
         if (ev.length > 0) this.handleEvents(ev);
         if (this.sim.state.over || this.sim.state.draftOpen) break;
       }
@@ -3705,7 +3725,7 @@ export class GameScene extends Phaser.Scene {
     const { cx, cy } = worldToChunk(s.px, s.py);
     const terrSig = s.territories.map((t) => `${t.poiId}:${t.spec}:${t.tier}:${t.disabled ? 0 : 1}:${t.disabled && t.repairT>0 ? 1 : 0}`).join("|");
     const camera=this.cameras.main;
-    const viewKey=this.highContrast()?groundBoundsKey(groundViewport(camera.scrollX,camera.scrollY,this.scale.width,this.scale.height,camera.zoom,{x:s.px,y:s.py})):"painted";
+    const viewKey=this.highContrast()?groundBoundsKey(groundDetailViewport(camera.scrollX,camera.scrollY,this.scale.width,this.scale.height,camera.zoom,{x:s.px,y:s.py})):"painted";
     const gk = `${s.worldNonce}:${cx},${cy}:a${s.ageIndex}:p${s.poisWorld.length}:t${terrSig}:v${viewKey}`;
     if (gk !== this.lastGroundKey) {
       this.lastGroundKey = gk;
@@ -3760,7 +3780,9 @@ export class GameScene extends Phaser.Scene {
     const now = performance.now() / 1000;
     const getChunk=(x:number,y:number)=>{const begin=performance.now();const result=this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y);this.chunkReadMs+=performance.now()-begin;return result;};
     this.submittedGroundBounds=new URLSearchParams(location.search).get("ground")==="unculled"?undefined:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:s.px,y:s.py});
+    this.submittedDetailBounds=new URLSearchParams(location.search).get("decor")==="all"||!this.submittedGroundBounds?undefined:groundDetailViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:s.px,y:s.py});
     drawGround(g, {
+      detailBounds:this.submittedDetailBounds,
       texturedGround:true,
       bounds:this.submittedGroundBounds,
       getChunk,

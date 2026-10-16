@@ -31,6 +31,8 @@ export interface GroundDrawArgs {
   highContrast: boolean;
   texturedGround?: boolean;
   bounds?:GroundBounds;
+  /** World-space ink culling only; never used for sites or combat hazards. */
+  detailBounds?:GroundBounds;
 }
 
 function chunkRand(worldSeed: string, cx: number, cy: number, salt: string, mod: number): number {
@@ -38,6 +40,7 @@ function chunkRand(worldSeed: string, cx: number, cy: number, salt: string, mod:
 }
 
 export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): void {
+  const ink=(x:number,y:number,rx:number,ry=rx)=>!a.detailBounds||x+rx>=a.detailBounds.left&&x-rx<=a.detailBounds.right&&y+ry>=a.detailBounds.top&&y-ry<=a.detailBounds.bottom;
   for (let ox = -a.radius; ox <= a.radius; ox++) {
     for (let oy = -a.radius; oy <= a.radius; oy++) {
       const ccx = a.cx + ox;
@@ -55,12 +58,12 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
       const px = gx + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-x", 300);
       const py = gy + chunkRand(a.worldSeed, ccx, ccy, "vl-patch-y", 300);
       g.fillStyle(style.groundAlt, 0.55);
-      g.fillEllipse(px + 100, py + 100, 300, 220);
+      if(ink(px+100,py+100,152,112))g.fillEllipse(px + 100, py + 100, 300, 220);
       // Low-contrast, deterministic terrain silhouettes distinguish geography
       // without making decorative terrain look like collision obstacles.
       g.lineStyle(3, style.groundAlt, 0.55);
       if (desc.biome === "arid") {
-        for (let i = 0; i < 3; i++) g.strokeEllipse(gx + 200, gy + 100 + i * 120, 320, 55);
+        for (let i = 0; i < 3; i++) if(ink(gx+200,gy+100+i*120,162,30))g.strokeEllipse(gx + 200, gy + 100 + i * 120, 320, 55);
       } else if (desc.biome === "tundra") {
         g.lineBetween(gx + 50, gy + 100, gx + 190, gy + 210);
         g.lineBetween(gx + 190, gy + 210, gx + 400, gy + 170);
@@ -69,12 +72,13 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
         g.lineBetween(gx + 140, gy + 280, gx + 290, gy + 350);
         g.lineBetween(gx + 290, gy + 350, gx + 450, gy + 240);
       } else {
-        g.strokeEllipse(gx + 150, gy + 340, 220, 130);
-        g.strokeEllipse(gx + 380, gy + 150, 170, 110);
+        if(ink(gx+150,gy+340,112,67))g.strokeEllipse(gx + 150, gy + 340, 220, 130);
+        if(ink(gx+380,gy+150,87,57))g.strokeEllipse(gx + 380, gy + 150, 170, 110);
       }
       if (desc.biome === "verdant") {
         // Flat grass silhouettes, deliberately passable and below actor contrast.
         for (const p of frontierDecoration(a.worldSeed,ccx,ccy)) {
+          if(!ink(p.x,p.y,p.size+7))continue;
           g.fillStyle(style.groundAlt,0.48);
           g.fillTriangle(p.x-p.size,p.y+5,p.x,p.y-p.size/2,p.x+p.size,p.y+5);
           g.lineStyle(2,style.ground,0.6);g.lineBetween(p.x,p.y+5,p.x,p.y-p.size/3);
@@ -90,7 +94,7 @@ export function drawGround(g: Phaser.GameObjects.Graphics, a: GroundDrawArgs): v
         const hx = gx + ((du + i * 173) % (CHUNK_SIZE - 40)) + 20;
         const hy = gy + ((du * 3 + i * 271) % (CHUNK_SIZE - 40)) + 20;
         const s = 7 + (i % 3) * 3;
-        drawCivMark(g, a.age, hx, hy, s, a.civColor, 0.38);
+        if(ink(hx,hy,s*1.7+3))drawCivMark(g, a.age, hx, hy, s, a.civColor, 0.38);
       }
     }
   }
