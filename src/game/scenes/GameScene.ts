@@ -2481,6 +2481,14 @@ export class GameScene extends Phaser.Scene {
     screen.setAttribute("aria-labelledby", "draft-heading");
     const heading = el("h2", "", s.draftContext === "poi" ? "ui.poiFound" : "ui.chooseTech");
     heading.id = "draft-heading";
+    heading.tabIndex = -1;
+    heading.addEventListener("keydown", event => {
+      // Preserve the existing fresh-Enter first-choice shortcut without
+      // focusing a bottom button. Held/stale keys use the canonical UI guard.
+      if(event.key==="Enter"&&this.decisionInput.allows(event)){
+        event.preventDefault();event.stopPropagation();this.pickCard(0,screen);
+      }
+    });
     screen.appendChild(heading);
     const guidance = this.sim.pathGuidance();
     const recommended=recommendedCard(guidance,s.draftOffers);
@@ -2529,7 +2537,7 @@ export class GameScene extends Phaser.Scene {
       const d = document.createElement("p");
       d.className = "card-effects";
       d.textContent = effectSummary(offer.effectiveEffects);
-      c.appendChild(el("p","card-delta",undefined,t("ui.beforeAfter")+": "+effectBeforeAfter(s.build,offer.effectiveEffects)));
+      const delta=el("p","card-delta",undefined,t("ui.beforeAfter")+": "+effectBeforeAfter(s.build,offer.effectiveEffects));
       const preview = document.createElement("div");
       preview.className = `card-preview domain-${n.domain}`;
       preview.setAttribute("aria-hidden", "true");
@@ -2583,6 +2591,7 @@ export class GameScene extends Phaser.Scene {
       }
       c.appendChild(h);
       c.appendChild(d);
+      c.appendChild(delta);
       c.appendChild(dom);
       const plan = document.createElement("details");
       plan.className = "card-plan";
@@ -2699,11 +2708,14 @@ export class GameScene extends Phaser.Scene {
       if (event.key !== "Tab") return;
       const controls = Array.from(screen.querySelectorAll<HTMLElement>("button:not([disabled]), summary"));
       const first = controls[0]; const last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (document.activeElement === heading) { event.preventDefault(); (event.shiftKey ? last : first)?.focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     });
     root.appendChild(screen);
-    screen.querySelector<HTMLButtonElement>(".card-select")?.focus();
+    // Focusing a bottom action scrolls the entire tall card row and hides all
+    // technology names at200%. Start at the dialog title; Tab enters controls.
+    heading.focus({preventScroll:true});
   }
 
   private currentDraftSurface(screen:HTMLElement):boolean {

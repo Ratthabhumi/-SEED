@@ -30,6 +30,31 @@ PR15. No main merge, retarget, rebase, force push, tag or public release.
   Boss decisions in EN/TH at720p/200%. Existing Pause, keyboard input, Logistics,
   first Signal and modal queue regressions remain required. Thai≥1.7 retained.
 
+## Late native UI correction
+
+The clean3b19720 checkpoint passed183 Windows browser tests/one skip, yet manual
+review of its actual200% screenshot showed technology names hidden above the
+card viewport. Autofocusing the first bottom SELECT action had scrolled the
+entire row. New initial-title visibility assertions reproduce2 failures (EN/TH).
+Focus the existing labelled dialog heading instead, trap initial Tab/Shift+Tab,
+and retain fresh Enter as first-choice activation through DecisionInputBoundary.
+The first heading experiment missed that Enter contract; six existing input
+tests failed, so restore the contract rather than removing their assertions.
+Names/effects also precede long before/after comparisons, keeping the decision
+identity visible. No global font shrink or weaker title visibility assertion.
+
+Checkpoint PR CI also reproduced a native-camera harness race: pending Phaser
+resize overwrote injected zoom1 with responsive gameZoom1.25. Wait for actual
+camera viewport/real render stages before explicit zooms. The production camera
+formula is unchanged. Group the same108 frame observations inside browser RAF
+callbacks to remove hundreds of CDP round trips; total120 rows, raster cases,
+hash invariants and timeout remain. Old Push/PR conclusions stay separate;
+new exact-head checks are required after these corrections.
+The30-test Windows focus/input/mobile/visibility suite passes after correction;
+the resize-settled native camera oracle also passes120 rows. Final exact-head
+source, full workflows, physical results and packages are recorded at
+https://github.com/Ratthabhumi/-SEED/pull/16.
+
 ## Evidence and compatibility
 
 Worldgen/Content/Save remain3/18/2: this work changes presentation and descriptive

@@ -64,3 +64,13 @@ Decision requires full regression, native parity, cold/drained-warm paused
 500/800 pairs and independently measured advancing play. Strict render<8ms /
 sim<4ms budgets remain. Measurement execution and green CI are not performance,
 artistic or human-fun approval. Final exact-source receipts belong to the PR.
+
+Native UI follow-up: bottom-button autofocus hides draft names at200%. Initial
+focus moves to the existing dialog heading; preserve fresh Enter first-choice
+through DecisionInputBoundary and retain the Tab trap. Put names/effects before
+long comparison text. Actual title-visibility tests fail2/2 on3b19720. Initial
+heading-only experiment broke six existing fresh-Enter tests and was corrected,
+not certified. Separately, checkpoint PR CI caught resize overriding injected
+test zoom; settle native viewport before explicit zoom observations. Grouping
+browser RAF observations changes no coverage, budget, production camera or
+timeout. Source/failed-run identities remain in the PR receipt.

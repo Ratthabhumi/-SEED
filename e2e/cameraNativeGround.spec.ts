@@ -8,14 +8,27 @@ test('submitted ground covers native Phaser worldView and inverse-transform corn
  for(const [width,height] of [[1280,720],[1920,1080],[2560,1305]]){
   writeFileSync('test-results/browser/content18-camera-progress.json',JSON.stringify({stage:'viewport',width,height,rows:rows.length}));
   await page.setViewportSize({width:width!,height:height!});
+  // Phaser applies its responsive gameZoom in the resize callback. Wait for
+  // that real resize before injecting explicit zooms, otherwise it can overwrite
+  // zoom1 with gameZoom1.25 mid-observation (PR checkpoint CI reproduced this).
+  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.cameraGroundReview().viewport)).toEqual([width,height]);
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
   for(const zoom of [...new Set([1,1.2,1.25,Math.max(1,Math.min(1.25,height!/900))])]){
    for(const [x,y] of [[0,0],[-513,-1],[511,512],[1500,-1500]]){
-    await page.evaluate(({x,y,zoom})=>{const h=(window as any).__seedE2E;h.streamingFixture(x,y,false,false,true);h.cameraReviewSet(zoom,[x-2300,y+1700]);},{x,y,zoom});
+    // Same108 native frame observations, grouped inside the browser to avoid
+    // hundreds of slow CDP round trips on Windows. No coverage/timeout change.
+    const observations=await page.evaluate(async({x,y,zoom})=>{
+     const h=(window as any).__seedE2E,observations=[];h.streamingFixture(x,y,false,false,true);h.cameraReviewSet(zoom,[x-2300,y+1700]);
+     for(let frame=0;frame<3;frame++){
+      await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
+      const r=h.cameraGroundReview();h.cameraReviewSet(r.zoom);observations.push({...r,unchanged:h.hash()===r.hash});
+     }return observations;
+    },{x,y,zoom});
     // Real engine render/follow stages, never call preRender manually or copy its formula.
-    for(let frame=0;frame<3;frame++){
-     await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>resolve())));
-     const r=await page.evaluate(()=>(window as any).__seedE2E.cameraGroundReview());rows.push(r);
+    for(const r of observations){
+     rows.push(r);
      expect(r.zoom).toBe(zoom);
+     expect(r.viewport).toEqual([width,height]);
      const [first,last]=r.corners;
      expect(first.x).toBeCloseTo(r.view.left,3);expect(first.y).toBeCloseTo(r.view.top,3);
      expect(last.x).toBeCloseTo(r.view.right,3);expect(last.y).toBeCloseTo(r.view.bottom,3);
@@ -25,9 +38,7 @@ test('submitted ground covers native Phaser worldView and inverse-transform corn
       expect(r.bounds.top).toBeLessThanOrEqual(Math.floor(p.y/512));
       expect(r.bounds.bottom).toBeGreaterThanOrEqual(Math.floor(p.y/512));
      }
-     const before=r.hash;
-     await page.evaluate(()=>{const h=(window as any).__seedE2E;h.cameraReviewSet(h.cameraGroundReview().zoom);});
-     expect(await page.evaluate(()=>(window as any).__seedE2E.hash())).toBe(before);
+     expect(r.unchanged).toBe(true);
     }
    }
   }

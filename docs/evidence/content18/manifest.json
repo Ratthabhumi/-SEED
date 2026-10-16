@@ -1,5 +1,5 @@
 {
-  "digestBasis": "published bytes; JSON normalized to LF explicitly",
+  "digestBasis": "published bytes; JSON explicitly LF",
   "files": {
     "content18-offscreen-warning-false.png": {
       "bytes": 134248,
@@ -13,6 +13,22 @@
       "bytes": 96,
       "sha256": "9b99afbf91682243d0455ba613efb0be2e60d5eae2c2b8abf821852b9b90353f"
     },
+    "draft-title-after-en.png": {
+      "bytes": 491487,
+      "sha256": "ece3bdaf93faf778293dbe1671a9d038bcac3612f7b2107b7af220fb74c6b0f5"
+    },
+    "draft-title-after-th.png": {
+      "bytes": 481902,
+      "sha256": "259e7f5f509d56cb05ba19917d5f37d1e40b6836dc8f4f37510c4e9ee50522b4"
+    },
+    "draft-title-before-en.png": {
+      "bytes": 428491,
+      "sha256": "f3a9e51120e548441482ca1d0bcdc126fb3acd30eb56efc8900833ffaaaed8d5"
+    },
+    "draft-title-before-th.png": {
+      "bytes": 404615,
+      "sha256": "06358f98992645b29fca575504f0128604f8816cf5c946610a53e6f5d0fef93e"
+    },
     "engineering-receipt.json": {
       "bytes": 2986,
       "sha256": "52ad2d758cb2e957ca5b5b4d7942a53e33ef53487d4f85b435184b663bde756c"
@@ -20,6 +36,10 @@
     "parent-live-diagnostic.json.gz": {
       "bytes": 60468,
       "sha256": "4d9fad9c6763b7173acbc47fb0ba8f89e14407f353b1568d82fbcba82febb4cb"
+    },
+    "title-focus-receipt.json": {
+      "bytes": 2092,
+      "sha256": "454668574b8786c706b9f964ccb69616ec8043c78346765c6a898e5dfd74e3e6"
     }
   }
 }

@@ -9,6 +9,11 @@ explicit bound/rejected experiment in ADR0036); #9 extends actual glyph bounds t
 draft and Boss decisions at EN/TH200%. These are engineering deltas, not human
 art/fun approval. Final exact-head checks and physical performance are separate
 pending receipts. #15/N8 remain BLOCKED; no replacement gait/source fabricated.
+Late #9 correction: native200% initial SELECT autofocus hid names above the
+viewport. Focus the labelled heading and prioritize names/effects, preserving
+fresh Enter/held-key guard and Tab wrapping. New visibility regression before
+2FAIL; first incomplete heading experiment also exposed6 input failures, fixed
+before publication. No text shrink or existing input assertions removed.
 
 Inherited rows/names remain [Content15.2](CONTENT15_2_HUMAN_ISSUES.md), with
 [15.3 deltas](CONTENT15_3_HUMAN_ISSUES.md). This is one continuation, not a new
