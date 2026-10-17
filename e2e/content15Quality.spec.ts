@@ -39,6 +39,6 @@ for(const lang of ["en","th"] as const)test(`boss phase transition has living wi
  await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageBossReview("slam");h.bossPhaseReview();});
  const state=await page.evaluate(()=>(window as any).__seedE2E.bossReviewState());expect(state.boss.encounter.phase).toBe("phase-transition");
  await expect(page.locator("#notification-stack")).toContainText(lang==="en"?"attack sequence changing":"ลำดับโจมตีใหม่");
- await page.waitForTimeout(100);const view=await page.evaluate(()=>(window as any).__seedE2E.bossReviewState());expect(view.actors.some((a:any)=>a.texture==="boss-v2"&&Number(a.frame)===3)).toBe(true);
+ await page.waitForTimeout(100);const view=await page.evaluate(()=>(window as any).__seedE2E.bossReviewState());expect(view.actors.filter((a:any)=>a.texture==="boss-rig")).toHaveLength(14);
  await assertNoRawKeys(page);await page.screenshot({path:`test-results/browser/content15-boss-phase-${lang}.png`});
 });

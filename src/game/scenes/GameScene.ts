@@ -68,6 +68,7 @@ import {HeroEquipment} from "../render/HeroEquipment";
 import {DeathResponse} from "../render/DeathResponse";
 import {WORLD_SCALE,gameZoom,enemyArtSize} from "../render/combatPresentation";
 import { ActorRenderer } from "../render/ActorRenderer";
+import { BossRig } from "../render/BossRig";
 import { repairPresentation } from "../render/repairPresentation";
 import { CombatFeedback, energyCharge } from "../render/CombatFeedback";
 import { KNOWLEDGE_ICON } from "../render/knowledgeIdentity";
@@ -119,6 +120,7 @@ export class GameScene extends Phaser.Scene {
   private archiveStorageOK = true;
 
   private enemyActors!: ActorRenderer;
+  private bossRig!:BossRig;
   private allyActors!: ActorRenderer;
   private repairLabel!: Phaser.GameObjects.Text;
   private lastAbilityArtT = -10;
@@ -252,6 +254,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("combat-equipment",COMBAT_ASSETS.equipment);
     this.load.image("world-props",COMBAT_ASSETS.props);
     this.load.image("boss-v2",BOSS_ASSET_V2);
+    BossRig.preload(this);
     this.load.image("enemies-v2",ENEMIES_ASSET_V2);
     this.load.image("outposts-v2",SEED_ASSETS.structures.atlasV2);
     this.load.svg("frontier-scout", SEED_ASSETS.frontier.scout, {width:64,height:64});
@@ -335,7 +338,7 @@ export class GameScene extends Phaser.Scene {
     this.heroActions = new HeroActions();
     const terrainSource=new URLSearchParams(location.search).get('terrainSource');
     this.terrainPainter = new TerrainPainter(this,terrainSource==='runtime'?'runtime':terrainSource==='prebaked-png'?'prebaked-png':'offline-canvas');
-    this.heroEquipment=new HeroEquipment(this);
+    this.heroEquipment=new HeroEquipment(this,new URLSearchParams(location.search).get("equipment")==="float"?"float":"hand");
     this.combatSprites=new CombatSprites(this);
     this.hostileBatch=new HostileProjectileBatch(this,new URLSearchParams(location.search).get("hostile")!=="legacy");
     this.friendlyBatch=new FriendlyProjectileBatch(this,new URLSearchParams(location.search).get("friendly")!=="fullquad");
@@ -361,6 +364,7 @@ export class GameScene extends Phaser.Scene {
     this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images");
     this.allyActors = new ActorRenderer(this,128,4);
     this.deathResponse=new DeathResponse(this);
+    this.bossRig=new BossRig(this);
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
     this.lastAbilityArtT=-10;
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
@@ -864,13 +868,33 @@ export class GameScene extends Phaser.Scene {
           e.encounter!.phase="warning";e.encounter!.timer=bossWarningDuration(pattern);e.encounter!.pattern=pattern;e.encounter!.aimX=s.px;e.encounter!.aimY=s.py;
           this.refreshHUD();return {hp:s.build.hp,x:s.px,y:s.py};
         },
-        bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.enemyActors.review()}),
+        bossReviewState: () => ({hp:this.sim.state.build.hp,boss:this.sim.state.enemies.find(e=>e.active&&e.boss),projectiles:this.sim.state.projs.filter(p=>p.active&&p.src==="boss-fan").length,actors:this.bossRig.review()}),
         offscreenWarningFixture:(warning:boolean,layout="source-off",zoom?:number)=>{const s=this.sim.state,e=s.enemies.find(e=>e.active&&e.boss)!;const c=this.cameras.main;if(zoom)c.setZoom(zoom);
           e.x=layout==="hazard-off"?s.px:s.px+c.width/c.zoom;e.y=s.py;e.encounter!.aimX=s.px+(layout==="edge"?c.width/c.zoom/2-20:layout==="partial"?c.width/c.zoom/2+100:layout==="hazard-off"?c.width/c.zoom+600:0);e.encounter!.aimY=s.py;
           e.encounter!.phase=warning?"warning":"approach";e.encounter!.timer=.5;return {source:[e.x,e.y],aim:[e.encounter!.aimX,e.encounter!.aimY],zoom:c.zoom};},
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
         terrainArrivalReview:()=>this.terrainPainter.arrivals(),
         siteArrivalReview:()=>this.siteArrival.review(),
+        equipmentMountReview:(mode:"hand"|"float")=>this.heroEquipment.setMount(mode),
+        bossDefeatArtReview:()=>{const boss=this.sim.state.enemies.find(e=>e.active&&e.boss);if(boss){boss.hp=0;boss.active=false;}},
+        siteArtVisibilityReview:(visible:boolean)=>{for(const a of this.landmarkArt)a.setVisible(visible);},
+        stagePoiEdge:()=>{
+          // Reproduction fixture only. Canonical discovery still comes from
+          // step(); place the player just outside an unexplored POI chunk.
+          const s=this.sim.state;this.paused=true;
+          for(let cy=1;cy<40;cy++)for(let cx=1;cx<40;cx++){
+            const d=this.sim.chunks.get(s.worldSeed,s.worldNonce,cx,cy);
+            for(const p of d.poi){
+              const edges=[{distance:p.lx,x:cx*CHUNK_SIZE-.25,y:p.wy},{distance:CHUNK_SIZE-p.lx,x:(cx+1)*CHUNK_SIZE+.25,y:p.wy},{distance:p.ly,x:p.wx,y:cy*CHUNK_SIZE-.25},{distance:CHUNK_SIZE-p.ly,x:p.wx,y:(cy+1)*CHUNK_SIZE+.25}];
+              const edge=edges.find(e=>e.distance<69);
+              if(!edge||s.poisWorld.includes(p.id)||s.chunksWorld.includes(`${cx},${cy}`))continue;
+              s.px=edge.x;s.py=edge.y;s.build.hp=s.build.maxHp=10000;
+              for(const e of s.enemies)e.active=false;
+              this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);this.refreshGround(true);
+              return {id:p.id,x:p.wx,y:p.wy,chunk:`${cx},${cy}`,known:s.poisWorld.includes(p.id)};
+            }
+          }throw Error("POI edge fixture unavailable");
+        },
         terrainSourceParity:()=>this.terrainPainter.sourceParity(),
         siteArtReview:()=>this.landmarkArt.filter(a=>a.visible).map(a=>({texture:a.texture.key,frame:Number(a.frame.name),originY:a.originY,x:a.x,y:a.y,width:a.displayWidth,height:a.displayHeight})),
         content153HostileFixture:()=>{const s=this.sim.state;for(let i=0;i<800;i++){const p=s.projs[i]!;p.friendly=false;p.src=["enemy-burst","enemy","boss-fan"][i%3]!;p.radius=i%3===2?8:i%3===1?6:4;p.color=i%3===2?0xff736d:0xff5a5a;}return {enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length,hash:this.sim.hash()};},
@@ -1315,13 +1339,20 @@ export class GameScene extends Phaser.Scene {
     mmZone.appendChild(mm);
     hud.appendChild(mmZone);
     const bossBar = el("div", "boss-bar");
+    bossBar.setAttribute("role","progressbar");bossBar.setAttribute("aria-label",t("ui.boss"));
+    bossBar.setAttribute("aria-valuemin","0");bossBar.setAttribute("aria-valuemax","100");
     bossBar.style.display = "none";
     const bossFill = document.createElement("div");
     bossFill.className = "boss-fill";
     bossBar.appendChild(bossFill);
     const bossLabel = el("div", "boss-label", "ui.boss");
     bossBar.appendChild(bossLabel);
-    hud.appendChild(bossBar);
+    // A single flowing center lane reserves space for stats, HP and phase text.
+    // Its measured bottom also keeps notifications clear at 200% TH wrapping.
+    top.append(bossBar,encounter);
+    const laneObserver=new ResizeObserver(()=>root.style.setProperty("--top-lane-bottom",`${top.getBoundingClientRect().bottom}px`));
+    laneObserver.observe(top);
+    this.events.once("shutdown",()=>laneObserver.disconnect());
     root.appendChild(hud);
     // Context stack (v0.23.1): ONE stacked container for contextual surfaces
     // (claim prompt, coachmark banner, interaction hints) in the left-center
@@ -1532,14 +1563,6 @@ export class GameScene extends Phaser.Scene {
     const near = nearestBreakthroughs([...s.ownedTags], [...s.breakthroughs], 2)
       .map((p) => `${t(p.titleKey)} ${p.have}/${p.need}`).join(" · ");
     goals.textContent = pin + near;
-    if (s.bossIndex >= 0) {
-      const boss = s.enemies[s.bossIndex];
-      if (boss?.active) {
-        const span = document.createElement("span");
-        span.textContent = ` ${t("ui.boss")} ${Math.ceil((boss.hp / boss.maxHp) * 100)}%`;
-        stats.appendChild(span);
-      }
-    }
     this.refreshBossBar();
     this.navT -= 0.15;
     if (this.navT <= 0) {
@@ -2377,7 +2400,10 @@ export class GameScene extends Phaser.Scene {
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
     if (boss?.active) {
       bar.style.display = "block";
-      fill.style.width = `${Math.max(0, Math.min(100, (boss.hp / boss.maxHp) * 100))}%`;
+      const percent=Math.max(0,Math.min(100,Math.ceil(boss.hp/boss.maxHp*100)));
+      fill.style.width = `${percent}%`;
+      bar.setAttribute("aria-label",t("ui.boss"));bar.setAttribute("aria-valuenow",String(percent));
+      const label=bar.querySelector(".boss-label");if(label)label.textContent=`${t("ui.boss")} ${percent}%`;
     } else {
       bar.style.display = "none";
     }
@@ -3806,9 +3832,9 @@ export class GameScene extends Phaser.Scene {
       for (let oy = -R; oy <= R; oy++) {
         const desc = getChunk(cx+ox,cy+oy);
         for (const poi of desc.poi) {
-          // Environmental visibility follows explored chunks; distant hidden
-          // sites are not disclosed by the render neighborhood/prewarm cache.
-          if(!(desc.x===cx&&desc.y===cy)&&!s.chunksWorld.includes(`${desc.x},${desc.y}`))continue;
+          // Canonical discovery can cross a chunk edge before that chunk is
+          // explored. Show that known site, without revealing unknown neighbors.
+          if(!(desc.x===cx&&desc.y===cy)&&!s.chunksWorld.includes(`${desc.x},${desc.y}`)&&!s.poisWorld.includes(poi.id))continue;
           this.siteArrival.drawn(poi.id,poi.wx,poi.wy);
 
           drawPoi(g, {
@@ -3896,6 +3922,7 @@ export class GameScene extends Phaser.Scene {
     }
     if(this.artWorld!==s.worldNonce){this.actorMotion.reset();this.artWorld=s.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;}
     this.enemyActors.begin();
+    this.bossRig.begin(s.worldNonce,s.elapsed,s.enemies.find(e=>e.active&&e.boss));
     this.allyActors.begin();
     for (const e of s.enemies) {
       if (!e.active) continue;
@@ -3915,11 +3942,12 @@ export class GameScene extends Phaser.Scene {
       });
       drawEnemyTelegraph(g,e,hc);
       drawBossTelegraph(g,e);
-      const bossPose=e.boss?(e.flash>0?6:["warning","commit"].includes(e.encounter?.phase??"")?3:e.encounter?.phase==="phase-transition"?3:e.encounter?.phase==="attack"?(e.encounter.pattern==="fan"?5:4):e.encounter?.phase==="recover"?(e.encounter.pattern==="fan"?5:4):enemyDisplayMoving(e)?1+Math.floor(s.elapsed*4)%2:0):undefined;
       const enemyPose=["warning","attack"].includes(e.evolution?.phase??"")?3:enemyDisplayMoving(e)?1+Math.floor(s.elapsed*8)%2:0;
-      this.enemyActors.draw(e.boss ? "boss" : e.family,e.x,e.y,enemyArtSize(e.family,e.radius,e.elite,e.boss),facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,bossPose,e.boss?undefined:enemyPose);
+      if(e.boss)this.bossRig.draw(e,s.elapsed,enemyArtSize(e.family,e.radius,e.elite,true),enemyDisplayMoving(e),hc);
+      else this.enemyActors.draw(e.family,e.x,e.y,enemyArtSize(e.family,e.radius,e.elite,false),facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,undefined,enemyPose);
     }
     this.enemyActors.end();
+    this.bossRig.end(s.elapsed,hc);
     this.deathResponse.draw(s.elapsed,s.worldNonce,this.reducedEffects);
     const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);
     const moving = heroPose.moving;

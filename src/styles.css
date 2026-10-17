@@ -72,11 +72,11 @@ button, input { font-family: inherit; }
 }
 .nav-compass:empty { display: none; }
 .boss-bar {
-  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-  width: min(60vw, 560px); height: 30px; background: rgba(20,6,6,0.76);
+  position: relative; flex-shrink:0;
+  width: 100%; min-height: max(30px, 1.8em); background: rgba(20,6,6,0.76);
   border: 2px solid #ff2222; border-radius: 8px; overflow: hidden; pointer-events: none;
 }
-.boss-fill { height: 100%; background: linear-gradient(90deg, #ff2222, #ff9a3c); transition: width 0.2s; }
+.boss-fill { position:absolute;inset:0; background: linear-gradient(90deg, #ff2222, #ff9a3c); transition: width 0.2s; }
 .boss-label {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: var(--font-caption); font-weight: 800; letter-spacing: 2px; line-height: 1.7;
@@ -804,6 +804,14 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 .boss-encounter small {color:#f4c6b6}
 .boss-encounter[data-phase="recover"] {border-color:#87d4bf}
 .boss-encounter[data-phase="recover"] span {color:#acf0db}
+/* Flowing boss lane overrides legacy absolute phase-card positions. The side
+   columns cannot intersect it, including wrapped Thai at UI scale 200%. */
+#ui:has(.boss-encounter:not([hidden])) .hud-top {display:flex;width:min(42cqw,560px);max-width:42cqw}
+#ui:has(.boss-encounter:not([hidden])) .hud-top-left,
+#ui:has(.boss-encounter:not([hidden])) .hud-top-right {max-width:26cqw}
+#ui .hud-top .boss-encounter {position:static;transform:none;width:100%;padding:6px 10px;font-size:var(--font-caption);overflow-wrap:anywhere}
+#ui .hud-top .boss-bar {order:1}
+#ui .hud-top .boss-encounter {order:2}
 @media(max-width:800px) {.boss-encounter {top:64px;width:46vw;padding:6px}}
 /* Menus keep requested text scaling; live HUD fits a readable viewport budget.
    Prevent 200% text from covering the hero in 720p without shrinking controls. */
@@ -816,4 +824,4 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 }
 #notification-stack {--font-body:clamp(18px,calc(18px * var(--ui-scale)),22px)}
 #context-stack {--font-body:clamp(18px,calc(18px * var(--ui-scale)),24px);top:clamp(140px,24vh,260px);transform:none;max-height:25vh}
-#ui:has(.boss-encounter:not([hidden])) #notification-stack {top:180px}
+#ui:has(.boss-encounter:not([hidden])) #notification-stack {top:calc(var(--top-lane-bottom, 180px) + 8px)}

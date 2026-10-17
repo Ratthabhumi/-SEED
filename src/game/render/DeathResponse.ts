@@ -10,7 +10,7 @@ export class DeathResponse {
   reset(world:string){this.world=world;for(const p of this.slots){p.until=-Infinity;p.image.setVisible(false);}}
   accept(event:Death,time:number,world:string,reduced:boolean){
     if(world!==this.world)this.reset(world);
-    if(reduced||!event.family)return;
+    if(reduced||!event.family||event.boss)return; // BossRig owns articulated defeat.
     let p=this.slots.find(p=>p.until<=time);
     if(!p){if(this.slots.length>=12)return;p={image:this.scene.add.image(0,0,"enemies-v2",0).setDepth(1),until:0,size:0};this.slots.push(p);}
     const row=["chaser","ranged","tank","swarm"].indexOf(event.family);
