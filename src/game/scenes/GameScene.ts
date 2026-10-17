@@ -121,6 +121,7 @@ export class GameScene extends Phaser.Scene {
 
   private enemyActors!: ActorRenderer;
   private bossRig!:BossRig;
+  private bossLaneObserver?:ResizeObserver;
   private allyActors!: ActorRenderer;
   private repairLabel!: Phaser.GameObjects.Text;
   private lastAbilityArtT = -10;
@@ -1214,6 +1215,7 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onShutdown(): void {
+    this.bossLaneObserver?.disconnect();this.bossLaneObserver=undefined;
     this.decisionInput.dispose();
     clearNotifications();
     this.game.events.off(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
@@ -1236,6 +1238,7 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------- HUD (DOM)
   private buildHUD(): void {
+    this.bossLaneObserver?.disconnect();
     clearUI();
     const root = uiRoot();
     const hud = el("div", "hud");
@@ -1350,9 +1353,8 @@ export class GameScene extends Phaser.Scene {
     // A single flowing center lane reserves space for stats, HP and phase text.
     // Its measured bottom also keeps notifications clear at 200% TH wrapping.
     top.append(bossBar,encounter);
-    const laneObserver=new ResizeObserver(()=>root.style.setProperty("--top-lane-bottom",`${top.getBoundingClientRect().bottom}px`));
-    laneObserver.observe(top);
-    this.events.once("shutdown",()=>laneObserver.disconnect());
+    this.bossLaneObserver=new ResizeObserver(()=>root.style.setProperty("--top-lane-bottom",`${top.getBoundingClientRect().bottom}px`));
+    this.bossLaneObserver.observe(top);
     root.appendChild(hud);
     // Context stack (v0.23.1): ONE stacked container for contextual surfaces
     // (claim prompt, coachmark banner, interaction hints) in the left-center

@@ -24,3 +24,13 @@ These are dirty development attempts, not exact-head final evidence.
 
 Final clean source/CI/native/package and physical receipts are appended to
 the Draft PR without modifying this historical attempt record.
+
+## Final lifecycle review of4a7cab8
+
+Source review found HUD reconstruction on language changes retained old
+ResizeObservers until scene shutdown. A new browser regression wraps the
+native observer API and checks active observer count across real EN/TH
+switches. Preserve the failing4a7cab8 reproduction, then disconnect the
+previous HUD observer before reconstruction and the current one at shutdown.
+The existing4a7cab8 packages/measurements/CI evidence remain labelled4a7cab8;
+the corrective final SHA needs fresh checks/CI/native/physical evidence.

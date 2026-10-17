@@ -1,5 +1,15 @@
 ## Original Boss rig / responsive lane / discovered POI —2026-10-17 (current)
 
+Final lifecycle correction:4a7cab8 is the first published checkpoint, not
+the final source. Real language changes rebuild HUD; release the previous
+ResizeObserver immediately and clean the current observer at scene shutdown.
+New browser regression verifies bounded native observer count across EN/TH.
+Preserve4a7cab8 CI/packages/24 physical cases under their original SHA; final
+corrective source receives fresh complete checks and exact-head receipts.
+Reproduction: active observers1→2 after one language switch on4a7cab8.
+Corrected check523/91 plus native observer/restart and EN/TH glyph tests3/3
+PASS before corrective commit; full clean-source receipts follow in PR19.
+
 Start fetched PR18 cf5aaf69277c992ca964ab25ac679d9750fdad0d. Branch
 feat/player-experience-visual-overhaul-20261016 stacks on PR18; no main
 merge, retarget, tag, release, force push or canonical version change3/18/2.
