@@ -6,7 +6,9 @@ for(const lang of ['en','th'] as const)test('boss warnings, actual dodge, fan pr
     const initial=await page.evaluate(p=>(window as any).__seedE2E.stageBossReview(p),pattern);
     await page.waitForTimeout(250);await page.screenshot({path:`test-results/browser/boss-v2-warning-${pattern}-${lang}.png`});
     const state=()=>page.evaluate(()=>(window as any).__seedE2E.bossReviewState());
-    expect((await state()).actors.some((a:any)=>a.texture==='boss-v2'&&Number(a.frame)===3)).toBe(true);
+    // New articulated source replaces the old whole-body warning frame.
+    expect((await state()).actors.filter((a:any)=>a.texture==='boss-rig')).toHaveLength(14);
+    expect((await state()).actors.some((a:any)=>Number(a.frame)===7)).toBe(true);
     if(pattern==='slam')await page.evaluate(()=>(window as any).__seedE2E.dodgeBossReview());
     await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(2));
     const after=await state();expect(after.boss.encounter.phase).toBe('recover');

@@ -91,3 +91,17 @@ balance and baseline Natural36 stay unchanged. Native, engineering and physical
 measurements do not close human readability/fun/art items. New stacked Draft PR
 receipts carry exact source, every failed timing/outcome and package inspection.
 No new animation family; painted editable-source dependency remains BLOCKED.
+
+##17 October original vector boss / HUD / discovered-site delta
+
+ADR0039 and PLAYER_EXPERIENCE_OVERHAUL implement a new original vector boss
+with nine editable plates and fourteen continuously posed joint images.
+Boss31/17/28 now have actual rig/HUD changes for review, not a claim that
+missing painted sources were recovered. Other actor animation and human art
+acceptance remain OPEN/BLOCKED as applicable. POI10/23/30 gain a specific
+canonical-discovery-versus-explored-chunk visibility correction and native
+pixel-difference regression. Input24/26 retain existing behavior and physical
+key regressions. Same31 identities, no blanket closure or human verdict.
+Optional floating equipment is a bounded one-primary comparison; hand remains
+default pending actual preference. Retained PR18 natural human telemetry
+reached Boss defeat and World2+120s, with subjective ratings still PENDING.

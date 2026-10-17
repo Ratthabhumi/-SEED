@@ -1,7 +1,7 @@
 {
   "version": 2,
   "generatedAt": "2026-09-30T22:28:32.312Z",
-  "totalAssets": 61,
+  "totalAssets": 62,
   "assets": [
     {
       "id": "kenney-input-q",
@@ -1517,6 +1517,36 @@
         {
           "path": "assets/seed/terrain/periodic/badlands.png",
           "sha256": "0ef8bc2f794008b4e664a38af4dd9a5482188a8e89e3ff8a7e56a86fa951626e"
+        }
+      ]
+    },
+    {
+      "id": "seed-boss-rig-original",
+      "projectPath": "assets/original/actors/boss-rig.svg",
+      "vendorSourcePath": "assets/original/actors/boss-rig.svg",
+      "sourcePack": "-SEED original articulated Rift Sovereign",
+      "sourceUrl": "https://github.com/Ratthabhumi/-SEED",
+      "sourceFile": "assets/original/actors/boss-rig.svg",
+      "sourceLicense": "MIT",
+      "licenseUrl": "LICENSE",
+      "author": "-SEED contributors; Codex vector authoring",
+      "versionStatus": "EXACT_VERSION_VERIFIED",
+      "versionOrRelease": "boss-rig-1",
+      "downloadedAt": "2026-10-17",
+      "modified": false,
+      "modifications": "Original editable gradient vector plates; no external artwork, no raster input.",
+      "presentationTransform": "Phaser SVG rasterization1024x768; nine256px cells; fourteen joint images; canonical-time analytic rig.",
+      "attributionRequired": true,
+      "purpose": "Boss articulated armor; human visual approval pending",
+      "status": "art-review-pending",
+      "byteSize": 5186,
+      "vendorSourceSha256": "f898dbf0c0d28581fbf874a2ac9ae106df800945aef18f608bd51bb06299193d",
+      "productionSha256": "f898dbf0c0d28581fbf874a2ac9ae106df800945aef18f608bd51bb06299193d",
+      "sourceRelease": "boss-rig-1",
+      "additionalSources": [
+        {
+          "path": "assets/original/actors/boss-rig-export.png",
+          "sha256": "7f9894fae7175f8b9a971f3fa33ffd1536a6051f64dffad3a22f018476bcf49a"
         }
       ]
     }
