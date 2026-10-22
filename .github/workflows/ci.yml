@@ -90,6 +90,7 @@ jobs:
             test-results/browser/content18-*.json
             test-results/browser/overhaul-*.json
             test-results/browser/v3-*.json
+            test-results/browser/v31-*.json
             test-results/browser/content153/*.webm
             test-results/browser/**/trace.zip
             test-results/browser/**/error-context.md
