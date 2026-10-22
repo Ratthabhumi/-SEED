@@ -34,7 +34,8 @@ test('retained ground rebuilds on mode, age and world changes and releases on re
  const frame=()=>page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));
  const reviews=[];
  for(const [age,contrast,reduced] of [[0,true,false],[3,true,false],[5,false,true],[5,true,false]]){
-  await page.evaluate(({age,contrast,reduced})=>{const h=(window as any).__seedE2E;h.stageEvolution('hunters',age);h.streamingFixture(2048,1024,false,reduced,contrast);h.preparedGroundReview(true);},{age,contrast,reduced});
+  const automatic=await page.evaluate(({age,contrast,reduced})=>{const h=(window as any).__seedE2E;h.stageEvolution('hunters',age);h.streamingFixture(2048,1024,false,reduced,contrast);const automatic=h.preparedGroundReview();h.preparedGroundReview(true);return automatic;},{age,contrast,reduced});
+  expect(automatic.enabled).toBe(contrast);
   await frame();const r=await page.evaluate(()=>(window as any).__seedE2E.preparedGroundReview());reviews.push(r);
   expect(r.overflow).toBe(false);if(contrast)expect(r.vertices).toBeGreaterThan(0);
  }

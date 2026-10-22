@@ -10,6 +10,9 @@ No human QA report or real-user save is included.
 - First candidate A/B: official PR20 versus clean experimental5969c8d with
   groundGeometry=prepared.40 cold/warm rows; no primitive clipping yet.
 - Candidate A/A: clean5969c8d opt-in, separately instrumented.
+- Clipped A/B and A/A: clean2418086 opt-in, with actual native-bound omission;
+  all five paired warm blocks improve. Separate instrumented GPU/CPU attribution
+  is not a matched GPU causal claim. Both raw reports retain their original SHA.
 
 Five-block ABBA/BAAB preserves500 enemies/800 projectiles paused, initial3s
 and settled3s, frame pacing, errors, build identities and unfavorable rows.
@@ -18,7 +21,7 @@ eviction. Paused windows are NOT live budget or human acceptance. No thermal
 sensor/exclusive-host guarantee exists. UHD630/D3D11 results are host-specific.
 Different historical24-case runs are not controlled A/B.
 
-Final clipped-candidate, exact-source live24-case and CI/native receipts belong
+Final exact-source live24-case and CI/native receipts belong
 to the new Draft PR; never restamp these earlier sources as final head.
 
 Unsuccessful development gates retained: initial native test found zero hits

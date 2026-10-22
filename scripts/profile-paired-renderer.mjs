@@ -1,6 +1,8 @@
 // ABBA/BAAB, six graphics/viewport conditions, cold startup vs settled warm.
 // Cold means fresh browser context/in-process texture state, NOT OS disk cache.
-// node scripts/profile-paired-renderer.mjs A_URL B_URL OUTPUT [blocks=5]
+// node scripts/profile-paired-renderer.mjs A_URL B_URL OUTPUT [blocks=5] [friendly|hostile] [all|contrast1080]
+// Selected1080p HC is40 cold/warm rows; default all remains240. Heap samples
+// bracket each window and report occupancy, never allocation rate or forced GC.
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {dirname} from 'node:path';

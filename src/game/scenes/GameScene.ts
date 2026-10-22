@@ -404,7 +404,7 @@ export class GameScene extends Phaser.Scene {
 
     this.ground = this.add.graphics().setDepth(-10);
     this.preparedGround=new PreparedGround(this.ground);
-    this.preparedGround.enabled=new URLSearchParams(location.search).get('groundGeometry')==='prepared';
+    this.preparedGround.enabled=false;
     if(this.diagnostics)this.diagnostics.wrap(this.ground,'renderWebGL','render.Graphics');
     this.gfx = this.add.graphics().setDepth(0);
     this.equipmentGraphics=this.add.graphics().setDepth(5);
@@ -3811,6 +3811,7 @@ export class GameScene extends Phaser.Scene {
     const g = this.ground;
     if (!g) return;
     this.siteArrival.discover(s.worldNonce,s.poisWorld,s.elapsed,performance.now());
+    this.preparedGround.enabled=this.highContrast()&&new URLSearchParams(location.search).get('groundGeometry')!=='legacy';
     this.preparedGround.invalidate();
     g.clear();
     const { cx, cy } = worldToChunk(s.px, s.py);

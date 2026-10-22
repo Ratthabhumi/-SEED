@@ -66,3 +66,41 @@ Four warm blocks improve, one regresses; B's worst warm window18.2ms is retained
 Every warm window remains above8ms. This is partial benefit, not budget closure.
 The next bounded revision adds only the conservative native-bound clipping
 above. Retain the first campaign rather than replacing its unfavorable rows.
+
+## Clipped candidate decision (clean2418086)
+
+All five paired warm blocks improve against official PR20. Median window
+p95 A14.75/B12.7ms warm and A17.8/B13.85ms cold. Strong time drift affects BOTH
+labels: warm A ranges6.7–18.9ms and B4.9–16.8ms; every row stays available.
+Five paired block medians support retaining the improvement; global medians
+alone would not attribute that drift. This does not establish thermal/scheduling
+causes or universal8ms acceptance. Final production enables reuse only for
+High Contrast; Normal/Reduced keep native submission. groundGeometry=legacy
+is the explicit comparison path. No scene density, art or gameplay reduction.
+
+Final complete check/browser/analyze/Natural36/package, exact-head CI and
+24 live physical cases receive their own final-source receipts in the Draft PR.
+Earlier experimental stamps are preserved in docs/evidence/v31-ground.
+
+## Research handoff and natural QA
+
+APPLIED: native Phaser4 flat-triangle pipeline and conservative visibility.
+REJECTED: whole-neighborhood raster cache and old individual Fill/Stroke/PNG
+prototypes; no rerun under a new name. PARTIAL: physical budgets and existing
+painted presentation. NOT IMPLEMENTED: new authored animation or Boss balance.
+
+For ChatGPT/artist: supply actual layered basalt/ember golem anatomy and
+authored turn/windup/impact/recovery/hurt/death timelines, compatible with the
+existing atlas/pivots; preserve the preferred painted silhouette. Existing
+V3_VISUAL_RECOVERY specifies material, view and occupied-pixel limitations.
+For design research: review Hunters/GOLDEN002/damage's4.7167s natural kill and
+protected recovery/50% escalation contract across all36 outcomes. Recommend
+counterplay-preserving escalation tests; do not force phase2 with HP/immunity.
+
+Owner QA on the final branch: npm run qa:human, open localhost:5173/?qa=1,
+start a fresh Hunters/EPOCH-GOLDEN-001 session. Compare Normal/Reduced/HC,
+move through chunk boundaries and change age; pause/resume, then reach Boss,
+Ascension and World2 naturally. Verify full Logistics→claim→Later/Esc→movement,
+retry specialization/first Signal, technology input/focus, EN/TH200% and Boss
+HUD. Finish the session and record visual clarity/fun ratings and actual FPS.
+No QA grants/forced phases; preserve failures as INTERRUPTED_BY_BUG.

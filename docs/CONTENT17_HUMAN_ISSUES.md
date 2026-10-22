@@ -1,5 +1,19 @@
 # Same31 complaints — home playable quality recovery
 
+##23 October V3.1 performance delta (same31 identities)
+
+N1/#12 retain their artwork and canonical geography; ADR0041 adds native ground
+triangle retention and fully clipped-primitive omission in High Contrast.
+The final bounded clean2418086 comparison improves all five paired warm blocks:
+median window p95 A14.75/B12.7ms. Cold A17.8/B13.85ms. All40 rows, including
+failures and strong host drift, are retained. This is PARTIAL performance
+progress, not strict8ms/4ms acceptance or new art approval. Native96 scoped
+pixel cases plus mode/age/World2/resume/restart gates protect presentation.
+Full final-source regression/physical receipts remain separate PR evidence.
+#4/#5/#6/#9/#10/#13/#18/#19/N2/N4 retain their existing regression requirements.
+#17/N6 balance stays unchanged; #15/N8 painted production remains BLOCKED.
+No original complaint identity/status is deleted or relabeled HUMAN_FUN_PASS.
+
 ##22 October V3 owner-feedback delta (same31 identities)
 
 **PR19 BOSS ART REJECTED BY PLAYER**: supersedes the17October pending visual
