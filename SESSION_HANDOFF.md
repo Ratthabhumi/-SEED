@@ -1,4 +1,35 @@
-## V3 painted Boss recovery —2026-10-22 (current)
+## V3.1 retained ground recovery —2026-10-22/23 (current)
+
+Clean fetched parent PR20/4827b9a; main unchanged5e6d5c65. One child branch
+feat/v31-ground-geometry-20261022. Official PR19/20 matched1080p HC40-row
+diagnosis completed; all negative windows retained. Instrumented PR20 A/A
+again identifies repeated static ground replay. ADR0041 tests complete native
+triangle retention, distinct from rejected per-path and framebuffer prototypes.
+Final production enables reuse only for High Contrast; groundGeometry=legacy
+is the explicit comparator. Normal/Reduced use native ground submission.
+Early native96 exact-pixel cases PASS (four biomes/six ages/two zooms/native
+720/1080/fractional translation); source was dirty development4827b9a, not a
+clean release. Initial zero-hit test caught Phaser4's captured render step;
+corrected using its public render-step API. Targeted three lifetime/fallback
+tests and typecheck passed before the native gate. Clean candidate matched
+performance, full regression, exact-head CI and final physical gates follow.
+No core/content/balance/art/dependency/version changes; existing31 identities,
+preferred painted Boss, Human art/fun OPEN and painted anatomy BLOCKED retained.
+Do not merge/tag/release or claim the historical12/24 failures fixed yet.
+First clean5969c8d40-row candidate: median warm15.3→12.1ms, four blocks
+improve/one regresses; worst warm18.2ms retained, all exceed8ms. Add only
+conservative native-primitive bounds clipping;48 new720p exact pixel cases
+with actual105+ offscreen skips and mode/age/World2/resume/restart PASS.
+Clipped clean2418086: both720/1080 native gates and lifecycle PASS. All five
+paired warm blocks improve; median warm14.75→12.7ms and cold17.8→13.85ms.
+Strong drift/all failed windows retained; strict performance acceptance OPEN.
+Final precommit complete check531tests/94files,62provenance/build and analyze6
+PASS. These local checks were on the final dirty source before publication;
+clean-source full browser/Natural36/package/24 physical and exact-head CI
+receipts belong in this workstream's one stacked Draft PR. No new art approval.
+Compressed original evidence + hashes: docs/evidence/v31-ground.
+
+## V3 painted Boss recovery —2026-10-22 (historical)
 
 Fetched and verified PR19 HEAD9b5c1facd4bbab891b452051b392e5e460c76353, Draft
 on PR18. New branch feat/v3-painted-recovery-20261022; no merge/release/main

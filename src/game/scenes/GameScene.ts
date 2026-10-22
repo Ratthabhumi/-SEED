@@ -7,6 +7,7 @@ import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
 import Phaser from "phaser";
 import {groundViewport,groundDetailViewport,groundBoundsKey,type GroundBounds} from "../render/groundViewport";
 import {groundRasterReview} from "../render/groundRasterReview";
+import {PreparedGround} from "../render/PreparedGround";
 import { beginAttempt, attemptReward, settleAttempt } from "../../core/progression/archiveLedger";
 import { normalizeSeedString, generateRandomSeed } from "../../core/seed/hash";
 import { WORLDGEN_VERSION, CONTENT_VERSION, SAVE_SCHEMA_VERSION } from "../../core/seed/versions";
@@ -134,6 +135,7 @@ export class GameScene extends Phaser.Scene {
   private artLastY = 0;
   private gfx!: Phaser.GameObjects.Graphics;
   private ground!: Phaser.GameObjects.Graphics;
+  private preparedGround!:PreparedGround;
   private playerArc!: Phaser.GameObjects.Arc;
   private debugText!: Phaser.GameObjects.Text;
   private showDebug = false;
@@ -401,6 +403,9 @@ export class GameScene extends Phaser.Scene {
     }else this.diagnostics=undefined;
 
     this.ground = this.add.graphics().setDepth(-10);
+    this.preparedGround=new PreparedGround(this.ground);
+    this.preparedGround.enabled=false;
+    if(this.diagnostics)this.diagnostics.wrap(this.ground,'renderWebGL','render.Graphics');
     this.gfx = this.add.graphics().setDepth(0);
     this.equipmentGraphics=this.add.graphics().setDepth(5);
     this.ground.setName("ground");this.gfx.setName("combat");this.equipmentGraphics.setName("equipment");
@@ -525,6 +530,8 @@ export class GameScene extends Phaser.Scene {
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
+        preparedGroundReview:(enabled?:boolean)=>{if(enabled!==undefined)this.preparedGround.enabled=enabled;return this.preparedGround.review();},
+        preparedGroundFixture:(enabled:boolean,dx=0,dy=0)=>{const c=this.cameras.main;this.paused=true;c.stopFollow();c.ignore(this.children.list.filter(child=>child!==this.ground));c.setScroll(c.scrollX+dx,c.scrollY+dy);this.preparedGround.enabled=enabled;return this.sim.hash();},
         groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:this.sim.state.px,y:this.sim.state.py}),commands:this.ground.commandBuffer.length}),
         cameraGroundReview:()=>{const c=this.cameras.main,v=c.worldView;return {scroll:[c.scrollX,c.scrollY],zoom:c.zoom,viewport:[c.width,c.height],view:{left:v.x,top:v.y,right:v.right,bottom:v.bottom},corners:[[0,0],[c.width,c.height]].map(([x,y])=>{const p=c.getWorldPoint(x!,y!);return {x:p.x,y:p.y};}),bounds:this.submittedGroundBounds,actor:{x:this.sim.state.px,y:this.sim.state.py},hash:this.sim.hash()};},
         cameraReviewSet:(zoom:number,scroll?:[number,number])=>{const c=this.cameras.main;c.setZoom(zoom);if(scroll)c.setScroll(scroll[0],scroll[1]);this.refreshGround(true);},
@@ -3804,6 +3811,8 @@ export class GameScene extends Phaser.Scene {
     const g = this.ground;
     if (!g) return;
     this.siteArrival.discover(s.worldNonce,s.poisWorld,s.elapsed,performance.now());
+    this.preparedGround.enabled=this.highContrast()&&new URLSearchParams(location.search).get('groundGeometry')!=='legacy';
+    this.preparedGround.invalidate();
     g.clear();
     const { cx, cy } = worldToChunk(s.px, s.py);
     // Visual radius extends one chunk beyond the simulated active radius.
