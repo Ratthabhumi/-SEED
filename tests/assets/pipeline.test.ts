@@ -63,7 +63,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
       } else if (/^seed-(content15-|world-props-v1|projectiles-v1|equipment-v1|hero-v2-|verdant-v2|terrain-|boss-v2|boss-rig-original|enemies-v2|outposts-v2|warfare-swords|domain-)/.test(entry.id)) {
         expect(entry.sourceLicense).toBe("MIT"); expect(entry.author).toMatch(/^-SEED contributors/);
         expect(entry.vendorSourcePath).toMatch(/^assets\/original\//);
-        expect(entry.status).toBe(entry.id==="seed-warfare-swords"||entry.id.startsWith("seed-domain-")?"reviewable":"art-review-pending");
+        expect(entry.status).toBe(entry.id==="seed-boss-rig-original"?"art-review-rejected":entry.id==="seed-warfare-swords"||entry.id.startsWith("seed-domain-")?"reviewable":"art-review-pending");
       } else { expect(entry.sourceLicense).toBe("CC0"); expect(entry.author).toBe("Kenney"); }
 
       const diskPath = path.join(root, entry.projectPath);
@@ -147,7 +147,7 @@ describe("Asset Pipeline and Manifest Verification", () => {
         expect(a.modifications).toMatch(/resize|slicing/); expect(a.status).toBe("art-review-pending");
       } else {
         expect(prodSha).toBe(vendorSha); expect(a.modified).toBe(false);
-        expect(a.status).toBe(a.id==='seed-boss-rig-original'?"art-review-pending":a.id==="seed-warfare-swords"||a.id.startsWith("seed-domain-")?"reviewable":a.id.startsWith("seed-frontier-")?"working-prototype":"production-selected");
+        expect(a.status).toBe(a.id==='seed-boss-rig-original'?"art-review-rejected":a.id==="seed-warfare-swords"||a.id.startsWith("seed-domain-")?"reviewable":a.id.startsWith("seed-frontier-")?"working-prototype":"production-selected");
       }
     }
   });

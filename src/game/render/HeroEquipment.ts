@@ -32,8 +32,10 @@ export class HeroEquipment {
     const art=combatPresentation(s.originId,family,s.weaponStage[family]);
     const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
     const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
-    const orbit=reduced?-.65:s.elapsed*.65;
-    const x=s.px+(this.mount==="float"?Math.cos(orbit)*34:this.socketX)-nx*fresh*2,y=s.py+(this.mount==="float"?Math.sin(orbit)*18-20:this.socketY)-ny*fresh*2,len=art.weaponLength;
+    // Float is a shoulder companion, not a carousel crossing the hero every
+    // revolution. Small canonical-time hover stops in Reduced Effects.
+    const hover=reduced?0:Math.sin(s.elapsed*2)*2;
+    const x=s.px+(this.mount==="float"?46:this.socketX)-nx*fresh*2,y=s.py+(this.mount==="float"?-30+hover:this.socketY)-ny*fresh*2,len=art.weaponLength;
     if(this.mount==="float"){
       // A visible tether anchors this cosmetic mount to the unchanged canonical
       // emitter. Never move projectile origins or imply a second weapon hitbox.

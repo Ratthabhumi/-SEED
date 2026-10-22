@@ -3,6 +3,7 @@ import type {SimProj} from "../../core/sim/RunState";
 import {PaintedQuadBatch} from "./PaintedQuadBatch";
 import {VL} from "./VisualLanguage";
 import {hostileArtFrame} from "./hostileArt";
+import {hostileGlyph} from "./hostileGlyph";
 
 const KEY="hostile-vector-glyphs",CELL=64,MAX=64;
 /** Cache the existing six-point threat glyph, exact radius/outline/tip geometry.
@@ -31,15 +32,17 @@ export class HostileProjectileBatch {
       this.painted.draw(this.scene.textures.get("hostile-painted").get(role),p.x,p.y,size,size,Math.atan2(p.vy,p.vx));this.paintedShots++;this.paintedRoles.add(role);return true;
     }
     if(!this.batch||!this.atlas)return false;
-    const id=`${p.radius}:${p.color}:${highContrast?3:2}`;
+    const id=`${role??"dart"}:${p.radius}:${p.color}:${highContrast?3:2}`;
     let frame=this.frames.get(id);
     if(frame===undefined){
       if(this.frames.size>=MAX||p.radius>14)return false;
       frame=this.frames.size;this.frames.set(id,frame);
       const x=(frame%8)*CELL,y=Math.floor(frame/8)*CELL,ctx=this.atlas.getContext(),r=p.radius*1.25;
       ctx.clearRect(x,y,CELL,CELL);ctx.save();ctx.translate(x+CELL/2,y+CELL/2);
-      ctx.beginPath();ctx.moveTo(r*1.6,0);ctx.lineTo(0,r*.85);ctx.lineTo(-r*.7,r*.5);
-      ctx.lineTo(-r*.35,0);ctx.lineTo(-r*.7,-r*.5);ctx.lineTo(0,-r*.85);ctx.closePath();
+      const points=hostileGlyph(p.src);
+      ctx.beginPath();ctx.moveTo(points[0]![0]*r,points[0]![1]*r);
+      for(let i=1;i<points.length;i++)ctx.lineTo(points[i]![0]*r,points[i]![1]*r);
+      ctx.closePath();
       ctx.fillStyle='#'+p.color.toString(16).padStart(6,'0');ctx.fill();
       ctx.strokeStyle='#'+VL.hostileOutline.toString(16).padStart(6,'0');ctx.lineWidth=highContrast?3:2;ctx.stroke();
       ctx.globalAlpha=.9;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(r*1.1,0,Math.max(1.5,r*.28),0,Math.PI*2);ctx.fill();ctx.restore();

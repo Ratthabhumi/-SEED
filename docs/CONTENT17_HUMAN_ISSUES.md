@@ -1,5 +1,20 @@
 # Same31 complaints — home playable quality recovery
 
+##22 October V3 owner-feedback delta (same31 identities)
+
+**PR19 BOSS ART REJECTED BY PLAYER**: supersedes the17October pending visual
+gate. #17/N6/N9 keep their canonical mechanics and warnings; default art returns
+to the preferred painted lava golem, with real recovery and defeat cells.
+#15/N8 remain BLOCKED for a complete authored painted motion family; the
+rejected vector is an opt-in comparison, not production approval. #7/N3 gain
+source-distinct HC projectile silhouettes; #16/N8 gain a stable optional float
+station, with Hand still default. #9/#10/N1 keep the proven HUD/lifecycle/POI
+fixes. #12/N7 terrain and #2/#3/#8/N5 hierarchy are retained, not blanket-fixed.
+New cleanPR19 sessionbc09b0fe is preserved, no ratings invented. Other rows
+and original complaint IDs below are unchanged. Functional tests and native
+captures remain separate from HUMAN_VISUAL/FUN acceptance and performance.
+See V3_VISUAL_RECOVERY and ADR0040; final exact-SHA receipts in the new Draft PR.
+
 16October continuation uses the same31 rows. See CONTENT18_RENDER_CLOSURE.md:
 #8 now has an independent native camera/worldView oracle; #17/N6 retain all36
 outcomes plus source-attributed damage/entry-health evidence; N9 corrects the

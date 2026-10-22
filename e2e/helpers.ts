@@ -27,6 +27,7 @@ export interface TestSaveOptions {
   tutorialCompleted?: boolean;
   lang?: "en" | "th";
   uiScale?: 1 | 1.25 | 1.5 | 2;
+  bossArt?: "rig" | "baseline" | "painted";
 }
 
 /** Seed localStorage BEFORE first navigation so GameScene boots with it. */
@@ -55,7 +56,7 @@ export async function prepareSave(page: Page, opts: TestSaveOptions = {}): Promi
 
 export async function startRun(page: Page, seed: string, opts: TestSaveOptions = {}): Promise<void> {
   await prepareSave(page, opts);
-  await page.goto("/?e2e");
+  await page.goto("/?e2e"+(opts.bossArt?"&bossArt="+opts.bossArt:""));
   await page.locator("#seed-input").fill(seed);
   // Use stable ID selector instead of fragile text-based selector (Thai copy may vary)
   await page.locator("#start-btn").click();
