@@ -2,6 +2,10 @@
 
 Date: 2026-10-17. Status: implemented; human art/fun approval pending.
 
+2026-10-22 supersession: owner **REJECTED** the vector boss artwork. ADR0040
+restores the painted production default; this source/rig is retained only as
+an explicit comparison. HUD/POI/lifecycle decisions below remain applicable.
+
 ## Evidence and decision
 
 PR18 uses eight128px whole-body cells. Measured occupied dimensions are

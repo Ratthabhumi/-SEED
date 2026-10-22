@@ -5,7 +5,7 @@ test.use({video:{mode:'on',size:{width:1280,height:720}}});
 const frame=async(page:any)=>page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));
 for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`articulated boss and separated HUD ${height} ${lang}`,async({page})=>{
  await page.setViewportSize({width:height===720?1280:1920,height});
- await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:2});
+ await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:2,bossArt:'rig'});
  const observations=[];
  for(const graphics of ['normal','reduced','contrast']){
   await page.evaluate(mode=>{const h=(window as any).__seedE2E;h.streamingFixture(0,0,false,mode==='reduced',mode==='contrast');h.stageBossReview('slam');},graphics);
@@ -78,7 +78,7 @@ test('one floating primary mount compares with hand across origins and Stone/Spa
 });
 
 test('articulated defeat, child world and restart leave no stale boss plates',async({page})=>{
- await startRun(page,'EPOCH-GOLDEN-001');
+ await startRun(page,'EPOCH-GOLDEN-001',{bossArt:'rig'});
  await page.evaluate(()=>(window as any).__seedE2E.stageBossReview('cross'));await frame(page);
  await page.evaluate(()=>(window as any).__seedE2E.bossDefeatArtReview());await frame(page);
  // Presentation-only death fixture: do not report it as a real boss victory.

@@ -69,6 +69,7 @@ import {DeathResponse} from "../render/DeathResponse";
 import {WORLD_SCALE,gameZoom,enemyArtSize} from "../render/combatPresentation";
 import { ActorRenderer } from "../render/ActorRenderer";
 import { BossRig } from "../render/BossRig";
+import { BossPresentation, type BossArtMode } from "../render/BossPresentation";
 import { repairPresentation } from "../render/repairPresentation";
 import { CombatFeedback, energyCharge } from "../render/CombatFeedback";
 import { KNOWLEDGE_ICON } from "../render/knowledgeIdentity";
@@ -120,7 +121,8 @@ export class GameScene extends Phaser.Scene {
   private archiveStorageOK = true;
 
   private enemyActors!: ActorRenderer;
-  private bossRig!:BossRig;
+  private bossRig!:BossPresentation;
+  private bossArtMode:BossArtMode="painted";
   private bossLaneObserver?:ResizeObserver;
   private allyActors!: ActorRenderer;
   private repairLabel!: Phaser.GameObjects.Text;
@@ -255,7 +257,9 @@ export class GameScene extends Phaser.Scene {
     this.load.image("combat-equipment",COMBAT_ASSETS.equipment);
     this.load.image("world-props",COMBAT_ASSETS.props);
     this.load.image("boss-v2",BOSS_ASSET_V2);
-    BossRig.preload(this);
+    const bossArt=new URLSearchParams(location.search).get("bossArt");
+    this.bossArtMode=bossArt==="rig"||bossArt==="baseline"?bossArt:"painted";
+    if(this.bossArtMode==="rig")BossRig.preload(this);
     this.load.image("enemies-v2",ENEMIES_ASSET_V2);
     this.load.image("outposts-v2",SEED_ASSETS.structures.atlasV2);
     this.load.svg("frontier-scout", SEED_ASSETS.frontier.scout, {width:64,height:64});
@@ -365,7 +369,7 @@ export class GameScene extends Phaser.Scene {
     this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images");
     this.allyActors = new ActorRenderer(this,128,4);
     this.deathResponse=new DeathResponse(this);
-    this.bossRig=new BossRig(this);
+    this.bossRig=new BossPresentation(this,this.bossArtMode);
     this.repairLabel = this.add.text(0,0,"",{fontFamily:"Noto Sans Thai, Noto Sans",fontSize:"18px",color:"#F1F5F2",backgroundColor:"#0B1218",padding:{x:8,y:6}}).setLineSpacing(14).setOrigin(0.5,0).setDepth(40);
     this.lastAbilityArtT=-10;
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
@@ -3945,11 +3949,11 @@ export class GameScene extends Phaser.Scene {
       drawEnemyTelegraph(g,e,hc);
       drawBossTelegraph(g,e);
       const enemyPose=["warning","attack"].includes(e.evolution?.phase??"")?3:enemyDisplayMoving(e)?1+Math.floor(s.elapsed*8)%2:0;
-      if(e.boss)this.bossRig.draw(e,s.elapsed,enemyArtSize(e.family,e.radius,e.elite,true),enemyDisplayMoving(e),hc);
+      if(e.boss)this.bossRig.draw(e,s.elapsed,enemyArtSize(e.family,e.radius,e.elite,true),enemyDisplayMoving(e),hc,this.reducedEffects);
       else this.enemyActors.draw(e.family,e.x,e.y,enemyArtSize(e.family,e.radius,e.elite,false),facing,s.elapsed,enemyDisplayMoving(e),e.flash>0?0xffbbbb:0xffffff,s.ageIndex,undefined,undefined,undefined,enemyPose);
     }
     this.enemyActors.end();
-    this.bossRig.end(s.elapsed,hc);
+    this.bossRig.end(s.elapsed,hc,this.reducedEffects);
     this.deathResponse.draw(s.elapsed,s.worldNonce,this.reducedEffects);
     const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);
     const moving = heroPose.moving;

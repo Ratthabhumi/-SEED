@@ -8,6 +8,7 @@ import { VL } from "./VisualLanguage";
 import { fillPoly, strokePoly } from "./paths";
 import { drawKnowledgeCodex } from "./knowledgeIdentity";
 import {combatPresentation} from "./combatPresentation";
+import {hostileGlyph} from "./hostileGlyph";
 
 export interface WeaponDrawOpts {
   time: number;
@@ -53,15 +54,7 @@ export function drawHostileProj(g: Phaser.GameObjects.Graphics, p: SimProj, opts
   const px = -dy;
   const py = dx;
   const r = p.radius * 1.25;
-  // Elongated nose + barbed shoulders + notched tail: 6-point arrowhead.
-  const pts: Array<[number, number]> = [
-    [p.x + dx * r * 1.6, p.y + dy * r * 1.6],
-    [p.x + px * r * 0.85, p.y + py * r * 0.85],
-    [p.x + px * r * 0.5 - dx * r * 0.7, p.y + py * r * 0.5 - dy * r * 0.7],
-    [p.x - dx * r * 0.35, p.y - dy * r * 0.35],
-    [p.x - px * r * 0.5 - dx * r * 0.7, p.y - py * r * 0.5 - dy * r * 0.7],
-    [p.x - px * r * 0.85, p.y - py * r * 0.85],
-  ];
+  const pts:Array<[number,number]>=hostileGlyph(p.src).map(([x,y])=>[p.x+(dx*x+px*y)*r,p.y+(dy*x+py*y)*r]);
   fillPoly(g, pts, p.color, 1);
   strokePoly(g, pts, VL.hostileOutline, opts.highContrast ? 3 : 2, 1);
   // Hot tip spark — directional emphasis no pickup ever has.

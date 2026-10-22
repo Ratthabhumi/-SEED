@@ -5,6 +5,9 @@ const manifest=JSON.parse(readFileSync('assets/ASSET_MANIFEST.json','utf8'));
 const record={id:'seed-boss-rig-original',projectPath:path,vendorSourcePath:path,sourcePack:'SEED original articulated Rift Sovereign',sourceUrl:'https://github.com/Ratthabhumi/-SEED',sourceFile:path,sourceLicense:'MIT',licenseUrl:'LICENSE',author:'SEED contributors; Codex vector authoring',versionStatus:'EXACT_VERSION_VERIFIED',versionOrRelease:'boss-rig-1',downloadedAt:'2026-10-17',modified:false,modifications:'Original editable gradient vector plates; no external artwork, no raster input.',presentationTransform:'Phaser SVG rasterization1024x768; nine256px cells; fourteen joint images; canonical-time analytic rig.',attributionRequired:true,purpose:'Boss articulated armor; human visual approval pending',status:'art-review-pending',byteSize:data.length,vendorSourceSha256:sha,productionSha256:sha,sourceRelease:'boss-rig-1'};
 record.author='-SEED contributors; Codex vector authoring';
 record.sourcePack='-SEED original articulated Rift Sovereign';
+// Export/registration must never erase an owner's art rejection or approval.
+const prior=manifest.assets.find(a=>a.id===record.id);
+if(prior){record.status=prior.status;record.purpose=prior.purpose;}
 record.additionalSources=['assets/original/actors/boss-rig-export.png'].map(path=>({path,sha256:createHash('sha256').update(readFileSync(path)).digest('hex')}));
 manifest.assets=manifest.assets.filter(a=>a.id!==record.id);manifest.assets.push(record);manifest.totalAssets=manifest.assets.length;
 writeFileSync('assets/ASSET_MANIFEST.json',JSON.stringify(manifest,null,2)+'\n');

@@ -67,6 +67,15 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:e2e
+      - run: gh run download 38918375553 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v3-pr18-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: gh run download 38990564374 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v3-pr19-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python -m zipfile -e scratch/v3-pr18-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr18-dist
+      - run: python -m zipfile -e scratch/v3-pr19-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr19-dist
+      - run: node scripts/capture-v3-recovery.mjs self
       - run: node scripts/capture-content153.mjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -80,10 +89,12 @@ jobs:
             test-results/browser/content161-*.json
             test-results/browser/content18-*.json
             test-results/browser/overhaul-*.json
+            test-results/browser/v3-*.json
             test-results/browser/content153/*.webm
             test-results/browser/**/trace.zip
             test-results/browser/**/error-context.md
             test-results/evolution-performance.json
+            test-results/v3-comparison/
           if-no-files-found: warn
           retention-days: 14
 
