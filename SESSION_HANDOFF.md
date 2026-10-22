@@ -15,6 +15,12 @@ performance, full regression, exact-head CI and final physical gates follow.
 No core/content/balance/art/dependency/version changes; existing31 identities,
 preferred painted Boss, Human art/fun OPEN and painted anatomy BLOCKED retained.
 Do not merge/tag/release or claim the historical12/24 failures fixed yet.
+First clean5969c8d40-row candidate: median warm15.3→12.1ms, four blocks
+improve/one regresses; worst warm18.2ms retained, all exceed8ms. Add only
+conservative native-primitive bounds clipping;48 new720p exact pixel cases
+with actual105+ offscreen skips and mode/age/World2/resume/restart PASS.
+Full1080/clipped matched/full regression/final physical gates still pending.
+Compressed original evidence + hashes: docs/evidence/v31-ground.
 
 ## V3 painted Boss recovery —2026-10-22 (historical)
 

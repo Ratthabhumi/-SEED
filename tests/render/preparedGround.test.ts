@@ -10,7 +10,7 @@ function fixture(){
  engine.draws=0;engine.fail=false;engine.large=false;Object.assign(engine.matrix,{a:1,b:0,c:0,d:1,e:0,f:0});
  const submissions:any[]=[];const submitter={batch:(_c:unknown,i:number[],v:number[],t:number[])=>submissions.push({i:[...i],v:[...v],t:[...t]})};
  const graphics:any={alpha:1,pathDetailThreshold:0,commandBuffer:[1],customRenderNodes:{},defaultRenderNodes:{Submitter:submitter},once:vi.fn(),addRenderStep(fn:unknown){this.step=fn;}};
- const prepared=new PreparedGround(graphics),context={camera:{addToRenderList:vi.fn()},useCanvas:false},renderer={config:{pathDetailThreshold:0}};
+ const prepared=new PreparedGround(graphics),context={camera:{x:0,y:0,width:1280,height:720,addToRenderList:vi.fn()},useCanvas:false,width:1280,height:720},renderer={config:{pathDetailThreshold:0}};
  return {prepared,graphics,submissions,draw:()=>graphics.step(renderer,graphics,context)};
 }
 describe('static native ground submission lifetime',()=>{
@@ -29,5 +29,10 @@ describe('static native ground submission lifetime',()=>{
  it('restores a private submitter even when native preparation throws',()=>{
   const f=fixture();const existing=f.graphics.defaultRenderNodes.Submitter;f.graphics.customRenderNodes.Submitter=existing;engine.fail=true;
   expect(f.draw).toThrow('native draw failed');expect(f.graphics.customRenderNodes.Submitter).toBe(existing);expect(f.prepared.review().primitives).toBe(0);
+ });
+ it('clips only wholly offscreen cached primitives and restores them on camera return',()=>{
+  const f=fixture();f.draw();engine.matrix.e=1400;f.draw();expect(f.submissions).toHaveLength(1);expect(f.prepared.review().skipped).toBe(1);
+  engine.matrix.e=1275;f.draw();expect(f.submissions).toHaveLength(2); // partially visible, including guard
+  engine.matrix.e=0;f.draw();expect(f.submissions).toHaveLength(3);expect(f.submissions[2]).toEqual(f.submissions[0]);
  });
 });

@@ -27,6 +27,11 @@ combat and canonical state are untouched. Every ground refresh invalidates it:
 world, age, chunk/detail bounds, discovery, territory state, scale and settings.
 Linear transform, alpha and path-detail changes rebuild native geometry.
 Camera translation reuses and translates the captured screen-space vertices.
+Cached primitives retain their actual native triangle bounds. Wholly offscreen
+submissions are skipped with a2px guard only for a full matching viewport and
+identity external transform (or a local framebuffer). Partial intersections
+and unsupported viewport transforms keep the original triangles. Native tests
+assert actual nonzero skips, avoiding a false-positive inactive optimization.
 Canvas and lit sources retain the native renderer. Retention is capped at
 65,536 vertices; overflow completes the native draw and bypasses caching until
 the next invalidation. Scene destruction releases retained CPU arrays; there
@@ -52,3 +57,12 @@ default. Hand mount remains default. The fastest Natural36 Hunters trajectory
 still kills before protected phase1 recovery finishes; no HP inflation or
 immunity is justified by that case alone. Natural/human fun and real layered
 painted anatomy remain separate open gates.
+
+## First bounded measurement (clean experimental5969c8d)
+
+Without primitive clipping, the first40-row uninstrumented matched campaign
+has median window renderer p95 A15.3/B12.1ms warm and A15.3/B14.5ms cold.
+Four warm blocks improve, one regresses; B's worst warm window18.2ms is retained.
+Every warm window remains above8ms. This is partial benefit, not budget closure.
+The next bounded revision adds only the conservative native-bound clipping
+above. Retain the first campaign rather than replacing its unfavorable rows.
