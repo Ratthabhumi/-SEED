@@ -66,6 +66,7 @@ import {SiteArrival} from '../render/siteArrival';
 import {COMBAT_ASSETS,combatFrames} from "../assets/combatAssets";
 import {CombatSprites} from "../render/CombatSprites";
 import {HeroEquipment} from "../render/HeroEquipment";
+import {groundContact} from "../render/groundContact";
 import {DeathResponse} from "../render/DeathResponse";
 import {WORLD_SCALE,gameZoom,enemyArtSize} from "../render/combatPresentation";
 import { ActorRenderer } from "../render/ActorRenderer";
@@ -888,6 +889,16 @@ export class GameScene extends Phaser.Scene {
         terrainArrivalReview:()=>this.terrainPainter.arrivals(),
         siteArrivalReview:()=>this.siteArrival.review(),
         equipmentMountReview:(mode:"hand"|"float")=>this.heroEquipment.setMount(mode),
+        aimReleaseReview:(dx:number,dy:number)=>{
+          // Stages target positions, then invokes the real canonical weapon
+          // execution. Does not synthesize a release or modify damage/rules.
+          const s=this.sim.state;this.paused=true;
+          for(const e of s.enemies)if(e.active){e.x=s.px+dx;e.y=s.py+dy;e.hp=e.maxHp=10000;e.shield=0;}
+          for(const f of ["kinetic","energy","field","defense"] as const)s.weaponCd[f]=999;
+          const f=s.originId==="resonant"?"energy":"kinetic";s.weaponCd[f]=0;
+          this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));
+          return {facing:this.heroActions.facing(s.elapsed),hash:this.sim.hash()};
+        },
         bossDefeatArtReview:()=>{const boss=this.sim.state.enemies.find(e=>e.active&&e.boss);if(boss){boss.hp=0;boss.active=false;}},
         siteArtVisibilityReview:(visible:boolean)=>{for(const a of this.landmarkArt)a.setVisible(visible);},
         stagePoiEdge:()=>{
@@ -3438,7 +3449,7 @@ export class GameScene extends Phaser.Scene {
     const save = loadSave(localStorage);
     for (const e of ev) {
       this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId);
-      if(e.type==="weapon_fired"&&Math.hypot(e.x-s.px,e.y-s.py)<40)this.heroEquipment.fire(s.worldNonce,s.elapsed,e.x,e.y,e.tx,e.ty,e.family);
+      this.heroEquipment.accept(e,s.worldNonce,s.elapsed,s.px,s.py);
       if(e.type==="ability_used")this.heroEquipment.activate(s.worldNonce,s.elapsed,e.id,s.px,s.py);
       if(e.type==="enemy_killed")this.deathResponse.accept(e,s.elapsed,s.worldNonce,this.reducedEffects);
       this.heroActions.sync(s.worldNonce);
@@ -3945,6 +3956,10 @@ export class GameScene extends Phaser.Scene {
       // into it. Body culling must never suppress the locked danger geometry.
       if (!vis(e.x,e.y)) {drawEnemyTelegraph(g,e,hc);drawBossTelegraph(g,e);continue;}
       const facing=enemyDisplayHeading(e,s.px,s.py);
+      if(!hc&&(e.boss||e===focus)){
+        const size=enemyArtSize(e.family,e.radius,e.elite,e.boss);
+        groundContact(g,e.x,e.y+size*(117/128-.65),size*(e.boss?.48:.43));
+      }
       drawEnemy(g, e, {
         bodyColor: ENEMY_LINEAGE[e.family].color[AGES[s.ageIndex] as AgeId],
         facing,
@@ -3964,10 +3979,15 @@ export class GameScene extends Phaser.Scene {
     this.enemyActors.end();
     this.bossRig.end(s.elapsed,hc,this.reducedEffects);
     this.deathResponse.draw(s.elapsed,s.worldNonce,this.reducedEffects);
-    const heroPose=this.actorMotion.sample(s,s.px,s.py,s.elapsed);
+    const heroPose={...this.actorMotion.sample(s,s.px,s.py,s.elapsed)};
+    if(!hc)groundContact(g,s.px,s.py+WORLD_SCALE.hero*(116/128-.65),44);
     const moving = heroPose.moving;
     this.artLastX=s.px; this.artLastY=s.py;
     this.heroActions.sync(s.worldNonce);
+    // A real release overrides locomotion-facing briefly, so strafing cannot
+    // put the body/back and its authored hand socket opposite the fired shot.
+    const shotFacing=this.heroActions.facing(s.elapsed);
+    if(shotFacing!==undefined){heroPose.heading=shotFacing;heroPose.flip=Math.cos(shotFacing)<-.15;heroPose.back=Math.sin(shotFacing)<0&&Math.abs(Math.sin(shotFacing))>Math.abs(Math.cos(shotFacing));}
     this.allyActors.draw(actorFor(s.originId),s.px,s.py,WORLD_SCALE.hero,this.playerFacing,s.elapsed,moving || s.dashT>0,s.iframe>0?0x9fd8ff:0xffffff,s.ageIndex,heroPose,this.heroActions.pose(s.elapsed,moving,s.dashT>0,s.over),undefined,undefined,true,this.heroActions.revision);
     const reference=this.allyActors.referenceReview();
     this.heroEquipment.socket(reference?(reference.socket[0]!-64)*WORLD_SCALE.hero/128*(heroPose.flip?-1:1):0,reference?(reference.socket[1]!-83.2)*WORLD_SCALE.hero/128:-16);

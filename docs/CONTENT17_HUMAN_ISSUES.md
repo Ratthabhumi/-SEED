@@ -1,5 +1,22 @@
 # Same31 complaints — home playable quality recovery
 
+##23 October V3.2 combat presentation delta (same31 identities)
+
+#14/#16/N8: one real release predicate connects beam/projectile, body facing,
+authored socket and mounted equipment. Correct diagonal staff axis and left
+grip, bounded canonical recoil; Hand default/one optional tethered Float.
+#17/N6/N9: actual-position Boss stride, planted foot pivots, aim-facing and
+eased attack recovery/material phase2; canonical timing/geometry/DPS unchanged.
+#3/#8/N5: bounded hero/Boss/focused-enemy ground contacts and read-only196-cell
+alpha-scale audit; no uniform enlargement or all-screen readability claim.
+#4/#5/#6/#9/#10/#13/#18/#19/N1/N2/N4/N7 retain their regressions and PR21 HC
+ground optimization. #7/N3 retain the existing painted source-distinct shots.
+#15/N8 remain BLOCKED for new continuous authored painted anatomy. No one of
+the31 identities is renamed/closed by these automated/native corrections;
+human art/motion/readability/fairness/fun/replay remain pending. See
+V32_COMBAT_SLICE and INTEGRATION_READINESS; final receipts belong to the one
+new child Draft PR, no PR23 before owner play.
+
 ##23 October V3.1 performance delta (same31 identities)
 
 N1/#12 retain their artwork and canonical geography; ADR0041 adds native ground

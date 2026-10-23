@@ -1,4 +1,40 @@
-## V3.1 retained ground recovery —2026-10-22/23 (current)
+## V3.2 grounded combat slice —2026-10-23 (current)
+
+Verified clean fetched PR21/835a25f821b5aa0e8492c9f13787a3d7aa59f6ad,
+both prior exact-head CI events success. One child
+feat/v32-combat-presentation-20261023; no merge/history/main/release change.
+ADR0042 corrects beam→mount omission, reflected left grip,
+body/socket real-release facing, quadratic recoil; one mount/no new attacks.
+Boss observes actual movement instead of the generic always-moving fallback;
+painted alpha-foot pivot, aim-facing/eased recovery and warm phase2 tint.
+Bounded hero/Boss/focused-enemy contacts, original bitmap sources unchanged.
+Recover Boss detail from untouched1774x887 source into256px cells instead of
+the old128px derivative, same240u world size. Reproducible normalization,
+manifest/hash and measured foot metadata; +1.5MiB RGBA, one existing Image.
+Read-only196-cell scale audit and verified21-edge integration report include
+the108-commit prerequisite and190-ahead-main stack. No canonical/version or
+dependency change (3/18/2). Same31 identities; painted full motion BLOCKED,
+human ratings OPEN. V32_COMBAT_SLICE has precise artist/owner QA handoff.
+Early actual official-PR21/candidate720 PNGs+short clips precede full CI.
+Focused original13PASS; new4FAIL were +pi/-pi renderer normalization in the
+test, corrected by comparing direction; corrected4/4PASS before final phase
+tint assertion. Precommit/final full suites, physical and exact-source CI
+receive separate receipts on this workstream's single Draft PR. No PR23
+before owner plays; do not restamp dirty early evidence as clean final proof.
+Native gate also caught an incorrect proposed45-degree staff compensation:
+the normalized atlas already points right. Removed before publication; no
+double rotation ships. Early dirty captures retain that failed experiment.
+Pre-detail stable check534/95+62provenance/build PASS; after the genuine
+source-detail recovery, re-run final native gate and complete check. Final
+source receipts must describe this256px derivative, not the earlier128px build.
+Final precommit check535/95,62provenance/build PASS; source-detail focused17
+PASS; final native5/5 (all EN/TH720/1080 real releases/reflected grips,
+grounded recovery/phase tint, painted defeat→World2→restart). Early official
+PR21/current256px native PNGs inspected and committed with dirty/source labels.
+Final clean-source full browser/package/Natural36/physical/CI receipts follow
+on the single Draft PR; no additional PR before owner play.
+
+## V3.1 retained ground recovery —2026-10-22/23 (historical)
 
 Clean fetched parent PR20/4827b9a; main unchanged5e6d5c65. One child branch
 feat/v31-ground-geometry-20261022. Official PR19/20 matched1080p HC40-row

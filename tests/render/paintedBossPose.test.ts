@@ -1,7 +1,30 @@
 import {describe,it,expect} from "vitest";
-import {paintedBossPose} from "../../src/game/render/paintedBossPose";
+import {paintedBossPose,paintedBossGround,BOSS_FOOT_Y} from "../../src/game/render/paintedBossPose";
 import {createBossEncounter,bossRecoveryDuration} from "../../src/core/combat/bossEncounter";
+import detail from "../../src/game/assets/boss-frame-detail.json";
+declare const require:(id:string)=>any;
+const {readFileSync}=require("node:fs"),{createHash}=require("node:crypto");
 describe('painted boss canonical presentation',()=>{
+ it('retains original painted source and recovers real detail in eight256px cells',()=>{
+  const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
+  const original=readFileSync('assets/original/actors/boss-v2.png'),production=readFileSync('assets/seed/actors/boss-v2.png');
+  expect(sha(original)).toBe(detail.sourceSha256);expect(sha(production)).toBe(detail.productionSha256);
+  expect(production.readUInt32BE(16)).toBe(1024);expect(production.readUInt32BE(20)).toBe(512);
+  expect(detail.frames).toHaveLength(8);expect(detail.cell).toBe(256);
+ });
+ it('plants every existing cell on the same ground contact and eases recovery',()=>{
+  for(let frame=0;frame<8;frame++){
+   const ground=paintedBossGround(frame,240);
+   expect(ground.originY*128).toBe(BOSS_FOOT_Y[frame]);
+   expect(ground.offsetY).toBeCloseTo(63.375);
+  }
+  expect(paintedBossPose(1,false).lift).toBe(0);
+  const a={...createBossEncounter(),phase:'recover' as const};
+  const start=paintedBossPose(4,false,{...a,timer:bossRecoveryDuration(a.pattern)});
+  const settle=paintedBossPose(4,false,{...a,timer:bossRecoveryDuration(a.pattern)-.2});
+  expect(start.rotation).toBeGreaterThan(settle.rotation);
+  expect(paintedBossPose(4,false,{...a,timer:1}).rotation).toBe(0);
+ });
  it('distinguishes windup, release and the real recovery window',()=>{
   for(const pattern of ['slam','cross','fan'] as const){
    const a={...createBossEncounter(),pattern};
