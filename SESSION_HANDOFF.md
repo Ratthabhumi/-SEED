@@ -1,4 +1,26 @@
-## V3.2 grounded combat slice —2026-10-23 (current)
+## V3.3 performance/startup lifetime —2026-10-23 (current)
+
+Verified remote PR22/c529f7c remains Draft on PR21/835a25f; main5e6d5c65
+unchanged. One child feat/v33-performance-recovery-20261023; stop at PR23.
+No canonical/art/balance/dependency/version changes3/18/2. Keep HQ painted
+Boss and retained native ground. Instrumented PR22 A/A HC p95=3.8–15.8ms;
+same-code128/256 Boss windows show no consistent texture penalty. Preserve
+all raw gzip/hash evidence in docs/evidence/v33-recovery. The40-row PR21/22
+campaign overlapped a short test/typecheck and is NOT isolated causal proof.
+No speculative renderer optimization or strict-budget closure is claimed.
+Fix observable cache shutdown lifetime; restart regression distinguishes an
+old disposed cache from legitimate new shots, and rechecks800-shot rebuild.
+Wait for simulation hook/HUD/fonts; only painted video review gets45s startup
+cap justified by preserved19.5s assertion/8.215s worker fetch. Add localized
+loading progress and blocked-resource EN/TH720/1080 regression. Complete check
+536/96+62 provenance/build PASS, focused4/4PASS32.9s. Matched PR22/current
+native loading/painted combat/beam/phase/dense/World2/pause/restart clips pass
+before costly CI; dirty early source labels remain explicit. Final clean full
+browser/analyze/Natural36/package/physical24 and exact-SHA CI require separate
+PR23 receipts. Same31 statuses; human art/fun OPEN, painted anatomy BLOCKED.
+See V33_PERFORMANCE_RECOVERY for diagnosis, limitations and natural QA steps.
+
+## V3.2 grounded combat slice —2026-10-23 (historical)
 
 Verified clean fetched PR21/835a25f821b5aa0e8492c9f13787a3d7aa59f6ad,
 both prior exact-head CI events success. One child

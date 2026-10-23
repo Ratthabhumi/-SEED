@@ -242,6 +242,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
+    // Loading precedes create()/HUD; keep slow decoding visibly responsive.
+    clearUI();
+    const loading=el("section","screen run-loading");loading.setAttribute("role","status");
+    const panel=el("div","panel");
+    const label=el("h2","",undefined,t("ui.loadingRun"));
+    const progress=document.createElement("progress");progress.max=1;progress.value=0;
+    progress.setAttribute("aria-label",t("ui.loadingRun"));
+    panel.append(label,progress);loading.append(panel);uiRoot().append(loading);
+    const update=(value:number)=>{progress.value=value;};
+    this.load.on("progress",update);
+    this.load.once("complete",()=>{this.load.off("progress",update);progress.value=1;});
     // Only Guardian still uses the authored six-era SVG rig. Keep other old
     // sources for diagnostics/provenance without uploading dead gameplay bodies.
     this.load.svg("actor-guardian",ACTOR_ASSETS.guardian,{width:1152,height:64});
@@ -563,6 +574,7 @@ export class GameScene extends Phaser.Scene {
         referenceAnimation:()=>this.allyActors.referenceReview(),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
         friendlyBatchCounts:()=>this.friendlyBatch.counts(),
+        friendlyBatchLifetime:()=>{const batch=this.friendlyBatch;return ()=>batch.counts();},
         numericFeedbackCounts:()=>this.numericFeedback?.counts()??null,
         resetRenderDiagnostics:()=>this.diagnostics?.reset(),
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
