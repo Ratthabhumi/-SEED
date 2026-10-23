@@ -3,6 +3,7 @@ import type {
  EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "ui.loadingRun": "กำลังเตรียมโลกของคุณ…",
   "ui.exploreHint": "สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นพบสถานที่สำคัญ",
   "ui.signalExploreHint": "สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นหาสัญญาณต่างดาว แล้วกำจัดภัยรอบข้างก่อนยึด",
   "ui.knowledgePickupHint": "เก็บตำราความรู้เพื่อปลดล็อกเทคโนโลยีและก้าวสู่ยุคถัดไป",

@@ -5,7 +5,10 @@ test.use({video:{mode:'on',size:{width:1280,height:720}}});
 const frame=async(page:any)=>page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));
 for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`painted default recovery, HUD and modes ${height} ${lang}`,async({page})=>{
  await page.setViewportSize({width:height===720?1280:1920,height});
- await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:2});
+ // PR22 preserved trace: HUD polling exhausted19.5s wall time; terrain worker
+ // fetch alone8.215s. This video/1080p review waits for hook+HUD+loaded fonts,
+ // with a scoped45s initialization cap. Other gameplay test budgets stay15s.
+ await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:2,startupTimeoutMs:45000});
  const rows=[];
  for(const graphics of ['normal','reduced','contrast']){
   await page.evaluate(mode=>{const h=(window as any).__seedE2E;h.streamingFixture(0,0,false,mode==='reduced',mode==='contrast');h.stageBossReview('fan');},graphics);

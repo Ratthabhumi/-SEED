@@ -1,5 +1,14 @@
 # Same31 complaints — home playable quality recovery
 
+##23 October V3.3 lifetime/readiness delta (same31 identities)
+
+Retain every identity/status below. This child corrects cache shutdown/restart
+evidence and resource-aware readiness, with visible EN/TH loading progress.
+It preserves the preferred HQ painted Boss, existing beam/grip/ground changes,
+canonical balance and versions3/18/2. No human item is promoted to acceptance;
+performance gate awaits the exact-source24-case receipt. Full painted anatomy
+remains BLOCKED on genuine layered sources. See V33_PERFORMANCE_RECOVERY.
+
 ##23 October V3.2 combat presentation delta (same31 identities)
 
 #14/#16/N8: one real release predicate connects beam/projectile, body facing,

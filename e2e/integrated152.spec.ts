@@ -7,9 +7,18 @@ test("HC cache preserves 800 canonical shots and remains bounded across restart"
  const h=await page.evaluate(()=>{const h=(window as any).__seedE2E;return {cache:h.friendlyBatchCounts(),state:h.canonicalStressState()};});
  expect(h.state.projectiles).toBe(800);expect(h.cache.glyphs).toBeLessThanOrEqual(64);expect(h.cache.atlasBytes).toBe(2359296);
  await page.screenshot({path:"test-results/browser/content152-hc-cache.png"});
+ await page.evaluate(()=>{(window as any).__previousFriendlyBatch=(window as any).__seedE2E.friendlyBatchLifetime();});
  await page.keyboard.press("Escape"); // fixture is paused: resumes, then pause explicitly
  await page.keyboard.press("Escape");await page.locator("#pause-restart-btn").click();
- await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.friendlyBatchCounts().glyphs)).toBe(0);
+ // A live new run may already have fired. Verify ownership/disposal, not a
+ // transient zero which incorrectly fails after legitimate new activity.
+ await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.friendlyBatchCounts().generation)).toBeGreaterThan(h.cache.generation);
+ const restarted=await page.evaluate(()=>({old:(window as any).__previousFriendlyBatch(),fresh:(window as any).__seedE2E.friendlyBatchCounts()}));
+ expect(restarted.old.disposed).toBe(true);expect(restarted.old.glyphs).toBe(0);expect(restarted.old.atlasBytes).toBe(0);
+ expect(restarted.fresh.disposed).toBe(false);expect(restarted.fresh.glyphs).toBeLessThanOrEqual(64);
+ await page.evaluate(()=>(window as any).__seedE2E.streamingFixture(0,0,true,false,true));
+ await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.friendlyBatchCounts().glyphs)).toBeGreaterThan(0);
+ expect(await page.evaluate(()=>(window as any).__seedE2E.canonicalStressState().projectiles)).toBe(800);
 });
 for(const lang of ["en","th"] as const)test(`boss real phase cue and posed weapon grip ${lang}`,async({page})=>{
  await startRun(page,"EPOCH-GOLDEN-001",{lang,uiScale:2});

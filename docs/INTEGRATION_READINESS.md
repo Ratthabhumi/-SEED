@@ -1,5 +1,11 @@
 # Integration readiness —23 October2026
 
+V3.3 reconciliation: remote PR22 remains Draft at
+`c529f7c47d2e142b51e37255fd965fd24a966d03`, parent PR21/835a25f;
+main remains5e6d5c65. PR22 is191 commits above main. This one child workstream
+adds its own source/validation receipt; no integration authority or claim that
+the108-commit prerequisite has been independently integrated/validated.
+
 REVIEW_PREPARED / HUMAN_ACCEPTANCE_OPEN. One source reconciliation before V3.2 editing. Main `5e6d5c65ea905bc3859f115e73bfd02913988d45`; PR21 source `835a25f821b5aa0e8492c9f13787a3d7aa59f6ad` is190 commits ahead. All21 PRs are OPEN Drafts; no merge/retarget/history change performed.
 
 Bottom prerequisite: `d3814a6b7e94182a05be66e341eb36c0914eabc0` on `feat/v0261-outpost-softlock-20261008`, **108 commits ahead of main**. PR1 starts above this prerequisite, not directly above main. Its old48-test softlock CI is historical evidence; it does not independently validate the whole108-commit prerequisite against current integration requirements.

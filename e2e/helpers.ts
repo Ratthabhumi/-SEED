@@ -28,6 +28,8 @@ export interface TestSaveOptions {
   lang?: "en" | "th";
   uiScale?: 1 | 1.25 | 1.5 | 2;
   bossArt?: "rig" | "baseline" | "painted";
+  /** Scoped startup budget; caller must document measured slow initialization. */
+  startupTimeoutMs?: number;
 }
 
 /** Seed localStorage BEFORE first navigation so GameScene boots with it. */
@@ -60,7 +62,10 @@ export async function startRun(page: Page, seed: string, opts: TestSaveOptions =
   await page.locator("#seed-input").fill(seed);
   // Use stable ID selector instead of fragile text-based selector (Thai copy may vary)
   await page.locator("#start-btn").click();
-  await expect(page.locator(".hud")).toBeVisible({ timeout: 15000 });
+  await page.waitForFunction(() => !!(window as any).__seedE2E?.snapshot &&
+    !!document.querySelector(".hud") && document.fonts.status === "loaded",
+    undefined, { timeout: opts.startupTimeoutMs ?? 15000 });
+  await expect(page.locator(".hud")).toBeVisible();
 }
 
 /** Resolve legitimate blocking draft screens (bounded, real clicks only). */
