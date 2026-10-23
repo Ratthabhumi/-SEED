@@ -25,7 +25,8 @@ export class ActorRenderer {
     const outposts=scene.textures.get("outposts-v2");
     for(let i=0;i<12;i++)if(!outposts.has(String(i)))outposts.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     const boss=scene.textures.get("boss-v2");
-    for(let i=0;i<8;i++)if(!boss.has(String(i)))boss.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
+    const bossCell=boss.getSourceImage().width/4;
+    for(let i=0;i<8;i++)if(!boss.has(String(i)))boss.add(i,0,(i%4)*bossCell,Math.floor(i/4)*bossCell,bossCell,bossCell);
     const enemies=scene.textures.get("enemies-v2");
     for(let i=0;i<16;i++)if(!enemies.has(String(i)))enemies.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     for(const id of Object.keys(HERO_ASSETS)){

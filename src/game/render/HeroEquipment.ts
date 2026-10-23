@@ -5,6 +5,8 @@ import {activeFamilies} from "../../core/progression/origins";
 import {NOVA_RADIUS,BULWARK_IFRAME} from "../../core/combat/squad";
 import type {WeaponFamily} from "../../core/combat/weapons";
 import {equipmentFrame} from "./combatSpriteIdentity";
+import {equipmentPose,playerRelease} from "./weaponPose";
+import type {SimEvent} from "../../core/sim/SimEvent";
 /** Original equipment rig. Posed bodies remain original atlases, no fake attacks. */
 export class HeroEquipment {
   private socketX=0;private socketY=-16;
@@ -12,10 +14,14 @@ export class HeroEquipment {
   private weapon?:Phaser.GameObjects.Image;
   constructor(private scene?:Phaser.Scene,private mount:"hand"|"float"="hand"){}
   setMount(mode:"hand"|"float"){this.mount=mode;}
-  review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
+  review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,flipY:this.weapon.flipY,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
   private world="";private released=-Infinity;private aim=0;
   private releasedFamily:WeaponFamily="kinetic";
   private ability="";private abilityAt=-Infinity;private abilityX=0;private abilityY=0;
+  accept(event:SimEvent,world:string,time:number,x:number,y:number){
+    const shot=playerRelease(event,x,y);
+    if(shot)this.fire(world,time,shot.x,shot.y,shot.tx,shot.ty,shot.family);
+  }
   reset(world:string){this.world=world;this.released=-Infinity;this.abilityAt=-Infinity;}
   activate(world:string,time:number,id:string,x:number,y:number){if(this.world!==world)this.reset(world);this.ability=id;this.abilityAt=time;this.abilityX=x;this.abilityY=y;}
   fire(world:string,time:number,x:number,y:number,tx:number,ty:number,family:WeaponFamily){
@@ -35,7 +41,9 @@ export class HeroEquipment {
     // Float is a shoulder companion, not a carousel crossing the hero every
     // revolution. Small canonical-time hover stops in Reduced Effects.
     const hover=reduced?0:Math.sin(s.elapsed*2)*2;
-    const x=s.px+(this.mount==="float"?46:this.socketX)-nx*fresh*2,y=s.py+(this.mount==="float"?-30+hover:this.socketY)-ny*fresh*2,len=art.weaponLength;
+    const row=Math.floor(equipmentFrame(s.originId,s.weaponStage[family])/6);
+    const pose=equipmentPose(ang,s.elapsed-this.released);
+    const x=s.px+(this.mount==="float"?46:this.socketX)-nx*pose.recoil,y=s.py+(this.mount==="float"?-30+hover:this.socketY)-ny*pose.recoil,len=art.weaponLength;
     if(this.mount==="float"){
       // A visible tether anchors this cosmetic mount to the unchanged canonical
       // emitter. Never move projectile origins or imply a second weapon hitbox.
@@ -48,9 +56,11 @@ export class HeroEquipment {
       if(this.weapon.frame.name!==String(frame))this.weapon.setTexture("combat-equipment",frame);
       // Original source grips, normalized to each 128px cell. The grip sits on
       // the body's posed hand instead of placing the texture center 27u away.
-      const row=Math.floor(frame/6),col=frame%6;
+      const col=frame%6;
       const grip=row===0?(col<3?[92,64]:[43,74]):row===1?[49,93]:row===2?[30,64]:[63,67];
-      this.weapon.setOrigin(grip[0]!/128,grip[1]!/128).setPosition(x,y).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(ang).setVisible(!s.over);
+      // Phaser flips around the frame center: reflect the origin too, keeping
+      // the same authored grip pixel at the hand in either direction.
+      this.weapon.setOrigin(grip[0]!/128,pose.flipY?1-grip[1]!/128:grip[1]!/128).setPosition(x,y).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(pose.rotation).setFlipY(pose.flipY).setVisible(!s.over);
     }else{
     this.weapon?.setVisible(false);
     // Age equipment: collar/material, physical braces and energy conduits.

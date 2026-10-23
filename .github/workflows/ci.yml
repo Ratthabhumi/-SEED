@@ -76,7 +76,24 @@ jobs:
       - run: python -m zipfile -e scratch/v3-pr18-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr18-dist
       - run: python -m zipfile -e scratch/v3-pr19-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr19-dist
       - run: node scripts/capture-v3-recovery.mjs self
+      - run: gh run download 39822469156 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v32-pr21-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python -m zipfile -e scratch/v32-pr21-official/seed-web-v0.2.0-dev.0.zip scratch/v32-pr21-dist
+      - run: node scripts/capture-v32-slice.mjs test-results/v32-final
       - run: node scripts/capture-content153.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v32-slice-${{ github.sha }}
+          path: |
+            test-results/v32-final/*-slice.webm
+            test-results/v32-final/*-boss-recovery.png
+            test-results/v32-final/*-beam-release.png
+            test-results/v32-final/comparison.json
+            test-results/browser/v32-*.json
+          if-no-files-found: warn
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -91,11 +108,13 @@ jobs:
             test-results/browser/overhaul-*.json
             test-results/browser/v3-*.json
             test-results/browser/v31-*.json
+            test-results/browser/v32-*.json
             test-results/browser/content153/*.webm
             test-results/browser/**/trace.zip
             test-results/browser/**/error-context.md
             test-results/evolution-performance.json
             test-results/v3-comparison/
+            test-results/v32-final/
           if-no-files-found: warn
           retention-days: 14
 

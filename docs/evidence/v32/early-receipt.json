@@ -1,0 +1,45 @@
+{
+  "classification": "STAGED_NATIVE_OFFICIAL_PR21_COMPARISON_NOT_HUMAN_ACCEPTANCE",
+  "rows": [
+    {
+      "label": "pr21",
+      "build": {
+        "sha": "835a25f821b5aa0e8492c9f13787a3d7aa59f6ad",
+        "dirty": false,
+        "asset": "http://127.0.0.1:4291/assets/index-YXciwJRi.js"
+      },
+      "errors": [],
+      "video": "pr21-slice.webm"
+    },
+    {
+      "label": "candidate",
+      "build": {
+        "sha": "835a25f821b5aa0e8492c9f13787a3d7aa59f6ad",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4292/assets/index-DFcrJuVI.js"
+      },
+      "errors": [],
+      "video": "candidate-slice.webm"
+    }
+  ],
+  "files": {
+    "candidate-boss-recovery.png": {
+      "bytes": 1058530,
+      "sha256": "ce9fe614470ad5420de0b1008fc0b7462746cecb746658465720d961776b0615"
+    },
+    "candidate-slice.webm": {
+      "bytes": 2231161,
+      "sha256": "43c0c2f114dc4c67e8f56471ecedb8c258ca516a4210df49d62d4afe4ede5166"
+    },
+    "pr21-boss-recovery.png": {
+      "bytes": 1051166,
+      "sha256": "033b49f8055bf79d1bdb7095ef5f77e233989fe7a13ef875b5693c8cb6891412"
+    },
+    "pr21-slice.webm": {
+      "bytes": 2226450,
+      "sha256": "88c33d4b79c7673d68015883752600aa48277fe804c7f77993148498184747e4"
+    }
+  },
+  "limitations": "Real canonical attacks in staged fixtures. Startup histories are not claimed identical. No new painted anatomy, natural progression or fun verdict.",
+  "gate": "Native comparison inspected before long CI; final exact-source receipt separate"
+}

@@ -910,14 +910,14 @@
       "versionOrRelease": "hero-v2-1",
       "downloadedAt": "2026-10-13",
       "modified": true,
-      "modifications": "Original generated atlas; deterministic alpha-preserving 4x4 slicing, uniform resize and feet anchoring. Source retained.",
-      "presentationTransform": "8 posed128px cells; canonical warnings/fire/hurt and upright boss",
+      "modifications": "Original generated atlas; alpha-preserving4x2 slicing, uniform resize and anchoring from1774x887 source to256px cells. No source repaint or old-cell upscaling.",
+      "presentationTransform": "8 posed256px cells; same240u Boss and canonical warnings/fire/hurt; human acceptance pending",
       "attributionRequired": true,
       "purpose": "Boss artwork; animation and human acceptance pending",
       "status": "art-review-pending",
-      "byteSize": 135728,
+      "byteSize": 469932,
       "vendorSourceSha256": "f3991543911252e741cea9516846dcb6e329ee9957f06e55504873610a66af16",
-      "productionSha256": "b4f7169aabb5bbd137637c4a90a6b107383a8cab5a5f641dd844b486cb436ae2",
+      "productionSha256": "55e71b3e9eb8fd4e33a421502625f6b76d412f7f0c443d03eb148f819b71b186",
       "sourceRelease": "original-art-v2"
     },
     {
