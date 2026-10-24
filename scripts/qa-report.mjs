@@ -2,7 +2,7 @@
 // Reads test-results/human-playtests/latest.json, writes
 // docs/playtests/latest-v0231-interaction-human.md with project evidence ONLY.
 // Raw environment fingerprints / local paths / user data never leave the machine.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -10,6 +10,28 @@ import { isIP } from "node:net";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LATEST = join(ROOT, "test-results", "human-playtests", "latest.json");
+
+/** Read-only recovery of a delayed/latest-pointer regression. Compare sequences
+ * only inside the same session; never manufacture completion or rewrite raw data. */
+export function readLatestQaSnapshot(rootDir=ROOT, read=p=>readFileSync(p,"utf8"), list=p=>readdirSync(p)) {
+  const dir=join(rootDir,"test-results","human-playtests");
+  let snap=JSON.parse(read(join(dir,"latest.json"))), recovered=false;
+  if(!snap?.sessionId)return {snap,recovered};
+  const id=createHash("sha256").update(String(snap.sessionId)).digest("hex").slice(0,24);
+  let names;try {names=list(dir);}catch {return {snap,recovered};}
+  const pattern=new RegExp(`-${id}-(\\d+)\\.json$`);
+  for(const name of names){
+    const match=pattern.exec(name);if(!match)continue;
+    const sequence=Number(match[1]);
+    if(!Number.isSafeInteger(sequence)||sequence<=(snap.reportSequence??-1))continue;
+    try {
+      const candidate=JSON.parse(read(join(dir,name)));
+      if(candidate.sessionId!==snap.sessionId||candidate.reportSequence!==sequence||!Array.isArray(candidate.checkpoints))continue;
+      snap=candidate;recovered=true;
+    }catch { /* Keep the last valid snapshot if an archive is damaged. */ }
+  }
+  return {snap,recovered};
+}
 
 export function getReportOutputPath(snap, rootDir = ROOT) {
   const content = snap?.versions?.content ?? 0;
@@ -247,12 +269,12 @@ function main() {
     console.error(`No QA report yet: ${LATEST} — play ?qa=1 to target-complete first.`);
     process.exit(1);
   }
-  const snap = JSON.parse(readFileSync(LATEST, "utf8"));
+  const {snap,recovered} = readLatestQaSnapshot();
   if (!snap || typeof snap !== "object" || !Array.isArray(snap.checkpoints)) {
     console.error("latest.json is not a recorder snapshot — refusing to summarize.");
     process.exit(1);
   }
-  const md = buildSanitizedMarkdown(snap);
+  const md = (recovered ? `> RECOVERED_ARCHIVE: revision ${snap.reportSequence}; raw latest was older. ${snap.endReason ? "Recorded terminal reason retained." : "INCOMPLETE: no terminal reason recorded."}\n\n` : "") + buildSanitizedMarkdown(snap);
   const outPath = getReportOutputPath(snap);
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, md, "utf8");

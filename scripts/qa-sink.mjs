@@ -2,13 +2,30 @@
 // The browser POSTs QA payloads here; the plugin writes them under a FIXED
 // gitignored directory. No arbitrary paths, no execution, no external transmit.
 // Plain JavaScript (Node + Vite config import it directly — no TS syntax here).
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, renameSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { readBuildProvenance, reconcileBuildProvenance } from "./build-provenance.mjs";
 import { createHash } from "node:crypto";
 
 export const QA_SINK_MAX_BYTES = 2 * 1024 * 1024;
 export const QA_REPORT_DIR = "test-results/human-playtests";
+let writeSequence = 0;
+
+// Watchers must see a complete snapshot, never a partially truncated JSON file.
+function writeAtomic(path, text) {
+  const temporary = `${path}.tmp-${process.pid}-${++writeSequence}`;
+  try { writeFileSync(temporary, text, "utf8"); renameSync(temporary, path); }
+  finally { rmSync(temporary, { force: true }); }
+}
+
+/** Sequence is comparable only within the same recording session. Legacy
+ * payloads and a genuinely new session retain their existing arrival semantics. */
+export function canAdvanceLatest(current, incoming) {
+  if (!current?.sessionId || current.sessionId !== incoming.sessionId) return true;
+  const valid = n => Number.isSafeInteger(n) && n >= 0;
+  return !valid(current.reportSequence) || !valid(incoming.reportSequence) ||
+    incoming.reportSequence > current.reportSequence;
+}
 
 /** Validate an incoming QA payload. Pure — unit-tested. */
 export function validateQaPayload(body) {
@@ -22,6 +39,9 @@ export function validateQaPayload(body) {
   }
   if (typeof body.markdown !== "string" || typeof body.data !== "object" || body.data === null) {
     return { ok: false, reason: "bad-shape" };
+  }
+  if (body.reportSequence !== undefined && (!Number.isSafeInteger(body.reportSequence) || body.reportSequence < 0)) {
+    return { ok: false, reason: "bad-report-sequence" };
   }
   return { ok: true };
 }
@@ -59,8 +79,9 @@ export function storeQaReport(
   rootDir,
   body,
   now,
-  write = (p, t) => writeFileSync(p, t, "utf8"),
+  write = writeAtomic,
   mkdir = (p) => mkdirSync(p, { recursive: true }),
+  read = (p) => readFileSync(p, "utf8"),
 ) {
   const dir = join(rootDir, QA_REPORT_DIR);
   mkdir(dir);
@@ -77,12 +98,19 @@ export function storeQaReport(
   }
   Object.assign(data, reconcileBuildProvenance(data, readBuildProvenance(rootDir)));
   const jsonText = JSON.stringify(data, null, 2);
-  const files = [names.json, names.md, names.sJson, names.sMd];
-  write(join(dir, names.json), jsonText);
-  write(join(dir, names.md), body.markdown);
+  // Preserve every arrival before deciding whether it may advance latest.
+  const files = [names.sJson, names.sMd];
   write(join(dir, names.sJson), jsonText);
   write(join(dir, names.sMd), body.markdown);
-  return { dir, files };
+  let current;
+  try { current = JSON.parse(read(join(dir, names.json))); } catch { /* first/invalid latest */ }
+  const latestUpdated = canAdvanceLatest(current, data);
+  if (latestUpdated) {
+    write(join(dir, names.md), body.markdown);
+    write(join(dir, names.json), jsonText); // authoritative pointer published last
+    files.push(names.json, names.md);
+  }
+  return { dir, files, latestUpdated };
 }
 
 /**
@@ -103,7 +131,7 @@ export function processReportPost(rootDir, bodyText, byteSize, now) {
   if (!v.ok) return { status: 400, body: { ok: false, reason: v.reason ?? "invalid" } };
   try {
     const stored = storeQaReport(rootDir, body, now);
-    return { status: 200, body: { ok: true, files: stored.files } };
+    return { status: 200, body: { ok: true, files: stored.files, latestUpdated: stored.latestUpdated } };
   } catch {
     return { status: 500, body: { ok: false, reason: "write-failed" } };
   }

@@ -1,5 +1,10 @@
 # Integration readiness —23 October2026
 
+25October V3.4: reconciled DraftPR23/508537877b2c2606bfb6f6cf9844d2518ab7fbca,
+192 above main, before this one child correction. Real cleanPR23 human evidence
+has now been recovered but is incomplete/unrated. The child does not authorize
+integration or validate the108-commit prerequisite; no main/history changes.
+
 V3.3 reconciliation: remote PR22 remains Draft at
 `c529f7c47d2e142b51e37255fd965fd24a966d03`, parent PR21/835a25f;
 main remains5e6d5c65. PR22 is191 commits above main. This one child workstream

@@ -80,24 +80,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - run: python -m zipfile -e scratch/v32-pr21-official/seed-web-v0.2.0-dev.0.zip scratch/v32-pr21-dist
-      - run: gh run download 39880165754 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v33-pr22-official
+      - run: gh run download 39892022599 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v34-pr23-official
         env:
           GH_TOKEN: ${{ github.token }}
-      - run: python -m zipfile -e scratch/v33-pr22-official/seed-web-v0.2.0-dev.0.zip scratch/v33-pr22-dist
-      - run: node scripts/capture-v32-slice.mjs test-results/v33-final scratch/v33-pr22-dist c529f7c47d2e142b51e37255fd965fd24a966d03 pr22
+      - run: python -m zipfile -e scratch/v34-pr23-official/seed-web-v0.2.0-dev.0.zip scratch/v34-pr23-dist
+      - run: node scripts/capture-v32-slice.mjs test-results/v34-final scratch/v34-pr23-dist 508537877b2c2606bfb6f6cf9844d2518ab7fbca pr23
       - run: node scripts/capture-content153.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v33-slice-${{ github.sha }}
+          name: v34-slice-${{ github.sha }}
           path: |
-            test-results/v33-final/*-slice.webm
-            test-results/v33-final/*-boss-recovery.png
-            test-results/v33-final/*-beam-release.png
-            test-results/v33-final/*-loading.png
-            test-results/v33-final/*-dense-hc.png
-            test-results/v33-final/*-prepared-real-world2.png
-            test-results/v33-final/comparison.json
+            test-results/v34-final/*-slice.webm
+            test-results/v34-final/*-boss-recovery.png
+            test-results/v34-final/*-beam-release.png
+            test-results/v34-final/*-hunters-age-5.png
+            test-results/v34-final/*-loading.png
+            test-results/v34-final/*-dense-hc.png
+            test-results/v34-final/*-prepared-real-world2.png
+            test-results/v34-final/comparison.json
             test-results/browser/v32-*.json
             test-results/browser/v33-*.png
           if-no-files-found: warn
@@ -122,7 +123,7 @@ jobs:
             test-results/browser/**/error-context.md
             test-results/evolution-performance.json
             test-results/v3-comparison/
-            test-results/v33-final/
+            test-results/v34-final/
           if-no-files-found: warn
           retention-days: 14
 

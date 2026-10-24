@@ -5,16 +5,16 @@ import {activeFamilies} from "../../core/progression/origins";
 import {NOVA_RADIUS,BULWARK_IFRAME} from "../../core/combat/squad";
 import type {WeaponFamily} from "../../core/combat/weapons";
 import {equipmentFrame} from "./combatSpriteIdentity";
-import {equipmentPose,playerRelease} from "./weaponPose";
+import {equipmentPose,playerRelease,floatingWeaponPosition} from "./weaponPose";
 import type {SimEvent} from "../../core/sim/SimEvent";
 /** Original equipment rig. Posed bodies remain original atlases, no fake attacks. */
 export class HeroEquipment {
   private socketX=0;private socketY=-16;
   socket(x:number,y:number){this.socketX=x;this.socketY=y;}
   private weapon?:Phaser.GameObjects.Image;
-  constructor(private scene?:Phaser.Scene,private mount:"hand"|"float"="hand"){}
+  constructor(private scene?:Phaser.Scene,private mount:"hand"|"float"="float"){}
   setMount(mode:"hand"|"float"){this.mount=mode;}
-  review(){return this.weapon&&this.weapon.visible?{texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,flipY:this.weapon.flipY,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
+  review(){return this.weapon&&this.weapon.visible?{mount:this.mount,texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,flipY:this.weapon.flipY,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
   private world="";private released=-Infinity;private aim=0;
   private releasedFamily:WeaponFamily="kinetic";
   private ability="";private abilityAt=-Infinity;private abilityX=0;private abilityY=0;
@@ -38,17 +38,15 @@ export class HeroEquipment {
     const art=combatPresentation(s.originId,family,s.weaponStage[family]);
     const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
     const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
-    // Float is a shoulder companion, not a carousel crossing the hero every
-    // revolution. Small canonical-time hover stops in Reduced Effects.
-    const hover=reduced?0:Math.sin(s.elapsed*2)*2;
+    const floating=floatingWeaponPosition(s.elapsed,reduced);
     const row=Math.floor(equipmentFrame(s.originId,s.weaponStage[family])/6);
     const pose=equipmentPose(ang,s.elapsed-this.released);
-    const x=s.px+(this.mount==="float"?46:this.socketX)-nx*pose.recoil,y=s.py+(this.mount==="float"?-30+hover:this.socketY)-ny*pose.recoil,len=art.weaponLength;
-    if(this.mount==="float"){
+    const x=s.px+(this.mount==="float"?floating.x:this.socketX)-nx*pose.recoil,y=s.py+(this.mount==="float"?floating.y:this.socketY)-ny*pose.recoil,len=art.weaponLength;
+    if(this.mount==="float"&&fresh){
       // A visible tether anchors this cosmetic mount to the unchanged canonical
       // emitter. Never move projectile origins or imply a second weapon hitbox.
-      g.lineStyle(1,highContrast?0xffffff:art.color,.5);g.lineBetween(s.px,s.py,x,y);
-      g.lineStyle(2,art.color,.7);g.strokeCircle(s.px,s.py,3);
+      g.lineStyle(1,highContrast?0xffffff:art.color,.5*fresh);g.lineBetween(s.px,s.py,x,y);
+      g.lineStyle(2,art.color,.7*fresh);g.strokeCircle(s.px,s.py,3);
     }
     if(this.scene&&!highContrast){
       const frame=equipmentFrame(s.originId,s.weaponStage[family]);
@@ -60,7 +58,7 @@ export class HeroEquipment {
       const grip=row===0?(col<3?[92,64]:[43,74]):row===1?[49,93]:row===2?[30,64]:[63,67];
       // Phaser flips around the frame center: reflect the origin too, keeping
       // the same authored grip pixel at the hand in either direction.
-      this.weapon.setOrigin(grip[0]!/128,pose.flipY?1-grip[1]!/128:grip[1]!/128).setPosition(x,y).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(pose.rotation).setFlipY(pose.flipY).setVisible(!s.over);
+      this.weapon.setOrigin(this.mount==="float"?.5:grip[0]!/128,this.mount==="float"?.5:pose.flipY?1-grip[1]!/128:grip[1]!/128).setPosition(x,y).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(pose.rotation).setFlipY(pose.flipY).setVisible(!s.over);
     }else{
     this.weapon?.setVisible(false);
     // Age equipment: collar/material, physical braces and energy conduits.

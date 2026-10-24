@@ -1,5 +1,9 @@
 export declare const QA_SINK_MAX_BYTES: number;
 export declare const QA_REPORT_DIR: string;
+export declare function canAdvanceLatest(
+  current: { sessionId?: string; reportSequence?: number; [field: string]: unknown } | undefined,
+  incoming: { sessionId?: string; reportSequence?: number; [field: string]: unknown },
+): boolean;
 export declare function validateQaPayload(body: unknown): { ok: boolean; reason?: string };
 export declare function sanitizeSeed(seed: string): string;
 export declare function stampOf(date: Date): string;
@@ -15,7 +19,8 @@ export declare function storeQaReport(
   now: Date,
   write?: (path: string, text: string) => void,
   mkdir?: (path: string) => void,
-): { dir: string; files: string[] };
+  read?: (path: string) => string,
+): { dir: string; files: string[]; latestUpdated: boolean };
 export declare function processReportPost(
   rootDir: string,
   bodyText: string,

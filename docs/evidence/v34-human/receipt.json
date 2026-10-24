@@ -1,0 +1,70 @@
+{
+  "classification": "REVIEWED_SANITIZED_HUMAN_AUDIT_PLUS_SEPARATE_STAGED_NATIVE_EVIDENCE",
+  "playedSource": "508537877b2c2606bfb6f6cf9844d2518ab7fbca",
+  "playedDirty": false,
+  "human": {
+    "sessionKey": "63f14a27e12e0b3143646644",
+    "selectedSequence": 129,
+    "previousPointerSequence": 128,
+    "selectedArchive": "test-results/human-playtests/2026-10-24T190827Z-EPOCH-GOLDEN-001-63f14a27e12e0b3143646644-129.json",
+    "selectedRawSha256": "e1297079710739ddb31643b0f5c3d1d8201f03a682b4da1450c7e7b5b9a3a232",
+    "previousPointerRawSha256": "ac8930f950682b7c7b220e2c6cd9daadd05dc9b9786445883e726d2406e56425",
+    "terminalRecorded": false,
+    "ratings": 0,
+    "rawPublished": false,
+    "preservedFiles": 7602,
+    "changedDuringPreservation": 0
+  },
+  "reproduction": {
+    "before": {
+      "failed": 1,
+      "passed": 8,
+      "expectedLatest": 129,
+      "actualLatest": 128,
+      "logSha256": "7a081b0cd6fa292caa58b7b2c645e02de4d246c188f45d88bce303e91340541f"
+    },
+    "targetedNativePassed": 7
+  },
+  "earlyNative": {
+    "rawSha256": "5f5ae2cf837fbcda88cf87430401c59c45cd5f3752b92cc5f066d1c98c92f5da",
+    "rows": [
+      {
+        "label": "pr23",
+        "build": {
+          "sha": "508537877b2c2606bfb6f6cf9844d2518ab7fbca",
+          "dirty": false,
+          "asset": "http://127.0.0.1:4291/assets/index-D1ngiKzb.js"
+        },
+        "errors": [],
+        "observations": 10,
+        "clipSha256": "1037a8d5a25e251cd688fd226fce4d1bfba6a39d4ac48aad60f1e782c03841ac"
+      },
+      {
+        "label": "candidate",
+        "build": {
+          "sha": "508537877b2c2606bfb6f6cf9844d2518ab7fbca",
+          "dirty": true,
+          "asset": "http://127.0.0.1:4292/assets/index-CO1pjBYc.js"
+        },
+        "errors": [],
+        "observations": 10,
+        "clipSha256": "e72f8b794c819a8cfa0cdbd45300a7ac562ee675d8d3ddd3b405b3e67316df74"
+      }
+    ],
+    "images": [
+      {
+        "file": "before-primary.png",
+        "sha256": "d29807ea4588b1a00f23af6f3959b502864526c23531091bfc6a386bfe15efb4"
+      },
+      {
+        "file": "after-primary.png",
+        "sha256": "19ca4cc11e4376d6a5e4529db09c0aaf4e25e919f2da5c954bcab68968e77a52"
+      },
+      {
+        "file": "after-beam.png",
+        "sha256": "72c9f9b0c8bf432120a0a517f7e887eaf9626278b694cab6f369b7b3b4265098"
+      }
+    ],
+    "limits": "Synthetic staged before/after, not human footage or final clean-source evidence. Startup input histories differ. Candidate is dirty development; do not restamp. Original human raw data remains private."
+  }
+}

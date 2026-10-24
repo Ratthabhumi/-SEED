@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSanitizedMarkdown, sanitizePrivacy, getSessionReportPath } from "../../scripts/qa-report.mjs";
+import { buildSanitizedMarkdown, sanitizePrivacy, getSessionReportPath, readLatestQaSnapshot } from "../../scripts/qa-report.mjs";
 import { applyHandoffSection, START_MARK, END_MARK } from "../../scripts/qa-handoff.mjs";
 import { ReportDetector, isTerminalReport, reportIdentity, finalizeReport, checkAndFinalize } from "../../scripts/qa-watcher.mjs";
 import { QA_REPORT_DIR } from "../../scripts/qa-sink.mjs";
@@ -44,6 +44,16 @@ function snap() {
 }
 
 describe("sanitized summary (qa:report)", () => {
+  it("recovers archived129 without rewriting latest128 or inventing terminal evidence",()=>{
+    const low={...snap(),sessionId:"synthetic-recovery",reportSequence:128,endReason:"",versions:{content:18}};
+    const high={...low,reportSequence:129};
+    const id=getSessionReportPath(low,"repo")!.match(/session-([a-f0-9]+)-sanitized/)![1];
+    const source=JSON.stringify(low);
+    const result=readLatestQaSnapshot("repo",p=>p.endsWith("latest.json")?source:JSON.stringify(p.endsWith("-129.json")?high:{...high,sessionId:"other",reportSequence:999,endReason:"human-ended"}),()=>[`stamp-${id}-999.json`,`stamp-${id}-129.json`]);
+    expect(result.recovered).toBe(true);expect(result.snap.reportSequence).toBe(129);
+    expect(result.snap.endReason).toBe("");expect(JSON.parse(source).reportSequence).toBe(128);
+    expect(buildSanitizedMarkdown(result.snap)).toContain("endReason: NOT FINISHED");
+  });
   it("redacts telemetry labels and isolates sessions without trusting paths", () => {
     const data = { ...snap(), sessionId: "../../private", versions: { ...snap().versions, content: 8 },
       buildSha: "a".repeat(40), buildDirty: false,

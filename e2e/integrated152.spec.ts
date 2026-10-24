@@ -28,7 +28,8 @@ for(const lang of ["en","th"] as const)test(`boss real phase cue and posed weapo
  await page.evaluate(()=>(window as any).__seedE2E.notificationReset());
  const panel=await page.locator("#boss-encounter").boundingBox();expect(panel!.y+panel!.height).toBeLessThan(360);
  await page.screenshot({path:`test-results/browser/content152-boss-${lang}.png`});
- await page.evaluate(()=>(window as any).__seedE2E.stageEvolution("hunters",0));
+ // Explicit Hand comparison remains covered after the owner's Float preference.
+ await page.evaluate(()=>{const h=(window as any).__seedE2E;h.equipmentMountReview("hand");h.stageEvolution("hunters",0);});
  const initialX=await page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).p[0]);await page.keyboard.down("d");
  await expect.poll(()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).p[0])).toBeGreaterThan(initialX+5);
  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.integratedReview().equipment)).not.toBeNull();

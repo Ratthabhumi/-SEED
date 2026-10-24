@@ -7,7 +7,10 @@ import {
   storeQaReport,
   processReportPost,
   QA_SINK_MAX_BYTES,
+  QA_REPORT_DIR,
+  canAdvanceLatest,
 } from "../../scripts/qa-sink.mjs";
+declare const require: (name:string)=>any;
 
 const VALID = {
   kind: "qa-report",
@@ -79,6 +82,47 @@ describe("qa sink filenames", () => {
 });
 
 describe("qa sink storage", () => {
+  it("atomically replaces the pointer on disk and retains delayed archives",()=>{
+    const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),"seed-qa-order-"));
+    try {
+      for(const reportSequence of [129,128,130])storeQaReport(root,{
+        ...VALID,sessionId:"synthetic-disk-order",reportSequence,
+        data:{...VALID.data,endReason:reportSequence===130?"human-ended":""},
+      },new Date(Date.UTC(2026,9,25,0,0,reportSequence-128)));
+      const dir=path.join(root,QA_REPORT_DIR),names=fs.readdirSync(dir);
+      expect(JSON.parse(fs.readFileSync(path.join(dir,"latest.json"),"utf8"))).toMatchObject({reportSequence:130,endReason:"human-ended"});
+      expect(names.filter((n:string)=>n.endsWith(".json"))).toHaveLength(4);
+      expect(names.some((n:string)=>n.includes(".tmp-"))).toBe(false);
+    } finally {
+      // Delete only this test's freshly created, verified temporary directory.
+      expect(path.dirname(root)).toBe(path.resolve(os.tmpdir()));
+      expect(path.basename(root).startsWith("seed-qa-order-")).toBe(true);
+      fs.rmSync(root,{recursive:true,force:true});
+    }
+  });
+  it("protects terminal revisions from stale autosaves without blocking a new session",()=>{
+    const terminal={sessionId:"a",reportSequence:130,endReason:"human-ended"};
+    expect(canAdvanceLatest(terminal,{sessionId:"a",reportSequence:129,endReason:""})).toBe(false);
+    expect(canAdvanceLatest(terminal,{sessionId:"a",reportSequence:130})).toBe(false);
+    expect(canAdvanceLatest(terminal,{sessionId:"a",reportSequence:131})).toBe(true);
+    expect(canAdvanceLatest(terminal,{sessionId:"b",reportSequence:0})).toBe(true);
+    expect(canAdvanceLatest({},{})).toBe(true);
+  });
+  it("keeps sequence129 as latest when delayed128 arrives, while archiving both", () => {
+    const fs=memfs();
+    const read=(p:string)=>{if(!fs.files.has(p))throw Error("ENOENT");return fs.files.get(p)!;};
+    for(const reportSequence of [129,128])storeQaReport("/root",{
+      ...VALID,sessionId:"synthetic-out-of-order",reportSequence,
+      reason:"autosave",data:{...VALID.data,endReason:"",reportSequence},
+      markdown:`sequence${reportSequence}`,
+    },new Date(Date.UTC(2026,9,25,0,0,reportSequence-128)),fs.write,fs.mkdir,read);
+    const latest=[...fs.files].find(([p])=>p.endsWith("latest.json"))![1];
+    expect(JSON.parse(latest).reportSequence).toBe(129);
+    expect([...fs.files].find(([p])=>p.endsWith("latest.md"))![1]).toBe("sequence129");
+    expect([...fs.files.keys()].some(p=>p.endsWith("-128.json"))).toBe(true);
+    expect([...fs.files.keys()].some(p=>p.endsWith("-129.json"))).toBe(true);
+  });
   it("preserves different sessions and response revisions saved in the same second", () => {
     const fs = memfs();
     const now = new Date(Date.UTC(2026, 8, 30));
