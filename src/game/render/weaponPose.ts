@@ -17,3 +17,10 @@ export function equipmentPose(heading:number,age:number){
   const recoil=age>=0&&age<.16?2*Math.pow(1-age/.16,2):0;
   return {rotation:heading,flipY:left,recoil};
 }
+
+/** Cosmetic companion orbit, outside the painted hero silhouette. Canonical
+ * elapsed time freezes with pause; Reduced Effects holds one quiet station. */
+export function floatingWeaponPosition(time:number,reduced:boolean){
+  const phase=-.5+(reduced?0:time*.7);
+  return {x:120*Math.cos(phase),y:-12+112*Math.sin(phase)};
+}

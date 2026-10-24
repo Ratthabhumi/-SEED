@@ -4,13 +4,18 @@ import {writeFileSync} from 'node:fs';
 const frame=async(page:any)=>page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));
 for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`real aimed releases and grounded boss ${height} ${lang}`,async({page})=>{
  await page.setViewportSize({width:height===720?1280:1920,height});await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:height===720?1:2});
+ await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.integratedReview().equipment?.mount)).toBe('float');
  const rows=[];
  for(const age of [0,1,2,3,4,5])for(const mount of ['hand','float']){
   await page.evaluate(({age,mount})=>{const h=(window as any).__seedE2E;h.stageEvolution('hunters',age);h.primeSignature();h.equipmentMountReview(mount);h.aimReleaseReview(-150,0);},{age,mount});
   await frame(page);
   const before=await page.evaluate(()=>{const h=(window as any).__seedE2E;return {art:h.integratedReview(),hash:h.hash()};});
   expect(before.art.equipment.flipY).toBe(true);expect(Math.cos(before.art.equipment.rotation)).toBeCloseTo(-1);
-  expect(before.art.equipment.grip[1]).toBeCloseTo(age<3?.5:1-74/128);
+  expect(before.art.equipment.grip[1]).toBeCloseTo(mount==='float'?.5:age<3?.5:1-74/128);
+  if(mount==='float'){
+   const body=before.art.actors[0],weapon=before.art.equipment;
+   expect(Math.hypot(weapon.x-body.x,weapon.y-body.y)).toBeGreaterThan(95);
+  }
   expect(before.art.actors[0].flipX).toBe(true);
   await page.waitForTimeout(50);expect(await page.evaluate(()=>(window as any).__seedE2E.hash())).toBe(before.hash);
   expect(await page.evaluate(()=>(window as any).__seedE2E.integratedReview().equipment)).toEqual(before.art.equipment);

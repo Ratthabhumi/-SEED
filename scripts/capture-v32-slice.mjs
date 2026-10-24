@@ -18,9 +18,9 @@ try{
   await page.addInitScript(()=>localStorage.setItem('seed-game-save-v1',JSON.stringify({schema:1,settings:{lang:'en',tutorialCompleted:true,uiScale:1,volume:0},archive:[],history:[],best:{}})));
   let release=()=>{},requested=()=>{};
   const gate=new Promise(r=>{release=r;}),requestSeen=new Promise(r=>{requested=r;});
-  if(baselineLabel==='pr22')await page.route('**/boss-v2-*.png',async route=>{requested();await gate;await route.continue();});
+  if(baselineLabel!=='pr21')await page.route('**/boss-v2-*.png',async route=>{requested();await gate;await route.continue();});
   await page.goto(url+'/?e2e');await page.locator('#seed-input').fill('EPOCH-GOLDEN-001');await page.locator('#start-btn').click();
-  if(baselineLabel==='pr22'){await requestSeen;await page.screenshot({path:`${output}/${label}-loading.png`});release();}
+  if(baselineLabel!=='pr21'){await requestSeen;await page.screenshot({path:`${output}/${label}-loading.png`});release();}
   await page.waitForFunction(()=>window.__seedE2E);
   const observations=[];
   const sample=async(name)=>{
@@ -42,7 +42,7 @@ try{
   }
   await page.evaluate(()=>{const h=window.__seedE2E;h.stageEvolution('resonant',4);h.primeSignature();h.advanceEvolution(.17);});
   await sample('beam-release');await page.waitForTimeout(250);
-  if(baselineLabel==='pr22'){
+  if(baselineLabel!=='pr21'){
    await page.evaluate(()=>{const h=window.__seedE2E;h.stageBossReview('fan');h.bossPhaseReview();h.advanceEvolution(.5);});await sample('boss-phase2');
    await page.evaluate(()=>{const h=window.__seedE2E;h.streamingFixture(0,0,false,false,true);h.canonicalStressStart(false);});
    await page.waitForTimeout(3000);await sample('dense-hc');

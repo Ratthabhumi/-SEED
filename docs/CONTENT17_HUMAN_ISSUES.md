@@ -1,5 +1,17 @@
 # Same31 complaints — home playable quality recovery
 
+##25 October V3.4 actual-play and owner feedback (same31 identities)
+
+Recovered cleanPR23 session63f14a27: Hunters→Space→Boss defeat→World2
+Engineers→Bronze96.58s; no terminal report or subjective ratings. A delayed128
+overwrote129; the sink now protects same-session revision order and atomic
+latest publication. No gameplay blocker is inferred from incomplete recording.
+#14/#16/N8: owner explicitly requests a detached floating primary. Float becomes
+default with a clear cosmetic orbit/center pivot; Hand comparison, actual
+emitter, count and damage remain. Native tests are not owner acceptance.
+#15/N8 genuine painted anatomy remains BLOCKED; all31 identities/statuses stay.
+See V34_HUMAN_PLAYTEST_AUDIT and ADR0043; human fun/readability remain PENDING.
+
 ##23 October V3.3 lifetime/readiness delta (same31 identities)
 
 Retain every identity/status below. This child corrects cache shutdown/restart

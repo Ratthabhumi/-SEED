@@ -1,5 +1,5 @@
 import {it,expect} from "vitest";
-import {equipmentPose,playerRelease} from "../../src/game/render/weaponPose";
+import {equipmentPose,playerRelease,floatingWeaponPosition} from "../../src/game/render/weaponPose";
 import {HeroActions} from "../../src/game/render/heroActions";
 
 it("tracks the actual beam and projectile direction, excluding autonomous sources",()=>{
@@ -22,4 +22,15 @@ it("maps painted source axes to aim in every quadrant without an inverted left g
   expect(p.recoil).toBe(.5);
  }
  expect(equipmentPose(0,.16).recoil).toBe(0);expect(equipmentPose(0,Infinity).recoil).toBe(0);
+});
+
+it("keeps the floating primary outside the hero and freezes it with canonical pause/reduced effects",()=>{
+ for(let t=0;t<20;t+=.1){
+  const p=floatingWeaponPosition(t,false);
+  expect(Math.hypot(p.x,p.y)).toBeGreaterThanOrEqual(99.9);
+  expect(Math.hypot(p.x,p.y)).toBeLessThan(130);
+ }
+ expect(floatingWeaponPosition(5,false)).toEqual(floatingWeaponPosition(5,false));
+ expect(floatingWeaponPosition(5,false)).not.toEqual(floatingWeaponPosition(6,false));
+ expect(floatingWeaponPosition(5,true)).toEqual(floatingWeaponPosition(60,true));
 });

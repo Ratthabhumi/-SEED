@@ -357,7 +357,7 @@ export class GameScene extends Phaser.Scene {
     this.heroActions = new HeroActions();
     const terrainSource=new URLSearchParams(location.search).get('terrainSource');
     this.terrainPainter = new TerrainPainter(this,terrainSource==='runtime'?'runtime':terrainSource==='prebaked-png'?'prebaked-png':'offline-canvas');
-    this.heroEquipment=new HeroEquipment(this,new URLSearchParams(location.search).get("equipment")==="float"?"float":"hand");
+    this.heroEquipment=new HeroEquipment(this,new URLSearchParams(location.search).get("equipment")==="hand"?"hand":"float");
     this.combatSprites=new CombatSprites(this);
     this.hostileBatch=new HostileProjectileBatch(this,new URLSearchParams(location.search).get("hostile")!=="legacy");
     this.friendlyBatch=new FriendlyProjectileBatch(this,new URLSearchParams(location.search).get("friendly")!=="fullquad");
