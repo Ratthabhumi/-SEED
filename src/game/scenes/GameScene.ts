@@ -1,4 +1,5 @@
 import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
+import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
 import { historyTechName, currentWorldHistoryStart } from "../ui/historyTechName";
 import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
@@ -525,7 +526,7 @@ export class GameScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
 
     this.buildHUD();
-    this.tutorial.start();
+    if(!combatReviewRequested(window.location.search))this.tutorial.start();
     this.refreshGround(true);
     toast("ui.ageReached", t("age.stone"), t("objective.stone"));
     const startTraits = deriveWorldTraits(this.sim.state.worldLaws);
@@ -910,6 +911,13 @@ export class GameScene extends Phaser.Scene {
         weaponMuzzleReview:()=>{const art=this.heroEquipment.review(),release=this.heroEquipment.releaseReview(),r=release?.release,p=this.sim.state.projs[r?.projectileIndex??-1];return {player:[this.sim.state.px,this.sim.state.py],art,release,projectile:p?{active:p.active,x:p.x,y:p.y,vx:p.vx,vy:p.vy,primary:p.primary}:null};},
         weaponOverlayReview:(enabled:boolean)=>this.heroEquipment.reviewOverlay(enabled),
         equipmentMountReview:(mode:"hand"|"float")=>this.sim.step(0,{moveX:0,moveY:0,dashPressed:false,weaponMount:mode}),
+        setCombatReviewTarget:(dx:number,dy:number,moving=true)=>{
+          const s=this.sim.state;
+          for(const e of s.enemies)if(e.active){e.x=s.px+dx;e.y=s.py+dy;e.hp=e.maxHp=10000;e.shield=0;if(!moving)e.speed=0;}
+          for(const family of originById(s.originId).families)if(family==='kinetic'||family==='energy')s.weaponCd[family]=0;
+          this.paused=false;
+        },
+        resumeCombatReview:()=>{this.paused=false;},
         aimReleaseReview:(dx:number,dy:number)=>{
           // Stages target positions, then invokes the real canonical weapon
           // execution. Does not synthesize a release or modify damage/rules.
@@ -1041,7 +1049,17 @@ export class GameScene extends Phaser.Scene {
 
 
     // QA playtest harness: read-only observer, query-gated, zero gameplay effect.
-    if (isQAMode(window.location.search)) this.startQa();
+    if(combatReviewRequested(window.location.search)){
+      const h=(window as unknown as {__seedE2E:any}).__seedE2E;
+      this.events.once('shutdown',mountCombatReview({
+        stage:(origin,tier)=>{h.stageEvolution(origin,tier);h.primeSignature();},
+        target:(x,y,moving)=>h.setCombatReviewTarget(x,y,moving),
+        mount:mode=>h.equipmentMountReview(mode),
+        boss:()=>{h.stageBossReview('slam');h.resumeCombatReview();},
+        world:()=>{h.readyAscend();document.querySelector<HTMLButtonElement>('.hud-ascend button')?.click();},
+        resume:()=>h.resumeCombatReview(),
+      }));
+    }else if(isQAMode(window.location.search))this.startQa();
   }
 
   /** QA session bootstrap (?qa=1 only). Never runs in normal play. */
