@@ -4,6 +4,8 @@ import {writeFileSync} from 'node:fs';
 for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`owner combat review remains staged ${height} ${lang}`,async({page})=>{
  await page.setViewportSize({width:height===720?1280:1920,height});await prepareSave(page,{lang,tutorialCompleted:false});
  await page.goto('/?e2e=1&combatReview=1&qa=1');await page.locator('#seed-input').fill('EPOCH-GOLDEN-001');await page.locator('#start-btn').click();
+ // Match startRun's existing startup contract before asserting review controls.
+ await page.waitForFunction(()=>!!(window as any).__seedE2E?.snapshot&&!!document.querySelector('.hud')&&document.fonts.status==='loaded',undefined,{timeout:15000});
  await expect(page.locator('#combat-review')).toBeVisible();await expect(page.locator('#qa-panel')).toHaveCount(0);
  const press=(action:string)=>page.locator(`[data-review-action="${action}"]`).click();
  await press('bow');await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.weaponMuzzleReview().release?.release?.pose.frame)).toBe(0);

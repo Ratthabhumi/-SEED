@@ -38,6 +38,11 @@ initially expected its inspector visible; the established contract intentionally
 hides it. The failed trace is retained. The corrected check verifies REC,
 hidden inspector and F10 expansion, and passed. This isolated correction is not
 reported as a clean full browser run; the final CI receipt reports that separately.
+The first clean-source native12 run was11PASS/1FAIL: TH1080 asserted its panel
+before scene/font readiness. Its screenshot shows the panel present after the
+five-second assertion deadline. Preserve the trace; use the existing startRun
+15s scene/font readiness contract before the unchanged panel assertion. This
+test-only repair requires a new exact-source CI receipt, not a claimed12/12 retry.
 
 Reproduce offline (never imported by production):
 
