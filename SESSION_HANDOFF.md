@@ -1,4 +1,17 @@
-## V3.7 frame pacing, experience readiness, integration preflight —2026-10-25 (current)
+## V3.8 integration audit and candidate —2026-10-25 (current)
+
+Full-diff audit of the 108-commit prerequisite and the 200-commit stack
+(`scripts/audit-prerequisite.mjs`, `docs/V38_INTEGRATION_AUDIT.md`,
+`docs/evidence/v38/`). One confirmed blocker was fixed: bundled dagre/panzoom
+were missing from the shipped notices. Verbatim MIT texts were added and are
+now enforced by `verify-third-party` and `release:verify`. The merge-tree of the
+candidate into main equals the candidate tree (fast-forward-equivalent).
+Recommended: one Draft integration PR to main, merged with a merge commit after
+owner authorization. The physical retest is blocked by the uncontrolled host
+(Parsec session). The real human session (PR24 build) at 2550x1272 has frame
+p95 40–51 ms: fill-bound, sim fine. No ratings exist yet.
+
+## V3.7 frame pacing, experience readiness, integration preflight —2026-10-25
 
 Parent Draft PR26 `d4b66c28` (tree `32fca4f6`); child branch
 `feat/v37-frame-pacing-experience-20261025`. Owner accepted the V3.6 bow

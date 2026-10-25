@@ -185,6 +185,17 @@ Owner authorization for that plan is separate and not given by this task.
 |Human ratings for experience categories|APPLIED (questions added; no data inferred)|
 |Authored layered animation|NOT IMPLEMENTED (brief only)|
 
+## Validation receipts
+
+`f0053df`: `npm run check` 98 files / 556 tests, provenance and build PASS. Push CI
+5/5 PASS. PR CI e2e **FAILED 1/232** (231 passed): `combatReview` TH720 read the
+re-mounted panel's `line-height` before it was styled (`NaN`). The same source
+passed on push, so this is a test readiness race, not a V3.7 change. The failure
+is retained here. Fix: poll for the same ≥1.7 ratio (15 s) before the bounds
+assertion; the spec then passed 5/5 locally. The local full browser run was
+stopped at 48/233 (0 failures) in favour of exact-source CI; it is not a full receipt.
+The final receipt is CI on the follow-up commit.
+
 ## Owner next action (~10 minutes)
 
 1. Close Parsec streaming and other GPU-heavy apps. Run `Play-SEED-QA.bat`.

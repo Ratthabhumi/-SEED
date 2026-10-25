@@ -1,0 +1,222 @@
+{
+  "classification": "READ_ONLY_PREREQUISITE_AUDIT_NOT_INTEGRATION_APPROVAL",
+  "base": "5e6d5c65ea905bc3859f115e73bfd02913988d45",
+  "tip": "d3814a6b7e94182a05be66e341eb36c0914eabc0",
+  "commits": 108,
+  "merges": 0,
+  "baseIsAncestor": true,
+  "files": 300,
+  "byArea": {
+    "agent-tooling": {
+      "A": 26,
+      "M": 0,
+      "D": 0,
+      "files": 26
+    },
+    "ci": {
+      "A": 1,
+      "M": 0,
+      "D": 0,
+      "files": 1
+    },
+    "other": {
+      "A": 0,
+      "M": 1,
+      "D": 0,
+      "files": 1
+    },
+    "docs": {
+      "A": 71,
+      "M": 14,
+      "D": 0,
+      "files": 85
+    },
+    "assets-other": {
+      "A": 1,
+      "M": 0,
+      "D": 0,
+      "files": 1
+    },
+    "art-original": {
+      "A": 18,
+      "M": 0,
+      "D": 0,
+      "files": 18
+    },
+    "art-vendor": {
+      "A": 23,
+      "M": 0,
+      "D": 0,
+      "files": 23
+    },
+    "tests": {
+      "A": 54,
+      "M": 4,
+      "D": 0,
+      "files": 58
+    },
+    "deps": {
+      "A": 0,
+      "M": 2,
+      "D": 0,
+      "files": 2
+    },
+    "config": {
+      "A": 2,
+      "M": 3,
+      "D": 0,
+      "files": 5
+    },
+    "licenses": {
+      "A": 3,
+      "M": 0,
+      "D": 0,
+      "files": 3
+    },
+    "scripts": {
+      "A": 12,
+      "M": 1,
+      "D": 0,
+      "files": 13
+    },
+    "src-other": {
+      "A": 0,
+      "M": 3,
+      "D": 0,
+      "files": 3
+    },
+    "runtime-core": {
+      "A": 24,
+      "M": 10,
+      "D": 0,
+      "files": 34
+    },
+    "game-presentation": {
+      "A": 15,
+      "M": 4,
+      "D": 0,
+      "files": 19
+    },
+    "ui-i18n": {
+      "A": 0,
+      "M": 2,
+      "D": 0,
+      "files": 2
+    },
+    "qa-runtime": {
+      "A": 6,
+      "M": 0,
+      "D": 0,
+      "files": 6
+    }
+  },
+  "largestBinaries": [
+    {
+      "file": "docs/visual_audit_v0221/08_first_run_intro_th.png",
+      "bytes": 261925
+    },
+    {
+      "file": "docs/visual_audit_v0231/05_reroll_changed.png",
+      "bytes": 259461
+    },
+    {
+      "file": "docs/visual_audit_v0231/12_upgrade_cost.png",
+      "bytes": 258854
+    },
+    {
+      "file": "docs/visual_audit_v0231/15_ui200_th.png",
+      "bytes": 258746
+    },
+    {
+      "file": "docs/visual_audit_v0231/04_draft_cards_th.png",
+      "bytes": 253104
+    },
+    {
+      "file": "docs/visual_audit_v0231/01_tutorial_no_overlap_th.png",
+      "bytes": 248017
+    },
+    {
+      "file": "docs/visual_audit_v0231/10_outpost_spec_cards.png",
+      "bytes": 246434
+    },
+    {
+      "file": "docs/visual_audit_v022_r2/08_outpost_picker.png",
+      "bytes": 246046
+    },
+    {
+      "file": "docs/visual_audit_v0221/10_tutorial_first_draft.png",
+      "bytes": 242686
+    },
+    {
+      "file": "docs/visual_audit_v0231/11_civmap_selected_outpost.png",
+      "bytes": 241348
+    }
+  ],
+  "binaryCount": 85,
+  "versions": {
+    "base": {
+      "WORLDGEN_VERSION": 1,
+      "CONTENT_VERSION": 1,
+      "SAVE_SCHEMA_VERSION": 1
+    },
+    "tip": {
+      "WORLDGEN_VERSION": 2,
+      "CONTENT_VERSION": 8,
+      "SAVE_SCHEMA_VERSION": 1
+    }
+  },
+  "dependencies": {
+    "runtime": [
+      {
+        "name": "@dagrejs/dagre",
+        "from": null,
+        "to": "3.1.1"
+      },
+      {
+        "name": "@panzoom/panzoom",
+        "from": null,
+        "to": "4.6.2"
+      }
+    ],
+    "dev": [
+      {
+        "name": "@playwright/test",
+        "from": null,
+        "to": "^1.63.0"
+      }
+    ],
+    "engines": {
+      "from": {
+        "node": ">=18"
+      },
+      "to": {
+        "node": ">=22"
+      }
+    }
+  },
+  "newDependencyMentions": {
+    "@dagrejs/dagre": [],
+    "@panzoom/panzoom": []
+  },
+  "rules": {
+    "mathRandomInCore": [
+      "src/core/emergence/worldLaws.ts:3:// using isolated seeded streams. No Math.random.",
+      "src/core/seed/hash.ts:2:// No Math.random() anywhere in this module. All functions are pure."
+    ],
+    "presentationImportsInCore": [
+      "src/core/save/save.ts:1:// localStorage persistence with schema versioning + runtime validation."
+    ],
+    "mathRandomInContent": []
+  },
+  "addedSecretsLike": [],
+  "addedPersonalPaths": [
+    "+   - `scripts/qa-report.mjs`: Added `sanitizePrivacy` redacting local filesystem paths (`C:\\Users\\...`, `/home/...`, `file:///...`), emails, and non-loopback IPs from committable reports.",
+    "+// 6. Check document portability (zero local workstation file:/// links in markdown)",
+    "+console.log('✓ Document portability verified (zero personal file:/// links in committed docs)');",
+    "+  it(\"verifies no personal workstation file:/// URLs exist in repository markdown\", { timeout: 30000 }, () => {",
+    "+    const winPath = \"Error at C:\\\\Users\\\\Tester\\\\secret\\\\file.ts:12\";",
+    "+    const fileUrl = \"Loaded file:///C:/Users/Admin/Desktop/app.html\";",
+    "+      consoleEntries: [{ level: \"error\", message: \"Failed at C:\\\\Users\\\\SecretUser\\\\test.js\" }],"
+  ],
+  "addedDebugOnlyMarkers": 49
+}

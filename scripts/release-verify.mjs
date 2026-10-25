@@ -88,7 +88,7 @@ if (!existsSync(indexPath)) {
 }
 
 // ---- licenses ----
-for (const f of ["THIRD_PARTY_NOTICES.txt", "licenses/PHASER-MIT.txt", "licenses/OFL-1.1.txt"]) {
+for (const f of ["THIRD_PARTY_NOTICES.txt", "licenses/PHASER-MIT.txt", "licenses/OFL-1.1.txt", "licenses/DAGRE-MIT.txt", "licenses/PANZOOM-MIT.txt"]) {
   check(existsSync(path.join(tmp, f)), `licensed notice packaged: ${f}`);
 }
 

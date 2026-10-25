@@ -19,6 +19,14 @@ Full license texts are included in licenses/.
    Per OFL-1.1 §2, the fonts are bundled with this software and this
    notice + license are included in every copy.
 
+3) @dagrejs/dagre 3.1.1 — MIT License (Tech Map graph layout)
+   Full text: licenses/DAGRE-MIT.txt
+   (Copied verbatim from node_modules/@dagrejs/dagre/LICENSE.)
+
+4) @panzoom/panzoom 4.6.2 — MIT License (Tech Map pan/zoom)
+   Full text: licenses/PANZOOM-MIT.txt
+   (Copied verbatim from node_modules/@panzoom/panzoom/MIT-License.txt.)
+
 Build-time-only (not shipped in the game bundle beyond normal bundling):
 - Vite, TypeScript, Vitest — MIT License (see their npm pages).
 
