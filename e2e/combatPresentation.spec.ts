@@ -10,8 +10,8 @@ for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`real
   await page.evaluate(({age,mount})=>{const h=(window as any).__seedE2E;h.stageEvolution('hunters',age);h.primeSignature();h.equipmentMountReview(mount);h.aimReleaseReview(-150,0);},{age,mount});
   await frame(page);
   const before=await page.evaluate(()=>{const h=(window as any).__seedE2E;return {art:h.integratedReview(),hash:h.hash()};});
-  expect(before.art.equipment.flipY).toBe(true);expect(Math.cos(before.art.equipment.rotation)).toBeCloseTo(-1);
-  expect(before.art.equipment.grip[1]).toBeCloseTo(mount==='float'?.5:age<3?.5:1-74/128);
+  expect(before.art.equipment.flipY).toBe(true);expect(before.art.equipment.rotation).toBeCloseTo(before.art.equipment.pose.rotation);
+  expect(before.art.equipment.grip[1]).toBeCloseTo(1-before.art.equipment.pose.pivotY/128);
   if(mount==='float'){
    const body=before.art.actors[0],weapon=before.art.equipment;
    expect(Math.hypot(weapon.x-body.x,weapon.y-body.y)).toBeGreaterThan(95);
@@ -23,7 +23,7 @@ for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`real
  }
  await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageEvolution('resonant',4);h.primeSignature();h.aimReleaseReview(-150,0);});await frame(page);
  const beam=await page.evaluate(()=>{const h=(window as any).__seedE2E;return {fx:h.signatureFeedback(),art:h.integratedReview()};});
- expect(beam.fx.beams).toBe(1);expect(beam.art.equipment.flipY).toBe(true);expect(Math.cos(beam.art.equipment.rotation)).toBeCloseTo(-1);
+ expect(beam.fx.beams).toBe(1);expect(beam.art.equipment.rotation).toBeCloseTo(beam.art.equipment.pose.rotation);
  await page.screenshot({path:`test-results/browser/v32-beam-${height}-${lang}.png`});
  await page.evaluate(()=>{const h=(window as any).__seedE2E;h.streamingFixture(0,0,false,false,false);h.stageBossReview('fan');});await frame(page);
  const sample=()=>page.evaluate(()=>(window as any).__seedE2E.bossReviewState());

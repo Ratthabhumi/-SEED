@@ -54,7 +54,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
   const projs: string[] = [];
   for (const p of s.projs) {
     if (!p.active) continue;
-    projs.push([r6(p.x), r6(p.y), r6(p.vx), r6(p.vy), r6(p.dmg), r6(p.radius), r6(p.life), p.friendly ? 1 : 0, p.src, p.color, p.visualTier??0].join(","));
+    projs.push([r6(p.x), r6(p.y), r6(p.vx), r6(p.vy), r6(p.dmg), r6(p.radius), r6(p.life), p.friendly ? 1 : 0, p.src, p.color, p.visualTier??0,p.primary?1:0].join(","));
   }
   projs.sort();
   const picks: string[] = [];
@@ -95,6 +95,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     worldev: [Object.keys(s.worldDamageBySource).sort().map((k) => `${k}:${r6(s.worldDamageBySource[k] as number)}`),
       s.worldTopDamageSource, [...s.worldBreakthroughsEarned].sort()],
     ws: [s.weaponStage.kinetic, s.weaponStage.energy, s.weaponStage.defense, s.weaponStage.field],
+    weaponRig:[s.weaponRig.mode,r6(s.weaponRig.x),r6(s.weaponRig.y),r6(s.weaponRig.heading),r6(s.weaponRig.firedAt),s.weaponRig.flipY?1:0],
     tm: [r6(s.spawnT), r6(s.eliteT), r6(s.mineT), r6(s.auraT),
       r6(s.weaponCd.kinetic), r6(s.weaponCd.energy), r6(s.weaponCd.defense), r6(s.weaponCd.field),
       r6(s.guardianAng), r6(s.orbitAng), r6(s.relayCd)],

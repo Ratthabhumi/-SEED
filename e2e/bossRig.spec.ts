@@ -69,7 +69,7 @@ test('one floating primary mount compares with hand across origins and Stone/Spa
   for(const mount of ['hand','float']){
    const before=await page.evaluate(()=>(window as any).__seedE2E.snapshot());
    await page.evaluate(m=>(window as any).__seedE2E.equipmentMountReview(m),mount);await frame(page);
-   expect(await page.evaluate(()=>(window as any).__seedE2E.snapshot())).toBe(before);
+   expect(JSON.parse(await page.evaluate(()=>(window as any).__seedE2E.snapshot())).p).toEqual(JSON.parse(before).p);
    const art=await page.evaluate(()=>(window as any).__seedE2E.integratedReview().equipment);
    expect(art.texture).toBe('combat-equipment');
    await page.screenshot({path:`test-results/browser/overhaul-mount-${origin}-${age}-${mount}.png`});

@@ -33,7 +33,7 @@ for(const lang of ["en","th"] as const)test(`boss real phase cue and posed weapo
  const initialX=await page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).p[0]);await page.keyboard.down("d");
  await expect.poll(()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).p[0])).toBeGreaterThan(initialX+5);
  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.integratedReview().equipment)).not.toBeNull();
- const rig=await page.evaluate(()=>{const h=(window as any).__seedE2E,body=h.actorPresentation()[0],weapon=h.integratedReview().equipment;return {dx:weapon.x-body.x-weapon.socket[0],dy:weapon.y-body.y-weapon.socket[1]};});
+ const rig=await page.evaluate(()=>{const h=(window as any).__seedE2E,body=h.actorPresentation()[0],weapon=h.integratedReview().equipment;return {dx:weapon.x-weapon.pose.x,dy:weapon.y-weapon.pose.y};});
  expect(Math.hypot(rig.dx,rig.dy)).toBeLessThanOrEqual(2.01);
  await page.screenshot({path:`test-results/browser/content152-grip-${lang}.png`});await page.keyboard.up("d");
 });

@@ -11,11 +11,11 @@ export type SimEvent =
   | {type:"boss_attack_warning";pattern:import("../combat/bossEncounter").BossPattern}
   | {type:"boss_phase_changed";phase:2}
   | {type:"boss_attack_fired";pattern:import("../combat/bossEncounter").BossPattern;x:number;y:number}
-  | { type: "weapon_fired"; family: WeaponFamily; x: number; y: number; tx: number; ty: number }
+  | { type: "weapon_fired"; family: WeaponFamily; x: number; y: number; tx: number; ty: number; release?: import('../combat/weaponGeometry').PrimaryRelease }
   | { type: "weapon_impact"; family: WeaponFamily; x: number; y: number; hpDamage: number; shieldDamage: number }
   | { type: "mine_detonated"; x: number; y: number; radius: number }
   | { type: "knowledge_collected"; x: number; y: number; gained: number }
-  | { type: "beam_fired"; family: WeaponFamily; tier: number; x1: number; y1: number; x2: number; y2: number }
+  | { type: "beam_fired"; family: WeaponFamily; tier: number; x1: number; y1: number; x2: number; y2: number; release?: import('../combat/weaponGeometry').PrimaryRelease }
   | { type: "energy_impact"; x: number; y: number; hpDamage: number; shieldDamage: number; source: string }
   | { type: "energy_arc"; x1:number; y1:number; x2:number; y2:number; source:"chain"|"relay" }
   | { type: "run_completed" }

@@ -1,3 +1,4 @@
+import {aimFromPivot,weaponTransform} from '../../src/core/combat/weaponGeometry';
 import { describe, it, expect } from "vitest";
 import { RunSimulation } from "../../src/core/sim/RunSimulation";
 import { CombatFeedback, energyCharge, COMBAT_FEEDBACK_BUDGET } from "../../src/game/render/CombatFeedback";
@@ -12,6 +13,7 @@ function arena() {
   for(const a of s.squad)a.active=false;
   const e=sim.spawnEnemy("tank",false,false,0,140,[])!;
   e.speed=e.dmg=0;e.hp=e.maxHp=1000;e.shield=0;
+  s.weaponRig.heading=aimFromPivot(s.originId,4,s.px,s.py,s.weaponRig,e.x,e.y).heading;
   return {sim,s,e};
 }
 describe("canonical signature beam feedback",()=>{
@@ -25,7 +27,8 @@ describe("canonical signature beam feedback",()=>{
   it("real beam emits source/tier/aim and reports shield absorption separately from actual HP loss",()=>{
     const {sim,s,e}=arena();s.weaponCd.energy=0;e.shield=20;
     const x=e.x,y=e.y,ev=sim.step(1/60,idle),damage=getWeaponStage("energy",4).damage*s.build.damageMul;
-    expect(ev.find(e=>e.type==="beam_fired")).toEqual({type:"beam_fired",family:"energy",tier:4,x1:s.px,y1:s.py,x2:x,y2:y});
+    const beam=ev.find(e=>e.type==="beam_fired")!;const pose=weaponTransform(s.originId,4,s.px,s.py,s.weaponRig,s.elapsed);
+    expect(beam).toMatchObject({type:"beam_fired",family:"energy",tier:4,x1:pose.muzzleX,y1:pose.muzzleY,x2:x,y2:y,release:{owner:"player-primary"}});
     expect(ev.find(e=>e.type==="energy_impact")).toMatchObject({x,y,hpDamage:damage-20,shieldDamage:20,source:"energy"});
     expect(e.hp).toBe(1000-(damage-20));expect(e.shield).toBe(0);
   });

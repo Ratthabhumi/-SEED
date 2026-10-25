@@ -1,3 +1,4 @@
+import {aimFromPivot} from '../../src/core/combat/weaponGeometry';
 import {it,expect} from "vitest";
 import {RunSimulation} from "../../src/core/sim/RunSimulation";
 import {applyTechEffect,previewTechEffects} from "../../src/core/sim/progression";
@@ -66,6 +67,7 @@ it("energy aura and beam keep conduction useful after weapon evolution",()=>{
  expect(aura.step(1/60,idle).filter(e=>e.type==="energy_arc")).toHaveLength(2);
  expect(aura.state.enemies.slice(0,4).map(e=>e.hp)).toEqual([92,96,98,100]);
  const beam=setup();enemies(beam);buy(beam,"conduction-lattice");beam.state.weaponStage.energy=4;beam.state.weaponCd.energy=0;
+ beam.state.weaponRig.heading=aimFromPivot("resonant",4,beam.state.px,beam.state.py,beam.state.weaponRig,200,0).heading;
  expect(beam.step(1/60,idle).filter(e=>e.type==="energy_arc")).toHaveLength(2);
  expect(beam.state.enemies.slice(0,4).map(e=>e.hp)).toEqual([55,77.5,88.75,100]);
 });
