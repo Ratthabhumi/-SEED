@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="768" viewBox="0 0 1024 768">
+  <title>SEED Rift Sovereign — original articulated armor, nine editable joint plates</title>
+  <defs>
+    <linearGradient id="steel" x2=".8" y2="1"><stop stop-color="#d4e7e3"/><stop offset=".35" stop-color="#658797"/><stop offset=".65" stop-color="#26384d"/><stop offset="1" stop-color="#101c30"/></linearGradient>
+    <linearGradient id="gold" x2=".7" y2="1"><stop stop-color="#fff0c4"/><stop offset=".4" stop-color="#c5a16e"/><stop offset="1" stop-color="#644154"/></linearGradient>
+    <linearGradient id="stone" x2=".9" y2="1"><stop stop-color="#a4819b"/><stop offset=".5" stop-color="#4e415d"/><stop offset="1" stop-color="#231c34"/></linearGradient>
+    <radialGradient id="rift"><stop stop-color="#fff8d0"/><stop offset=".25" stop-color="#ffb17c"/><stop offset=".65" stop-color="#ef586b"/><stop offset="1" stop-color="#702f5b"/></radialGradient>
+  </defs>
+  <!-- Cells are 256px; every local joint pivot is (128,128). No raster input. -->
+  <g id="torso" transform="translate(128 128)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#stone)" d="M-59-66-83-31-66 51-32 91 0 99 32 91 66 51 83-31 59-66 0-84Z"/>
+    <path fill="url(#steel)" d="M0-65-66-45-57-11-13 6 0-13 13 6 57-11 66-45Z"/>
+    <path fill="url(#gold)" d="M-58-8-42 5-40 51-15 72-4 59-19 27-25 8M58-8 42 5 40 51 15 72 4 59 19 27 25 8"/>
+    <path fill="#18273c" d="m0-30-28 21 8 53 20 18 20-18 8-53Z"/>
+    <path fill="none" stroke="#a4c7ce" stroke-width="2" d="m-64-36 44 13M64-36 20-23M-52 58-29 79M52 58 29 79"/>
+    <path fill="none" stroke="#df917e" stroke-width="3" d="m-70 4 14 6-4 25 17 9M70 4 56 10 60 35 43 44"/>
+  </g>
+  <g id="crown-mask" transform="translate(384 128)" stroke="#101824" stroke-width="3" stroke-linejoin="round">
+    <path fill="url(#gold)" d="M-47 5-65-57-32-32-18-79 0-49 18-79 32-32 65-57 47 5Z"/>
+    <path fill="url(#steel)" d="M-38-25 0-38 38-25 31 26 0 48-31 26Z"/>
+    <path fill="#12182b" d="m-30-6 27 9-7 12-18-7ZM30-6 3 3 10 15 28 8Z"/>
+    <path fill="#ffcf9c" stroke="#ee6378" stroke-width="2" d="m-25 0 18 6-4 3-13-4M25 0 7 6 11 9 24 5"/>
+    <path fill="url(#gold)" d="m0-26-8 39 8 21 8-21Z"/>
+    <path fill="none" stroke="#b5d2d9" stroke-width="2" d="m-30 18 11 10M30 18 19 28M-46-26-7-8M46-26 7-8"/>
+  </g>
+  <g id="upper-arm" transform="translate(640 128)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#stone)" d="M-20-14 18-18 28 11 22 59 3 78-22 60-28 17Z"/>
+    <path fill="url(#steel)" d="M-22-5 16-8 18 30-18 47-28 17Z"/>
+    <path fill="url(#gold)" d="m-17 45 34-11 3 21-18 13-18-14Z"/>
+    <circle r="12" fill="url(#gold)"/><circle r="4" fill="#fa9a83"/>
+    <path stroke="#b9d6d9" stroke-width="2" d="m-19 8 5 26"/>
+  </g>
+  <g id="gauntlet" transform="translate(896 128)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#steel)" d="M-22-15 23-15 34 12 30 53 19 76-22 80-36 57-33 16Z"/>
+    <path fill="url(#gold)" d="m-32 14 34 11 30-12-4 20-26 12-32-12Z"/>
+    <path fill="#253349" d="m-27 57 47-4-2 23-39 4Z"/>
+    <path fill="none" stroke="#b4ced5" stroke-width="2" d="m-21 1 5 10M14-2 20 9M-17 62-16 73M-5 62-5 73M7 61 7 72"/>
+    <path fill="#ff9a86" stroke="#794260" stroke-width="2" d="m-9 15 11-8 11 8-11 9Z"/>
+  </g>
+  <g id="thigh" transform="translate(128 384)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#stone)" d="m-21-13 44 0 7 39-15 33-31-3-14-32Z"/>
+    <path fill="url(#steel)" d="m-18-8 35 0-1 38-24 12-15-19Z"/>
+    <path fill="url(#gold)" d="m-20 35 36-5-1 21-28 3Z"/>
+  </g>
+  <g id="greave" transform="translate(384 384)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#steel)" d="m-22-13 39-2 8 32-8 31 14 20-12 16-50-1-7-16 15-21-6-28Z"/>
+    <path fill="url(#gold)" d="m-20-2 16 13 20-16 3 17-23 17-20-16Z"/>
+    <path fill="none" stroke="#a8c6ce" stroke-width="2" d="m-8 32-1 19M-20 65 15 64M-23 71 19 70"/>
+  </g>
+  <g id="pauldron" transform="translate(640 384)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#steel)" d="M-47-14-32-43 13-49 43-24 47 8 28 29-22 29-53 9Z"/>
+    <path fill="url(#gold)" d="m-46-13 25 16 45-2 21-23 2 22-23 19-46-1-29-16Z"/>
+    <path fill="url(#stone)" d="m-26-32 30-7 25 17-33 14-31-6Z"/>
+    <path stroke="#c1dadd" stroke-width="2" d="m-32-33-7 18M15-36 29-25"/>
+  </g>
+  <g id="rift-heart" transform="translate(896 384)" stroke="#101824" stroke-width="3" stroke-linejoin="round">
+    <path fill="url(#gold)" d="m0-39 29 22-6 38L0 43-23 21-29-17Z"/>
+    <path fill="url(#rift)" d="m0-29 19 16-5 27L0 30-14 14-19-13Z"/>
+    <path fill="#fff1cf" stroke="none" d="m0-18 7 14-7 19-6-17Z"/>
+  </g>
+  <g id="mantle" transform="translate(128 640)" stroke="#101824" stroke-width="4" stroke-linejoin="round">
+    <path fill="url(#stone)" d="m-43-64 85 0 34 66-17 33 12 31-36-14L0 83-36 57-67 72-55 24-73-3Z"/>
+    <path fill="none" stroke="#ad8298" stroke-width="3" d="m-28-48-18 89M27-49 43 37M0-49 0 59"/>
+    <path fill="none" stroke="#d6ad80" stroke-width="3" d="m-56 45 22-9 33 26 33-25 22 9"/>
+  </g>
+</svg>

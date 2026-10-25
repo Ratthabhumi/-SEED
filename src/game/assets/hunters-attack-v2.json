@@ -1,0 +1,231 @@
+{
+  "schema": 2,
+  "classification": "GENERATED_RELEASE_RECOVERY_CANDIDATE_NOT_FULL_MOTION_FAMILY",
+  "humanArtAcceptance": "PENDING",
+  "frames": [
+    {
+      "frame": 0,
+      "socket": [
+        113,
+        44
+      ],
+      "bounds": [
+        8,
+        15,
+        111,
+        101
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 1,
+      "sourceColumn": 3,
+      "sourcePoseHash": "b091204eba939b15914a5e8c433d0ed7414153f4884c50c9b13e1f355b42c0c1"
+    },
+    {
+      "frame": 1,
+      "socket": [
+        105,
+        50
+      ],
+      "bounds": [
+        12,
+        17,
+        103,
+        99
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 1,
+      "sourceColumn": 5,
+      "sourcePoseHash": "915f685af2c42c7065a1ce959fb3b2d81ae56cd1180d0fd038394721d81a0d80"
+    },
+    {
+      "frame": 2,
+      "socket": [
+        113,
+        83
+      ],
+      "bounds": [
+        7,
+        19,
+        113,
+        97
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 1,
+      "sourceColumn": 6,
+      "sourcePoseHash": "491bc34fcdfd3dc5f54043c7457a67134d636b1f35c045e697605bbe3595cd82"
+    },
+    {
+      "frame": 3,
+      "socket": [
+        97,
+        82
+      ],
+      "bounds": [
+        15,
+        15,
+        98,
+        101
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 1,
+      "sourceColumn": 7,
+      "sourcePoseHash": "c0a69ff1f0687e0c3b3e81be42f261f2b488acf060bb048da6af3e48596e1633"
+    },
+    {
+      "frame": 4,
+      "socket": [
+        113,
+        44
+      ],
+      "bounds": [
+        11,
+        13,
+        106,
+        103
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 3,
+      "sourceColumn": 3,
+      "sourcePoseHash": "d66a4b9e0d6065ffcc27ebb8529a2f656f263e8261ba8f2f2e8988a41bdbc235"
+    },
+    {
+      "frame": 5,
+      "socket": [
+        105,
+        50
+      ],
+      "bounds": [
+        13,
+        18,
+        101,
+        98
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 3,
+      "sourceColumn": 5,
+      "sourcePoseHash": "4ca74201f7d72c09dcb9d264774f74a78199635f1fd934dae3cba9d3c27318a6"
+    },
+    {
+      "frame": 6,
+      "socket": [
+        113,
+        83
+      ],
+      "bounds": [
+        13,
+        19,
+        101,
+        97
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 3,
+      "sourceColumn": 6,
+      "sourcePoseHash": "36661a01121ef9b36a7247bf62984a05736f303ef4e28bb7f1da9197e10706d0"
+    },
+    {
+      "frame": 7,
+      "socket": [
+        97,
+        82
+      ],
+      "bounds": [
+        14,
+        14,
+        100,
+        102
+      ],
+      "ground": [
+        64,
+        116
+      ],
+      "sourceRow": 3,
+      "sourceColumn": 7,
+      "sourcePoseHash": "bf74f03ef27c98ee84f049dd40fff979d56f5e4b8cbffe49b6e8bd90444781ad"
+    }
+  ],
+  "socketOverrides": {
+    "0":[92,76],"1":[93,68],"2":[109,64],"3":[121,57],"4":[93,68],"5":[99,80],"6":[83,69],"7":[104,80],"8":[90,100],
+    "9":[93,80],"10":[94,84],"11":[109,77],"12":[121,61],"13":[94,76],"14":[96,84],"15":[86,72],"16":[103,84],"17":[90,100],
+    "18":[92,76],"19":[93,68],"20":[109,64],"21":[121,57],"22":[93,68],"23":[99,80],"24":[83,69],"25":[104,80],"26":[90,100],
+    "27":[93,80],"28":[94,84],"29":[109,77],"30":[121,61],"31":[94,76],"32":[96,84],"33":[86,72],"34":[103,84],"35":[90,100]
+  },
+  "overrides": {
+    "0:front:attack": {
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frameMs": 40,
+      "loop": false,
+      "sockets": [
+        [
+          113,
+          44
+        ],
+        [
+          105,
+          50
+        ],
+        [
+          113,
+          83
+        ],
+        [
+          97,
+          82
+        ]
+      ]
+    },
+    "5:front:attack": {
+      "frames": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "frameMs": 40,
+      "loop": false,
+      "sockets": [
+        [
+          113,
+          44
+        ],
+        [
+          105,
+          50
+        ],
+        [
+          113,
+          83
+        ],
+        [
+          97,
+          82
+        ]
+      ]
+    }
+  }
+}

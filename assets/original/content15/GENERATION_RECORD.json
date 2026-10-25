@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-14",
+  "tool": "OpenAI built-in imagegen",
+  "license": "Project MIT, original -SEED artwork; human art acceptance pending",
+  "calls": [
+    {
+      "source": "heroes-neutral-v1.png",
+      "prompt": "Create an original production game sprite atlas for -SEED, a painted dark fantasy to science fiction civilization survivor game. Transparent background. Exactly 24 FULL BODY weapon-neutral heroes arranged precisely in a SIX COLUMN by FOUR ROW regular grid. Aspect ratio 3:2. Every cell same size. Generous fully transparent gutters 15% around each character, no overlaps, no labels/text/borders. Small top-down three-quarter FRONT-facing character with clearly visible hood/head, torso, boots and both EMPTY hands relaxed at waist for external rigged weapons, absolutely NO weapons, NO guns, NO staff, NO shields, NO muzzle flashes. All aligned at same ground pivot and same body size. Detailed painterly materials with strong dark outline, cream rimlight, restrained teal accents, readable at 80 pixel display. COLUMNS progress Stone (fur/leather, primitive), Bronze (bronze plate/tunic), Iron (iron armor/chainmail), Industrial (mechanical backpack/gears), Atomic (advanced graphite ceramic energy armor), Space (magnificent plated exosuit but still humanoid). ROW1 Hunters: distinctive gold hood, green cloak, agile ranger. ROW2 Engineers: teal utility suit, square backpack, engineering goggles. ROW3 Resonant: ivory mask, violet robes, crystalline collar, slender mystic. ROW4 Sentinels: crimson helmet crest, broad armor, ivory mantle. Each origin recognizable across all 6 columns; epochs change full body silhouette and construction, NOT just color. Upright centered figures facing slightly viewer right in ready stance, no ground shadow or surrounding glow. Cohesive sophisticated original game artwork. Do not copy any existing game's characters.",
+      "transparent_background": true
+    },
+    {
+      "source": "ground-v1.png",
+      "prompt": "Original -SEED painted 2D game TERRAIN atlas, exactly FOUR equal square cells arranged 2 columns by 2 rows on a square opaque canvas. No borders, no gutters, no labels. Each square is its own seamless tileable top-down flat ground texture, edge-to-edge same material, no perspective, no vignette, no radial composition, no circular patches, no large stones, no large bushes. Quiet low contrast microdetails at small scale for combat readability, soft painterly texture. Top left VERDANT: muted olive forest earth, tiny scattered leaf litter and moss. Top right ARID: muted ochre dust, fine sand/gravel flecks. Bottom left TUNDRA: muted blue gray frosted earth and fine icy grit, NOT bright white snow. Bottom right BADLANDS: charcoal brown scorched rock dust and subtle mineral flecks. Fully ground, traversable, no trees/buildings, no large obstacles. Each cell uniformly distributed aperiodic fine surface details without any mirrored motifs; carefully match opposite tile edges and luminosity. Original sophisticated dark fantasy to science fiction paint materials complementary to cream/teal/red actor silhouettes.",
+      "transparent_background": false
+    },
+    {
+      "source": "heroes-neutral-back-v1.png",
+      "reference": "heroes-neutral-v1.png",
+      "prompt": "Edit this exact original 6-column by4-row hero costume atlas into matching BACK VIEW sprites. Preserve all 24 characters' six era armor/costume designs, Origin rows, scale, regular grid and exact same cell placement. Show each character from behind facing away slightly right, including cloaks, backpacks, back armor, rear hood/helmet details. Empty hands, absolutely no weapons or shields or attack effects. Same painted quality/materials and outline, FULL body boots intact. Transparent background with generous transparent gutters. No labels, no borders. Keep all characters matching the supplied front-facing costume at the same row/column, do not reorder. No floor shadows.",
+      "transparent_background": true
+    }
+  ],
+  "normalization": "Only deterministic alpha-bound extraction, uniform resize, gutters and packing. No semantic image editing through Python.",
+  "animationLimit": "Front/back costume poses with procedural bob and external weapon recoil. Not authored full multi-frame idle/walk/attack/hurt/dash/ability/death animation."
+}

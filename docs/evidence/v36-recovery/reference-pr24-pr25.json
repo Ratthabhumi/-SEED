@@ -1,0 +1,727 @@
+{
+  "classification": "ALL36_SYNTHETIC_REFERENCE_NOT_HUMAN",
+  "pr24Source": "8edbc5b5afa3c5b4beb66341af8e993fb21aa6fa",
+  "pr25Source": "fe04927d0a03f1478cdf4b57bb4aee40a68256dd",
+  "rows": [
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 2,
+        "progressionSeconds": 741.62
+      },
+      "pr24Hash": "591d5379",
+      "pr25Hash": "411f4f6f",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 981.8
+      },
+      "pr25": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "853d3b90",
+      "pr25Hash": "ad58a218",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 7,
+        "progressionSeconds": 765.72
+      },
+      "pr24Hash": "7c0bf904",
+      "pr25Hash": "c2991178",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 507.52
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 2,
+        "progressionSeconds": 669.62
+      },
+      "pr24Hash": "205a0f73",
+      "pr25Hash": "dc90e1a6",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1135.7
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 720.02
+      },
+      "pr24Hash": "cd58b735",
+      "pr25Hash": "2d6dc5ec",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 559.38
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 2,
+        "progressionSeconds": 631.22
+      },
+      "pr24Hash": "8e474040",
+      "pr25Hash": "0f2e8d56",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 404.58
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 476.55
+      },
+      "pr24Hash": "9ebeb50f",
+      "pr25Hash": "256dad73",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 489.67
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 765.57
+      },
+      "pr24Hash": "8d38c319",
+      "pr25Hash": "71841d5f",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 453.18
+      },
+      "pr25": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 2,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "bb7ba4ad",
+      "pr25Hash": "fcc7deaa",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "112976d0",
+      "pr25Hash": "011ed627",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 4,
+        "progressionSeconds": 989.05
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "32c5b437",
+      "pr25Hash": "dfb16bd9",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "e5cc00fc",
+      "pr25Hash": "e9199145",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 5,
+        "progressionSeconds": 809.7
+      },
+      "pr24Hash": "8a4b9639",
+      "pr25Hash": "3b96a62d",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 673.87
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 0,
+        "progressionSeconds": 734.43
+      },
+      "pr24Hash": "66ad043f",
+      "pr25Hash": "6c5465cd",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 30,
+        "progressionSeconds": 1136.6
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 988.98
+      },
+      "pr24Hash": "9f521dce",
+      "pr25Hash": "1b73a3db",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 7,
+        "progressionSeconds": 465.27
+      },
+      "pr25": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 494.02
+      },
+      "pr24Hash": "f139d349",
+      "pr25Hash": "291dcd3e",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 2,
+        "progressionSeconds": 566.67
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 3,
+        "progressionSeconds": 610.33
+      },
+      "pr24Hash": "b2047c70",
+      "pr25Hash": "c250a35f",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 7,
+        "progressionSeconds": 577.67
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 44,
+        "progressionSeconds": 1104.63
+      },
+      "pr24Hash": "43a07e09",
+      "pr25Hash": "55295846",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 4,
+        "progressionSeconds": 1026.77
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 5,
+        "progressionSeconds": 544.82
+      },
+      "pr24Hash": "58462417",
+      "pr25Hash": "6d31a05f",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 628.63
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "0c0f7200",
+      "pr25Hash": "727613ce",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 6,
+        "progressionSeconds": 661.22
+      },
+      "pr24Hash": "60adbc63",
+      "pr25Hash": "4cca2cd3",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 572.2
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 749.37
+      },
+      "pr24Hash": "2b4fdda6",
+      "pr25Hash": "f232c457",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 644.42
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 736.95
+      },
+      "pr24Hash": "f6a44edd",
+      "pr25Hash": "c8290ef4",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 683.57
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 2,
+        "progressionSeconds": 701.78
+      },
+      "pr24Hash": "f6d726f7",
+      "pr25Hash": "c7c3a18d",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 4,
+        "progressionSeconds": 510.02
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 3,
+        "progressionSeconds": 418.48
+      },
+      "pr24Hash": "8cf4e720",
+      "pr25Hash": "33153f71",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 944.67
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 455.9
+      },
+      "pr24Hash": "6216046e",
+      "pr25Hash": "8d81a50b",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1199.98
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 1,
+        "progressionSeconds": 513.87
+      },
+      "pr24Hash": "2d43baaf",
+      "pr25Hash": "93fd8936",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "776cead5",
+      "pr25Hash": "c1d6e159",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "b56ea885",
+      "pr25Hash": "f0dd3a90",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "bab30574",
+      "pr25Hash": "74e5fb31",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "3040a55f",
+      "pr25Hash": "fcb21fd4",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "a74ee5cd",
+      "pr25Hash": "7954a3a4",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "1b35a3ee",
+      "pr25Hash": "dd94c44d",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 7,
+        "progressionSeconds": 1055.78
+      },
+      "pr25": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "6593c4fe",
+      "pr25Hash": "1371ae76",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "pr24": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 4,
+        "progressionSeconds": 548.18
+      },
+      "pr25": {
+        "reached": true,
+        "won": true,
+        "phase2Attacks": 2,
+        "progressionSeconds": 836.17
+      },
+      "pr24Hash": "f7b1b219",
+      "pr25Hash": "00d9c47c",
+      "classification": "SAME_COARSE_OUTCOME_NOT_CANONICAL_EQUAL"
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "pr24": {
+        "reached": false,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr25": {
+        "reached": true,
+        "won": false,
+        "phase2Attacks": 0,
+        "progressionSeconds": 1200
+      },
+      "pr24Hash": "9e622ea3",
+      "pr25Hash": "8a3af9c9",
+      "classification": "UNVERIFIED_OUTCOME_CAUSE"
+    }
+  ]
+}

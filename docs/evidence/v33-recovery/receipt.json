@@ -1,0 +1,28 @@
+{
+  "parent": "c529f7c47d2e142b51e37255fd965fd24a966d03",
+  "classification": "DIAGNOSTIC_NOT_FINAL_CANDIDATE_OR_BUDGET_PASS",
+  "pairedLimitation": "Short unit-test/typecheck overlapped part of the40-row paired campaign; not isolated causal proof. A/A and texture-control were separate.",
+  "files": [
+    {
+      "file": "pr22-aa.json.gz",
+      "rawSha256": "6907cf37629e4f1f298fcf071cf7da857786d89e0ae79299b427e28fa9bc178a",
+      "gzipSha256": "4b595d204fa526ea726e4c7dd391ebde8898d62fa3bbac0104049ec540113ec5",
+      "rawBytes": 8394893,
+      "gzipBytes": 243285
+    },
+    {
+      "file": "pr21-pr22-hc.json.gz",
+      "rawSha256": "9ec065375552fe586859c7869f6a81a67a27fbcc7d26a635cbd955faa3e72783",
+      "gzipSha256": "b336e15bbe226e9c7c447b4ca7627a6e9f2e6f82bf69444cec85fb680db3e456",
+      "rawBytes": 109256,
+      "gzipBytes": 5630
+    },
+    {
+      "file": "detail-control.json.gz",
+      "rawSha256": "e91cf534e49a7bb25a36658f99fafb9dd82ea5caf28189ecd8ff699c792a3640",
+      "gzipSha256": "db14c782435b889910cf23343f19090f201d0d1f854e8e7617f174f971ba70cb",
+      "rawBytes": 3019643,
+      "gzipBytes": 75896
+    }
+  ]
+}

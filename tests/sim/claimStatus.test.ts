@@ -1,0 +1,23 @@
+import {it,expect} from "vitest";
+import {RunSimulation} from "../../src/core/sim/RunSimulation";
+import {CLAIM_REACH_RADIUS,CLAIM_CLEAR_RADIUS} from "../../src/core/world/territory";
+it("one canonical claim predicate covers discovery, exact reach, hostiles and duplicate mutation",()=>{
+ const sim=new RunSimulation({masterSeed:"EPOCH-GOLDEN-001",originId:"hunters"}),s=sim.state;
+ let site:any;
+ for(let x=-5;x<=5&&!site;x++)for(let y=-5;y<=5&&!site;y++)site=sim.chunks.get(s.worldSeed,s.worldNonce,x,y).poi[0];
+ expect(site).toBeTruthy();s.px=site.wx;s.py=site.wy;
+ expect(sim.claimStatus(site.id).reason).toBe("NOT_DISCOVERED");expect(sim.claimTerritory(site.id)).toEqual([]);
+ s.poisWorld.push(site.id);s.px=site.wx+CLAIM_REACH_RADIUS+.01;
+ expect(sim.claimStatus(site.id).reason).toBe("TOO_FAR");expect(sim.claimTerritory(site.id)).toEqual([]);
+ s.px=site.wx+CLAIM_REACH_RADIUS;
+ expect(sim.claimStatus(site.id).reason).toBe("CLAIMABLE");
+ const e=sim.spawnEnemy("chaser",false,false,0,CLAIM_CLEAR_RADIUS/2,[])!;
+ e.x=site.wx;e.y=site.wy;sim.step(1/60,{moveX:0,moveY:0,dashPressed:false});
+ expect(sim.claimStatus(site.id).reason).toBe("HOSTILES_NEARBY");expect(sim.claimTerritory(site.id)).toEqual([]);
+ for(const e of s.enemies)e.active=false;sim.step(1/60,{moveX:0,moveY:0,dashPressed:false});
+ expect(sim.claimStatus(site.id).reason).toBe("CLAIMABLE");expect(sim.claimTerritory(site.id)[0]?.type).toBe("territory_claimed");
+ expect(sim.claimStatus(site.id).reason).toBe("ALREADY_CLAIMED");expect(sim.claimTerritory(site.id)).toEqual([]);
+ s.over=true;expect(sim.claimStatus(site.id).reason).toBe("INACTIVE_RUN");
+ s.over=false;s.ascendReady=true;sim.ascend("affinity-kinetic","hunters");
+ expect(sim.claimStatus(site.id).reason).toBe("NOT_DISCOVERED");expect(sim.claimTerritory(site.id)).toEqual([]);
+});

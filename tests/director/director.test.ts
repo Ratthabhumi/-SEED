@@ -12,12 +12,32 @@ describe("threat director", () => {
     expect(asc).toBeGreaterThan(late);
   });
 
-  it("enemy selection obeys era constraints (no tanks in stone age rush)", () => {
+  it("stone age never spawns tanks (era-gated)", () => {
     const rng = new Xoshiro128StarStar(1234);
-    let tanks = 0;
-    for (let i = 0; i < 30; i++) tanks += composeFromBudget(20, rng, 0).tank;
-    // age 0 allows tanks only via the 0.18 roll — bounded, never dominant
-    expect(tanks).toBeLessThan(30 * 5);
+    for (let i = 0; i < 50; i++) {
+      expect(composeFromBudget(20, rng, 0).tank).toBe(0);
+    }
+  });
+
+  it("eras stay compositionally diverse (no 90%+ single family)", () => {
+    for (let age = 0; age <= 5; age++) {
+      const rng = new Xoshiro128StarStar(777 + age);
+      const totals = { chaser: 0, ranged: 0, tank: 0, swarm: 0, elite: 0 };
+      for (let i = 0; i < 60; i++) {
+        const c = composeFromBudget(40, rng, age);
+        totals.chaser += c.chaser; totals.ranged += c.ranged;
+        totals.tank += c.tank; totals.swarm += c.swarm; totals.elite += c.elite;
+      }
+      const sum = totals.chaser + totals.ranged + totals.tank + totals.swarm;
+      expect(sum).toBeGreaterThan(0);
+      for (const [fam, v] of Object.entries(totals)) {
+        if (fam === "elite") continue;
+        expect(v / sum, `age ${age} family ${fam}`).toBeLessThan(0.9);
+      }
+      // Every era fields at least two families overall.
+      const used = [totals.chaser, totals.ranged, totals.tank, totals.swarm].filter((v) => v > 0).length;
+      expect(used).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it("threat scaling remains bounded (no explosion at ascension 100)", () => {

@@ -1,0 +1,225 @@
+{
+  "classification": "READ_ONLY_PREREQUISITE_AUDIT_NOT_INTEGRATION_APPROVAL",
+  "base": "5e6d5c65ea905bc3859f115e73bfd02913988d45",
+  "tip": "95910baa5782f1dfcb2706e61b30eac33223107f",
+  "commits": 200,
+  "merges": 0,
+  "baseIsAncestor": true,
+  "files": 884,
+  "byArea": {
+    "agent-tooling": {
+      "A": 26,
+      "M": 0,
+      "D": 0,
+      "files": 26
+    },
+    "other": {
+      "A": 1,
+      "M": 1,
+      "D": 0,
+      "files": 2
+    },
+    "ci": {
+      "A": 1,
+      "M": 0,
+      "D": 0,
+      "files": 1
+    },
+    "docs": {
+      "A": 336,
+      "M": 14,
+      "D": 0,
+      "files": 350
+    },
+    "assets-other": {
+      "A": 1,
+      "M": 0,
+      "D": 0,
+      "files": 1
+    },
+    "art-original": {
+      "A": 107,
+      "M": 0,
+      "D": 0,
+      "files": 107
+    },
+    "art-vendor": {
+      "A": 23,
+      "M": 0,
+      "D": 0,
+      "files": 23
+    },
+    "tests": {
+      "A": 147,
+      "M": 4,
+      "D": 0,
+      "files": 151
+    },
+    "deps": {
+      "A": 0,
+      "M": 2,
+      "D": 0,
+      "files": 2
+    },
+    "config": {
+      "A": 2,
+      "M": 3,
+      "D": 0,
+      "files": 5
+    },
+    "licenses": {
+      "A": 4,
+      "M": 0,
+      "D": 0,
+      "files": 4
+    },
+    "scripts": {
+      "A": 64,
+      "M": 1,
+      "D": 0,
+      "files": 65
+    },
+    "src-other": {
+      "A": 3,
+      "M": 3,
+      "D": 0,
+      "files": 6
+    },
+    "runtime-core": {
+      "A": 36,
+      "M": 12,
+      "D": 0,
+      "files": 48
+    },
+    "game-presentation": {
+      "A": 80,
+      "M": 4,
+      "D": 0,
+      "files": 84
+    },
+    "ui-i18n": {
+      "A": 1,
+      "M": 2,
+      "D": 0,
+      "files": 3
+    },
+    "qa-runtime": {
+      "A": 6,
+      "M": 0,
+      "D": 0,
+      "files": 6
+    }
+  },
+  "largestBinaries": [
+    {
+      "file": "docs/evidence/content152/gallery/native-reference-and-boss.webm",
+      "bytes": 6927818
+    },
+    {
+      "file": "assets/original/terrain/tundra-v1.png",
+      "bytes": 4396847
+    },
+    {
+      "file": "assets/original/content15/ground-v1.png",
+      "bytes": 4359945
+    },
+    {
+      "file": "assets/original/terrain/arid-v1.png",
+      "bytes": 4076105
+    },
+    {
+      "file": "assets/original/terrain/badlands-v1.png",
+      "bytes": 3708012
+    },
+    {
+      "file": "assets/original/terrain/verdant-v2.png",
+      "bytes": 3685214
+    },
+    {
+      "file": "assets/original/combat/world-props-layout-rejected.png",
+      "bytes": 2788912
+    },
+    {
+      "file": "assets/original/content15/heroes-neutral-back-v1.png",
+      "bytes": 2774650
+    },
+    {
+      "file": "docs/evidence/content152/gallery/content152-live-space-dense.png",
+      "bytes": 2730303
+    },
+    {
+      "file": "assets/original/content15/heroes-neutral-v1.png",
+      "bytes": 2719832
+    }
+  ],
+  "binaryCount": 230,
+  "versions": {
+    "base": {
+      "WORLDGEN_VERSION": 1,
+      "CONTENT_VERSION": 1,
+      "SAVE_SCHEMA_VERSION": 1
+    },
+    "tip": {
+      "WORLDGEN_VERSION": 3,
+      "CONTENT_VERSION": 20,
+      "SAVE_SCHEMA_VERSION": 2
+    }
+  },
+  "dependencies": {
+    "runtime": [
+      {
+        "name": "@dagrejs/dagre",
+        "from": null,
+        "to": "3.1.1"
+      },
+      {
+        "name": "@panzoom/panzoom",
+        "from": null,
+        "to": "4.6.2"
+      }
+    ],
+    "dev": [
+      {
+        "name": "@playwright/test",
+        "from": null,
+        "to": "^1.63.0"
+      }
+    ],
+    "engines": {
+      "from": {
+        "node": ">=18"
+      },
+      "to": {
+        "node": ">=22"
+      }
+    }
+  },
+  "newDependencyMentions": {
+    "@dagrejs/dagre": [],
+    "@panzoom/panzoom": []
+  },
+  "rules": {
+    "mathRandomInCore": [
+      "src/core/emergence/worldLaws.ts:3:// using isolated seeded streams. No Math.random.",
+      "src/core/seed/hash.ts:2:// No Math.random() anywhere in this module. All functions are pure."
+    ],
+    "presentationImportsInCore": [
+      "src/core/combat/bossEncounter.ts:14:  // stationary recovery. Crossing half HP must not steal the punish window.",
+      "src/core/combat/enemyEvolution.ts:16:/** No RNG, no density changes. Fixed target commitment creates a real dodge window. */",
+      "src/core/save/save.ts:1:// localStorage persistence with schema versioning + runtime validation.",
+      "src/core/world/raidReadiness.ts:1:/** Gate-aware acceleration keeps the normal interval and full warning window. */"
+    ],
+    "mathRandomInContent": []
+  },
+  "addedSecretsLike": [],
+  "addedPersonalPaths": [
+    "+   - `scripts/qa-report.mjs`: Added `sanitizePrivacy` redacting local filesystem paths (`C:\\Users\\...`, `/home/...`, `file:///...`), emails, and non-loopback IPs from committable reports.",
+    "+// 6. Check document portability (zero local workstation file:/// links in markdown)",
+    "+console.log('✓ Document portability verified (zero personal file:/// links in committed docs)');",
+    "+  it(\"verifies no personal workstation file:/// URLs exist in repository markdown\", { timeout: 30000 }, () => {",
+    "+    const winPath = \"Error at C:\\\\Users\\\\Tester\\\\secret\\\\file.ts:12\";",
+    "+    const fileUrl = \"Loaded file:///C:/Users/Admin/Desktop/app.html\";",
+    "+      consoleEntries: [{ level: \"error\", message: \"Failed at C:\\\\Users\\\\SecretUser\\\\test.js\" }],"
+  ],
+  "addedDebugOnlyMarkers": 75
+}

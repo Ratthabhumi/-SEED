@@ -1,0 +1,238 @@
+{
+  "classification": "PHYSICAL_SAME_BUILD_PAUSED_500_800_A_UNCULLED_B_CULLED_NOT_HUMAN_PLAY",
+  "source": "d5de0238e4936730360a5d0adf778c3e105ce623",
+  "device": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+  "browser": "153.0.8010.12",
+  "rawSha256": "ea229c327451c356f87c1cb230accdbd827621df7bd951428c05e0ae9fcda3c5",
+  "rows": [
+    {
+      "width": 1280,
+      "mode": "normal",
+      "cache": "cold",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 2.3999999999068677,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 175,
+        "maxUploadLifetimeMs": 18.5
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 2.2999999998137355,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 174,
+        "maxUploadLifetimeMs": 20.399999999441206
+      }
+    },
+    {
+      "width": 1280,
+      "mode": "normal",
+      "cache": "warm",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 1.6000000000931323,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 18.5
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 1.7000000001862645,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 20.399999999441206
+      }
+    },
+    {
+      "width": 1280,
+      "mode": "reduced",
+      "cache": "cold",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 2.6000000005587935,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 25.600000000093132
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 2.300000000046566,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 24.700000000186265
+      }
+    },
+    {
+      "width": 1280,
+      "mode": "reduced",
+      "cache": "warm",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 1.9499999999534339,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 25.600000000093132
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 1.6500000001396984,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 24.700000000186265
+      }
+    },
+    {
+      "width": 1280,
+      "mode": "contrast",
+      "cache": "cold",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 5.799999999580905,
+        "failedStrict8ms": 1,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 0
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 3.8499999998603016,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 179,
+        "maxUploadLifetimeMs": 0
+      }
+    },
+    {
+      "width": 1280,
+      "mode": "contrast",
+      "cache": "warm",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 5.0,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 0
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 3.149999999674037,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 0
+      }
+    },
+    {
+      "width": 1920,
+      "mode": "normal",
+      "cache": "cold",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 5.800000000046566,
+        "failedStrict8ms": 3,
+        "minUniqueSamples": 177,
+        "maxUploadLifetimeMs": 33.299999999813735
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 5.349999999860302,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 178,
+        "maxUploadLifetimeMs": 42.90000000037253
+      }
+    },
+    {
+      "width": 1920,
+      "mode": "normal",
+      "cache": "warm",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 4.150000000139698,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 179,
+        "maxUploadLifetimeMs": 33.299999999813735
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 3.949999999953434,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 42.90000000037253
+      }
+    },
+    {
+      "width": 1920,
+      "mode": "reduced",
+      "cache": "cold",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 5.399999999906868,
+        "failedStrict8ms": 1,
+        "minUniqueSamples": 179,
+        "maxUploadLifetimeMs": 27.59999999962747
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 5.500000000232831,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 177,
+        "maxUploadLifetimeMs": 31.200000000186265
+      }
+    },
+    {
+      "width": 1920,
+      "mode": "reduced",
+      "cache": "warm",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 4.100000000325963,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 27.59999999962747
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 3.6499999999068677,
+        "failedStrict8ms": 0,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 31.200000000186265
+      }
+    },
+    {
+      "width": 1920,
+      "mode": "contrast",
+      "cache": "cold",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 9.950000000186265,
+        "failedStrict8ms": 8,
+        "minUniqueSamples": 177,
+        "maxUploadLifetimeMs": 0
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 7.800000000279397,
+        "failedStrict8ms": 5,
+        "minUniqueSamples": 178,
+        "maxUploadLifetimeMs": 0
+      }
+    },
+    {
+      "width": 1920,
+      "mode": "contrast",
+      "cache": "warm",
+      "A": {
+        "runs": 10,
+        "medianPerRunP95": 10.049999999813735,
+        "failedStrict8ms": 8,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 0
+      },
+      "B": {
+        "runs": 10,
+        "medianPerRunP95": 6.699999999953434,
+        "failedStrict8ms": 3,
+        "minUniqueSamples": 180,
+        "maxUploadLifetimeMs": 0
+      }
+    }
+  ],
+  "limitations": "Five blocks alternating ABBA/BAAB; fresh browser process per letter, fresh context per condition. Cold is the initial3s. Warm waits for active terrain work to drain, then1500ms, then a new3s sample. High Contrast does not consume painted terrain, so its paused unused queue is excluded from the drain requirement. Wait duration/pending counts retained; no GPU-readiness or OS-cache eviction claim. Uninstrumented product render boundary; unique retained frames. No exclusive-host/power/thermal or GPU-only claim; complete Windows check and focused browser tests finished before measurement. Full older local E2E interrupted after build identity changed, not counted as a pass. Final full E2E is independently verified on exact-head Push/PR CI."
+}

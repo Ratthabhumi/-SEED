@@ -69,4 +69,9 @@ export class Xoshiro128StarStar {
   snapshot(): [number, number, number, number] {
     return [this.s[0], this.s[1], this.s[2], this.s[3]];
   }
+
+  /** Restore a snapshot (canonical-hash coverage + tests). */
+  restore(snap: readonly [number, number, number, number]): void {
+    this.s = [snap[0], snap[1], snap[2], snap[3]];
+  }
 }

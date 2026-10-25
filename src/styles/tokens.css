@@ -1,0 +1,42 @@
+/* Generated from src/theme/tokens.ts. Run node scripts/theme-css.mjs. */
+:root {
+  --color-canvas: #0B1218;
+  --color-surface: #17242C;
+  --color-raised: #22333E;
+  --color-border: #637C89;
+  --color-text: #F1F5F2;
+  --color-secondary: #BCCCD4;
+  --color-disabled: #9AACB6;
+  --color-action: #FFD166;
+  --color-secondaryAction: #87B9FF;
+  --color-friendly: #53E0C8;
+  --color-hostile: #FF6B6B;
+  --color-warning: #FFD166;
+  --color-success: #53E0C8;
+  --color-research: #87B9FF;
+  --color-pin: #FFD166;
+  --color-legacy: #B6A1FF;
+  --color-damaged: #FF6B6B;
+  --color-repairing: #FFD166;
+  --color-restored: #53E0C8;
+  --color-focus: #FFD166;
+  --color-selection: #53E0C8;
+  --color-backdrop: #0B1218;
+  --type-micro: 14px;
+  --type-caption: 16px;
+  --type-body: 18px;
+  --type-body-strong: 19px;
+  --type-heading: 22px;
+  --type-title: 26px;
+  --type-huge: 34px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --control-target: 44px;
+  --panel-radius: 12px;
+  --safe-margin: 16px;
+  --overlay-layer: 50;
+}

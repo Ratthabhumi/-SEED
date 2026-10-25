@@ -7,12 +7,14 @@ export interface TechEffect {
   kind:
     | "damageMul" | "maxHpAdd" | "moveMul" | "pickupMul" | "cooldownMul"
     | "projectileAdd" | "auraAdd" | "orbitAdd" | "summonAdd" | "mineAdd"
-    | "beamAdd" | "regenAdd" | "dashCdMul" | "knowledgeMul" | "weaponEvolve";
+    | "chainAdd" | "relayAdd" | "relayChain" | "beamAdd" | "regenAdd" | "dashCdMul" | "knowledgeMul" | "weaponEvolve";
   value: number;
   family?: "kinetic" | "energy" | "defense" | "field";
 }
 
 export interface TechNode {
+  /** Semantic depth/branch slot, not renderer coordinates. Stable when expanded. */
+  web?: { depth: number; slot: number; kind: "root" | "foundation" | "milestone" | "authored" | "weave" | "frontier" };
   id: string;
   titleKey: string;
   descriptionKey: string;

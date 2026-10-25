@@ -1,0 +1,2290 @@
+// Framework-independent run simulation (ADR 0003).
+//
+// One RunSimulation instance == one run attempt. Restarting a seed means
+// constructing a NEW instance, so Phaser Scene reuse can never leak state.
+// No Phaser / DOM / storage / audio imports — events go out via SimEvent[].
+//
+// Phase order per step (documented, tested at cell boundaries):
+//   input → player movement → age/mission → director/spawn + raids → enemy
+//   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
+//   collisions → mines → pickups/economy → territory upkeep → chunks/POI
+import type {ClaimStatus} from "../world/claimStatus";
+import {createWeaponRig,primaryTier,weaponTransform,aimFromPivot,advanceWeaponRig,angleDelta,sweptHit,type WeaponMount,type WeaponTransform} from '../combat/weaponGeometry';
+import {HAZARD_GEOMETRY} from "../combat/hazardGeometry";
+import {adaptationFor,createEvolution,stepEvolution} from "../combat/enemyEvolution";
+import { childKnowledgeFactor, childRaidInterval, childResearchBonusScale } from "../progression/childWorld";
+import { pathGuidance } from "../tech/pathGuidance";
+import { fnv1a32 } from "../seed/hash";
+import { initRunRng, type RunRngStreams } from "../seed/runRng";
+import { deriveAscensionSeed } from "../seed/streams";
+import { WORLDGEN_VERSION } from "../seed/versions";
+import { xpForLevel } from "./fixedStep";
+import { applyTechEffect, defaultEffectTarget, scaleKnowledge } from "./progression";
+import { worldToChunk } from "../world/chunks";
+import { biomeSpecializationMultiplier } from "../world/biomeRules";
+import { ChunkCache } from "./chunkCache";
+import { nearestEnemySpatial, cellKey } from "./spatial";
+import { canonicalSnapshot, snapshotStreams, stateHash, type RngSnapshots } from "./stateHash";
+import { AGES, CRITICAL_SPINE, type AgeId, type TechNode } from "../tech/graph";
+import { generateTechGraph } from "../tech/generator";
+import { eligibleTech, expandTechWeb } from "../tech/web";
+import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
+import { combinationRoute } from "../tech/combinationRoute";
+import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "../combat/bossEncounter";
+import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
+import { CHILD_LAWS_CONTENT_VERSION } from "../seed/versions";
+import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
+import { calculateMaxLogistics, calculateLogisticsCost } from "../emergence/outpostLogistics";
+import { canAdvanceAge, AGE_DEFS, type DominionState } from "../progression/ages";
+import { committedLogistics, logisticsLedger } from "../emergence/outpostLogistics";
+import { raidDelay, RAID_RETRY_SECONDS, RAID_MAX_UNITS } from "../world/raidReadiness";
+import { missionDone, type MissionState } from "../progression/missions";
+import {
+  CLAIM_CLEAR_RADIUS, CLAIM_REACH_RADIUS, OUTPOST_MAXHP, RAID_INTERVAL, RAID_WARN_SEC,
+  RAID_SIZE_BASE, TIER2_HOLD_SEC, REPAIR_NEED, activeTerritories,
+  territoryKnowledgeBonus, militaryBonusSlots, economyRegenAt,
+  territoryById, outpostUpgradeCost, type OutpostSpec,
+} from "../world/territory";
+import {
+  SQUAD_BASE_CAP, SQUAD_MAX, SQUAD_HP, SQUAD_DMG, SQUAD_SPEED, SQUAD_RANGE, SQUAD_CD,
+  ORIGIN_ABILITY, OVERDRIVE_DURATION, NOVA_RADIUS, NOVA_DMG,
+  VOLLEY_COUNT, VOLLEY_DMG, BULWARK_REPAIR, BULWARK_IFRAME, squadCap, type SquadMode,
+} from "../combat/squad";
+import { activeFamilies, lockedFamilies, originById, ORIGINS } from "../progression/origins";
+import { legacyCandidates, legacyDefById, MAX_LEGACIES, type LegacyDef } from "../progression/legacies";
+import {
+  threatBudget, composeFromBudget, pickFamily, eligibleFamilies,
+  ELITE_AFFIXES, ELITE_AFFIX_DEFS, type EnemyFamily, type EliteAffix,
+} from "../director/director";
+import { getWeaponStage, type WeaponFamily } from "../combat/weapons";
+import { poiTypeFor, POI_DRAFT_FILTERS, type POIType } from "../world/poi";
+import type { RunConfig } from "./RunConfig";
+import type { InputFrame } from "./InputFrame";
+import type { SimEvent } from "./SimEvent";
+import {
+  MAX_ENEMIES, MAX_PROJ, MAX_PICKUP, MAX_MINES, SPATIAL_CELL,
+  type RunState, type SimEnemy,
+  type DraftOffer,
+  type TechModifierId,
+  type TechQuality,
+} from "./RunState";
+
+const OBJECTIVE_KILLS = [0, 25, 60, 120, 200, 0];
+
+/** Kills required within each age to satisfy its objective (index = next age). */
+export const AGE_OBJECTIVE_KILLS: readonly number[] = OBJECTIVE_KILLS;
+
+export function worldNonceFor(masterSeed: string, ascension: number): string {
+  return fnv1a32(`${masterSeed}::w${WORLDGEN_VERSION}::asc${ascension}`).toString(16).padStart(8, "0");
+}
+
+const ENEMY_BASE: Record<EnemyFamily, { hp: number; speed: number; dmg: number; radius: number; xp: number }> = {
+  chaser: { hp: 22, speed: 120, dmg: 8, radius: 14, xp: 1 },
+  ranged: { hp: 16, speed: 95, dmg: 7, radius: 12, xp: 2 },
+  tank: { hp: 70, speed: 62, dmg: 14, radius: 20, xp: 4 },
+  swarm: { hp: 8, speed: 150, dmg: 5, radius: 9, xp: 1 },
+};
+// Broad-phase padding must cover a collider whose center is in a neighbor cell.
+// Bosses are the largest supported multiplier (3); calculate once, not per shot.
+const MAX_PRIMARY_COLLIDER=Math.max(...Object.values(ENEMY_BASE).map(e=>e.radius))*3;
+
+export class RunSimulation {
+  readonly state: RunState;
+  readonly chunks = new ChunkCache();
+  /** Gameplay RNG streams. Public-readonly so tests can prove isolation. */
+  readonly streams: RunRngStreams;
+  private get graph(): TechNode[] { return this.state.techNodes; }
+  private set graph(nodes: TechNode[]) { this.state.techNodes = nodes; }
+  private masterSeed: string;
+  private difficultyMul: number;
+  // Derived-query structures (never hashed, never canonical).
+  private buckets = new Map<number, number[]>();
+  private bucketPool: number[][] = [];
+  private scratch: SimEnemy[] = [];
+  /** Collision/query count for the CURRENT step (F3 diagnostics). */
+  queryCount = 0;
+
+  constructor(config: RunConfig) {
+    this.masterSeed = config.masterSeed;
+    this.difficultyMul = config.difficultyMul ?? 1;
+    this.state = this.freshWorldState(config.masterSeed, 0, originById(config.originId ?? "").id);
+    this.state.weaponRig=createWeaponRig(config.weaponMount??'float');
+    // Root-attempt archive benefits, separate from child-world inheritance.
+    if (config.archivePerks?.includes("survival-kit")) { this.state.build.maxHp += 15; this.state.build.hp += 15; }
+    if (config.archivePerks?.includes("choice-kit")) this.state.rerolls = 2;
+    if (config.archivePerks?.includes("energy-kit") && config.archiveEnergyStart && !activeFamilies(this.state.originId, "").includes("energy")) this.state.expansionFamily = "energy";
+    this.streams = initRunRng(this.state.worldSeed);
+    this.graph = generateTechGraph(this.state.worldSeed, 0).nodes;
+    this.grantNode("spine-tools");
+    for (const n of this.graph) if (n.id.startsWith("foundation-")) this.grantNode(n.id);
+  }
+
+  // ------------------------------------------------------------ construction
+  private freshWorldState(masterSeed: string, ascension: number, originId: string): RunState {
+    const worldSeed = ascension === 0 ? masterSeed : deriveAscensionSeed(masterSeed, ascension);
+    const worldLaws = generateWorldLaws(ascension === 0 ? masterSeed : worldSeed, WORLDGEN_VERSION, ascension === 0 ? 9 : CHILD_LAWS_CONTENT_VERSION);
+    const maxLogistics = calculateMaxLogistics(0);
+    return {
+      masterSeed, worldSeed,
+      worldNonce: worldNonceFor(masterSeed, ascension),
+      ascension, difficultyMul: this.difficultyMul,
+      ageIndex: 0, elapsed: 0, ageElapsed: 0, ageKills: 0,
+      runElapsed: 0, runHighestAge: "stone", runKills: 0,
+      px: 0, py: 0, vx: 0, vy: 0, dashT: 0, dashCd: 0, iframe: 0,
+      build: defaultEffectTarget(),
+      level: 1, xp: 0, xpNext: xpForLevel(1), knowledgeTotal: 0,
+      pendingLevels: 0, draftOpen: false, draftOffers: [],
+      owned: [], ownedTags: [], breakthroughs: [],
+      weaponStage: { kinetic: 0, energy: 0, defense: 0, field: 0 },
+      reservedTech: "", rerolls: 1, pinnedTarget: "",
+      originId, expansionFamily: "",
+      originMechanic: {
+        hunterMarks: [], hunterTrophies: [],
+        fabricationModules: [], fabricationCharges: 0,
+        harmonicCharge: 0, lastResonanceFamily: "",
+        bastionLinks: [],
+      },
+      legacies: [],
+      poiFamiliesClaimed: [],
+      draftContext: "level",
+      elitesAge: 0, raidsSurvived: 0, signalSecured: false,
+      missionDoneCache: false,
+      territories: [], raid: null, lastRaidAt: 0, raidReadySince: null,
+      logistics: 0,
+      maxLogistics,
+      squad: Array.from({ length: SQUAD_MAX }, (_, i) => ({
+        active: i < SQUAD_BASE_CAP, x: (i === 0 ? -30 : 30), y: 0,
+        hp: SQUAD_HP, maxHp: SQUAD_HP, dmg: SQUAD_DMG, cd: 0, inv: 0,
+      })),
+      squadMode: "follow" as SquadMode, focusX: 0, focusY: 0,
+      abilityCd: 0, overdriveT: 0,
+      history: [],
+      recentDraftOffers: [],
+      relayCd: 0, spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
+      weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
+      weaponRig: createWeaponRig(),
+      guardianAng: 0, orbitAng: 0, beamFlash: null,
+      enemies: Array.from({ length: MAX_ENEMIES }, () => ({
+        active: false, x: 0, y: 0, hp: 1, maxHp: 1, shield: 0,
+        family: "chaser" as EnemyFamily, speed: 100, dmg: 5, radius: 12, xp: 1,
+        elite: false, affix: "" as EliteAffix | "", flash: 0, shootT: 0, boss: false, hitCd: 0,
+        siege: false,
+      })),
+      projs: Array.from({ length: MAX_PROJ }, () => ({
+        active: false, x: 0, y: 0, vx: 0, vy: 0, dmg: 1, radius: 5,
+        life: 0, friendly: true, color: 0xffffff, src: "",
+      })),
+      pickups: Array.from({ length: MAX_PICKUP }, () => ({ active: false, x: 0, y: 0, value: 1 })),
+      mines: Array.from({ length: MAX_MINES }, () => ({ active: false, x: 0, y: 0, dmg: 10, radius: 60, life: 0 })),
+      techNodes: [], chunksWorld: [], poisWorld: [],
+      bossSpawned: false, ascendReady: false, bossIndex: -1, stronghold: null, over: false,
+      stats: {
+        kills: 0, elites: 0, bosses: 0, techsTaken: 0, chunksTotal: 0, poisTotal: 0, knowledgeEarned: 0,
+        abilityUses: 0,
+        draftPicksByDomain: {},
+        draftPicksByFamily: {},
+        outpostsClaimed: 0,
+        rerollsUsed: 0,
+        reservesUsed: 0,
+        skipsUsed: 0,
+      },
+      damageBySource: {}, topDamageSource: "", highestAge: "stone",
+      worldDamageBySource: {}, worldTopDamageSource: "", worldBreakthroughsEarned: [],
+      worldLaws,
+    };
+  }
+
+  /** Ascend to a child world as legacy prestige (ADR-0006 Decision 5).
+   *  World-build progression resets (level 1, fresh tech/weapons/origin);
+   *  run totals + bounded legacies persist. Requires a valid legacy + origin. */
+  ascend(legacyId: string, originId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.ascendReady || s.over) return ev;
+    const offers = this.legacyOffers();
+    const legacy = offers.find((d) => d.id === legacyId);
+    const origin = ORIGINS.find((o) => o.id === originId);
+    if (!legacy || !origin) return ev;
+    // P1-05: a pure affinity Legacy must function in the chosen Origin —
+    // the new World's origin pair (expansion comes later) must include it.
+    if (legacy.requiredFamily && !(origin.families as readonly string[]).includes(legacy.requiredFamily)) {
+      return ev;
+    }
+    const keep = {
+      stats: { ...s.stats, chunksTotal: s.stats.chunksTotal, poisTotal: s.stats.poisTotal },
+      dmg: { ...s.damageBySource }, top: s.topDamageSource, high: s.highestAge,
+      // RUN-level chronicle data — a new world resets WORLD state, never these.
+      runElapsed: s.runElapsed, runHighestAge: s.runHighestAge, runKills: s.runKills,
+    };
+    const asc = s.ascension + 1;
+    const fresh = this.freshWorldState(this.masterSeed, asc, origin.id);
+    fresh.weaponRig=createWeaponRig(s.weaponRig.mode);
+    // Restore run-persistent data.
+    fresh.stats = keep.stats;
+    fresh.damageBySource = keep.dmg; fresh.topDamageSource = keep.top;
+    fresh.highestAge = keep.high;
+    fresh.runElapsed = keep.runElapsed;
+    fresh.runHighestAge = keep.runHighestAge;
+    fresh.runKills = keep.runKills;
+    // Build history is run evidence — a new world extends it, never wipes it.
+    fresh.history = s.history;
+    // Bounded legacy inheritance (FIFO cap), effects applied to the fresh build.
+    fresh.legacies = [...s.legacies, legacy.id].slice(-MAX_LEGACIES);
+    for (const lid of fresh.legacies) {
+      const def = legacyDefById(lid);
+      if (!def) continue;
+      for (const e of def.effects) applyTechEffect(fresh.build, e);
+      if (def.breakthroughId && !fresh.breakthroughs.includes(def.breakthroughId)) {
+        fresh.breakthroughs.push(def.breakthroughId);
+      }
+    }
+    fresh.build.hp = fresh.build.maxHp; // full repair on arrival
+    Object.assign(s, fresh);
+    // COMPLETELY fresh child-world streams (restored in place — the reference
+    // never changes, so no old RNG object can leak into the new world).
+    const child = initRunRng(s.worldSeed);
+    (Object.keys(child) as (keyof RunRngStreams)[]).forEach((k) => {
+      this.streams[k].restore(child[k].snapshot());
+    });
+    this.graph = generateTechGraph(s.worldSeed, asc).nodes;
+    this.grantNode("spine-tools");
+    for (const n of this.graph) if (n.id.startsWith("foundation-")) this.grantNode(n.id);
+    this.logHistory("ascension", `world-${asc}`);
+    ev.push({ type: "legacy_granted", id: legacy.id });
+    ev.push({ type: "ascended", worldSeed: s.worldSeed, ascension: asc });
+    return ev;
+  }
+
+  /** Deterministic Legacy candidates from CURRENT-WORLD achievements (no RNG). */
+  legacyOffers(): LegacyDef[] {
+    const s = this.state;
+    return legacyCandidates({ breakthroughs: s.worldBreakthroughsEarned, topDamageSource: s.worldTopDamageSource, ascension: s.ascension });
+  }
+
+  hash(): string {
+    return stateHash(this.state, this.streamSnapshots());
+  }
+
+  /** RNG snapshots for the canonical contract (non-consuming). */
+  streamSnapshots(): RngSnapshots {
+    return snapshotStreams(this.streams);
+  }
+
+  /** Full canonical snapshot string — tests compare these directly. */
+  snapshot(): string {
+    return canonicalSnapshot(this.state, this.streamSnapshots());
+  }
+
+  /**
+   * E2E/dev hook — instantly kills the player (death-flow testing).
+   * Never called by gameplay UI or any production path.
+   */
+  e2eKillPlayer(): SimEvent[] {
+    const ev: SimEvent[] = [];
+    this.state.build.hp = 1;
+    this.state.iframe = 0;
+    this.hurtPlayer(99999, ev);
+    return ev;
+  }
+
+  /**
+   * Test/dev hook — damages a pooled enemy directly (affix/reward testing).
+   * Never called by gameplay UI or any production path.
+   */
+  debugDamageEnemy(index: number, dmg: number): SimEvent[] {
+    const ev: SimEvent[] = [];
+    const e = this.state.enemies[index];
+    if (e) this.hurtEnemy(e, dmg, "debug", ev);
+    return ev;
+  }
+
+  /** Current spatial bucket count (F3 diagnostics, non-canonical). */
+  get spatialBucketCount(): number {
+    return this.buckets.size;
+  }
+
+  // ------------------------------------------------------------------- draft
+  private availableNodes(): TechNode[] {
+    const s = this.state;
+    const owned = new Set(s.owned);
+    const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+    return this.graph.filter((n) => eligibleTech(n, owned, s.ageIndex, active));
+  }
+
+  /** Read-only tech graph for the Tech Map UI (same nodes the sim drafts). */
+  techGraph(): readonly TechNode[] {
+    return this.graph;
+  }
+
+  /**
+   * Owned/available state per node, computed by the SIMULATION (the Tech Map
+   * renders this verbatim, so UI display and draft gating match by construction).
+   */
+  nodeStates(): Array<{ id: string; owned: boolean; available: boolean }> {
+    const avail = new Set(this.availableNodes().map((n) => n.id));
+    const owned = new Set(this.state.owned);
+    return this.graph.map((n) => ({ id: n.id, owned: owned.has(n.id), available: avail.has(n.id) }));
+  }
+
+  /**
+   * Node ids on the pinned build path: the target plus its transitive unowned
+   * prerequisites (tech target), or unowned nodes carrying tags a pinned
+   * breakthrough still needs. Bounded draft weighting only — never a guarantee.
+   */
+  pathGuidance(target = this.state.pinnedTarget) {
+    const s = this.state;
+    return pathGuidance(this.graph, { target, owned: s.owned, tags: s.ownedTags, unlocked: s.breakthroughs, ageIndex: s.ageIndex, families: new Set(activeFamilies(s.originId, s.expansionFamily)) });
+  }
+
+  combinationRoute() {
+    const s = this.state;
+    return combinationRoute(this.graph, s.owned, s.ownedTags, s.breakthroughs, s.ageIndex,
+      new Set(activeFamilies(s.originId, s.expansionFamily)));
+  }
+
+  pinnedPathIds(): Set<string> {
+    const s = this.state;
+    const out = new Set<string>();
+    const t = s.pinnedTarget;
+    if (t === "") return out;
+    const byId = new Map(this.graph.map((n) => [n.id, n]));
+    const node = byId.get(t);
+    if (node) {
+      const stack: TechNode[] = [node];
+      while (stack.length > 0) {
+        const n = stack.pop() as TechNode;
+        if (out.has(n.id) || s.owned.includes(n.id)) continue;
+        out.add(n.id);
+        for (const p of n.prerequisites) {
+          const pn = byId.get(p);
+          if (pn) stack.push(pn);
+        }
+      }
+      return out;
+    }
+    const b = BREAKTHROUGHS.find((x) => x.id === t);
+    if (!b) return out;
+    const ownedTags = new Set(s.ownedTags);
+    const missing = b.requires.filter((tag) => !ownedTags.has(tag));
+    for (const n of this.graph) {
+      if (s.owned.includes(n.id)) continue;
+      if (n.tags.some((tag) => missing.includes(tag)) || n.synergyTags.some((tag) => missing.includes(tag))) {
+        out.add(n.id);
+      }
+    }
+    return out;
+  }
+
+  /** Bounded history log for the Chronicle build-history view (FIFO cap). */
+  private logHistory(kind: string, label: string): void {
+    const s = this.state;
+    s.history.push({ t: Math.round(s.elapsed * 10) / 10, kind, label });
+    while (s.history.length > 64) s.history.shift();
+  }
+
+  /** Count of generated (non-fallback) options currently available — frontier test hook. */
+  generatedOptionsCount(): number {
+    return this.availableNodes().length;
+  }
+
+  private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
+    const s = this.state;
+    const result = generateOffers({
+      sim: {
+        owned: s.owned,
+        ownedTags: s.ownedTags,
+        breakthroughs: s.breakthroughs,
+        ageIndex: s.ageIndex,
+        age: AGES[s.ageIndex],
+        originId: s.originId,
+        expansionFamily: s.expansionFamily,
+        pinnedTarget: s.pinnedTarget,
+        pinnedPathIds: this.pinnedPathIds(),
+        draftChoices: s.draftOffers.map(o => o.nodeId),
+        reservedTech: s.reservedTech,
+        history: s.history,
+        techGraph: () => this.graph,
+      },
+      laws: s.worldLaws,
+      activeFamilies: new Set(activeFamilies(s.originId, s.expansionFamily)),
+      recentOffers: s.recentDraftOffers,
+      recentPicks: s.history.filter(h => h.kind === "tech").map(h => h.label),
+      rng: this.streams.draft,
+    }, undefined, 3, filter);
+    
+    // Convert OfferCandidate to DraftOffer with quality/modifiers applied
+    let offers = result.map((c) => this.convertToDraftOffer(c.node, c.quality, c.score));
+    
+    // Reserved card reappears in the next compatible draft (replaces the
+    // weakest pick; never a 4th card, never a fallback slot steal).
+    if (s.reservedTech !== "" && !offers.some((o) => o.nodeId === s.reservedTech)) {
+      const pool = this.availableNodes();
+      const poolIds = new Set(pool.map((n) => n.id));
+      if (poolIds.has(s.reservedTech)) {
+        const node = pool.find((n) => n.id === s.reservedTech);
+        if (node && offers.length > 0) {
+          // Create DraftOffer for reserved tech with default quality
+          offers[offers.length - 1] = this.convertToDraftOffer(node, "COMMON", 0);
+        }
+      }
+    }
+    
+    // One guaranteed, voluntary recipe component in every pre-Industrial level
+    // draft until any combination is earned. Reserve retains another slot.
+    // POI-domain filters and reroll semantics remain intact; no RNG draws added.
+    if (context === "level" && s.ageIndex <= 2 && s.breakthroughs.length === 0) {
+      const next = this.combinationRoute().next;
+      if (next && !offers.some(o => o.nodeId === next.id)) {
+        let slot=offers.length-1;
+        while(slot>=0 && offers[slot].nodeId===s.reservedTech)slot--;
+        if (slot >= 0) offers[slot] = this.convertToDraftOffer(next, "COMMON", 0);
+        else offers.push(this.convertToDraftOffer(next, "COMMON", 0));
+      }
+    }
+
+    // Emergency fallback only (should be rare with the wide-frontier graph).
+    const fb = fallbackCards(s.level);
+    while (offers.length < 3) {
+      const fbNode = fb[offers.length] as TechNode;
+      offers.push(this.convertToDraftOffer(fbNode, "COMMON", 0));
+    }
+    
+    s.draftOffers = offers;
+    s.recentDraftOffers.push(offers.map(o => o.nodeId));
+    while (s.recentDraftOffers.length > 5) s.recentDraftOffers.shift();
+    s.draftOpen = true;
+    s.draftContext = context;
+  }
+
+  /**
+   * Convert a TechNode + quality + score into a canonical DraftOffer.
+   * Quality and modifiers affect the effective effects presented to the player.
+   */
+  private convertToDraftOffer(
+    node: TechNode,
+    quality: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC",
+    score: number
+  ): DraftOffer {
+    const qualityMods: Record<string, number> = {
+      COMMON: 1.0,
+      UNCOMMON: 1.25,
+      RARE: 1.5,
+      MYTHIC: 2.0,
+    };
+    
+    // No modifier label is generated until its gameplay rule is implemented.
+    const modifierIds: TechModifierId[] = [];
+
+    // Apply quality multiplier to effect values
+    const mult = qualityMods[quality];
+    const effectiveEffects = node.effects.map((e) => ({
+      ...e,
+      value: ["chainAdd","relayAdd","relayChain"].includes(e.kind) ? e.value : typeof e.value === "number" ? e.value * mult : e.value,
+    }));
+    
+    // Score breakdown for telemetry/debug
+    const scoreBreakdown = {
+      base: Math.log(Math.max(1, node.weight)),
+      origin: 0,
+      synergy: 0,
+      worldLaw: 0,
+      novelty: 0,
+      penalty: 0,
+      qualityMult: mult,
+    };
+    
+    return {
+      nodeId: node.id,
+      quality,
+      modifierIds,
+      effectiveEffects,
+      scoreBreakdown,
+    };
+  }
+
+  /**
+   * Filtered draft opener shared by POI discovery (ADR-0006 Decision 3).
+   * No modal stacking (caller checks draftOpen).
+   */
+  private openFilteredDraft(filter: (n: TechNode) => boolean, ev: SimEvent[]): void {
+    const s = this.state;
+    s.pendingLevels++;
+    this.buildDraft("poi", filter);
+    ev.push({ type: "draft_opened", context: "poi" });
+  }
+
+  /**
+   * Resolve a TechNode by ID from either the main graph or fallback cards.
+   * Fallback nodes are not in the graph but are valid TechNodes with proper effects.
+   */
+  private resolveTechNode(nodeId: string): TechNode | undefined {
+    // First check the main tech graph
+    const graphNode = this.graph.find((n) => n.id === nodeId);
+    if (graphNode) return graphNode;
+    
+    // Check fallback cards (level-based, but we can infer from nodeId pattern)
+    // Fallback IDs are like "fb-dmg-1", "fb-hp-2", etc.
+    const fbMatch = nodeId.match(/^fb-(dmg|hp|spd)-(\d+)$/);
+    if (fbMatch) {
+      const level = parseInt(fbMatch[2], 10);
+      const fbCards = fallbackCards(level);
+      return fbCards.find((f) => f.id === nodeId);
+    }
+    
+    return undefined;
+  }
+
+  /** Apply a draft pick. Returns events (tech_selected, breakthrough*, maybe draft_opened). */
+  chooseDraft(i: number): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over) {
+      return ev;
+    }
+    const offer = s.draftOffers[i];
+    if (!offer) {
+      return ev;
+    }
+    const node = this.resolveTechNode(offer.nodeId);
+    if (!node || (!node.id.startsWith("fb-") && !eligibleTech(node, new Set(s.owned), s.ageIndex, new Set(activeFamilies(s.originId, s.expansionFamily))))) return ev;
+    s.draftOpen = false;
+    s.draftOffers = [];
+    s.draftContext = "level";
+    
+    // Resolve the TechNode (handles both graph nodes and fallback nodes)
+    
+    // Bookkeeping: owned, tags, synergyTags, weaponEvolve (same as grantNode but without base effects)
+    const first = !s.owned.includes(node.id);
+    if (first) {
+      s.owned.push(node.id);
+      this.logHistory("tech", node.id);
+    }
+    for (const tg of node.tags) if (!s.ownedTags.includes(tg)) s.ownedTags.push(tg);
+    for (const st of node.synergyTags) if (!s.ownedTags.includes(st)) s.ownedTags.push(st);
+    if (first) this.graph.push(...expandTechWeb(this.graph, node, s.worldSeed, {
+      originId: s.originId, ownedTags: s.ownedTags, owned: s.owned, ageIndex: s.ageIndex, laws: s.worldLaws,
+    }));
+    for (const e of node.effects) {
+      if (e.kind === "weaponEvolve") {
+        const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+        for (const fam of (Object.keys(s.weaponStage) as WeaponFamily[])) {
+          if (active.has(fam)) s.weaponStage[fam] = 5;
+        }
+      }
+    }
+    
+    if (s.reservedTech === node.id) s.reservedTech = "";
+    s.stats.techsTaken++;
+    if (node.domain) {
+      s.stats.draftPicksByDomain[node.domain] = (s.stats.draftPicksByDomain[node.domain] || 0) + 1;
+    }
+    for (const eff of node.effects) {
+      if (eff.family) {
+        s.stats.draftPicksByFamily[eff.family] = (s.stats.draftPicksByFamily[eff.family] || 0) + 1;
+      }
+    }
+    ev.push({ 
+      type: "tech_selected", 
+      techId: node.id,
+      quality: offer.quality,
+      modifierIds: offer.modifierIds,
+      effectiveEffects: offer.effectiveEffects.map(effect=>({...effect})),
+    });
+    
+    // Apply effective effects (with quality/modifiers already applied) EXACTLY ONCE
+    for (const e of offer.effectiveEffects) applyTechEffect(s.build, e);
+    
+    const ownedTags = new Set(s.ownedTags);
+    const unlocked = new Set(s.breakthroughs);
+    for (const b of checkBreakthroughs(ownedTags, unlocked)) {
+      s.breakthroughs.push(b.id);
+      if (!s.worldBreakthroughsEarned.includes(b.id)) s.worldBreakthroughsEarned.push(b.id);
+      for (const e of b.effects) applyTechEffect(s.build, e);
+      this.logHistory("breakthrough", b.id);
+      ev.push({ type: "breakthrough", id: b.id });
+    }
+    s.pendingLevels--;
+    if (s.pendingLevels > 0 && !s.over) {
+      this.buildDraft("level");
+      ev.push({ type: "draft_opened", context: "level" });
+    }
+    return ev;
+  }
+
+  /**
+   * RESERVE one unselected card for the next compatible draft (one slot).
+   * Fallback emergency cards cannot be reserved. Direct UI call (paused).
+   */
+  reserveCard(i: number): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over) return ev;
+    const offer = s.draftOffers[i];
+    if (!offer || offer.nodeId.startsWith("fb-")) return ev;
+    s.reservedTech = offer.nodeId;
+    s.stats.reservesUsed = (s.stats.reservesUsed || 0) + 1;
+    ev.push({ type: "draft_reserved", techId: offer.nodeId });
+    return ev;
+  }
+
+  /**
+   * REROLL the open draft (bounded: 1 per age, reset on age advance).
+   * Deterministic meaningful-change contract (v0.23.1): if an alternative
+   * exists, the redraw MUST change >= 1 visible non-reserved card. The
+   * compatible reserved card stays put by design and never counts as a
+   * change. Mechanism: normal weighted rebuild first (pin weighting and
+   * variety preserved); if the rebuild shows nothing new, the weakest
+   * non-reserved pick is force-swapped with the best unseen pool candidate
+   * (weight desc, id asc — no stream, fully deterministic). If NO
+   * alternative exists, the reroll is NOT consumed: zero mutation, zero
+   * stream consumed, and an explicit `draft_reroll_unavailable` event is
+   * returned instead. Same seed + same decisions always yields the same
+   * result on every path.
+   */
+  private rerollAlternatives(): TechNode[] {
+    const s = this.state;
+    const shown = new Set(s.draftOffers.map((o) => o.nodeId));
+    return this.availableNodes().filter((n) => n.id !== s.reservedTech && !shown.has(n.id));
+  }
+
+  canRerollDraft(): boolean {
+    const s = this.state;
+    return s.draftOpen && !s.over && s.rerolls > 0 && this.rerollAlternatives().length > 0;
+  }
+
+  rerollDraft(): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over || s.rerolls <= 0) return ev;
+    const prevOffers = [...s.draftOffers];
+    const prevNR = new Set(
+      prevOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech).map((o) => o.nodeId),
+    );
+    // Alternative check mirrors the open pool buildDraft() draws from
+    // (reroll intentionally drops POI filters, as before — same pool).
+    const candidates = this.rerollAlternatives();
+    if (candidates.length === 0) {
+      ev.push({ type: "draft_reroll_unavailable" });
+      return ev;
+    }
+    s.rerolls--;
+    s.stats.rerollsUsed = (s.stats.rerollsUsed || 0) + 1;
+    this.buildDraft(s.draftContext);
+    const postShown = new Set(s.draftOffers.map((o) => o.nodeId));
+    let cur = s.draftOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech);
+    if (!cur.some((o) => !prevNR.has(o.nodeId))) {
+      // Redraw showed nothing new — force the meaningful change.
+      const ordered = [...candidates].sort((a, b) => b.weight - a.weight || (a.id < b.id ? -1 : 1));
+      const swapIn = ordered.find((n) => !postShown.has(n.id));
+      // swapIn always exists here (a candidate outside the previous screen
+      // that the rebuild did not surface); the guard keeps it total anyway.
+      if (swapIn && !postShown.has(swapIn.id)) {
+        let idx = -1;
+        for (let i = s.draftOffers.length - 1; i >= 0; i--) {
+          const o = s.draftOffers[i];
+          const recovery = s.ageIndex <= 2 && s.breakthroughs.length === 0 ? this.combinationRoute().next?.id : undefined;
+          if (o && !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech && o.nodeId !== recovery) {
+            idx = i;
+            break;
+          }
+        }
+        // Replace with a new DraftOffer for the swapIn node
+        s.draftOffers[idx < 0 ? s.draftOffers.length - 1 : idx] = this.convertToDraftOffer(swapIn, "COMMON", 0);
+        cur = s.draftOffers.filter((o) => !o.nodeId.startsWith("fb-") && o.nodeId !== s.reservedTech);
+      }
+    }
+    const newIds = cur.map((o) => o.nodeId);
+    const changed = newIds.filter((id) => !prevNR.has(id)).length;
+    this.logHistory("reroll", s.draftContext);
+    ev.push({
+      type: "draft_rerolled", rerollsLeft: s.rerolls,
+      prevIds: [...prevNR], newIds, changed,
+    });
+    return ev;
+  }
+
+  /**
+   * SKIP the open draft: no tech, small bounded knowledge consolation.
+   * Queued drafts still chain (pendingLevels preserved).
+   */
+  skipDraft(): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!s.draftOpen || s.over) return ev;
+    s.draftOpen = false;
+    s.draftOffers = [];
+    s.draftContext = "level";
+    s.pendingLevels--;
+    s.stats.skipsUsed = (s.stats.skipsUsed || 0) + 1;
+    this.gainKnowledge(10 + s.level * 2, "skip", ev);
+    this.logHistory("skip", `level-${s.level}`);
+    ev.push({ type: "draft_skipped" });
+    if (s.pendingLevels > 0 && !s.over) {
+      this.buildDraft("level");
+      ev.push({ type: "draft_opened", context: "level" });
+    }
+    return ev;
+  }
+
+  /**
+   * PIN a build-path target (tech id or breakthrough id). Empty string clears.
+   * Canonical: pinned weighting shapes future drafts deterministically.
+   */
+  pinTarget(id: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    if (id === "") {
+      s.pinnedTarget = "";
+      return ev;
+    }
+    const isTech = this.graph.some((n) => n.id === id);
+    const isBreakthrough = BREAKTHROUGHS.some((b) => b.id === id);
+    if (!isTech && !isBreakthrough) return ev;
+    s.pinnedTarget = id;
+    ev.push({ type: "pin_set", target: id });
+    return ev;
+  }
+
+  /**
+   * WORLD EXPANSION choice (ADR-0006 Decision 1): unlock exactly one of the
+   * two inactive families. Valid only once per world, only a locked family.
+   */
+  chooseExpansion(fam: WeaponFamily): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over || s.expansionFamily !== "") return ev;
+    if (!lockedFamilies(s.originId, "").includes(fam)) return ev;
+    s.expansionFamily = fam;
+    this.logHistory("expansion", fam);
+    ev.push({ type: "expansion_unlocked", family: fam });
+    return ev;
+  }
+
+  // ------------------------------------------ stronghold (derived endgame)
+  /**
+   * Deterministic ENEMY STRONGHOLD site (§23): a seed-derived bearing at
+   * fixed range, snapped to the nearest major POI (megasite/worldtree/
+   * signal) when one exists nearby, else the raw point. Pure function of
+   * worldSeed + static worldgen — chunk/POI generation is untouched.
+   */
+  private revealStronghold(ev: SimEvent[]): void {
+    const s = this.state;
+    if (s.stronghold?.revealed) return;
+    const h = fnv1a32(`${s.worldSeed}::stronghold`);
+    const ang = (h % 360) * (Math.PI / 180);
+    const rawX = Math.cos(ang) * 6000;
+    const rawY = Math.sin(ang) * 6000;
+    let bx = rawX;
+    let by = rawY;
+    let bd = 1600;
+    const { cx, cy } = worldToChunk(rawX, rawY);
+    for (let ox = -3; ox <= 3; ox++) {
+      for (let oy = -3; oy <= 3; oy++) {
+        const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (poi.type !== "megasite" && poi.type !== "worldtree" && poi.type !== "signal") continue;
+          const d = Math.hypot(poi.wx - rawX, poi.wy - rawY);
+          if (d < bd) {
+            bd = d;
+            bx = poi.wx;
+            by = poi.wy;
+          }
+        }
+      }
+    }
+    s.stronghold = { x: Math.round(bx), y: Math.round(by), revealed: true };
+    this.logHistory("stronghold", "revealed");
+    ev.push({ type: "stronghold_revealed", x: s.stronghold.x, y: s.stronghold.y });
+  }
+
+  // ------------------------------------------------- territory & outposts
+  /**
+   * POIs the player could claim RIGHT NOW (UI CLAIM buttons poll this).
+   * Discovered + unclaimed + in reach. `clear` reports the threat-free check.
+   * Uses the last rebuilt spatial index (same freshness as weapon targeting).
+   */
+  /** Single read-only contract for mutation, keyboard and contextual UI. */
+  claimStatus(poiId: string): ClaimStatus {
+    const s=this.state;
+    if(s.over)return {poiId,reason:"INACTIVE_RUN"};
+    if(s.territories.some(t=>t.poiId===poiId))return {poiId,reason:"ALREADY_CLAIMED"};
+    if(!s.poisWorld.includes(poiId))return {poiId,reason:"NOT_DISCOVERED"};
+    const {cx,cy}=worldToChunk(s.px,s.py);
+    for(let ox=-2;ox<=2;ox++)for(let oy=-2;oy<=2;oy++){
+      const p=this.chunks.get(s.worldSeed,s.worldNonce,cx+ox,cy+oy).poi.find(p=>p.id===poiId);
+      if(!p)continue;
+      const distance=Math.hypot(p.wx-s.px,p.wy-s.py);
+      const facts={poiId,poiType:p.type,x:p.wx,y:p.wy,distance,remainingDistance:Math.max(0,distance-CLAIM_REACH_RADIUS)};
+      if(distance>CLAIM_REACH_RADIUS)return {...facts,reason:"TOO_FAR"};
+      this.scratch.length=0;
+      return {...facts,reason:this.queryRadius(p.wx,p.wy,CLAIM_CLEAR_RADIUS,this.scratch).length?"HOSTILES_NEARBY":"CLAIMABLE"};
+    }
+    // Discovered IDs outside the active neighborhood remain valid distant sites.
+    return {poiId,reason:"TOO_FAR"};
+  }
+
+  nearbyClaimSites(): ClaimStatus[] {
+    const s=this.state,out:ClaimStatus[]=[];
+    if(s.over)return out;
+    const {cx,cy}=worldToChunk(s.px,s.py),claimed=new Set(s.territories.map(t=>t.poiId));
+    for(let ox=-2;ox<=2;ox++)for(let oy=-2;oy<=2;oy++)
+      for(const p of this.chunks.get(s.worldSeed,s.worldNonce,cx+ox,cy+oy).poi)
+        if(s.poisWorld.includes(p.id)&&!claimed.has(p.id))out.push(this.claimStatus(p.id));
+    return out.sort((a,b)=>(a.distance??Infinity)-(b.distance??Infinity));
+  }
+
+  claimablePOIs(): Array<{poiId:string;poiType:POIType;x:number;y:number;dist:number;clear:boolean}> {
+    return this.nearbyClaimSites().filter(c=>c.reason==="CLAIMABLE"||c.reason==="HOSTILES_NEARBY")
+      .map(c=>({poiId:c.poiId,poiType:c.poiType!,x:c.x!,y:c.y!,dist:c.distance!,clear:c.reason==="CLAIMABLE"}));
+  }
+
+  /**
+   * CLAIM a cleared POI as civilization territory (one claim per POI id).
+   * Direct UI call. Fails silently (returns no events) unless every
+   * precondition holds — the UI disables the button via claimablePOIs().
+   * v0.24: territory claim is free; logistics cost applies when setting spec.
+   * Signal first-claim exemption still applies (v0.23.1 no-softlock).
+   */
+  claimTerritory(poiId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    if (s.territories.some((t) => t.poiId === poiId)) return ev;
+    if (!s.poisWorld.includes(poiId)) return ev;
+    const status = this.claimStatus(poiId);
+    if(status.reason!=="CLAIMABLE")return ev;
+    const cand={poiType:status.poiType!,x:status.x!,y:status.y!};
+    // Signal first-claim exemption (v0.23.1): always allow first Signal claim.
+    // Other claims are gated by logistics at spec assignment (setOutpostSpec).
+    // No hard limit on claim count; logistics is the constraint.
+    s.territories.push({
+      poiId, poiType: cand.poiType, x: cand.x, y: cand.y,
+      spec: "", tier: 1, hp: OUTPOST_MAXHP, maxHp: OUTPOST_MAXHP,
+      disabled: false, heldSince: s.elapsed, repairT: 0, garrisoned: false,
+    });
+    s.stats.outpostsClaimed = (s.stats.outpostsClaimed || 0) + 1;
+    // First claim starts the raid clock (grace window, not instant pressure).
+    if (s.territories.length === 1) s.lastRaidAt = s.elapsed;
+    // signalSecured is set in setOutpostSpec after successful specialization
+    this.logHistory("claim", cand.poiType);
+    ev.push({ type: "territory_claimed", poiId, poiType: cand.poiType });
+    return ev;
+  }
+
+  /** Read-only canonical validation, shared by the picker and mutation path.
+   * Preserves the intentional first-Signal overflow for mission progression.
+   * It still charges the full cost; subsequent Signals receive no exemption. */
+  canSetOutpostSpec(poiId: string, spec: OutpostSpec): boolean {
+    const s = this.state;
+    const t = territoryById(s.territories, poiId);
+    if (s.over || !t || t.spec !== "" || t.disabled) return false;
+    return this.canAffordSpecialization(t.poiType,spec);
+  }
+
+  logisticsStatus() {
+    const s=this.state;
+    return logisticsLedger(s.territories,s.maxLogistics,s.signalSecured,s.ageIndex);
+  }
+
+  /** Stationed allies reserve pool slots; founding cannot duplicate their service. */
+  mobileSquadLimit():number {
+    const posts=this.state.territories;
+    const stationed=posts.filter(p=>p.garrisoned&&!!p.spec).length;
+    return Math.max(1,squadCap(militaryBonusSlots(activeTerritories(posts)))-stationed);
+  }
+  private trimMobileSquad():void {
+    const limit=this.mobileSquadLimit();let count=0;
+    for(const ally of this.state.squad)if(ally.active&&++count>limit)ally.active=false;
+  }
+
+  private canAffordSpecialization(poiType:POIType,spec:OutpostSpec):boolean {
+    const s=this.state;
+    const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
+    const firstSignal = !s.signalSecured && poiType === "signal" &&
+      !s.territories.some((other) => other.poiType === "signal" && other.spec !== "");
+    return s.logistics + cost <= s.maxLogistics || firstSignal;
+  }
+
+  /** Choose the ONE specialization for a fresh claim. Irreversible.
+   * v0.24: consumes Logistics points based on spec + tier. */
+  setOutpostSpec(poiId: string, spec: OutpostSpec): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (!this.canSetOutpostSpec(poiId, spec)) return ev;
+    const t = territoryById(s.territories, poiId)!;
+    const cost = calculateLogisticsCost(spec, 1, s.ageIndex);
+
+    t.spec = spec;
+    s.logistics = committedLogistics(s.territories,s.ageIndex);
+    if (spec === "military") this.reinforceSquad();
+    // Mark signal as secured AFTER successful specialization (for mission tracking)
+    if (t.poiType === "signal") s.signalSecured = true;
+    this.logHistory("outpost", `${spec}@${t.poiType}`);
+    ev.push({ type: "outpost_spec", poiId, spec });
+    return ev;
+  }
+
+  /**
+   * Tier 2 after holding long enough with a chosen spec, PLUS a Knowledge
+   * cost (v0.23.1 opportunity cost) AND logistics cost (v0.24).
+   * All preconditions checked BEFORE any mutation.
+   */
+  outpostUpgradeStatus(poiId: string): { allowed: boolean; reason: "ready" | "invalid" | "hold" | "knowledge" | "logistics"; knowledgeCost: number; logisticsCost: number } {
+    const s = this.state;
+    const t = territoryById(s.territories, poiId);
+    const knowledgeCost = outpostUpgradeCost(s.ageIndex);
+    const logisticsCost = t?.spec ? calculateLogisticsCost(t.spec, 2, s.ageIndex) - calculateLogisticsCost(t.spec, 1, s.ageIndex) : 0;
+    const reason = s.over || !t || t.disabled || !t.spec || t.tier !== 1 ? "invalid"
+      : s.elapsed - t.heldSince < TIER2_HOLD_SEC ? "hold"
+      : s.knowledgeTotal < knowledgeCost ? "knowledge"
+      : s.logistics + logisticsCost > s.maxLogistics ? "logistics" : "ready";
+    return { allowed: reason === "ready", reason, knowledgeCost, logisticsCost };
+  }
+
+  /** Reallocate committed capacity. Land remains claimed; benefits and tier are lost. */
+  dismantleOutpost(poiId: string): SimEvent[] {
+    const s = this.state;
+    const t = territoryById(s.territories, poiId);
+    if (s.over || !t || !t.spec || s.raid?.poiId === poiId) return [];
+    const released = calculateLogisticsCost(t.spec, t.tier, s.ageIndex);
+    const wasGarrisoned = t.garrisoned;
+    t.spec = "";
+    t.tier = 1;
+    t.garrisoned = false;
+    s.logistics = committedLogistics(s.territories,s.ageIndex);
+    t.heldSince = s.elapsed;
+    // Do not heal, revive, award Knowledge, or reset the Signal mission flag.
+    const cap = this.mobileSquadLimit();
+    let active = 0;
+    for (const ally of s.squad) if (ally.active && ++active > cap) ally.active = false;
+    if (wasGarrisoned && s.squad.filter((ally) => ally.active).length < cap) {
+      const returning = s.squad.find((ally) => !ally.active && ally.hp > 0);
+      if (returning) { returning.active = true; returning.x = s.px - 30; returning.y = s.py; }
+    }
+    this.logHistory("dismantle", `${released}@${t.poiType}`);
+    return [{ type: "outpost_dismantled", poiId, released }];
+  }
+
+  upgradeOutpost(poiId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    const status = this.outpostUpgradeStatus(poiId);
+    if (!status.allowed) return ev;
+    const t = territoryById(s.territories, poiId)!;
+    s.knowledgeTotal -= status.knowledgeCost;
+    t.tier = 2;
+    s.logistics = committedLogistics(s.territories,s.ageIndex);
+    t.hp = t.maxHp;
+    this.logHistory("upgrade", `${t.spec}@${t.poiType}`);
+    ev.push({ type: "outpost_upgraded", poiId });
+    return ev;
+  }
+
+  /**
+   * Garrison/Recall an outpost.
+   * Garrisoning removes a mobile squad slot but activates the outpost's benefit.
+   * Recalling restores the mobile slot and deactivates the benefit.
+   */
+  garrisonOutpost(poiId: string): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    const t = territoryById(s.territories, poiId);
+    if (!t || t.disabled || t.spec === "") return ev;
+    
+    const activeMobile = s.squad.filter(a => a.active).length;
+    
+    if (!t.garrisoned) {
+      // Garrison: need at least 1 mobile squad remaining
+      if (activeMobile - 1 < 1) return ev;
+      t.garrisoned = true;
+      // Deactivate one mobile squad
+      for (const a of s.squad) {
+        if (a.active) {
+          a.active = false;
+          break;
+        }
+      }
+      this.logHistory("garrison", `on@${t.poiType}`);
+      ev.push({ type: "outpost_garrisoned", poiId, spec: t.spec });
+    } else {
+      // Recall
+      t.garrisoned = false;
+      // Try to activate a reserve squad if under cap
+      if (activeMobile < this.mobileSquadLimit()) {
+        for (const a of s.squad) {
+          if (!a.active && a.hp>0) {
+            a.active = true;
+            a.x = s.px - 30;
+            a.y = s.py;
+            break;
+          }
+        }
+      }
+      this.logHistory("garrison", `off@${t.poiType}`);
+      ev.push({ type: "outpost_recalled", poiId, spec: t.spec });
+    }
+    return ev;
+  }
+
+  /** Activate reserve allies up to the military-bonus cap. */
+  private reinforceSquad(): void {
+    const s = this.state;
+    const cap = this.mobileSquadLimit();
+    this.trimMobileSquad();
+    let active = s.squad.filter(a=>a.active).length;
+    for (const a of s.squad) {
+      if (a.active) continue;
+      if (active >= cap) break;
+      a.active = true;
+      if(a.hp<=0)a.hp=a.maxHp; // new recruit; living reserves keep their injuries
+      a.x = s.px - 30;
+      a.y = s.py;
+      active++;
+    }
+  }
+
+  // ------------------------------------------------------------------ raids
+  private raidTargets() {
+    const s=this.state;
+    return s.territories.filter(t=>!t.disabled&&!!t.spec).sort((a,b)=>
+      Math.hypot(a.x-s.px,a.y-s.py)-Math.hypot(b.x-s.px,b.y-s.py)||(a.poiId<b.poiId?-1:a.poiId>b.poiId?1:0));
+  }
+  private raidIsOnlyGate(): boolean {
+    const s=this.state,next=AGE_DEFS[s.ageIndex+1];
+    if(!next||next.dominion.raids<=s.raidsSurvived||s.knowledgeTotal<next.knowledgeThreshold)return false;
+    // Counterfactual predicate only, never writes progression/credit.
+    return canAdvanceAge(next.index,s.knowledgeTotal,this.missionState(),{...this.dominionState(),raidsSurvived:next.dominion.raids});
+  }
+
+  raidReadiness() {
+    const s=this.state;
+    const targets=this.raidTargets();
+    return {status:s.raid?(s.raid.landed?"active":s.raid.spawnBlocked?"blocked":"warning"):targets.length?"waiting":"noTarget",
+      seconds:s.raid?Math.max(0,s.raid.tMinus):targets.length?raidDelay(s.elapsed,s.lastRaidAt,childRaidInterval(s.ascension,RAID_INTERVAL),s.raidReadySince):null,
+      gateBlocked:this.raidIsOnlyGate(),targetId:s.raid?.poiId??targets[0]?.poiId??""};
+  }
+
+  /** Deterministic raid scheduler (event stream picks the target). */
+  private updateRaid(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const targets = this.raidTargets();
+    if (!s.raid) {
+      if(targets.length && this.raidIsOnlyGate())s.raidReadySince??=s.elapsed;
+      else s.raidReadySince=null;
+      if (targets.length > 0 && raidDelay(s.elapsed,s.lastRaidAt,childRaidInterval(s.ascension,RAID_INTERVAL),s.raidReadySince)===0) {
+        // Prefer the closest defensible base; exact ties retain one seeded draw.
+        const first=targets[0]!;const distance=Math.hypot(first.x-s.px,first.y-s.py);
+        const nearby=targets.filter(t=>Math.abs(Math.hypot(t.x-s.px,t.y-s.py)-distance)<.01);
+        const pick = nearby[this.streams.event.nextInt(0, nearby.length)]!;
+        s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false, spawned:0 };
+        ev.push({ type: "raid_incoming", poiId: pick.poiId, seconds: RAID_WARN_SEC });
+      }
+      return;
+    }
+    const t = territoryById(s.territories, s.raid.poiId);
+    if (!t || t.disabled) {
+      // Target gone meanwhile: raiders dissolve into the normal hunt.
+      for (const e of s.enemies) if (e.active && e.siege) e.siege = false;
+      s.raid = null;
+      s.lastRaidAt=s.elapsed;s.raidReadySince=null;
+      return;
+    }
+    if (!s.raid.landed) {
+      s.raid.tMinus -= dt;
+      if (s.raid.tMinus > 0) return;
+      const n = Math.min(RAID_MAX_UNITS,RAID_SIZE_BASE + s.ascension);
+      let spawned=0;
+      for (let i = 0; i < n; i++) {
+        const ang = this.streams.event.nextFloat() * Math.PI * 2;
+        const e = this.spawnEnemyAt("chaser", false, t.x + Math.cos(ang) * 500, t.y + Math.sin(ang) * 500, ev);
+        if (e) {e.siege = true;spawned++;}
+      }
+      s.raid.spawned=spawned;
+      s.raid.landed=spawned>0;
+      s.raid.spawnBlocked=spawned===0;
+      // Keep the visible warning alive and retry, never a phantom victory.
+      if(!spawned)s.raid.tMinus=RAID_RETRY_SECONDS;
+      return;
+    }
+    // Repelled when no siege unit remains.
+    let siegeAlive = false;
+    for (const e of s.enemies) {
+      if (e.active && e.siege) { siegeAlive = true; break; }
+    }
+    if (!siegeAlive) {
+      const poiId = s.raid.poiId;
+      s.raid = null;
+      s.lastRaidAt = s.elapsed;
+      s.raidReadySince=null;
+      s.raidsSurvived++;
+      this.gainKnowledge(100, "raid", ev);
+      this.logHistory("raid", "repelled");
+      ev.push({ type: "raid_repelled", poiId });
+    }
+  }
+
+  /** Spawn at an explicit world position (siege waves); player-relative otherwise. */
+  private spawnEnemyAt(family: EnemyFamily, elite: boolean, x: number, y: number, ev: SimEvent[]): SimEnemy | null {
+    const s = this.state;
+    const e = this.allocEnemy() ?? this.reclaimSlot();
+    if (!e) return null;
+    const dx = x - s.px;
+    const dy = y - s.py;
+    const spawned = this.spawnEnemy(family, elite, false, Math.atan2(dy, dx), Math.max(1, Math.hypot(dx, dy)), ev);
+    return spawned;
+  }
+
+  /** Outpost destroyed under siege: disabled, raid ends, siege dissolves. */
+  private loseOutpost(t: { poiId: string }, ev: SimEvent[]): void {
+    const s = this.state;
+    const terr = territoryById(s.territories, t.poiId);
+    if (!terr || terr.disabled) return;
+    terr.disabled = true;
+    terr.hp = 0;
+    terr.repairT = 0;
+    this.trimMobileSquad();
+    for (const e of s.enemies) if (e.active && e.siege) e.siege = false;
+    s.raid = null;
+    s.lastRaidAt = s.elapsed;
+    s.raidReadySince=null;
+    this.logHistory("outpost-lost", terr.poiType);
+    ev.push({ type: "outpost_lost", poiId: terr.poiId });
+  }
+
+  /** Territory upkeep: repair presence + economy aura (called every step). */
+  private updateTerritories(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const b = s.build;
+    const regen = economyRegenAt(activeTerritories(s.territories), s.px, s.py, (t) => this.siteMultiplier(t.x, t.y, "economy"));
+    if (regen > 0) b.hp = Math.min(b.maxHp, b.hp + regen * dt);
+    for (const t of s.territories) {
+      if (!t.disabled) continue;
+      if (Math.hypot(t.x - s.px, t.y - s.py) > CLAIM_REACH_RADIUS) {
+        t.repairT = 0;
+        continue;
+      }
+      t.repairT += dt;
+      if (t.repairT >= REPAIR_NEED) {
+        t.disabled = false;
+        t.hp = t.maxHp * 0.5;
+        t.repairT = 0;
+        this.logHistory("outpost-repaired", t.poiType);
+        ev.push({ type: "outpost_repaired", poiId: t.poiId });
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------- squad
+  /** Direct UI command: rally / focus / hold. Focus aims at the nearest foe. */
+  setSquadMode(mode: SquadMode): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    s.squadMode = mode;
+    if (mode === "focus") {
+      const tgt = this.nearestEnemy(s.px, s.py, 700);
+      s.focusX = tgt ? tgt.x : s.px;
+      s.focusY = tgt ? tgt.y : s.py;
+    }
+    ev.push({ type: "squad_command", mode });
+    return ev;
+  }
+
+  /** Origin active ability (F key). Bounded cooldown, deterministic effects. */
+  tryAbility(): SimEvent[] {
+    const s = this.state;
+    const b = s.build;
+    const ev: SimEvent[] = [];
+    if (s.over || s.abilityCd > 0) return ev;
+    s.stats.abilityUses = (s.stats.abilityUses || 0) + 1;
+    const abil = ORIGIN_ABILITY[originById(s.originId).id];
+    s.abilityCd = abil.cooldown;
+    if (abil.id === "volley") {
+      for (let i = 0; i < VOLLEY_COUNT; i++) {
+        const a = (i * Math.PI * 2) / VOLLEY_COUNT;
+        this.fireProjectile(s.px, s.py, s.px + Math.cos(a) * 100, s.py + Math.sin(a) * 100,
+          480, VOLLEY_DMG * b.damageMul, 0xffc93c, "ability", true, 6);
+      }
+    } else if (abil.id === "overdrive") {
+      s.overdriveT = OVERDRIVE_DURATION;
+    } else if (abil.id === "nova") {
+      this.scratch.length = 0;
+      const hit = this.queryRadius(s.px, s.py, NOVA_RADIUS, this.scratch);
+      for (const e of hit) this.hurtEnemy(e, NOVA_DMG * b.damageMul, "ability", ev);
+    } else {
+      b.hp = Math.min(b.maxHp, b.hp + BULWARK_REPAIR);
+      s.iframe = Math.max(s.iframe, BULWARK_IFRAME);
+    }
+    ev.push({ type: "ability_used", id: abil.id });
+    return ev;
+  }
+
+  private damageAlly(index: number, dmg: number): void {
+    const s = this.state;
+    const a = s.squad[index];
+    if (!a || !a.active || a.inv > 0) return;
+    a.hp -= dmg;
+    a.inv = 0.5;
+    if (a.hp <= 0) {
+      a.hp = 0;
+      a.active = false;
+    }
+  }
+
+  /** Squad movement + supporting fire (runs after weapons, before projectiles). */
+  private updateSquad(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    if (s.abilityCd > 0) s.abilityCd -= dt;
+    if (s.overdriveT > 0) s.overdriveT -= dt;
+    const mult = s.overdriveT > 0 ? 0.4 : 1;
+    void ev;
+    let idx = 0;
+    for (const a of s.squad) {
+      if (!a.active) continue;
+      if (a.inv > 0) a.inv -= dt;
+      let tx = s.px;
+      let ty = s.py;
+      if (s.squadMode === "follow") {
+        const ang = Math.PI * 0.75 + idx * 1.1;
+        tx = s.px + Math.cos(ang) * 70;
+        ty = s.py + Math.sin(ang) * 70;
+      } else if (s.squadMode === "focus") {
+        tx = s.focusX;
+        ty = s.focusY;
+      } else {
+        tx = a.x;
+        ty = a.y;
+      }
+      const dx = tx - a.x;
+      const dy = ty - a.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 8) {
+        const stepLen = Math.min(d, SQUAD_SPEED * dt);
+        a.x += (dx / d) * stepLen;
+        a.y += (dy / d) * stepLen;
+      }
+      a.cd -= dt;
+      if (a.cd <= 0) {
+        const tgt = this.nearestEnemy(a.x, a.y, SQUAD_RANGE);
+        if (tgt) {
+          a.cd = SQUAD_CD * mult;
+          this.fireProjectile(a.x, a.y, tgt.x, tgt.y, 520, a.dmg * s.build.damageMul, 0x9fd8ff, "squad", true, 5);
+        } else {
+          a.cd = 0.2;
+        }
+      }
+      idx++;
+    }
+  }
+
+  private grantNode(id: string, node?: TechNode): void {
+    const s = this.state;
+    const n = node ?? this.graph.find((x) => x.id === id);
+    if (!n) return;
+    const first = !s.owned.includes(id);
+    if (first) {
+      s.owned.push(id);
+      this.logHistory("tech", id);
+    }
+    for (const tg of n.tags) if (!s.ownedTags.includes(tg)) s.ownedTags.push(tg);
+    for (const st of n.synergyTags) if (!s.ownedTags.includes(st)) s.ownedTags.push(st);
+    for (const e of n.effects) {
+      if (e.kind === "weaponEvolve") {
+        // Orbital Program evolves ACTIVE families only (origin identity holds).
+        const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+        for (const fam of (Object.keys(s.weaponStage) as WeaponFamily[])) {
+          if (active.has(fam)) s.weaponStage[fam] = 5;
+        }
+      } else {
+        applyTechEffect(s.build, e);
+      }
+    }
+  }
+
+  /** Mission-readable counters derived from canonical state (single source). */
+  private missionState(): MissionState {
+    const s = this.state;
+    const active = activeTerritories(s.territories);
+    return {
+      ascension: s.ascension,
+      ageKills: s.ageKills,
+      territoriesClaimed: s.territories.length,
+      elitesAge: s.elitesAge,
+      outpostsTier2: active.filter((t) => t.tier >= 2).length,
+      raidsSurvived: s.raidsSurvived,
+      signalSecured: s.signalSecured,
+      breakthroughs: s.breakthroughs.length,
+    };
+  }
+
+  /** Dominion-readable control state (disabled outposts never count). */
+  private dominionState(): DominionState {
+    const s = this.state;
+    const active = activeTerritories(s.territories);
+    return {
+      active: active.length,
+      specialized: active.filter((t) => t.spec !== "").length,
+      tier2: active.filter((t) => t.tier >= 2).length,
+      raidsSurvived: s.raidsSurvived,
+    };
+  }
+
+  /** Effective knowledge multiplier: build multiplier × research outposts. */
+  siteBiome(x: number, y: number) {
+    const s = this.state;
+    const { cx, cy } = worldToChunk(x, y);
+    return this.chunks.get(s.worldSeed, s.worldNonce, cx, cy).biome;
+  }
+
+  siteMultiplier(x: number, y: number, spec: OutpostSpec): number {
+    return biomeSpecializationMultiplier(this.siteBiome(x, y), spec);
+  }
+
+  /** Read-only pre-claim facts; same affordability rule as specialization validation. */
+  outpostPreview(x:number,y:number,poiType:POIType) {
+    if(!Number.isFinite(x)||!Number.isFinite(y))return null;
+    const s=this.state;
+    return {
+      biome:this.siteBiome(x,y),
+      distance:Math.hypot(x-s.px,y-s.py),
+      hostiles:this.queryRadius(x,y,CLAIM_CLEAR_RADIUS,[]).length,
+      researchPercent:10*this.siteMultiplier(x,y,"research")*this.researchBonusScale(),
+      economyRegen:1.5*this.siteMultiplier(x,y,"economy"),
+      militarySlots:1,
+      options:(["research","military","economy"] as const).map(spec=>({spec,cost:calculateLogisticsCost(spec,1,s.ageIndex),affordable:!s.over&&this.canAffordSpecialization(poiType,spec)}))
+    };
+  }
+
+  researchBonusScale(): number { return childResearchBonusScale(this.state.ascension); }
+
+  knowledgeMult(): number {
+    const s = this.state;
+    return s.build.knowledgeMul * childKnowledgeFactor(s.ascension, territoryKnowledgeBonus(activeTerritories(s.territories), (t) => this.siteMultiplier(t.x, t.y, "research")));
+  }
+
+  /** Single canonical knowledge scaling (exactly-once, outpost-aware). */
+  private scaledKnowledge(baseAmount: number): number {
+    return scaleKnowledge(baseAmount, this.knowledgeMult());
+  }
+
+  // --------------------------------------------------------------- knowledge
+  /** THE canonical progression op. Multiplier applied exactly once here. */
+  gainKnowledge(baseAmount: number, source: string, ev: SimEvent[]): void {
+    const s = this.state;
+    if (s.over || baseAmount <= 0) return;
+    const total = this.scaledKnowledge(baseAmount);
+    s.xp += total;
+    s.knowledgeTotal += total;
+    s.stats.knowledgeEarned += total;
+    void source;
+    while (s.xp >= s.xpNext) {
+      s.xp -= s.xpNext;
+      s.level++;
+      s.xpNext = xpForLevel(s.level);
+      s.pendingLevels++;
+    }
+    if (s.pendingLevels > 0 && !s.draftOpen) {
+      this.buildDraft("level");
+      ev.push({ type: "draft_opened", context: "level" });
+    }
+  }
+
+  private addDamage(src: string, v: number): void {
+    const s = this.state;
+    // Run-total Chronicle evidence (preserved across Ascension).
+    s.damageBySource[src] = (s.damageBySource[src] ?? 0) + v;
+    if ((s.damageBySource[src] as number) > (s.damageBySource[s.topDamageSource] ?? -1)) {
+      s.topDamageSource = src;
+    }
+    // Current-world evidence for Legacy offers (reset on Ascension).
+    s.worldDamageBySource[src] = (s.worldDamageBySource[src] ?? 0) + v;
+    if ((s.worldDamageBySource[src] as number) > (s.worldDamageBySource[s.worldTopDamageSource] ?? -1)) {
+      s.worldTopDamageSource = src;
+    }
+  }
+
+  // ------------------------------------------------------------------ combat
+  private hurtPlayer(dmg: number, ev: SimEvent[], source="unknown"): void {
+    const s = this.state;
+    if (s.over || s.iframe > 0) return;
+    s.build.hp -= dmg;
+    s.iframe = 0.6;
+    ev.push({ type: "player_hurt", damage: dmg, source });
+    if (s.build.hp <= 0) {
+      s.build.hp = 0;
+      s.over = true;
+      ev.push({ type: "player_died" });
+    }
+  }
+
+  private allocEnemy(): SimEnemy | null {
+    for (const e of this.state.enemies) if (!e.active) return e;
+    return null;
+  }
+
+  /**
+   * Deterministic lowest-priority reclaim for progression-critical spawns.
+   * Scans pool order, picks the weakest non-boss (non-elite first, then lowest
+   * maxHp). Never random, never a boss.
+   */
+  private reclaimSlot(): SimEnemy | null {
+    let victim: SimEnemy | null = null;
+    for (const e of this.state.enemies) {
+      if (!e.active || e.boss || e.siege) continue;
+      if (!victim) { victim = e; continue; }
+      const aRank = (victim.elite ? 1 : 0) * 1e9 + victim.maxHp;
+      const bRank = (e.elite ? 1 : 0) * 1e9 + e.maxHp;
+      if (bRank < aRank) victim = e;
+    }
+    if (victim) victim.active = false; // silently composted — no reward, no event
+    return victim;
+  }
+
+  /**
+   * Transactional spawn. Returns the enemy, or null when the pool is
+   * exhausted. Bosses deterministically reclaim a slot and therefore never
+   * silently fail (P1-03). `affixOverride` is a test/dev hook (default: stream).
+   */
+  spawnEnemy(
+    family: EnemyFamily, elite: boolean, boss: boolean,
+    ang: number, dist: number, ev: SimEvent[], affixOverride?: EliteAffix,
+  ): SimEnemy | null {
+    const s = this.state;
+    let e = this.allocEnemy();
+    if (!e && boss) e = this.reclaimSlot();
+    if (!e) return null;
+    const base = ENEMY_BASE[family];
+    const diff = (1 + s.ageIndex * 0.28) * (1 + s.ascension * 0.35) * (1 + s.elapsed / 900);
+    const affix: EliteAffix | "" = elite
+      ? (affixOverride ?? ELITE_AFFIXES[this.streams.enemy.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix)
+      : "";
+    const def = affix ? ELITE_AFFIX_DEFS[affix] : null;
+    e.active = true;
+    e.x = s.px + Math.cos(ang) * dist;
+    e.y = s.py + Math.sin(ang) * dist;
+    e.family = family;
+    e.maxHp = base.hp * diff * (boss ? 40 : 1) * (def?.maxHpMul ?? 1) * (elite && !boss && !def ? 6 : 1);
+    e.hp = e.maxHp;
+    e.shield = boss ? e.maxHp * 0.2 : (def ? e.maxHp * def.shieldFrac : 0);
+    e.speed = base.speed * (1 + s.ageIndex * 0.04) * (def?.speedMul ?? 1);
+    e.dmg = base.dmg * (1 + s.ageIndex * 0.15) * (1 + s.ascension * 0.2) * (boss ? 2 : 1) * (def?.outgoingDamageMul ?? 1);
+    e.radius = base.radius * (boss ? 3 : elite ? 1.4 : 1);
+    e.xp = base.xp * (elite ? 5 : 1) * (boss ? 15 : 1);
+    e.elite = elite; e.boss = boss; e.affix = affix; e.siege=false;
+    e.encounter=boss?createBossEncounter():undefined;
+    const adaptation=adaptationFor(s.ageIndex,family,elite,boss);e.evolution=adaptation?createEvolution(adaptation):undefined;
+    e.flash = 0; e.shootT = 1 + this.streams.enemy.nextFloat() * 2; e.hitCd = 0;
+    if (boss) {
+      s.bossIndex = s.enemies.indexOf(e);
+      ev.push({ type: "boss_warning" });
+    }
+    return e;
+  }
+
+  /** Voluntary terminal victory, available only after a real boss kill. */
+  finishAttempt(): SimEvent[] {
+    const s=this.state;
+    if (s.over || s.stats.bosses < 1 || s.build.hp <= 0) return [];
+    s.over=true;s.draftOpen=false;s.draftOffers=[];
+    return [{type:"run_completed"}];
+  }
+
+  /** Stable pool order breaks distance ties; each victim is hit once, max two hops.
+   * No projectile recursion and no RNG consumption. Excluded objects remain excluded
+   * even when splitter deaths reuse the pool slot during this attack. */
+  private arcChain(first:SimEnemy,x:number,y:number,damage:number,ev:SimEvent[],source:"chain"|"relay",excluded:readonly SimEnemy[]=[],excludedCount=excluded.length):void {
+    const seen=new Set<SimEnemy>([first]);
+    for(let i=0;i<excludedCount;i++)seen.add(excluded[i]!);
+    for(let hop=0;hop<2;hop++){
+      let target:SimEnemy|null=null;let best=120*120;
+      for(const e of this.state.enemies){
+        if(!e.active || seen.has(e))continue;
+        const d=(e.x-x)**2+(e.y-y)**2;
+        if(d<=best && (target===null || d<best)){target=e;best=d;}
+      }
+      if(!target)break;
+      const nx=target.x,ny=target.y;seen.add(target);damage*=.5;
+      ev.push({type:"energy_arc",x1:x,y1:y,x2:nx,y2:ny,source});
+      this.hurtEnemy(target,damage,source,ev);x=nx;y=ny;
+    }
+  }
+
+  private updateRelays(dt:number,ev:SimEvent[]):void {
+    const s=this.state;
+    if(!s.build.relayUnlocked)return;
+    s.relayCd=Math.max(0,s.relayCd-dt);
+    if(s.relayCd>0)return;
+    s.relayCd=2;let count=0;
+    for(const terr of s.territories){
+      if(terr.disabled || !terr.spec || terr.hp<=0)continue;
+      if(count++>=3)break;
+      let target:SimEnemy|null=null;let best=180*180;
+      for(const e of s.enemies){
+        if(!e.active)continue;const d=(e.x-terr.x)**2+(e.y-terr.y)**2;
+        if(d<=best && (target===null || d<best)){target=e;best=d;}
+      }
+      if(!target)continue;
+      const x=target.x,y=target.y,damage=8*s.build.damageMul;
+      ev.push({type:"energy_arc",x1:terr.x,y1:terr.y,x2:x,y2:y,source:"relay"});
+      // Chain candidates are evaluated before the primary target can split/reuse.
+      if(s.build.relayChain)this.arcChain(target,x,y,damage,ev,"relay");
+      this.hurtEnemy(target,damage,"relay",ev);
+    }
+  }
+
+  private hurtEnemy(e: SimEnemy, dmg: number, src: string, ev: SimEvent[], kx = 0, ky = 0): void {
+    const s = this.state;
+    if (!e.active || s.over) return;
+    const def = e.affix ? ELITE_AFFIX_DEFS[e.affix as EliteAffix] : null;
+    let rest = dmg * (def?.incomingDamageMul ?? 1);
+    const hpBefore = Math.max(0, e.hp);
+    let shieldDamage = 0;
+    if (e.shield > 0) {
+      const absorbed = Math.min(e.shield, rest);
+      shieldDamage = absorbed;
+      e.shield -= absorbed;
+      rest -= absorbed;
+    }
+    e.hp -= rest;
+    if ((src === "kinetic" || src === "defense" || src === "field") && (rest > 0 || shieldDamage > 0)) {
+      ev.push({type:"weapon_impact",family:src,x:e.x,y:e.y,hpDamage:Math.min(hpBefore,Math.max(0,rest)),shieldDamage});
+    }
+    // Presentation observes resolved damage, before death can recycle this slot.
+    // No RNG, state, balance or damage-accounting change.
+    if ((src === "energy" || src === "chain" || src === "relay") && (rest > 0 || shieldDamage > 0)) {
+      ev.push({ type: "energy_impact", x: e.x, y: e.y,
+        hpDamage: Math.min(hpBefore, Math.max(0, rest)), shieldDamage, source: src });
+    }
+    e.flash = 0.08;
+    e.x += kx; e.y += ky;
+    this.addDamage(src, Math.min(dmg, Math.max(0, e.hp + rest)));
+    if (e.hp > 0) return;
+    // Capture immutable death data BEFORE deactivation/reuse (P2-04): pooled
+    // children may reuse this very object, so nothing may be read from `e`
+    // after this point except through these locals.
+    const deathReward = e.xp;
+    const deathX = e.x;
+    const deathY = e.y;
+    const deathFamily=e.family,deathRadius=e.radius;
+    const wasElite = e.elite;
+    const wasBoss = e.boss;
+    e.active = false;
+    s.stats.kills++;
+    s.runKills++;
+    s.ageKills++;
+    ev.push({ type: "enemy_killed", elite: wasElite, boss: wasBoss, x: deathX, y: deathY,family:deathFamily,radius:deathRadius,visualTier:s.ageIndex });
+    if (wasElite && !wasBoss) {
+      s.stats.elites++;
+      s.elitesAge++;
+    }
+    if (wasBoss) {
+      s.stats.bosses++;
+      s.stats.elites++;
+      s.elitesAge++;
+      this.logHistory("boss", "boss");
+      s.bossIndex = -1;
+      // Boss drop burst — scatter uses the loot stream (never draft/world).
+      for (let i = 0; i < 12; i++) {
+        this.dropPickup(
+          deathX + (this.streams.loot.nextFloat() - 0.5) * 120,
+          deathY + (this.streams.loot.nextFloat() - 0.5) * 120,
+          3,
+        );
+      }
+      s.ascendReady = true;
+      ev.push({ type: "boss_killed" });
+      ev.push({ type: "ascension_ready" });
+    }
+    if (def && def.splitterCount > 0 && !wasBoss) {
+      for (let i = 0; i < def.splitterCount; i++) {
+        const m = this.allocEnemy();
+        if (!m) break;
+        const line = ENEMY_BASE.swarm;
+        m.active = true;
+        m.x = deathX + (i === 0 ? -14 : 14); m.y = deathY;
+        m.family = "swarm"; m.maxHp = line.hp; m.hp = line.hp; m.shield = 0;
+        m.speed = line.speed; m.dmg = line.dmg; m.radius = line.radius;
+        m.xp = 1; m.elite = false; m.boss = false; m.affix = "";
+        m.flash = 0; m.shootT = 0; m.hitCd = 0; m.evolution=undefined;
+      }
+    }
+    if (def && def.volatileRadius > 0) {
+      const d = Math.hypot(deathX - s.px, deathY - s.py);
+      if (d <= def.volatileRadius) this.hurtPlayer(def.volatileDamage, ev,"volatile");
+      // Blast catches nearby allies too (squad positioning matters).
+      for (let ai = 0; ai < s.squad.length; ai++) {
+        const a = s.squad[ai] as (typeof s.squad)[number];
+        if (!a.active) continue;
+        if (Math.hypot(a.x - deathX, a.y - deathY) <= def.volatileRadius) this.damageAlly(ai, def.volatileDamage);
+      }
+    }
+    this.dropPickup(deathX, deathY, deathReward);
+  }
+
+  /** Value-preserving pickup spawn. Pool pressure changes presentation, never value. */
+  dropPickup(x: number, y: number, value: number): void {
+    const s = this.state;
+    if (value <= 0) return;
+    for (const p of s.pickups) {
+      if (!p.active) {
+        p.active = true; p.x = x; p.y = y; p.value = value;
+        return;
+      }
+    }
+    // Pool full: merge into nearest active pickup within 500…
+    let best: { x: number; y: number; value: number } | null = null;
+    let bd = 500;
+    for (const p of s.pickups) {
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d < bd) { bd = d; best = p; }
+    }
+    if (best) {
+      (best as { value: number }).value += value;
+      return;
+    }
+    // …else recycle the farthest pickup, transferring its value into the new one.
+    let far = s.pickups[0];
+    let fd = -1;
+    for (const p of s.pickups) {
+      const d = Math.hypot(p.x - s.px, p.y - s.py);
+      if (d > fd) { fd = d; far = p; }
+    }
+    (far as { value: number }).value += value;
+    far.x = x; far.y = y; // slot reused in place (stays active)
+  }
+
+  // ---------------------------------------------------------------- director
+  private director(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    s.spawnT -= dt;
+    if (s.spawnT <= 0) {
+      const budget = threatBudget(s.elapsed, s.ageIndex, s.ascension, s.difficultyMul);
+      const comp = composeFromBudget(Math.max(6, budget / 6), this.streams.enemy, s.ageIndex);
+      // Elites paid from the budget spawn as affixed enemies right away.
+      for (let i = 0; i < Math.min(comp.elite, 4); i++) {
+        this.spawnEnemy(pickFamily(this.streams.enemy, s.ageIndex), true, false, this.streams.enemy.nextFloat() * Math.PI * 2, 750, ev);
+      }
+      const total = comp.chaser + comp.ranged + comp.tank + comp.swarm;
+      const spawnN = Math.min(24, 2 + Math.floor(total / 2));
+      // Ordinary wave: non-elite only. All elites are either budget-paid
+      // (comp.elite above) or the documented scheduled milestone below (model B).
+      for (let i = 0; i < spawnN; i++) {
+        const fam = pickFamily(this.streams.enemy, s.ageIndex);
+        this.spawnEnemy(fam, false, false, this.streams.enemy.nextFloat() * Math.PI * 2, 700 + this.streams.enemy.nextFloat() * 250, ev);
+      }
+      s.spawnT = 2.2;
+    }
+    s.eliteT -= dt;
+    if (s.eliteT <= 0) {
+      // Scheduled milestone encounter (model B: outside the ordinary budget,
+      // explicitly bounded — 3 elites / 75s — and era-eligible like everything).
+      s.eliteT = 75;
+      const fams = eligibleFamilies(s.ageIndex, "milestone");
+      for (let i = 0; i < 3; i++) {
+        this.spawnEnemy(fams[this.streams.enemy.nextInt(0, fams.length)] as EnemyFamily, true, false, this.streams.enemy.nextFloat() * Math.PI * 2, 750, ev);
+      }
+    }
+    if ((AGES[s.ageIndex] as AgeId) === "space" && !s.bossSpawned && s.stronghold?.revealed) {
+      // Boss is the consequence of world control, not a timer: it answers
+      // the player's approach to the revealed Stronghold (CONTENT_VERSION 5).
+      const sh = s.stronghold;
+      const dx = sh.x - s.px;
+      const dy = sh.y - s.py;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1500) {
+        // Transactional: bossSpawned reflects actual boss existence (P1-03).
+        const affix = ELITE_AFFIXES[this.streams.boss.nextInt(0, ELITE_AFFIXES.length)] as EliteAffix;
+        const boss = this.spawnEnemy("tank", true, true, Math.atan2(dy, dx), Math.max(1, dist), ev, affix);
+        if (boss) s.bossSpawned = true;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------ spatial
+  private rebuildSpatial(): void {
+    for (const [, arr] of this.buckets) {
+      arr.length = 0;
+      this.bucketPool.push(arr);
+    }
+    this.buckets.clear();
+    const es = this.state.enemies;
+    for (let i = 0; i < es.length; i++) {
+      const e = es[i] as SimEnemy;
+      if (!e.active) continue;
+      const k = cellKey(Math.floor(e.x / SPATIAL_CELL), Math.floor(e.y / SPATIAL_CELL));
+      let b = this.buckets.get(k);
+      if (!b) {
+        b = this.bucketPool.pop() ?? [];
+        this.buckets.set(k, b);
+      }
+      b.push(i);
+    }
+  }
+
+  /** Fill `out` with active enemies within r of (x,y). No allocation. */
+  queryRadius(x: number, y: number, r: number, out: SimEnemy[]): SimEnemy[] {
+    out.length = 0;
+    const x0 = Math.floor((x - r) / SPATIAL_CELL);
+    const x1 = Math.floor((x + r) / SPATIAL_CELL);
+    const y0 = Math.floor((y - r) / SPATIAL_CELL);
+    const y1 = Math.floor((y + r) / SPATIAL_CELL);
+    const es = this.state.enemies;
+    for (let cx = x0; cx <= x1; cx++) {
+      for (let cy = y0; cy <= y1; cy++) {
+        const bucket = this.buckets.get(cellKey(cx, cy));
+        if (!bucket) continue;
+        this.queryCount++;
+        for (let bi = 0; bi < bucket.length; bi++) {
+          const e = es[bucket[bi] as number] as SimEnemy;
+          if (e.active && Math.hypot(e.x - x, e.y - y) <= r + e.radius) out.push(e);
+        }
+      }
+    }
+    return out;
+  }
+
+  private nearestEnemy(x: number, y: number, maxD: number): SimEnemy | null {
+    // Deterministic spatial lookup; selection semantics identical to the
+    // legacy brute-force scan (min hypot distance, strict `<`, lowest pool
+    // index wins ties) — proven by tests/sim/spatialNearest.test.ts.
+    const idx = nearestEnemySpatial(this.state.enemies, this.buckets, SPATIAL_CELL, x, y, maxD);
+    return idx === -1 ? null : (this.state.enemies[idx] as SimEnemy);
+  }
+
+  private evolutionShot=(e:SimEnemy,x:number,y:number):void=> { this.fireProjectile(e.x,e.y,x,y,HAZARD_GEOMETRY.burstSpeed,e.dmg/3,0xff5a5a,"enemy-burst",false,HAZARD_GEOMETRY.burstRadius); };
+
+  private fireProjectile(x: number, y: number, tx: number, ty: number, speed: number, dmg: number, color: number, src: string, friendly: boolean, radius = 6, ev?:SimEvent[]): void {
+    for (const p of this.state.projs) {
+      if (p.active) continue;
+      const d = Math.max(1, Math.hypot(tx - x, ty - y));
+      p.active = true; p.x = x; p.y = y;
+      p.vx = ((tx - x) / d) * speed; p.vy = ((ty - y) / d) * speed;
+      p.dmg = dmg; p.radius = radius; p.life = HAZARD_GEOMETRY.projectileLife; p.friendly = friendly; p.color = color; p.src = src;
+      p.visualTier=(["kinetic","energy","defense","field"] as string[]).includes(src)?this.state.weaponStage[src as WeaponFamily]:this.state.ageIndex;
+      p.primary=false;
+      if(ev && friendly && ["kinetic","energy","defense","field"].includes(src)) ev.push({type:"weapon_fired",family:src as WeaponFamily,x,y,tx,ty});
+      return;
+    }
+  }
+
+  // ------------------------------------------------------- weapon execution
+  // Execution dispatches on WeaponStage.archetype (P1-04) — data determines
+  // behavior, never the family name. Every family × tier must have a valid
+  // executable path (covered by tests/sim/archetypes.test.ts).
+  private updatePrimaryRig(dt:number):void {
+    const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),target=this.nearestEnemy(s.px,s.py,800);
+    if(!target)return;
+    advanceWeaponRig(s.originId,tier,s.px,s.py,r,target.x,target.y,dt);
+  }
+  private releasePose(target:{x:number;y:number}):WeaponTransform|null {
+    const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),aim=aimFromPivot(s.originId,tier,s.px,s.py,r,target.x,target.y);
+    if(aim.forward<1||Math.abs(angleDelta(aim.heading,r.heading))>.045)return null;
+    r.heading=aim.heading;r.firedAt=s.elapsed;
+    return weaponTransform(s.originId,tier,s.px,s.py,r,s.elapsed);
+  }
+  private fireProjectileSpread(
+    fam: WeaponFamily, st: { speed: number; damage: number; radius: number; color: number },
+    n: number, range: number, ev:SimEvent[], life=1.6,
+  ): boolean {
+    const s = this.state;
+    const b = s.build;
+    const tgt=this.nearestEnemy(s.px,s.py,range);if(!tgt)return true;
+    const pose=this.releasePose(tgt);if(!pose)return false;
+    for (let i = 0; i < n; i++) {
+      const spread = (i - (n - 1) / 2) * 0.12;
+      const base = pose.heading + spread;
+      for (let index=0;index<s.projs.length;index++) {
+        const p=s.projs[index]!;
+        if (p.active) continue;
+        p.active = true; p.x = pose.muzzleX; p.y = pose.muzzleY;p.primary=true;
+        p.vx = Math.cos(base) * st.speed; p.vy = Math.sin(base) * st.speed;
+        p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = life;
+        p.friendly = true; p.color = st.color; p.src = fam;
+        p.visualTier=s.weaponStage[fam];
+        ev.push({type:"weapon_fired",family:fam,x:p.x,y:p.y,tx:p.x+Math.cos(base)*100,ty:p.y+Math.sin(base)*100,release:{owner:'player-primary',time:s.elapsed,pose,heading:base,index:i,count:n,projectileIndex:index,targetX:tgt.x,targetY:tgt.y}});
+        break;
+      }
+    }
+    return true;
+  }
+
+  private beamStrike(fam: WeaponFamily, st: { damage: number; radius: number }, range: number, ev: SimEvent[]): boolean {
+    const s = this.state;
+    const tgt = this.nearestEnemy(s.px, s.py, range);
+    if (!tgt) return true;
+    const pose=this.releasePose(tgt);if(!pose)return false;
+    const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
+    // Capture aim before damage/death/split can reuse the pooled target object.
+    const targetX = tgt.x, targetY = tgt.y;
+    ev.push({ type: "beam_fired", family: fam, tier: s.weaponStage[fam],
+      x1: pose.muzzleX, y1: pose.muzzleY, x2: targetX, y2: targetY,release:{owner:'player-primary',time:s.elapsed,pose,heading:pose.heading,index:0,count:1,targetX,targetY} });
+    const lim = Math.min(hit.length, 10);
+    if(fam==="energy" && s.build.chainUnlocked)this.arcChain(tgt,tgt.x,tgt.y,st.damage*s.build.damageMul,ev,"chain",hit,lim);
+    for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * s.build.damageMul, fam, ev);
+    s.beamFlash = { x2: targetX, y2: targetY, t: 0.12 };
+    return true;
+  }
+
+  private auraTick(fam: WeaponFamily, radius: number, dmg: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const hit = this.queryRadius(s.px, s.py, radius, this.scratch);
+    const lim = Math.min(hit.length, 30);
+    const first=hit[0];
+    if(first && fam==="energy" && s.build.chainUnlocked)this.arcChain(first,first.x,first.y,dmg,ev,"chain",hit,lim);
+    for (let i = 0; i < lim; i++) {
+      this.hurtEnemy(hit[i] as SimEnemy, dmg, fam, ev);
+      if (s.over) return;
+    }
+  }
+
+  private orbitBlades(fam: WeaponFamily, dt: number, radius: number, blades: number, dmg: number, ev: SimEvent[]): void {
+    const s = this.state;
+    s.orbitAng += dt * 2.0;
+    for (let i = 0; i < blades; i++) {
+      const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
+      const bx = s.px + Math.cos(a) * radius;
+      const by = s.py + Math.sin(a) * radius;
+      const hit = this.queryRadius(bx, by, 30, this.scratch);
+      const lim = Math.min(hit.length, 4);
+      for (let j = 0; j < lim; j++) {
+        const e = hit[j] as SimEnemy;
+        e.hitCd -= dt;
+        if (e.hitCd <= 0) {
+          e.hitCd = 0.35;
+          this.hurtEnemy(e, dmg, fam, ev);
+          if (s.over) return;
+        }
+      }
+    }
+  }
+
+  private guardianFire(st: { damage: number; color: number }, guardians: number, ev:SimEvent[]): void {
+    const s = this.state;
+    const lim = Math.min(guardians, 6);
+    for (let i = 0; i < lim; i++) {
+      const a = s.guardianAng + (i * Math.PI * 2) / Math.max(1, guardians);
+      const gx = s.px + Math.cos(a) * 80;
+      const gy = s.py + Math.sin(a) * 80;
+      const tgt = this.nearestEnemy(gx, gy, 520);
+      if (tgt) this.fireProjectile(gx, gy, tgt.x, tgt.y, 420, st.damage * s.build.damageMul, st.color, "defense", true, 6,ev);
+    }
+  }
+
+  private updateWeapons(dt: number, ev: SimEvent[]): void {
+    const s = this.state;
+    const b = s.build;
+    const cdM = Math.max(0.3, b.cooldownMul);
+    // Origin identity (ADR-0006): inactive families neither render attacks
+    // nor deal simulation damage. Bonus counters tied to an inactive family
+    // stay dormant with it.
+    const kOn = activeFamilies(s.originId, s.expansionFamily).includes("kinetic");
+    const eOn = activeFamilies(s.originId, s.expansionFamily).includes("energy");
+    const dOn = activeFamilies(s.originId, s.expansionFamily).includes("defense");
+    const fOn = activeFamilies(s.originId, s.expansionFamily).includes("field");
+    const tick = (fam: WeaponFamily, cd: number, fire: () => void|boolean): void => {
+      const left = s.weaponCd[fam] - dt;
+      if (left <= 0) { s.weaponCd[fam] = cd; if(fire()===false)s.weaponCd[fam]=0; }
+      else s.weaponCd[fam] = left;
+    };
+    // Kinetic: projectile stages fan shots; the Space beam stage fires a ray.
+    if (kOn) {
+      const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
+      tick("kinetic", st.cooldown * cdM, () => {
+        if (st.archetype === "beam") return this.beamStrike("kinetic", st, 800, ev);
+        else return this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700,ev);
+      });
+    }
+    // Energy: projectile / aura / beam per stage, plus bonus-granted systems.
+    if (eOn) {
+      const st = getWeaponStage("energy", s.weaponStage.energy);
+      if (st.archetype === "aura" || b.bonusAura > 0) {
+        s.auraT -= dt;
+        if (s.auraT <= 0) {
+          s.auraT = 0.5;
+          this.auraTick("energy", st.radius + b.bonusAura * 30, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, ev);
+        }
+      }
+      if (st.archetype === "beam" || b.beamUnlocked) {
+        tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, 800, ev));
+      } else if (st.archetype === "projectile") {
+        tick("energy", st.cooldown * cdM, () => {
+          return this.fireProjectileSpread('energy',{...st,speed:st.speed||380,radius:st.radius*.8},1,640,ev,HAZARD_GEOMETRY.projectileLife);
+        });
+      }
+    }
+    // Defense: orbit stages spin blades; summon stages keep guardian gunners.
+    // Bonus-guardian counters only materialize through an active defense core.
+    if (dOn) {
+      const st = getWeaponStage("defense", s.weaponStage.defense);
+      s.guardianAng += dt * 2.6;
+      if (st.archetype === "orbit") {
+        const blades = Math.max(1, st.count + b.bonusOrbit);
+        this.orbitBlades("defense", dt, st.radius, blades, st.damage * b.damageMul, ev);
+      }
+      const guardians = (st.archetype === "summon" ? st.count : 0) + b.bonusGuardians;
+      if (guardians > 0) {
+        tick("defense", st.cooldown * cdM * 1.6, () => this.guardianFire(st, guardians,ev));
+      }
+    }
+    // Field: mines are the family signature (see mine section); the stage
+    // archetype adds aura or orbit control on top.
+    if (fOn) {
+      const st = getWeaponStage("field", s.weaponStage.field);
+      if (st.archetype === "aura" || b.bonusAura > 0) {
+        s.auraT -= dt;
+        if (s.auraT <= 0) {
+          s.auraT = 0.5;
+          this.auraTick("field", st.radius + b.bonusAura * 30, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, ev);
+        }
+      }
+      if (st.archetype === "orbit" || b.bonusOrbit > 0) {
+        this.orbitBlades("field", dt, st.radius || 110, 2 + b.bonusOrbit, st.damage * b.damageMul * 0.4, ev);
+      }
+    }
+    if (s.beamFlash) {
+      s.beamFlash.t -= dt;
+      if (s.beamFlash.t <= 0) s.beamFlash = null;
+    }
+  }
+
+  // --------------------------------------------------------------------- step
+  step(dt: number, input: InputFrame): SimEvent[] {
+    const s = this.state;
+    const ev: SimEvent[] = [];
+    if (s.over) return ev;
+    if(input.weaponMount&&input.weaponMount!==s.weaponRig.mode)s.weaponRig=createWeaponRig(input.weaponMount);
+    if(dt<=0)return ev;
+    this.queryCount = 0;
+
+    s.elapsed += dt;
+    s.runElapsed += dt;
+    s.ageElapsed += dt;
+    const b = s.build;
+
+    // 1. Input → player movement.
+    const il = Math.hypot(input.moveX, input.moveY);
+    const nx = il > 0 ? input.moveX / Math.max(1, il) : 0;
+    const ny = il > 0 ? input.moveY / Math.max(1, il) : 0;
+    const dashing = s.dashT > 0;
+    const sp = b.speed * (dashing ? 3.1 : 1);
+    s.vx = il > 0 ? nx * sp : 0;
+    s.vy = il > 0 ? ny * sp : 0;
+    s.px += s.vx * dt;
+    s.py += s.vy * dt;
+
+    // 2. Dash + regen.
+    s.dashCd -= dt;
+    s.dashT -= dt;
+    s.iframe -= dt;
+    if (input.dashPressed && s.dashCd <= 0 && il > 0) {
+      s.dashCd = 2.2;
+      s.dashT = 0.18;
+      s.iframe = Math.max(s.iframe, 0.35);
+    }
+    if (b.regen > 0) b.hp = Math.min(b.maxHp, b.hp + b.regen * dt);
+
+    // 3. Age progression (v023 frontier contract: knowledge + mission +
+    // dominion; design A transition still auto-grants the age spine).
+    const next = s.ageIndex + 1;
+    if (next < AGES.length) {
+      const ms = this.missionState();
+      const ds = this.dominionState();
+      const targetAge = AGES[next] as AgeId;
+      if (next > 0 && missionDone(targetAge as Exclude<AgeId, "stone">, ms) && !s.missionDoneCache) {
+        s.missionDoneCache = true;
+        ev.push({ type: "mission_complete", age: targetAge });
+      }
+      if (canAdvanceAge(next, s.knowledgeTotal, ms, ds)) {
+        s.ageIndex = next;
+        s.maxLogistics = calculateMaxLogistics(next);
+        s.ageElapsed = 0;
+        s.ageKills = 0;
+        s.elitesAge = 0;
+        s.rerolls = 1;
+        s.missionDoneCache = false;
+        // Regroup: the squad reforms at full strength on every age advance.
+        for (const a of s.squad) {
+          a.active = true;
+          a.hp = a.maxHp;
+          a.x = s.px + (a.x >= s.px ? 30 : -30);
+          a.y = s.py;
+        }
+        const ageId = AGES[next] as AgeId;
+        s.highestAge = ageId;
+        if (next > AGES.indexOf(s.runHighestAge)) s.runHighestAge = ageId;
+        const spine = CRITICAL_SPINE.find((c) => c.age === ageId);
+        if (spine && !s.owned.includes(spine.id)) this.grantNode(spine.id);
+        s.weaponStage = {
+          kinetic: Math.max(s.weaponStage.kinetic, next),
+          energy: Math.max(s.weaponStage.energy, next),
+          defense: Math.max(s.weaponStage.defense, next),
+          field: Math.max(s.weaponStage.field, next),
+        };
+        b.hp = Math.min(b.maxHp, b.hp + b.maxHp * 0.3);
+        this.logHistory("age", ageId);
+        ev.push({ type: "age_reached", age: ageId });
+        // Space entry reveals the ENEMY STRONGHOLD (derived site, §23).
+        if (ageId === "space") this.revealStronghold(ev);
+        // WORLD EXPANSION decision at Industrial (ADR-0006 Decision 1).
+        if (next === 3 && s.expansionFamily === "") {
+          const locked = lockedFamilies(s.originId, "");
+          if (locked.length === 2) {
+            ev.push({ type: "expansion_offered", families: [locked[0] as WeaponFamily, locked[1] as WeaponFamily] });
+          }
+        }
+        for (let i = 0; i < 3; i++) {
+          this.spawnEnemy("chaser", true, false, this.streams.event.nextFloat() * Math.PI * 2, 700, ev);
+        }
+      }
+    }
+
+    // 4. Director / spawning + deterministic raid scheduler.
+    this.director(dt, ev);
+    if (s.over) return ev;
+    this.updateRaid(dt, ev);
+    if (s.over) return ev;
+
+    // 5. Enemy movement (siege units march on the raided outpost).
+    for (const e of s.enemies) {
+      if (!e.active) continue;
+      if (e.flash > 0) e.flash -= dt;
+      if (e.siege) {
+        const t = s.raid ? territoryById(s.territories, s.raid.poiId) : undefined;
+        if (!t || t.disabled || !s.raid) {
+          e.siege = false;
+        } else {
+          const sx = t.x - e.x;
+          const sy = t.y - e.y;
+          const sd = Math.max(1, Math.hypot(sx, sy));
+          e.x += (sx / sd) * e.speed * dt;
+          e.y += (sy / sd) * e.speed * dt;
+          e.hitCd -= dt;
+          if (sd < 70 && e.hitCd <= 0) {
+            e.hitCd = 1;
+            t.hp -= e.dmg;
+            if (t.hp <= 0) this.loseOutpost({ poiId: t.poiId }, ev);
+          }
+          if (s.over) return ev;
+          continue;
+        }
+      }
+      const dx = s.px - e.x;
+      const dy = s.py - e.y;
+      const d = Math.max(1, Math.hypot(dx, dy));
+      const phase=e.evolution?.phase;const shots=e.evolution?.shots;
+      const bossPhase=e.encounter?.phase;
+      const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,s.px,s.py,dt,(pattern,x,y)=>{
+        ev.push({type:"boss_attack_fired",pattern,x,y});
+        if(pattern==="fan") {
+          const angle=Math.atan2(y-e.y,x-e.x);
+          // Deliberate central gap; warnings expose this safe direction.
+          for(const offset of [-.6,-.4,-.2,.2,.4,.6])this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
+        } else {
+          if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev,"boss-"+pattern);
+          for(let i=0;i<s.squad.length;i++){const a=s.squad[i];if(a.active&&bossAreaHit(pattern,e.x,e.y,x,y,a.x,a.y))this.damageAlly(i,e.dmg);}
+        }
+      });
+      if(e.encounter?.phase==="warning"&&bossPhase!=="warning")ev.push({type:"boss_attack_warning",pattern:e.encounter.pattern});
+      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition")ev.push({type:"boss_phase_changed",phase:2});
+      const evolved=bossMoved||stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
+      if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
+      if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});
+      if (evolved) { /* movement and fire owned by the canonical adaptation */ }
+      else if (e.family === "ranged") {
+        if (d > 420) { e.x += (dx / d) * e.speed * dt; e.y += (dy / d) * e.speed * dt; }
+        else if (d < 280) { e.x -= (dx / d) * e.speed * dt; e.y -= (dy / d) * e.speed * dt; }
+        e.shootT -= dt;
+        if (e.shootT <= 0 && d < 640) {
+          e.shootT = 2.2;
+          this.fireProjectile(e.x, e.y, s.px, s.py, 260, e.dmg, 0xff5a5a, "enemy", false, 6);
+        }
+      } else {
+        e.x += (dx / d) * e.speed * dt;
+        e.y += (dy / d) * e.speed * dt;
+      }
+      if (d < e.radius + HAZARD_GEOMETRY.playerRadius) this.hurtPlayer(e.dmg, ev,e.boss?"boss-contact":"contact-"+e.family);
+      if (s.over) return ev;
+      // Command squad takes contact damage too (positioning matters).
+      for (let ai = 0; ai < s.squad.length; ai++) {
+        const a = s.squad[ai] as (typeof s.squad)[number];
+        if (!a.active) continue;
+        if (Math.hypot(a.x - e.x, a.y - e.y) < e.radius + 10) this.damageAlly(ai, e.dmg);
+      }
+    }
+
+    // 6. Spatial rebuild AFTER movement, BEFORE weapons/collisions.
+    this.rebuildSpatial();
+
+    // 7. Weapons + command squad + projectiles.
+    this.updatePrimaryRig(dt);
+    this.updateWeapons(dt, ev);
+    if (s.over) return ev;
+    this.updateSquad(dt, ev);
+    if (s.over) return ev;
+    // Territory upkeep (repair presence, economy aura) every step.
+    this.updateTerritories(dt, ev);
+    this.updateRelays(dt, ev);
+    if (s.over) return ev;
+    for (const p of s.projs) {
+      if (!p.active) continue;
+      p.life -= dt;
+      const oldX=p.x,oldY=p.y;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.life <= 0 || Math.abs(p.x - s.px) > 1400 || Math.abs(p.y - s.py) > 1400) {
+        p.active = false;
+        continue;
+      }
+      if (p.friendly) {
+        const travel=Math.hypot(p.x-oldX,p.y-oldY);
+        const hit = this.queryRadius(p.primary?(oldX+p.x)/2:p.x,p.primary?(oldY+p.y)/2:p.y,p.radius+6+(p.primary?travel/2+MAX_PRIMARY_COLLIDER:0),this.scratch);
+        if(p.primary){
+          let best=Infinity,index=-1;
+          for(let i=0;i<hit.length;i++){const e=hit[i]!,t=sweptHit(oldX,oldY,p.x,p.y,e.x,e.y,e.radius+p.radius+6);if(t!==null&&t<best){best=t;index=i;}}
+          if(index<0)hit.length=0;else {hit[0]=hit[index]!;hit.length=1;p.x=oldX+(p.x-oldX)*best;p.y=oldY+(p.y-oldY)*best;}
+        }
+        if (hit.length > 0) {
+          const e = hit[0] as SimEnemy;
+          const d = Math.max(1, Math.hypot(e.x - p.x, e.y - p.y));
+          const kb = 14;
+          if (p.src === "energy" && s.build.chainUnlocked) this.arcChain(e,e.x,e.y,p.dmg,ev,"chain");
+          this.hurtEnemy(e, p.dmg, p.src, ev, ((e.x - p.x) / d) * kb, ((e.y - p.y) / d) * kb);
+          p.active = false;
+        }
+      } else if (Math.hypot(p.x - s.px, p.y - s.py) < p.radius + HAZARD_GEOMETRY.playerRadius) {
+        p.active = false;
+        this.hurtPlayer(p.dmg, ev,"projectile-"+p.src);
+        if (s.over) return ev;
+      }
+    }
+
+    // 8. Mines (field-family signature — dormant without an active field core).
+    s.mineT -= dt;
+    if (s.mineT <= 0) {
+      s.mineT = 1.2;
+      const want = activeFamilies(s.originId, s.expansionFamily).includes("field") ? 1 + b.bonusMines : 0;
+      let placed = 0;
+      for (const m of s.mines) {
+        if (placed >= want) break;
+        if (m.active) continue;
+        const st = getWeaponStage("field", s.weaponStage.field);
+        m.active = true;
+        m.x = s.px + (this.streams.event.nextFloat() - 0.5) * 300;
+        m.y = s.py + (this.streams.event.nextFloat() - 0.5) * 300;
+        m.dmg = st.damage * b.damageMul;
+        m.radius = st.radius;
+        m.life = 12;
+        placed++;
+      }
+    }
+    for (const m of s.mines) {
+      if (!m.active) continue;
+      m.life -= dt;
+      if (m.life <= 0) { m.active = false; continue; }
+      const hit = this.queryRadius(m.x, m.y, m.radius, this.scratch);
+      if (hit.length > 0) {
+        m.active = false;
+        ev.push({type:"mine_detonated",x:m.x,y:m.y,radius:m.radius});
+        const lim = Math.min(hit.length, 12);
+        for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, m.dmg, "field", ev);
+        if (s.over) return ev;
+      }
+    }
+
+    // 9. Pickups.
+    for (const k of s.pickups) {
+      if (!k.active) continue;
+      const dx = s.px - k.x;
+      const dy = s.py - k.y;
+      const d = Math.max(1, Math.hypot(dx, dy));
+      if (d < 240) {
+        const pull = d < b.pickupR ? 700 : 260;
+        k.x += (dx / d) * pull * dt;
+        k.y += (dy / d) * pull * dt;
+      }
+      if (d < 22) {
+        k.active = false;
+        const before = s.knowledgeTotal;
+        this.gainKnowledge(k.value, "pickup", ev);
+        ev.push({type:"knowledge_collected",x:k.x,y:k.y,gained:s.knowledgeTotal-before});
+      }
+    }
+
+    // 10. Chunks + POI discovery (cached descriptors).
+    const { cx, cy } = worldToChunk(s.px, s.py);
+    const key = `${cx},${cy}`;
+    if (!s.chunksWorld.includes(key)) {
+      s.chunksWorld.push(key);
+      s.stats.chunksTotal++;
+    }
+    for (let ox = -1; ox <= 1; ox++) {
+      for (let oy = -1; oy <= 1; oy++) {
+        const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
+        for (const poi of desc.poi) {
+          if (s.poisWorld.includes(poi.id)) continue;
+          if (Math.hypot(poi.wx - s.px, poi.wy - s.py) < 70) {
+            s.poisWorld.push(poi.id);
+            s.stats.poisTotal++;
+            this.poiReward(poi.type, ev);
+          }
+        }
+      }
+    }
+    return ev;
+  }
+
+  /**
+   * POI reward contract (ADR-0006 Decision 3). First discovery of each family
+   * per world pays a DISTINCT deterministic reward; repeats pay Knowledge.
+   * Positions/visuals untouched. At most one modal per family per world, and
+   * never stacked over an open draft (falls back to base Knowledge).
+   */
+  private poiReward(type: POIType, ev: SimEvent[]): void {
+    const s = this.state;
+    const b = s.build;
+    const info = poiTypeFor(type);
+    if (s.poiFamiliesClaimed.includes(type)) {
+      this.gainKnowledge(info.knowledge, "poi", ev);
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: this.scaledKnowledge(info.knowledge) });
+      return;
+    }
+    s.poiFamiliesClaimed.push(type);
+    ev.push({ type: "poi_major", poiType: type });
+    if (type === "megasite") {
+      // Major cache + full repair, no modal interruption.
+      this.gainKnowledge(150, "poi", ev);
+      b.hp = b.maxHp;
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: this.scaledKnowledge(150) });
+      return;
+    }
+    if (type === "worldtree") {
+      b.hp = b.maxHp;
+    }
+    if (s.draftOpen) {
+      // Exactly-one draft surface wins: no modal stacking, base Knowledge instead.
+      this.gainKnowledge(info.knowledge, "poi", ev);
+      ev.push({ type: "poi_discovered", poiType: type, knowledge: this.scaledKnowledge(info.knowledge) });
+      return;
+    }
+    this.openPoiDraft(type, ev);
+  }
+
+  /** Themed discovery draft filters — the per-family reward contract. */
+  private openPoiDraft(type: POIType, ev: SimEvent[]): void {
+    this.openFilteredDraft(POI_DRAFT_FILTERS[type], ev);
+  }
+}
+
+/**
+ * Emergency fallback draft cards (exported for contract tests).
+ * Dedicated i18n keys whose numbers match the effects EXACTLY.
+ */
+export function fallbackCards(level: number): TechNode[] {
+  return [
+    { id: `fb-dmg-${level}`, titleKey: "tech.fallback.dmg.name", descriptionKey: "tech.fallback.dmg.description", age: "stone", domain: "warfare", tags: ["offense"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "damageMul", value: 0.1 }], synergyTags: [] },
+    { id: `fb-hp-${level}`, titleKey: "tech.fallback.hp.name", descriptionKey: "tech.fallback.hp.description", age: "stone", domain: "warfare", tags: ["defense"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "maxHpAdd", value: 25 }], synergyTags: [] },
+    { id: `fb-spd-${level}`, titleKey: "tech.fallback.spd.name", descriptionKey: "tech.fallback.spd.description", age: "stone", domain: "industry", tags: ["mobility"], prerequisites: [], exclusions: [], rarity: "common", weight: 1, effects: [{ kind: "moveMul", value: 0.07 }], synergyTags: [] },
+  ];
+}

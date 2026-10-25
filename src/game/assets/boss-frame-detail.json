@@ -1,0 +1,87 @@
+{
+  "cell": 256,
+  "sourceSha256": "f3991543911252e741cea9516846dcb6e329ee9957f06e55504873610a66af16",
+  "productionSha256": "55e71b3e9eb8fd4e33a421502625f6b76d412f7f0c443d03eb148f819b71b186",
+  "frames": [
+    {
+      "frame": 0,
+      "alphaBox": [
+        40,
+        42,
+        215,
+        234
+      ],
+      "footY": 234
+    },
+    {
+      "frame": 1,
+      "alphaBox": [
+        34,
+        45,
+        224,
+        234
+      ],
+      "footY": 234
+    },
+    {
+      "frame": 2,
+      "alphaBox": [
+        40,
+        53,
+        210,
+        234
+      ],
+      "footY": 234
+    },
+    {
+      "frame": 3,
+      "alphaBox": [
+        56,
+        38,
+        224,
+        236
+      ],
+      "footY": 236
+    },
+    {
+      "frame": 4,
+      "alphaBox": [
+        34,
+        56,
+        228,
+        233
+      ],
+      "footY": 233
+    },
+    {
+      "frame": 5,
+      "alphaBox": [
+        28,
+        44,
+        220,
+        232
+      ],
+      "footY": 232
+    },
+    {
+      "frame": 6,
+      "alphaBox": [
+        37,
+        74,
+        215,
+        235
+      ],
+      "footY": 235
+    },
+    {
+      "frame": 7,
+      "alphaBox": [
+        31,
+        114,
+        223,
+        232
+      ],
+      "footY": 232
+    }
+  ]
+}

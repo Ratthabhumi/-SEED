@@ -1,0 +1,134 @@
+{
+  "classification": "CONTROLLED_SOURCE_MATERIAL_INVENTORY_NOT_TOPOLOGY_OR_HUMAN_WINNER",
+  "records": [
+    {
+      "profile": "Content13",
+      "sha": "2222002b84928fff38dedad9689bfbcd0b67edae",
+      "worldgen": 2,
+      "biome": "verdant",
+      "sourcePath": "assets/seed/terrain/verdant-v2.png",
+      "selection": "historic source inventory; runtime treatment not certified"
+    },
+    {
+      "profile": "Content13",
+      "sha": "2222002b84928fff38dedad9689bfbcd0b67edae",
+      "worldgen": 2,
+      "biome": "arid",
+      "sourcePath": "assets/seed/terrain/arid-v1.png",
+      "selection": "NO_RASTER_SOURCE_IN_THIS_BUILD; legacy treatment not reconstructed"
+    },
+    {
+      "profile": "Content13",
+      "sha": "2222002b84928fff38dedad9689bfbcd0b67edae",
+      "worldgen": 2,
+      "biome": "tundra",
+      "sourcePath": "assets/seed/terrain/tundra-v1.png",
+      "selection": "NO_RASTER_SOURCE_IN_THIS_BUILD; legacy treatment not reconstructed"
+    },
+    {
+      "profile": "Content13",
+      "sha": "2222002b84928fff38dedad9689bfbcd0b67edae",
+      "worldgen": 2,
+      "biome": "badlands",
+      "sourcePath": "assets/seed/terrain/badlands-v1.png",
+      "selection": "NO_RASTER_SOURCE_IN_THIS_BUILD; legacy treatment not reconstructed"
+    },
+    {
+      "profile": "Content14",
+      "sha": "fd171b239d00827d8100ae165d551d5766630cc7",
+      "worldgen": 2,
+      "biome": "verdant",
+      "sourcePath": "assets/seed/terrain/verdant-v2.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content14",
+      "sha": "fd171b239d00827d8100ae165d551d5766630cc7",
+      "worldgen": 2,
+      "biome": "arid",
+      "sourcePath": "assets/seed/terrain/arid-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content14",
+      "sha": "fd171b239d00827d8100ae165d551d5766630cc7",
+      "worldgen": 2,
+      "biome": "tundra",
+      "sourcePath": "assets/seed/terrain/tundra-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content14",
+      "sha": "fd171b239d00827d8100ae165d551d5766630cc7",
+      "worldgen": 2,
+      "biome": "badlands",
+      "sourcePath": "assets/seed/terrain/badlands-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content15",
+      "sha": "efef11ef9729c3bbc388061a45b605688b6a213e",
+      "worldgen": 3,
+      "biome": "verdant",
+      "sourcePath": "assets/seed/content15/verdant-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content15",
+      "sha": "efef11ef9729c3bbc388061a45b605688b6a213e",
+      "worldgen": 3,
+      "biome": "arid",
+      "sourcePath": "assets/seed/content15/arid-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content15",
+      "sha": "efef11ef9729c3bbc388061a45b605688b6a213e",
+      "worldgen": 3,
+      "biome": "tundra",
+      "sourcePath": "assets/seed/content15/tundra-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "Content15",
+      "sha": "efef11ef9729c3bbc388061a45b605688b6a213e",
+      "worldgen": 3,
+      "biome": "badlands",
+      "sourcePath": "assets/seed/content15/badlands-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "15.2",
+      "sha": "ce63df35d52e8b3041d232f5e8e3438c087cecf8",
+      "worldgen": 3,
+      "biome": "verdant",
+      "sourcePath": "assets/seed/content15/verdant-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "15.2",
+      "sha": "ce63df35d52e8b3041d232f5e8e3438c087cecf8",
+      "worldgen": 3,
+      "biome": "arid",
+      "sourcePath": "assets/seed/content15/arid-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "15.2",
+      "sha": "ce63df35d52e8b3041d232f5e8e3438c087cecf8",
+      "worldgen": 3,
+      "biome": "tundra",
+      "sourcePath": "assets/seed/content15/tundra-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    },
+    {
+      "profile": "15.2",
+      "sha": "ce63df35d52e8b3041d232f5e8e3438c087cecf8",
+      "worldgen": 3,
+      "biome": "badlands",
+      "sourcePath": "assets/seed/content15/badlands-floor-v1.png",
+      "selection": "verified TerrainPainter import"
+    }
+  ],
+  "normalization": "Entire source image; same252px area/filter/exposure, source texture scale differs from runtime world-space warp."
+}

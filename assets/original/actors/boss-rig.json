@@ -1,0 +1,110 @@
+{
+  "source": "assets/original/actors/boss-rig.svg",
+  "sha256": "f898dbf0c0d28581fbf874a2ac9ae106df800945aef18f608bd51bb06299193d",
+  "runtimeRaster": [
+    1024,
+    768
+  ],
+  "rgbaBytes": 3145728,
+  "cell": 256,
+  "pivot": [
+    128,
+    128
+  ],
+  "uniqueParts": 9,
+  "maxImages": 14,
+  "sourceType": "ORIGINAL_EDITABLE_VECTOR_NOT_PAINTED_OR_RASTER_UPSCALE",
+  "humanAcceptance": "PENDING",
+  "cells": [
+    {
+      "frame": 0,
+      "bounds": [
+        43,
+        42,
+        212,
+        228
+      ],
+      "occupied": 23807
+    },
+    {
+      "frame": 1,
+      "bounds": [
+        61,
+        47,
+        194,
+        177
+      ],
+      "occupied": 9429
+    },
+    {
+      "frame": 2,
+      "bounds": [
+        98,
+        108,
+        157,
+        207
+      ],
+      "occupied": 4731
+    },
+    {
+      "frame": 3,
+      "bounds": [
+        90,
+        111,
+        163,
+        209
+      ],
+      "occupied": 6266
+    },
+    {
+      "frame": 4,
+      "bounds": [
+        96,
+        113,
+        159,
+        188
+      ],
+      "occupied": 4002
+    },
+    {
+      "frame": 5,
+      "bounds": [
+        88,
+        111,
+        160,
+        213
+      ],
+      "occupied": 5688
+    },
+    {
+      "frame": 6,
+      "bounds": [
+        73,
+        77,
+        176,
+        158
+      ],
+      "occupied": 6772
+    },
+    {
+      "frame": 7,
+      "bounds": [
+        97,
+        87,
+        158,
+        172
+      ],
+      "occupied": 3552
+    },
+    {
+      "frame": 8,
+      "bounds": [
+        53,
+        62,
+        205,
+        212
+      ],
+      "occupied": 17144
+    }
+  ]
+}

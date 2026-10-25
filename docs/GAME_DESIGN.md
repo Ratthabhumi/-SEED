@@ -34,9 +34,26 @@ All three gates (time + knowledge + objective) must pass; never timer-only.
 ## Tech DAG
 
 Critical spine guarantees completion (tools → metallurgy → ironwork → steam →
-fission → orbital). Seeded side branches per age (3–4 nodes) hang off spine/siblings.
-Validator enforces: acyclic, spine reachable, per-age ≥2 choices, offense + defense +
-mobility/economy present, space reachable. Drafts pick 3 with category diversity.
+fission → orbital). Seeded side branches hang directly off each age's spine node
+(wide frontier, not chains). Validator enforces: acyclic, spine reachable,
+per-age ≥2 choices, offense + defense + mobility/economy present, space reachable.
+Drafts pick 3 with category diversity; generic fallbacks are emergency-only.
+
+**Design A (v0.1.1 decision):** age transitions auto-grant that age's spine node.
+Rationale: the spine is the civilization's guaranteed breakthrough, and it keeps
+the draft frontier wide and readable. Owning-spine-as-gate (design B) was
+rejected as less legible — the HUD already shows three other gates.
+
+## Knowledge
+
+One resource, one operation (`gainKnowledge`): pickups, kills, and POIs scale
+exactly once by the knowledge multiplier into level XP, the age-gate total, and
+statistics. No double application, no hidden discrepancy.
+
+## Elites
+
+swift / armored / volatile / splitter / shielded — each with implemented
+mechanics and telegraph rings. Affixes that lack behavior must not be selectable.
 
 ## Synergies
 
@@ -64,3 +81,16 @@ stat inflation. (V0.1 stores the schema; options wire up in V0.2.)
 
 - All text via i18n keys; DOM UI for Thai-safe rendering; canvas text numeric-only.
 - Toasts for age/breakthrough/POI/boss; screen shake toggleable; autoplay-safe audio.
+
+## Readability remediation (v0.1.1, presentation-only)
+
+- Human Gate A result: `FAIL_BLOCKING_READABILITY` (EPOCH-GOLDEN-001, 10:15,
+  Space, 0 bosses, 0 ascensions; all feedback affirmed except stutter).
+- Response: `docs/VISUAL_LANGUAGE.md` hierarchy (player > threats > attacks >
+  rewards/POIs > navigation > environment), shape+outline identity per family,
+  elite/boss layering, strict friendly/hostile projectile channels, knowledge
+  shard, POI beacons, compass + off-screen boss indicator, onboarding hints,
+  HUD priority tiers, `?visual=1` review lab. No numeric balance touched:
+  simultaneous "too hard + too easy" is recorded as
+  `PERCEIVED_DIFFICULTY_INCONSISTENT` until a readable re-run says otherwise.
+- World stays unbounded (no invisible walls): infinite world + finite attention.

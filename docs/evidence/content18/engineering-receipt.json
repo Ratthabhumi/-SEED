@@ -1,0 +1,113 @@
+{
+  "classification": "PRECOMMIT_DIRTY_ENGINEERING_EVIDENCE_NOT_FINAL_HEAD_ACCEPTANCE",
+  "parent": "b909802d5fa18e5bbef11ce7ff5ae38a30b1bb37",
+  "versions": [
+    3,
+    18,
+    2
+  ],
+  "localCheck": {
+    "files": 88,
+    "testsPassed": 509,
+    "provenanceEntries": 61,
+    "build": "PASS"
+  },
+  "camera": {
+    "nativeTest": "PASS",
+    "rowsExpectedByTest": 120,
+    "rawLocalRows": "transient output overwritten by later Playwright invocation; use final CI artifact for exact-source raw rows",
+    "formula": "retained; matches installed native Camera.preRender"
+  },
+  "actors": [
+    {
+      "classification": "STAGED_NATIVE_WEBGL_ACTOR_PARITY_NOT_ART_APPROVAL",
+      "position": {
+        "x": -16384.375,
+        "y": 8128.125,
+        "zoom": 1.2
+      },
+      "difference": [
+        {
+          "changed": 0,
+          "max": 0
+        },
+        {
+          "changed": 0,
+          "max": 0
+        }
+      ]
+    },
+    {
+      "classification": "STAGED_NATIVE_WEBGL_ACTOR_PARITY_NOT_ART_APPROVAL",
+      "position": {
+        "x": 24576.125,
+        "y": -16800.375,
+        "zoom": 1.25
+      },
+      "difference": [
+        {
+          "changed": 11,
+          "max": 1
+        },
+        {
+          "changed": 0,
+          "max": 0
+        }
+      ]
+    },
+    {
+      "classification": "STAGED_NATIVE_WEBGL_ACTOR_PARITY_NOT_ART_APPROVAL",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "zoom": 1
+      },
+      "difference": [
+        {
+          "changed": 0,
+          "max": 0
+        },
+        {
+          "changed": 0,
+          "max": 0
+        }
+      ]
+    }
+  ],
+  "offscreenWarning": {
+    "beforeChangedPixels": 0,
+    "afterChangedPixels": 30367,
+    "minimum": 1000,
+    "beforeResult": "FAIL",
+    "afterResult": "PASS"
+  },
+  "oracleCorrections": [
+    {
+      "case": "numeric/string frame id",
+      "change": "review uses native numeric frame id"
+    },
+    {
+      "case": "animated DOM HUD included in native screenshot",
+      "change": "isolate canvas; Images repeat remains exact"
+    },
+    {
+      "case": "camera descriptor sampled before preRender",
+      "change": "review after real rendered frame"
+    },
+    {
+      "case": "fractional Canvas chunk edge alpha",
+      "observedOpaque": 918882,
+      "pixels": 921600,
+      "change": "exact all-channel parity plus all pixels nonempty; retain opaque metric"
+    },
+    {
+      "case": "far positive zoom1.25 actor colors",
+      "observedChangedChannels": 11,
+      "maxChannelDelta": 1,
+      "repeatImagesChanged": 0,
+      "rejectedExperiment": "chunk-local anchor unchanged11 channels, reverted",
+      "criterion": "max1/255 and <=0.01% changed channels; no existing danger, density, ground or performance threshold relaxed"
+    }
+  ],
+  "limits": "Staged synthetic evidence, no human artistic/fun approval. Parent diagnostic inclusive spans are not an A/B acceptance experiment. Final source/merge/CI/packages and measured performance belong to PR receipt."
+}

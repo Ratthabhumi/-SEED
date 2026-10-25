@@ -1,0 +1,80 @@
+{
+  "worldOne": {
+    "environment": "automated Playwright Chromium release build; GPU completion unmeasured",
+    "gpu": {
+      "devices": [
+        {
+          "vendor": "Google Inc. (Google)",
+          "device": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+        }
+      ],
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+    },
+    "rendererType": 2,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "ascension": 0,
+    "age": 0,
+    "frame": [
+      57.5,
+      68.89999999990687,
+      72.4000000001397
+    ],
+    "simStep": [
+      0.10000000009313226,
+      0.30000000004656613,
+      1.3000000000465661
+    ],
+    "rendererCpuSubmit": [
+      4.699999999953434,
+      6.399999999906868,
+      8.700000000186265
+    ],
+    "samples": [
+      128,
+      200,
+      129
+    ]
+  },
+  "child": {
+    "environment": "automated Playwright Chromium release build; GPU completion unmeasured",
+    "gpu": {
+      "devices": [
+        {
+          "vendor": "Google Inc. (Google)",
+          "device": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+        }
+      ],
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+    },
+    "rendererType": 2,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "ascension": 1,
+    "age": 0,
+    "frame": [
+      58.300000000046566,
+      65.30000000004657,
+      75.39999999990687
+    ],
+    "simStep": [
+      0.09999999986030161,
+      0.30000000004656613,
+      0.5
+    ],
+    "rendererCpuSubmit": [
+      4,
+      5.599999999860302,
+      8.300000000046566
+    ],
+    "samples": [
+      126,
+      240,
+      127
+    ]
+  }
+}

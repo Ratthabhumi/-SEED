@@ -42,4 +42,15 @@ describe("localization parity (release-blocking)", () => {
       expect(Array.from(v).join("")).toBe(v);
     }
   });
+
+  it("Tech Map control keys exist and have non-empty translations in EN and TH without raw-key fallback", () => {
+
+    const techKeys = ["ui.fit", "ui.techMap", "ui.buildPlan", "ui.unpin", "ui.pinPath"] as const;
+    for (const k of techKeys) {
+      expect((en as Record<string, string>)[k], `EN key ${k} must exist`).toBeDefined();
+      expect((th as Record<string, string>)[k], `TH key ${k} must exist`).toBeDefined();
+      expect((en as Record<string, string>)[k]).not.toBe(k);
+      expect((th as Record<string, string>)[k]).not.toBe(k);
+    }
+  });
 });

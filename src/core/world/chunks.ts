@@ -29,8 +29,8 @@ export function chunkCenter(cx: number, cy: number): { x: number; y: number } {
   return { x: (cx + 0.5) * CHUNK_SIZE, y: (cy + 0.5) * CHUNK_SIZE };
 }
 
-/** Deterministic descriptor — same (masterSeed, cx, cy) always yields the same result. */
-export function getChunkDescriptor(masterSeed: string, cx: number, cy: number): ChunkDescriptor {
+/** Deterministic descriptor — same (masterSeed, nonce, cx, cy) always yields the same result. */
+export function getChunkDescriptor(masterSeed: string, cx: number, cy: number, worldNonce = "w1"): ChunkDescriptor {
   const c = chunkCenter(cx, cy);
   const f = sampleFields(masterSeed, c.x, c.y);
   const terrainU32 = deriveUint32(masterSeed, "terrain");
@@ -45,6 +45,6 @@ export function getChunkDescriptor(masterSeed: string, cx: number, cy: number): 
     moisture: f.moisture,
     anomaly: f.anomaly,
     civilizationInfluence,
-    poi: getPOIsForChunk(masterSeed, cx, cy, f.anomaly),
+    poi: getPOIsForChunk(masterSeed, cx, cy, f.anomaly, worldNonce),
   };
 }

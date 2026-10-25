@@ -1,0 +1,49 @@
+{
+  "classification": "LATE_NATIVE_UI_REGRESSION_PRECOMMIT_AFTER_NOT_FINAL_HEAD_CERTIFICATION",
+  "beforeSource": "3b19720af57341cc5a5615417e7e4e7bb26c73d4",
+  "beforeSourceDirty": false,
+  "beforeTitleVisibilityTests": {
+    "failed": 2,
+    "languages": [
+      "en",
+      "th"
+    ],
+    "viewport": [
+      1280,
+      720
+    ],
+    "uiScale": 2
+  },
+  "rootCause": "Bottom SELECT autofocus scrolls all tall cards, hiding technology names. Comparison text also precedes names/effects.",
+  "correction": "Focus labelled heading, preserve fresh Enter through existing DecisionInputBoundary and Tab wrapping; names/effects precede long comparisons. No font shrink or weaker visibility assertion.",
+  "afterSource": "precommit dirty working tree based on3b19720",
+  "afterTests": {
+    "focusedPassed": 30,
+    "nativeCameraPassed": 1,
+    "nativeCameraObservations": 120,
+    "newTitleVisibility": "PASS EN/TH",
+    "freshEnterHeldKeys": "PASS all6 existing cases",
+    "tabWrapping": "PASS"
+  },
+  "rejectedHeadingOnlyAttempt": {
+    "freshEnterFailures": 6,
+    "enTitleLineBoxClippedRatio": 0.9751381278038025,
+    "result": "REJECTED; corrected production action binding and content order, no input/title assertions removed"
+  },
+  "checkpointFullBrowser": {
+    "source": "3b19720af57341cc5a5615417e7e4e7bb26c73d4",
+    "passed": 183,
+    "skipped": 1,
+    "wallMinutes": 35.6
+  },
+  "checkpointCiRace": {
+    "run": 38848308426,
+    "job": 116803719906,
+    "result": "FAILED camera test",
+    "expectedZoom": 1,
+    "actualZoom": 1.25,
+    "cause": "Pending native resize applies responsive gameZoom after explicit test zoom.",
+    "correction": "Wait actual viewport/render stage; no production camera formula change. Keep108 frame observations/total120 rows and same timeout, group browser RAF to remove CDP round trips."
+  },
+  "limits": "Selected synthetic screenshots, not human visual/fun approval. Before screenshot includes test failure context only in local trace, no private human QA. Final exact-source full CI/packages/physical measurements belong to the PR receipt."
+}

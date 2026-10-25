@@ -1,0 +1,58 @@
+// Simulation → renderer events. Payloads are ids/keys/numbers only —
+// the adapter maps them to toasts, sounds, and screen shake. No English here.
+import type { AgeId } from "../tech/graph";
+import type { POIType } from "../world/poi";
+import type { WeaponFamily } from "../combat/weapons";
+import type { OutpostSpec } from "../world/territory";
+import type { SquadMode } from "../combat/squad";
+import type {EnemyFamily} from "../director/director";
+
+export type SimEvent =
+  | {type:"boss_attack_warning";pattern:import("../combat/bossEncounter").BossPattern}
+  | {type:"boss_phase_changed";phase:2}
+  | {type:"boss_attack_fired";pattern:import("../combat/bossEncounter").BossPattern;x:number;y:number}
+  | { type: "weapon_fired"; family: WeaponFamily; x: number; y: number; tx: number; ty: number; release?: import('../combat/weaponGeometry').PrimaryRelease }
+  | { type: "weapon_impact"; family: WeaponFamily; x: number; y: number; hpDamage: number; shieldDamage: number }
+  | { type: "mine_detonated"; x: number; y: number; radius: number }
+  | { type: "knowledge_collected"; x: number; y: number; gained: number }
+  | { type: "beam_fired"; family: WeaponFamily; tier: number; x1: number; y1: number; x2: number; y2: number; release?: import('../combat/weaponGeometry').PrimaryRelease }
+  | { type: "energy_impact"; x: number; y: number; hpDamage: number; shieldDamage: number; source: string }
+  | { type: "energy_arc"; x1:number; y1:number; x2:number; y2:number; source:"chain"|"relay" }
+  | { type: "run_completed" }
+  | { type: "outpost_dismantled"; poiId: string; released: number }
+  | { type: "draft_opened"; context: "level" | "poi" }
+  | { type: "tech_selected"; techId: string; quality?: "COMMON" | "UNCOMMON" | "RARE" | "MYTHIC"; modifierIds?: string[]; effectiveEffects?: readonly import("../tech/graph").TechEffect[] }
+  | { type: "draft_reserved"; techId: string }
+  | { type: "draft_rerolled"; rerollsLeft: number; prevIds: string[]; newIds: string[]; changed: number }
+  | { type: "draft_reroll_unavailable" }
+  | { type: "draft_skipped" }
+  | { type: "pin_set"; target: string }
+  | { type: "breakthrough"; id: string }
+  | { type: "age_reached"; age: AgeId }
+  | { type: "mission_complete"; age: AgeId }
+  | { type: "poi_discovered"; poiType: POIType; knowledge: number }
+  | { type: "poi_major"; poiType: POIType }
+  | { type: "territory_claimed"; poiId: string; poiType: POIType }
+  | { type: "outpost_spec"; poiId: string; spec: OutpostSpec }
+  | { type: "outpost_upgraded"; poiId: string }
+  | { type: "outpost_garrisoned"; poiId: string; spec: OutpostSpec }
+  | { type: "outpost_recalled"; poiId: string; spec: OutpostSpec }
+  | { type: "outpost_lost"; poiId: string }
+  | { type: "outpost_repaired"; poiId: string }
+  | { type: "raid_incoming"; poiId: string; seconds: number }
+  | { type: "raid_repelled"; poiId: string }
+  | { type: "squad_command"; mode: SquadMode }
+  | { type: "ability_used"; id: string }
+  | { type: "expansion_offered"; families: [WeaponFamily, WeaponFamily] }
+  | { type: "expansion_unlocked"; family: WeaponFamily }
+  | { type: "boss_warning" }
+  | { type: "stronghold_revealed"; x: number; y: number }
+  | { type: "boss_killed" }
+  | { type: "ascension_ready" }
+  | { type: "legacy_granted"; id: string }
+  | { type: "ascended"; worldSeed: string; ascension: number }
+  | { type: "player_hurt"; damage: number; source?: string }
+  | { type: "player_died" }
+  | {type:"enemy_attack_fired";kind:"rush"|"burst"}
+  | { type: "enemy_attack_warning";kind:"rush"|"burst";x:number;y:number }
+  | { type: "enemy_killed"; elite: boolean; boss: boolean; x: number; y: number;family?:EnemyFamily;radius?:number;visualTier?:number };

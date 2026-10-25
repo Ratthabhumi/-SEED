@@ -1,0 +1,26 @@
+{
+  "classification": "SYNTHETIC_DIAGNOSTICS_NOT_BUDGET_OR_HUMAN_PASS",
+  "files": [
+    {
+      "path": "slice-parent-diagnostic.json.gz",
+      "bytes": 73025,
+      "sha256": "e25c3a5728c7bbc030c5f1b0101bf0214718a3a039f80d5a6033d0275d7703f7",
+      "rawSha256": "5affff090a6175fa2d3c4d3a6dbd27d33f1506aba6c7da15a9f0dc841c1fb79b",
+      "scope": "clean PR17 diagnostic"
+    },
+    {
+      "path": "slice-cache-probe.json.gz",
+      "bytes": 49388,
+      "sha256": "0462f327feb83b8243465dfb9ebd0532a7a499e5d9786f7f275be835c5000c75",
+      "rawSha256": "d30e0fba14c7d761afa0fd804081534a25ec1cbc45ef667979505a9726f7ffcb",
+      "scope": "REJECTED_DIRTY_PROTOTYPE_NOT_FINAL_RUNTIME"
+    },
+    {
+      "path": "slice-stroke-probe.json.gz",
+      "bytes": 56459,
+      "sha256": "34f7705af8dc7e340d04656df30f4189b7a797ca976caff57b615b7fd294efa6",
+      "rawSha256": "cdc4b11876cbba3d461f75643532f63b78e6b92a293d10527eb7a7398d60cd2c",
+      "scope": "REJECTED_DIRTY_PROTOTYPE_NOT_FINAL_RUNTIME"
+    }
+  ]
+}

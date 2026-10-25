@@ -1,0 +1,163 @@
+import { describe, it, expect } from "vitest";
+import {
+  validateQaPayload,
+  sanitizeSeed,
+  stampOf,
+  qaFileNames,
+  storeQaReport,
+  processReportPost,
+  QA_SINK_MAX_BYTES,
+  QA_REPORT_DIR,
+  canAdvanceLatest,
+} from "../../scripts/qa-sink.mjs";
+declare const require: (name:string)=>any;
+
+const VALID = {
+  kind: "qa-report",
+  seed: "EPOCH-GOLDEN-001",
+  reason: "target-complete",
+  markdown: "# report",
+  data: { seed: "EPOCH-GOLDEN-001", checkpoints: [] },
+};
+
+/** In-memory filesystem double — no node:fs import needed in tests. */
+function memfs() {
+  const files = new Map<string, string>();
+  const dirs: string[] = [];
+  return {
+    files,
+    write: (p: string, t: string): void => {
+      files.set(p, t);
+    },
+    mkdir: (p: string): void => {
+      dirs.push(p);
+    },
+  };
+}
+
+describe("qa sink validation", () => {
+  it("accepts a valid QA payload", () => {
+    expect(validateQaPayload(VALID)).toEqual({ ok: true });
+  });
+
+  it("rejects wrong kind, bad seed, bad reason, bad shape", () => {
+    expect(validateQaPayload({ ...VALID, kind: "x" }).ok).toBe(false);
+    expect(validateQaPayload({ ...VALID, seed: "" }).ok).toBe(false);
+    expect(validateQaPayload({ ...VALID, reason: 42 }).ok).toBe(false);
+    expect(validateQaPayload({ ...VALID, markdown: 42 }).ok).toBe(false);
+    expect(validateQaPayload(null).ok).toBe(false);
+    expect(validateQaPayload("str").ok).toBe(false);
+  });
+
+  it("rejects oversized payloads before parsing", () => {
+    const out = processReportPost("/nope", "{}", QA_SINK_MAX_BYTES + 1, new Date());
+    expect(out.status).toBe(400);
+    expect((out.body as { reason: string }).reason).toBe("too-large");
+  });
+
+  it("rejects bad JSON and invalid payloads", () => {
+    expect(processReportPost("/nope", "{oops", 6, new Date()).status).toBe(400);
+    expect(processReportPost("/nope", JSON.stringify({ kind: "x" }), 12, new Date()).status).toBe(400);
+  });
+});
+
+describe("qa sink filenames", () => {
+  it("sanitizes hostile seeds and stamps without colons", () => {
+    expect(sanitizeSeed("../../etc/passwd")).toBe("______etc_passwd");
+    expect(sanitizeSeed("")).toBe("seed");
+    expect(stampOf(new Date(Date.UTC(2026, 8, 30, 0, 30, 15)))).toBe("2026-09-30T003015Z");
+    const names = qaFileNames(new Date(Date.UTC(2026, 8, 30)), "EPOCH-GOLDEN-001");
+    expect(names).toEqual({
+      json: "latest.json",
+      md: "latest.md",
+      sJson: "2026-09-30T000000Z-EPOCH-GOLDEN-001.json",
+      sMd: "2026-09-30T000000Z-EPOCH-GOLDEN-001.md",
+    });
+    for (const n of Object.values(names)) {
+      expect(n).not.toContain("/");
+      expect(n).not.toContain("..");
+      expect(n).not.toContain(":");
+    }
+  });
+});
+
+describe("qa sink storage", () => {
+  it("atomically replaces the pointer on disk and retains delayed archives",()=>{
+    const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),"seed-qa-order-"));
+    try {
+      for(const reportSequence of [129,128,130])storeQaReport(root,{
+        ...VALID,sessionId:"synthetic-disk-order",reportSequence,
+        data:{...VALID.data,endReason:reportSequence===130?"human-ended":""},
+      },new Date(Date.UTC(2026,9,25,0,0,reportSequence-128)));
+      const dir=path.join(root,QA_REPORT_DIR),names=fs.readdirSync(dir);
+      expect(JSON.parse(fs.readFileSync(path.join(dir,"latest.json"),"utf8"))).toMatchObject({reportSequence:130,endReason:"human-ended"});
+      expect(names.filter((n:string)=>n.endsWith(".json"))).toHaveLength(4);
+      expect(names.some((n:string)=>n.includes(".tmp-"))).toBe(false);
+    } finally {
+      // Delete only this test's freshly created, verified temporary directory.
+      expect(path.dirname(root)).toBe(path.resolve(os.tmpdir()));
+      expect(path.basename(root).startsWith("seed-qa-order-")).toBe(true);
+      fs.rmSync(root,{recursive:true,force:true});
+    }
+  });
+  it("protects terminal revisions from stale autosaves without blocking a new session",()=>{
+    const terminal={sessionId:"a",reportSequence:130,endReason:"human-ended"};
+    expect(canAdvanceLatest(terminal,{sessionId:"a",reportSequence:129,endReason:""})).toBe(false);
+    expect(canAdvanceLatest(terminal,{sessionId:"a",reportSequence:130})).toBe(false);
+    expect(canAdvanceLatest(terminal,{sessionId:"a",reportSequence:131})).toBe(true);
+    expect(canAdvanceLatest(terminal,{sessionId:"b",reportSequence:0})).toBe(true);
+    expect(canAdvanceLatest({},{})).toBe(true);
+  });
+  it("keeps sequence129 as latest when delayed128 arrives, while archiving both", () => {
+    const fs=memfs();
+    const read=(p:string)=>{if(!fs.files.has(p))throw Error("ENOENT");return fs.files.get(p)!;};
+    for(const reportSequence of [129,128])storeQaReport("/root",{
+      ...VALID,sessionId:"synthetic-out-of-order",reportSequence,
+      reason:"autosave",data:{...VALID.data,endReason:"",reportSequence},
+      markdown:`sequence${reportSequence}`,
+    },new Date(Date.UTC(2026,9,25,0,0,reportSequence-128)),fs.write,fs.mkdir,read);
+    const latest=[...fs.files].find(([p])=>p.endsWith("latest.json"))![1];
+    expect(JSON.parse(latest).reportSequence).toBe(129);
+    expect([...fs.files].find(([p])=>p.endsWith("latest.md"))![1]).toBe("sequence129");
+    expect([...fs.files.keys()].some(p=>p.endsWith("-128.json"))).toBe(true);
+    expect([...fs.files.keys()].some(p=>p.endsWith("-129.json"))).toBe(true);
+  });
+  it("preserves different sessions and response revisions saved in the same second", () => {
+    const fs = memfs();
+    const now = new Date(Date.UTC(2026, 8, 30));
+    for (const [sessionId, reportSequence] of [["a", 1], ["b", 1], ["b", 2]] as const) {
+      storeQaReport("/root", { ...VALID, sessionId, reportSequence }, now, fs.write, fs.mkdir);
+    }
+    expect(fs.files.size).toBe(8); // latest pair + three archived pairs
+  });
+  it("writes only latest + stamped copies under the fixed directory", () => {
+    const fs = memfs();
+    const stored = storeQaReport(
+      "/root", VALID, new Date(Date.UTC(2026, 8, 30, 1, 2, 3)), fs.write, fs.mkdir,
+    );
+    expect(stored.files).toHaveLength(4);
+    const keys = [...fs.files.keys()].map((p) => p.split(/[\\/]/).pop() as string).sort();
+    expect(keys).toEqual([
+      "2026-09-30T010203Z-EPOCH-GOLDEN-001.json",
+      "2026-09-30T010203Z-EPOCH-GOLDEN-001.md",
+      "latest.json",
+      "latest.md",
+    ]);
+    const latest = [...fs.files.entries()].find(([p]) => p.endsWith("latest.json"))?.[1] as string;
+    expect(JSON.parse(latest).seed).toBe("EPOCH-GOLDEN-001");
+  });
+
+  it("latest report updates on repeat POSTs", () => {
+    const fs = memfs();
+    const root = "/root";
+    const now = new Date(Date.UTC(2026, 8, 30));
+    const put = (reason: string): void => {
+      storeQaReport(root, { ...VALID, reason, data: { seed: VALID.seed, reason } }, now, fs.write, fs.mkdir);
+    };
+    put("autosave");
+    put("target-complete");
+    const latest = [...fs.files.entries()].find(([p]) => p.endsWith("latest.json"))?.[1] as string;
+    expect(JSON.parse(latest).reason).toBe("target-complete");
+  });
+});

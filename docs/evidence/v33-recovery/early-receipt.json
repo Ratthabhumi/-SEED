@@ -1,0 +1,63 @@
+{
+  "classification": "STAGED_NATIVE_OFFICIAL_BASELINE_COMPARISON_NOT_HUMAN_ACCEPTANCE",
+  "rows": [
+    {
+      "label": "pr22",
+      "build": {
+        "sha": "c529f7c47d2e142b51e37255fd965fd24a966d03",
+        "dirty": false,
+        "asset": "http://127.0.0.1:4291/assets/index-5xi2ZtyR.js"
+      },
+      "errors": [],
+      "video": "pr22-slice.webm",
+      "videoSha256": "9df18f4db9a1079aac229ec4f69650cb59c89d8fcd584425c490314a55478706",
+      "observations": [
+        "boss-warning",
+        "boss-impact",
+        "boss-recovery",
+        "hunters-age-0",
+        "hunters-age-1",
+        "hunters-age-2",
+        "hunters-age-3",
+        "hunters-age-4",
+        "hunters-age-5",
+        "beam-release",
+        "boss-phase2",
+        "dense-hc",
+        "prepared-real-world2",
+        "pause",
+        "restart"
+      ]
+    },
+    {
+      "label": "candidate",
+      "build": {
+        "sha": "c529f7c47d2e142b51e37255fd965fd24a966d03",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4292/assets/index-BLu0jF3B.js"
+      },
+      "errors": [],
+      "video": "candidate-slice.webm",
+      "videoSha256": "30616f2b316ce92e11990c77dc25b125865ac10fe53712f74a2ea717ee11dfc6",
+      "observations": [
+        "boss-warning",
+        "boss-impact",
+        "boss-recovery",
+        "hunters-age-0",
+        "hunters-age-1",
+        "hunters-age-2",
+        "hunters-age-3",
+        "hunters-age-4",
+        "hunters-age-5",
+        "beam-release",
+        "boss-phase2",
+        "dense-hc",
+        "prepared-real-world2",
+        "pause",
+        "restart"
+      ]
+    }
+  ],
+  "rawSha256": "9256c786198edf37b95b006eb6aafdc509e63618aaae6ae84e42e45580ef0762",
+  "limits": "Real canonical attacks in staged fixtures. Startup histories are not claimed identical. Ascension uses explicit ready fixture then actual canonical UI progression, not a natural victory. No new painted anatomy, natural progression or fun verdict."
+}

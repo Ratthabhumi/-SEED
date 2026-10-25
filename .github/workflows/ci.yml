@@ -1,0 +1,156 @@
+name: ci
+permissions:
+  contents: read
+  actions: read
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  render_evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: gh run download 38918375553 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content18-baseline-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: node scripts/measure-content153.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: render-evidence-${{ github.sha }}
+          path: test-results/content153-performance/
+          if-no-files-found: warn
+          retention-days: 14
+  verify:
+    strategy:
+      matrix:
+        node: [22, 24]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - run: npm run zip
+      - run: npm run release:verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seed-web-${{ steps.version.outputs.version }}-node${{ matrix.node }}
+          path: release/seed-web-v${{ steps.version.outputs.version }}.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run test:e2e
+      - run: gh run download 38918375553 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v3-pr18-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: gh run download 38990564374 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v3-pr19-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python -m zipfile -e scratch/v3-pr18-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr18-dist
+      - run: python -m zipfile -e scratch/v3-pr19-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr19-dist
+      - run: node scripts/capture-v3-recovery.mjs self
+      - run: gh run download 39822469156 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v32-pr21-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python -m zipfile -e scratch/v32-pr21-official/seed-web-v0.2.0-dev.0.zip scratch/v32-pr21-dist
+      - run: gh run download 40153783585 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v36-pr25-official
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: python -m zipfile -e scratch/v36-pr25-official/seed-web-v0.2.0-dev.0.zip scratch/v36-pr25-dist
+      - run: node scripts/capture-v32-slice.mjs test-results/v36-final scratch/v36-pr25-dist fe04927d0a03f1478cdf4b57bb4aee40a68256dd pr25
+      - run: node scripts/capture-content153.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v36-slice-${{ github.sha }}
+          path: |
+            test-results/v36-final/*-slice.webm
+            test-results/v36-final/*-boss-recovery.png
+            test-results/v36-final/*-beam-release.png
+            test-results/v36-final/*-hunters-age-5.png
+            test-results/v36-final/*-loading.png
+            test-results/v36-final/*-dense-hc.png
+            test-results/v36-final/*-prepared-real-world2.png
+            test-results/v36-final/comparison.json
+            test-results/browser/v32-*.json
+            test-results/browser/v33-*.png
+            test-results/browser/v35-*.json
+            test-results/browser/v35-*.png
+            test-results/browser/v36-*.json
+            test-results/browser/v36-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-evidence-${{ github.sha }}
+          path: |
+            test-results/browser/streaming-counters.json
+            test-results/browser/**/*.webm
+            test-results/browser/**/*.png
+            test-results/browser/content153/*.json
+            test-results/browser/content161-*.json
+            test-results/browser/content18-*.json
+            test-results/browser/overhaul-*.json
+            test-results/browser/v3-*.json
+            test-results/browser/v31-*.json
+            test-results/browser/v32-*.json
+            test-results/browser/content153/*.webm
+            test-results/browser/**/trace.zip
+            test-results/browser/**/error-context.md
+            test-results/evolution-performance.json
+            test-results/v3-comparison/
+            test-results/v36-final/
+          if-no-files-found: warn
+          retention-days: 14
+
+  analyze:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run analyze
+      - run: node scripts/run-progression-cohort.mjs
+      - run: node scripts/run-natural-boss.mjs
+      - run: node scripts/run-boss-policy-experiment.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: progression-cohort-${{ github.sha }}
+          path: |
+            test-results/integrated-progression-cohort.json
+            test-results/content153-natural-boss.json
+            test-results/content18-boss-policy-experiment.json
+          if-no-files-found: error
+          retention-days: 14

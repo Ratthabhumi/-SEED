@@ -1,6 +1,10 @@
 // Minimal DOM UI helpers. All player-facing text via i18n keys (no hardcoded strings).
 import { t } from "../i18n/i18n";
 import type { EnKeys } from "../i18n/en";
+import {NotificationManager,type NotificationPriority} from "./ui/NotificationManager";
+let notifications:NotificationManager|undefined;
+export function clearNotifications():void {notifications?.dispose();notifications=undefined;}
+export function notificationCounts():{visible:number;queued:number}{return notifications?.counts()??{visible:0,queued:0};}
 
 /** Root overlay container (single instance over the Phaser canvas). */
 export function uiRoot(): HTMLElement {
@@ -14,6 +18,7 @@ export function uiRoot(): HTMLElement {
 }
 
 export function clearUI(): void {
+  clearNotifications();
   uiRoot().innerHTML = "";
 }
 
@@ -35,20 +40,24 @@ export function button(labelKey: EnKeys, onClick: () => void, cls = "btn"): HTML
 
 /** Transient toast message (age transitions, breakthroughs, POIs). */
 export function toast(titleKey: EnKeys, titleParam?: string, sub?: string, ms = 2600): void {
-  const root = uiRoot();
-  const d = document.createElement("div");
-  d.className = "toast";
-  const h = document.createElement("div");
-  h.className = "toast-title";
-  h.textContent = titleParam ? `${t(titleKey)} — ${titleParam}` : t(titleKey);
-  d.appendChild(h);
-  if (sub) {
-    const s = document.createElement("div");
-    s.className = "toast-sub";
-    s.textContent = sub;
-    d.appendChild(s);
+  notifications??=new NotificationManager(uiRoot());
+  const priority:NotificationPriority=titleKey.startsWith("combat.boss.")||["ui.bossWarning","ui.raidIncoming","ui.outpostLost"].includes(titleKey)?"critical":titleKey.startsWith("claim.")||["ui.techAcquired","ui.ageReached","ui.missionComplete","ui.raidRepelled"].includes(titleKey)?"important":"info";
+  notifications.push(titleParam?`${t(titleKey)} — ${titleParam}`:t(titleKey),sub,ms,priority);
+}
+
+/** Apply player-selected UI scale via CSS variable. */
+export function applyUiScale(scale: number): void {
+  if (typeof document !== "undefined") {
+    document.documentElement.style.setProperty("--ui-scale", String(scale));
   }
-  root.appendChild(d);
-  setTimeout(() => d.classList.add("show"));
-  setTimeout(() => { d.classList.remove("show"); setTimeout(() => d.remove(), 400); }, ms);
+}
+
+/**
+ * Keyboard auto-repeat gate (v0.24): Q/E/R/F gameplay commands must be
+ * edge-triggered — one intentional command per physical press. Held-key
+ * auto-repeat otherwise floods squad telemetry (568 phantom follows) and
+ * double-fires abilities. Movement stays level-polled (never gated here).
+ */
+export function isKeyRepeat(ev: { repeat?: boolean } | undefined | null): boolean {
+  return ev?.repeat === true;
 }

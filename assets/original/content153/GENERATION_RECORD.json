@@ -1,0 +1,41 @@
+{
+  "tool": "image_gen built-in",
+  "date": "2026-10-15",
+  "license": "MIT (project original generated artwork)",
+  "hostile": {
+    "source": "hostile-attacks-v1.png",
+    "layout": "four horizontal sprites; normalized preserving alpha",
+    "bounds": [
+      [
+        23,
+        14,
+        82,
+        100
+      ],
+      [
+        22,
+        14,
+        83,
+        100
+      ],
+      [
+        22,
+        14,
+        84,
+        100
+      ],
+      [
+        25,
+        14,
+        77,
+        100
+      ]
+    ]
+  },
+  "motion": {
+    "source": "hunters-motion-experiment-v2.png",
+    "status": "WALK_WITHHELD_CONTACT_CHRONOLOGY_UNVERIFIED",
+    "reference": "assets/original/content15-animation/hunters-reference-v1.png"
+  },
+  "humanArtAcceptance": "PENDING"
+}

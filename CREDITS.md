@@ -15,7 +15,8 @@ No trademark/name clearance performed yet — treat the display title as provisi
 
 ## Third-party
 
-- Phaser 4.2.1 (ISC-ish / open license — see `node_modules/phaser/LICENSE.md`)
+- Phaser 4.2.1 — MIT License (Copyright (c) 2026 Richard Davey, Phaser Studio Inc.;
+  full text in `public/licenses/PHASER-MIT.txt`, shipped in the release artifact)
 - Vite, TypeScript, Vitest (MIT)
 - Noto Sans + Noto Sans Thai — SIL Open Font License 1.1, bundled via
   `@fontsource/noto-sans` and `@fontsource/noto-sans-thai` (local files in the
@@ -25,3 +26,31 @@ No trademark/name clearance performed yet — treat the display title as provisi
 
 All sound effects are synthesized at runtime with the Web Audio API (`src/game/audio/sfx.ts`).
 No external or copyrighted audio is used.
+
+## Original painted gameplay assets
+
+Four hero atlases, enemy/boss/outpost atlases and Verdant/Arid/Tundra/Badlands floors were generated for this project using OpenAI imagegen on2026-10-13. Raw source PNGs, exact tool prompts and normalization records are retained; these assets are art-review-pending. See docs/art/GENERATION_RECORD.json and assets/ASSET_MANIFEST.json. They do not represent completed skeletal or multi-frame combat animations.
+
+Three original painted combat/equipment/world-prop atlases were generated with
+the same built-in tool on2026-10-13:16 projectile/trap cells,24 weapon-tier cells
+and12 landmark/codex/Guardian/impact-sample cells. The impact sample is unbound.
+Sources/prompts/packing records/normalized alpha/hashes are retained under
+assets/original/combat and the generation record. Human acceptance is pending;
+static six-tier weapons are not six animated costumes.
+
+Content15 original art (2026-10-14):48 weapon-neutral front/back costume cells
+for four Origins across six Ages and four quiet biome floor sources. Original
+project MIT artwork generated with OpenAI imagegen; exact three prompts/raw
+sources retained in assets/original/content15/GENERATION_RECORD.json. Five
+selected PNGs have source/production checksums in the manifest, including the
+additional back-source hash. Offline packing is reproducible with
+scripts/normalize-content15.py. Human review and full authored animation remain
+pending; procedural bob and weapon recoil are presentation, not animation assets.
+# Content15 animation reference
+
+Original Hunters Stone/Space36 transparent key poses generated with built-in
+imagegen using the project's neutral Hero identity reference. Project MIT.
+Sources and generation summary: assets/original/content15-animation/.
+Reproducible technical packing: scripts/pack-animation-reference.py.
+Sparse walk/attack clips and authored key poses; full library and human art
+approval remain pending. No third-party character or animation copied.

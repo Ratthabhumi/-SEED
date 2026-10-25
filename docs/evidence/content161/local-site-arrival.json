@@ -1,0 +1,30 @@
+{
+  "classification": "STAGED_TELEPORT_REAL_CANONICAL_DISCOVERY_NOT_HUMAN_LATENCY",
+  "build": {
+    "sha": "4d1dc0cb8a6e992dfa450aa73989d2984fcf03b0",
+    "dirty": true
+  },
+  "rows": [
+    {
+      "poiId": "poi-21e04aff-0--2-0",
+      "discoveredSimTime": 0.6833333333333338,
+      "x": 405.14020949602127,
+      "y": -716.9750918447971,
+      "firstRenderFrame": 299,
+      "discoveryToRenderMs": 119,
+      "classification": "POST_RENDER_CPU_OBSERVATION_NOT_GPU_PRESENTATION"
+    }
+  ],
+  "sourceBlobs": {
+    "src/core/combat/bossEncounter.ts": "2c24334eda5ca0ece8eaa7a90cc4eaa09ad61028",
+    "src/core/seed/versions.ts": "65acc2b3c7c50b905e0ac3aed9536bc6cb992dcb",
+    "src/game/scenes/GameScene.ts": "dc49842323e63f58e889e918edf7fcb2d8c051ec",
+    "src/game/render/TerrainPainter.ts": "78ffe4fdbac5a57cc3e640ca352e7e0c59cd0308",
+    "src/game/render/siteArrival.ts": "0ef017d9024a6260fafbbd2bd2aab2bcb0a0296f",
+    "src/game/render/siteGrounding.ts": "2ca6900d6a960468a6a8d04a6d26e06dffb31618",
+    "src/game/assets/site-anchors.json": "55a36cf6c13ca0aa59fbcd3dd91e0c6fed592755",
+    "src/game/assets/periodicTerrain.ts": "57727fa11965edda1c5e3f26e6009035c9e562a8",
+    "assets/seed/terrain/periodic/materials.rgba": "8032eef069beff26455b24b7f216fe9d7f959a9e",
+    "tests/qa/frontierPolicy.audit.test.ts": "3a50f3c1529f82c7d2f4ca6fdd1e043b6bd03ffb"
+  }
+}

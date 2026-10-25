@@ -1,0 +1,2016 @@
+{
+  "productSha": "070098909d40cac810e2438311e54ba2c21d53ed",
+  "parentSha": "fd171b239d00827d8100ae165d551d5766630cc7",
+  "hardware": "Intel UHD630 / ANGLE D3D11 / driver31.0.101.2141",
+  "classification": "TECHNICAL_FIXTURES_NOT_HUMAN_ACCEPTANCE",
+  "paused": {
+    "hardware-before": {
+      "rows": [
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.799999999999272,
+              16.800000000000182
+            ],
+            "worstMs": 16.800000000000182,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 23
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.3999999910593033,
+              0.9000000059604645,
+              3.2000000029802322
+            ],
+            "worstRefreshMs": 3.2000000029802322
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.800000000000182,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 24
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.30000001192092896,
+              1,
+              2.4000000059604645
+            ],
+            "worstRefreshMs": 2.4000000059604645
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.799999999999272,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 35
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.2000000029802322,
+              2.800000011920929,
+              4.799999997019768
+            ],
+            "worstRefreshMs": 4.799999997019768
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.799999999999272,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 35
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.3999999910593033,
+              0.5999999940395355,
+              1.5999999940395355
+            ],
+            "worstRefreshMs": 1.5999999940395355
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999709,
+              16.799999999999272,
+              16.799999999999272
+            ],
+            "worstMs": 16.799999999999272,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 46
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              0.699999988079071,
+              1.2999999970197678
+            ],
+            "worstRefreshMs": 1.2999999970197678
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999709,
+              16.700000000000728,
+              16.799999999999272
+            ],
+            "worstMs": 16.799999999999272,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 49
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.1000000089406967,
+              2.199999988079071,
+              2.9000000059604645
+            ],
+            "worstRefreshMs": 2.9000000059604645
+          }
+        }
+      ],
+      "dense": {
+        "enemies": 500,
+        "projectiles": 800,
+        "summary": {
+          "samples": 40,
+          "frameMs": [
+            16.700000000000728,
+            16.80000000000291,
+            16.80000000000291
+          ],
+          "worstMs": 16.80000000000291,
+          "spikes": [
+            {
+              "aboveMs": 16.7,
+              "frames": 24
+            },
+            {
+              "aboveMs": 33.3,
+              "frames": 0
+            },
+            {
+              "aboveMs": 50,
+              "frames": 0
+            },
+            {
+              "aboveMs": 100,
+              "frames": 0
+            }
+          ],
+          "refreshGroundMs": [
+            0.4000000059604645,
+            1.0999999940395355,
+            1.1000000089406967
+          ],
+          "worstRefreshMs": 1.1000000089406967
+        }
+      },
+      "errors": []
+    },
+    "hardware-after": {
+      "rows": [
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.700000000000273,
+              16.800000000000182
+            ],
+            "worstMs": 16.800000000000182,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 27
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              0.6000000089406967,
+              2.2000000029802322
+            ],
+            "worstRefreshMs": 2.2000000029802322
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.800000000000182,
+              16.800000000000182
+            ],
+            "worstMs": 16.800000000000182,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 31
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.20000000298023224,
+              0.5,
+              1.4000000059604645
+            ],
+            "worstRefreshMs": 1.4000000059604645
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.700000000000728,
+              16.799999999999272
+            ],
+            "worstMs": 16.799999999999272,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 36
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.2000000029802322,
+              2.699999988079071,
+              4.299999997019768
+            ],
+            "worstRefreshMs": 4.299999997019768
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.700000000000728,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 36
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              1.2999999970197678,
+              3.2000000029802322
+            ],
+            "worstRefreshMs": 3.2000000029802322
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999709,
+              16.799999999999272,
+              16.799999999999272
+            ],
+            "worstMs": 16.799999999999272,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 43
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              1,
+              11.800000011920929
+            ],
+            "worstRefreshMs": 11.800000011920929
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999709,
+              16.700000000000728,
+              16.799999999999272
+            ],
+            "worstMs": 16.799999999999272,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 40
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.2999999970197678,
+              2.5999999940395355,
+              3.800000011920929
+            ],
+            "worstRefreshMs": 3.800000011920929
+          }
+        }
+      ],
+      "dense": {
+        "enemies": 500,
+        "projectiles": 800,
+        "summary": {
+          "samples": 40,
+          "frameMs": [
+            16.700000000000728,
+            16.799999999999272,
+            16.80000000000291
+          ],
+          "worstMs": 16.80000000000291,
+          "spikes": [
+            {
+              "aboveMs": 16.7,
+              "frames": 21
+            },
+            {
+              "aboveMs": 33.3,
+              "frames": 0
+            },
+            {
+              "aboveMs": 50,
+              "frames": 0
+            },
+            {
+              "aboveMs": 100,
+              "frames": 0
+            }
+          ],
+          "refreshGroundMs": [
+            0.29999999701976776,
+            1.4000000059604645,
+            3.4000000059604645
+          ],
+          "worstRefreshMs": 3.4000000059604645
+        }
+      },
+      "errors": []
+    },
+    "hardware-repeat": {
+      "rows": [
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.800000000000182,
+              66.69999999999982
+            ],
+            "worstMs": 66.69999999999982,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 27
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 1
+              },
+              {
+                "aboveMs": 50,
+                "frames": 1
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.5,
+              3.4000000059604645,
+              8.400000005960464
+            ],
+            "worstRefreshMs": 8.400000005960464
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              33.30000000000109,
+              83.29999999999927
+            ],
+            "worstMs": 83.29999999999927,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 44
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 7
+              },
+              {
+                "aboveMs": 50,
+                "frames": 1
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.5,
+              5.5999999940395355,
+              11.099999994039536
+            ],
+            "worstRefreshMs": 11.099999994039536
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              50,
+              99.89999999999964
+            ],
+            "worstMs": 99.89999999999964,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 52
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 12
+              },
+              {
+                "aboveMs": 50,
+                "frames": 4
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              2.5,
+              8.5,
+              30.600000008940697
+            ],
+            "worstRefreshMs": 30.600000008940697
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              16.799999999999272,
+              33.400000000001455
+            ],
+            "worstMs": 33.400000000001455,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 59
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 1
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.5,
+              6.100000008940697,
+              12.699999988079071
+            ],
+            "worstRefreshMs": 12.699999988079071
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              16.700000000000728,
+              16.799999999999272
+            ],
+            "worstMs": 16.799999999999272,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 52
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.5,
+              4.200000002980232,
+              10.399999991059303
+            ],
+            "worstRefreshMs": 10.399999991059303
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              50,
+              83.40000000000146
+            ],
+            "worstMs": 83.40000000000146,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 66
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 23
+              },
+              {
+                "aboveMs": 50,
+                "frames": 4
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              3.1000000089406967,
+              8.399999991059303,
+              34.20000000298023
+            ],
+            "worstRefreshMs": 34.20000000298023
+          }
+        }
+      ],
+      "dense": {
+        "enemies": 500,
+        "projectiles": 800,
+        "summary": {
+          "samples": 40,
+          "frameMs": [
+            16.69999999999709,
+            50.099999999998545,
+            66.80000000000291
+          ],
+          "worstMs": 66.80000000000291,
+          "spikes": [
+            {
+              "aboveMs": 16.7,
+              "frames": 19
+            },
+            {
+              "aboveMs": 33.3,
+              "frames": 12
+            },
+            {
+              "aboveMs": 50,
+              "frames": 2
+            },
+            {
+              "aboveMs": 100,
+              "frames": 0
+            }
+          ],
+          "refreshGroundMs": [
+            0.8999999910593033,
+            6.200000002980232,
+            6.600000008940697
+          ],
+          "worstRefreshMs": 6.600000008940697
+        }
+      },
+      "errors": []
+    },
+    "hardware-warm-parent": {
+      "rows": [
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.799999999999727,
+              16.800000000000182
+            ],
+            "worstMs": 16.800000000000182,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 25
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.4000000059604645,
+              1.7000000029802322,
+              2.7999999970197678
+            ],
+            "worstRefreshMs": 2.7999999970197678
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.799999999999272,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 18
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              0.7999999970197678,
+              1.3999999910593033
+            ],
+            "worstRefreshMs": 1.3999999910593033
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.700000000000728,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 42
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.2999999970197678,
+              2.2999999970197678,
+              3.5
+            ],
+            "worstRefreshMs": 3.5
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.700000000000728,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 41
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.4000000059604645,
+              1,
+              2
+            ],
+            "worstRefreshMs": 2
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              16.700000000000728,
+              16.80000000000291
+            ],
+            "worstMs": 16.80000000000291,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 59
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              0.5999999940395355,
+              1.199999988079071
+            ],
+            "worstRefreshMs": 1.199999988079071
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              16.799999999999272,
+              16.80000000000291
+            ],
+            "worstMs": 16.80000000000291,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 56
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.2999999970197678,
+              2.4000000059604645,
+              3.5
+            ],
+            "worstRefreshMs": 3.5
+          }
+        }
+      ],
+      "dense": {
+        "enemies": 500,
+        "projectiles": 800,
+        "summary": {
+          "samples": 40,
+          "frameMs": [
+            16.69999999999709,
+            16.700000000000728,
+            16.799999999999272
+          ],
+          "worstMs": 16.799999999999272,
+          "spikes": [
+            {
+              "aboveMs": 16.7,
+              "frames": 19
+            },
+            {
+              "aboveMs": 33.3,
+              "frames": 0
+            },
+            {
+              "aboveMs": 50,
+              "frames": 0
+            },
+            {
+              "aboveMs": 100,
+              "frames": 0
+            }
+          ],
+          "refreshGroundMs": [
+            0.3999999910593033,
+            0.7999999970197678,
+            3.2000000029802322
+          ],
+          "worstRefreshMs": 3.2000000029802322
+        }
+      },
+      "errors": []
+    },
+    "hardware-warm-candidate": {
+      "rows": [
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.799999999999727,
+              16.800000000000182
+            ],
+            "worstMs": 16.800000000000182,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 23
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.29999999701976776,
+              0.7000000029802322,
+              1.5999999940395355
+            ],
+            "worstRefreshMs": 1.5999999940395355
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.699999999999818,
+              16.800000000000182,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 21
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.20000000298023224,
+              0.5,
+              1.2000000029802322
+            ],
+            "worstRefreshMs": 1.2000000029802322
+          }
+        },
+        {
+          "viewport": [
+            1280,
+            720
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.700000000000728,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 45
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.5,
+              3.7000000029802322,
+              5
+            ],
+            "worstRefreshMs": 5
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "normal",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.69999999999891,
+              16.799999999999272,
+              16.80000000000109
+            ],
+            "worstMs": 16.80000000000109,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 42
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.20000000298023224,
+              0.6000000089406967,
+              1.2999999970197678
+            ],
+            "worstRefreshMs": 1.2999999970197678
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "reduced",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              16.799999999999272,
+              16.80000000000291
+            ],
+            "worstMs": 16.80000000000291,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 60
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              0.20000000298023224,
+              0.5,
+              1.2999999970197678
+            ],
+            "worstRefreshMs": 1.2999999970197678
+          }
+        },
+        {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "mode": "contrast",
+          "summary": {
+            "samples": 100,
+            "frameMs": [
+              16.700000000000728,
+              16.799999999999272,
+              16.80000000000291
+            ],
+            "worstMs": 16.80000000000291,
+            "spikes": [
+              {
+                "aboveMs": 16.7,
+                "frames": 60
+              },
+              {
+                "aboveMs": 33.3,
+                "frames": 0
+              },
+              {
+                "aboveMs": 50,
+                "frames": 0
+              },
+              {
+                "aboveMs": 100,
+                "frames": 0
+              }
+            ],
+            "refreshGroundMs": [
+              1.3999999910593033,
+              3.5,
+              9.599999994039536
+            ],
+            "worstRefreshMs": 9.599999994039536
+          }
+        }
+      ],
+      "dense": {
+        "enemies": 500,
+        "projectiles": 800,
+        "summary": {
+          "samples": 40,
+          "frameMs": [
+            16.700000000000728,
+            16.799999999999272,
+            16.799999999999272
+          ],
+          "worstMs": 16.799999999999272,
+          "spikes": [
+            {
+              "aboveMs": 16.7,
+              "frames": 20
+            },
+            {
+              "aboveMs": 33.3,
+              "frames": 0
+            },
+            {
+              "aboveMs": 50,
+              "frames": 0
+            },
+            {
+              "aboveMs": 100,
+              "frames": 0
+            }
+          ],
+          "refreshGroundMs": [
+            0.3999999910593033,
+            1.2999999970197678,
+            1.5
+          ],
+          "worstRefreshMs": 1.5
+        }
+      },
+      "errors": []
+    }
+  },
+  "live": {
+    "canonical-before": {
+      "rows": [
+        {
+          "mode": "dense",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 30249,
+          "summary": {
+            "frame": {
+              "p50": 16.700000000000273,
+              "p95": 33.400000000001455,
+              "p99": 50,
+              "worst": 100.10000000000014
+            },
+            "sim": {
+              "p50": 0.4000000059604645,
+              "p95": 2.7000000029802322,
+              "p99": 6.0999999940395355,
+              "worst": 13.200000002980232
+            },
+            "rendererCpuSubmit": {
+              "p50": 10.899999991059303,
+              "p95": 35.5,
+              "p99": 45.70000000298023,
+              "worst": 95.90000000596046
+            }
+          },
+          "uniqueFrameSamples": 1500,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            0.9166666666666679,
+            29.883333333332917
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "boss",
+          "start": {
+            "fixture": true,
+            "enemies": 501,
+            "projectiles": 800
+          },
+          "durationMs": 20821,
+          "summary": {
+            "frame": {
+              "p50": 16.69999999999709,
+              "p95": 33.400000000001455,
+              "p99": 50.099999999998545,
+              "worst": 100
+            },
+            "sim": {
+              "p50": 0.4000000059604645,
+              "p95": 1.9000000059604645,
+              "p99": 4.100000008940697,
+              "worst": 9.099999994039536
+            },
+            "rendererCpuSubmit": {
+              "p50": 10.599999994039536,
+              "p95": 35.70000000298023,
+              "p99": 51.70000000298023,
+              "worst": 85.59999999403954
+            }
+          },
+          "uniqueFrameSamples": 1032,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            32.46666666666611,
+            52.16666666666499
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "child",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 20091,
+          "summary": {
+            "frame": {
+              "p50": 16.69999999999709,
+              "p95": 50,
+              "p99": 66.69999999999709,
+              "worst": 83.40000000000146
+            },
+            "sim": {
+              "p50": 0.4000000059604645,
+              "p95": 2.6000000089406967,
+              "p99": 5.199999988079071,
+              "worst": 33.1000000089407
+            },
+            "rendererCpuSubmit": {
+              "p50": 12.700000002980232,
+              "p95": 40.20000000298023,
+              "p99": 56.5,
+              "worst": 68.29999999701977
+            }
+          },
+          "uniqueFrameSamples": 929,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.1333333333333342,
+            20.13333333333347
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "restart",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 20483,
+          "summary": {
+            "frame": {
+              "p50": 16.69999999999709,
+              "p95": 16.79999999998836,
+              "p99": 16.80000000000291,
+              "worst": 33.39999999999418
+            },
+            "sim": {
+              "p50": 0.5,
+              "p95": 5.9000000059604645,
+              "p99": 17.30000001192093,
+              "worst": 17.30000001192093
+            },
+            "rendererCpuSubmit": {
+              "p50": 7.100000008940697,
+              "p95": 20.80000001192093,
+              "p99": 28.200000002980232,
+              "worst": 28.200000002980232
+            }
+          },
+          "uniqueFrameSamples": 1220,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.5833333333333326,
+            1.9333333333333313
+          ],
+          "validForComparison": false
+        }
+      ],
+      "errors": [
+        "Cannot read properties of null (reading 'drawImage')"
+      ],
+      "limitations": "Actual fixed-step simulation plus renderer. No human enjoyment/visual verdict, natural encounter hit-rate or sustained500/800 certification follows."
+    },
+    "canonical-after-diagnostic": {
+      "rows": [
+        {
+          "mode": "dense",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 30441,
+          "summary": {
+            "frame": {
+              "p50": 16.699999999999818,
+              "p95": 33.30000000000109,
+              "p99": 33.5,
+              "worst": 100
+            },
+            "sim": {
+              "p50": 0.7000000029802322,
+              "p95": 5.100000008940697,
+              "p99": 10.899999991059303,
+              "worst": 27.299999997019768
+            },
+            "rendererCpuSubmit": {
+              "p50": 6.299999997019768,
+              "p95": 18.599999994039536,
+              "p99": 26,
+              "worst": 44.8999999910593
+            }
+          },
+          "uniqueFrameSamples": 1637,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.1166666666666676,
+            30.166666666666234
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "boss",
+          "start": {
+            "fixture": true,
+            "enemies": 501,
+            "projectiles": 800
+          },
+          "durationMs": 20632,
+          "summary": {
+            "frame": {
+              "p50": 16.69999999999709,
+              "p95": 33.30000000000291,
+              "p99": 33.400000000001455,
+              "worst": 50.099999999998545
+            },
+            "sim": {
+              "p50": 0.6000000089406967,
+              "p95": 4.299999997019768,
+              "p99": 10.400000005960464,
+              "worst": 34.1000000089407
+            },
+            "rendererCpuSubmit": {
+              "p50": 6.0999999940395355,
+              "p95": 17.200000002980232,
+              "p99": 26.200000002980232,
+              "worst": 58.5
+            }
+          },
+          "uniqueFrameSamples": 1135,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            34.499999999999325,
+            53.499999999998245
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "child",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 20961,
+          "summary": {
+            "frame": {
+              "p50": 16.69999999999709,
+              "p95": 33.299999999995634,
+              "p99": 33.400000000001455,
+              "worst": 100
+            },
+            "sim": {
+              "p50": 0.5,
+              "p95": 3.7999999970197678,
+              "p99": 7.5,
+              "worst": 18.69999998807907
+            },
+            "rendererCpuSubmit": {
+              "p50": 5.5,
+              "p95": 16.19999998807907,
+              "p99": 25.400000005960464,
+              "worst": 75.90000000596046
+            }
+          },
+          "uniqueFrameSamples": 1176,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.1166666666666676,
+            20.933333333333426
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "restart",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 20631,
+          "summary": {
+            "frame": {
+              "p50": 16.69999999999709,
+              "p95": 16.79999999998836,
+              "p99": 16.80000000000291,
+              "worst": 33.30000000000291
+            },
+            "sim": {
+              "p50": 0.7000000029802322,
+              "p95": 7.799999997019768,
+              "p99": 18.30000001192093,
+              "worst": 18.30000001192093
+            },
+            "rendererCpuSubmit": {
+              "p50": 3.2999999970197678,
+              "p95": 17.600000008940697,
+              "p99": 31,
+              "worst": 31
+            }
+          },
+          "uniqueFrameSamples": 1233,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.6333333333333324,
+            1.733333333333332
+          ],
+          "validForComparison": false
+        }
+      ],
+      "errors": [
+        "Cannot read properties of null (reading 'drawImage')"
+      ],
+      "limitations": "Actual fixed-step simulation plus renderer. No human enjoyment/visual verdict, natural encounter hit-rate or sustained500/800 certification follows."
+    },
+    "canonical-stability": {
+      "rows": [
+        {
+          "mode": "dense",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 904669,
+          "summary": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.79999999998836,
+              "p99": 33.39999999990687,
+              "worst": 233.29999999998836
+            },
+            "sim": {
+              "p50": 0.29999999701976776,
+              "p95": 1.8999999910593033,
+              "p99": 5.5999999940395355,
+              "worst": 45.69999998807907
+            },
+            "rendererCpuSubmit": {
+              "p50": 3.7000000029802322,
+              "p95": 12,
+              "p99": 20.299999997019768,
+              "worst": 107.6000000089407
+            }
+          },
+          "prefix30": {
+            "frame": {
+              "p50": 16.699999999999818,
+              "p95": 16.799999999999272,
+              "p99": 33.399999999999636,
+              "worst": 66.70000000000027
+            },
+            "sim": {
+              "p50": 0.4000000059604645,
+              "p95": 3.6000000089406967,
+              "p99": 9.799999997019768,
+              "worst": 25.899999991059303
+            },
+            "rendererCpuSubmit": {
+              "p50": 5.700000002980232,
+              "p95": 13.799999997019768,
+              "p99": 21.100000008940697,
+              "worst": 40.5
+            }
+          },
+          "uniqueFrameSamples": 52479,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            0.8833333333333344,
+            900.2999999995099
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "boss",
+          "start": {
+            "fixture": true,
+            "enemies": 501,
+            "projectiles": 800
+          },
+          "durationMs": 20625,
+          "summary": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566,
+              "worst": 33.40000000002328
+            },
+            "sim": {
+              "p50": 0.4000000059604645,
+              "p95": 2.1000000089406967,
+              "p99": 4,
+              "worst": 8.199999988079071
+            },
+            "rendererCpuSubmit": {
+              "p50": 4.799999997019768,
+              "p95": 10.399999991059303,
+              "p99": 16.799999997019768,
+              "worst": 38.5
+            }
+          },
+          "prefix30": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566,
+              "worst": 33.40000000002328
+            },
+            "sim": {
+              "p50": 0.4000000059604645,
+              "p95": 2.1000000089406967,
+              "p99": 4,
+              "worst": 8.199999988079071
+            },
+            "rendererCpuSubmit": {
+              "p50": 4.799999997019768,
+              "p95": 10.399999991059303,
+              "p99": 16.799999997019768,
+              "worst": 38.5
+            }
+          },
+          "uniqueFrameSamples": 1224,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            906.8999999995038,
+            926.4333333328194
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "child",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 20614,
+          "summary": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566,
+              "worst": 33.300000000046566
+            },
+            "sim": {
+              "p50": 0.30000001192092896,
+              "p95": 1.7999999970197678,
+              "p99": 3.8999999910593033,
+              "worst": 6.9000000059604645
+            },
+            "rendererCpuSubmit": {
+              "p50": 4.100000008940697,
+              "p95": 8,
+              "p99": 11,
+              "worst": 30
+            }
+          },
+          "prefix30": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.79999999993015,
+              "p99": 16.800000000046566,
+              "worst": 33.300000000046566
+            },
+            "sim": {
+              "p50": 0.30000001192092896,
+              "p95": 1.7999999970197678,
+              "p99": 3.8999999910593033,
+              "worst": 6.9000000059604645
+            },
+            "rendererCpuSubmit": {
+              "p50": 4.100000008940697,
+              "p95": 8,
+              "p99": 11,
+              "worst": 30
+            }
+          },
+          "uniqueFrameSamples": 1231,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.0666666666666678,
+            20.56666666666678
+          ],
+          "validForComparison": true
+        },
+        {
+          "mode": "restart",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 20635,
+          "summary": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566,
+              "worst": 33.40000000002328
+            },
+            "sim": {
+              "p50": 0.3999999910593033,
+              "p95": 2,
+              "p99": 4,
+              "worst": 14.599999994039536
+            },
+            "rendererCpuSubmit": {
+              "p50": 4.299999997019768,
+              "p95": 9.899999991059303,
+              "p99": 15.399999991059303,
+              "worst": 25.600000008940697
+            }
+          },
+          "prefix30": {
+            "frame": {
+              "p50": 16.699999999953434,
+              "p95": 16.70000000006985,
+              "p99": 16.800000000046566,
+              "worst": 33.40000000002328
+            },
+            "sim": {
+              "p50": 0.3999999910593033,
+              "p95": 2,
+              "p99": 4,
+              "worst": 14.599999994039536
+            },
+            "rendererCpuSubmit": {
+              "p50": 4.299999997019768,
+              "p95": 9.899999991059303,
+              "p99": 15.399999991059303,
+              "worst": 25.600000008940697
+            }
+          },
+          "uniqueFrameSamples": 1231,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            1.1333333333333342,
+            20.68333333333344
+          ],
+          "validForComparison": true
+        }
+      ],
+      "errors": [],
+      "limitations": "Actual fixed-step simulation plus renderer. No human enjoyment/visual verdict, natural encounter hit-rate or sustained500/800 certification follows."
+    },
+    "canonical-reduced": {
+      "rows": [
+        {
+          "mode": "dense",
+          "start": {
+            "fixture": true,
+            "enemies": 500,
+            "projectiles": 800
+          },
+          "durationMs": 30763,
+          "summary": {
+            "frame": {
+              "p50": 16.699999999999818,
+              "p95": 16.799999999999272,
+              "p99": 33.29999999999927,
+              "worst": 66.59999999999854
+            },
+            "sim": {
+              "p50": 0.5,
+              "p95": 3.2000000029802322,
+              "p99": 6.4000000059604645,
+              "worst": 38.3999999910593
+            },
+            "rendererCpuSubmit": {
+              "p50": 5.299999997019768,
+              "p95": 12.200000002980232,
+              "p99": 19.600000008940697,
+              "worst": 38
+            }
+          },
+          "prefix30": {
+            "frame": {
+              "p50": 16.699999999999818,
+              "p95": 16.799999999999272,
+              "p99": 33.29999999999927,
+              "worst": 66.59999999999854
+            },
+            "sim": {
+              "p50": 0.5,
+              "p95": 3.2000000029802322,
+              "p99": 6.4000000059604645,
+              "worst": 38.3999999910593
+            },
+            "rendererCpuSubmit": {
+              "p50": 5.299999997019768,
+              "p95": 12.200000002980232,
+              "p99": 19.600000008940697,
+              "worst": 38
+            }
+          },
+          "uniqueFrameSamples": 1809,
+          "limitations": "Frame percentiles use unique RAF intervals; sim/render rolling240 samples observed each second overlap. Initial800 projectiles retire normally; count is NOT sustained at800. HighHP/zero-damage500-enemy fixture is not a natural or human run.",
+          "canonicalClock": [
+            0.9500000000000013,
+            30.583333333332877
+          ],
+          "validForComparison": true
+        }
+      ],
+      "errors": [],
+      "limitations": "Actual fixed-step simulation plus renderer. No human enjoyment/visual verdict, natural encounter hit-rate or sustained500/800 certification follows."
+    }
+  }
+}
