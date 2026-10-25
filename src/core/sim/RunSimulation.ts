@@ -9,6 +9,7 @@
 //   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
 //   collisions → mines → pickups/economy → territory upkeep → chunks/POI
 import type {ClaimStatus} from "../world/claimStatus";
+import {createWeaponRig,primaryTier,weaponTransform,aimFromPivot,angleDelta,sweptHit,type WeaponMount,type WeaponTransform} from '../combat/weaponGeometry';
 import {HAZARD_GEOMETRY} from "../combat/hazardGeometry";
 import {adaptationFor,createEvolution,stepEvolution} from "../combat/enemyEvolution";
 import { childKnowledgeFactor, childRaidInterval, childResearchBonusScale } from "../progression/childWorld";
@@ -31,7 +32,7 @@ import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
 import { combinationRoute } from "../tech/combinationRoute";
 import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "../combat/bossEncounter";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
-import { CONTENT_VERSION } from "../seed/versions";
+import { CHILD_LAWS_CONTENT_VERSION } from "../seed/versions";
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
 import { calculateMaxLogistics, calculateLogisticsCost } from "../emergence/outpostLogistics";
 import { canAdvanceAge, AGE_DEFS, type DominionState } from "../progression/ages";
@@ -83,6 +84,9 @@ const ENEMY_BASE: Record<EnemyFamily, { hp: number; speed: number; dmg: number; 
   tank: { hp: 70, speed: 62, dmg: 14, radius: 20, xp: 4 },
   swarm: { hp: 8, speed: 150, dmg: 5, radius: 9, xp: 1 },
 };
+// Broad-phase padding must cover a collider whose center is in a neighbor cell.
+// Bosses are the largest supported multiplier (3); calculate once, not per shot.
+const MAX_PRIMARY_COLLIDER=Math.max(...Object.values(ENEMY_BASE).map(e=>e.radius))*3;
 
 export class RunSimulation {
   readonly state: RunState;
@@ -104,6 +108,7 @@ export class RunSimulation {
     this.masterSeed = config.masterSeed;
     this.difficultyMul = config.difficultyMul ?? 1;
     this.state = this.freshWorldState(config.masterSeed, 0, originById(config.originId ?? "").id);
+    this.state.weaponRig=createWeaponRig(config.weaponMount??'float');
     // Root-attempt archive benefits, separate from child-world inheritance.
     if (config.archivePerks?.includes("survival-kit")) { this.state.build.maxHp += 15; this.state.build.hp += 15; }
     if (config.archivePerks?.includes("choice-kit")) this.state.rerolls = 2;
@@ -117,7 +122,7 @@ export class RunSimulation {
   // ------------------------------------------------------------ construction
   private freshWorldState(masterSeed: string, ascension: number, originId: string): RunState {
     const worldSeed = ascension === 0 ? masterSeed : deriveAscensionSeed(masterSeed, ascension);
-    const worldLaws = generateWorldLaws(ascension === 0 ? masterSeed : worldSeed, WORLDGEN_VERSION, ascension === 0 ? 9 : CONTENT_VERSION);
+    const worldLaws = generateWorldLaws(ascension === 0 ? masterSeed : worldSeed, WORLDGEN_VERSION, ascension === 0 ? 9 : CHILD_LAWS_CONTENT_VERSION);
     const maxLogistics = calculateMaxLogistics(0);
     return {
       masterSeed, worldSeed,
@@ -157,6 +162,7 @@ export class RunSimulation {
       recentDraftOffers: [],
       relayCd: 0, spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
+      weaponRig: createWeaponRig(),
       guardianAng: 0, orbitAng: 0, beamFlash: null,
       enemies: Array.from({ length: MAX_ENEMIES }, () => ({
         active: false, x: 0, y: 0, hp: 1, maxHp: 1, shield: 0,
@@ -212,6 +218,7 @@ export class RunSimulation {
     };
     const asc = s.ascension + 1;
     const fresh = this.freshWorldState(this.masterSeed, asc, origin.id);
+    fresh.weaponRig=createWeaponRig(s.weaponRig.mode);
     // Restore run-persistent data.
     fresh.stats = keep.stats;
     fresh.damageBySource = keep.dmg; fresh.topDamageSource = keep.top;
@@ -1756,6 +1763,7 @@ export class RunSimulation {
       p.vx = ((tx - x) / d) * speed; p.vy = ((ty - y) / d) * speed;
       p.dmg = dmg; p.radius = radius; p.life = HAZARD_GEOMETRY.projectileLife; p.friendly = friendly; p.color = color; p.src = src;
       p.visualTier=(["kinetic","energy","defense","field"] as string[]).includes(src)?this.state.weaponStage[src as WeaponFamily]:this.state.ageIndex;
+      p.primary=false;
       if(ev && friendly && ["kinetic","energy","defense","field"].includes(src)) ev.push({type:"weapon_fired",family:src as WeaponFamily,x,y,tx,ty});
       return;
     }
@@ -1765,43 +1773,68 @@ export class RunSimulation {
   // Execution dispatches on WeaponStage.archetype (P1-04) — data determines
   // behavior, never the family name. Every family × tier must have a valid
   // executable path (covered by tests/sim/archetypes.test.ts).
+  private updatePrimaryRig(dt:number):void {
+    const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),target=this.nearestEnemy(s.px,s.py,800);
+    if(!target)return;
+    // Select the authored mirror before solving the offset muzzle. Deriving
+    // it from the solved angle makes an off-axis grip oscillate at vertical aim.
+    const lateralTarget=target.x-s.px-r.x;
+    if(Math.abs(lateralTarget)>2)r.flipY=lateralTarget<0;
+    const aim=aimFromPivot(s.originId,tier,s.px,s.py,r,target.x,target.y);
+    r.heading+=Math.max(-14*dt,Math.min(14*dt,angleDelta(aim.heading,r.heading)));
+    const dx=r.mode==='float'?96*Math.cos(r.heading):18*Math.cos(r.heading);
+    let dy=r.mode==='float'?-112:-12;
+    const distance=Math.hypot(target.x-s.px-dx,target.y-s.py-dy);
+    if(r.mode==='float'&&distance<70)dy-=70-distance;
+    const blend=1-Math.exp(-10*dt);r.x+=(dx-r.x)*blend;r.y+=(dy-r.y)*blend;
+  }
+  private releasePose(target:{x:number;y:number}):WeaponTransform|null {
+    const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),aim=aimFromPivot(s.originId,tier,s.px,s.py,r,target.x,target.y);
+    if(aim.forward<1||Math.abs(angleDelta(aim.heading,r.heading))>.045)return null;
+    r.heading=aim.heading;r.firedAt=s.elapsed;
+    return weaponTransform(s.originId,tier,s.px,s.py,r,s.elapsed);
+  }
   private fireProjectileSpread(
     fam: WeaponFamily, st: { speed: number; damage: number; radius: number; color: number },
-    n: number, range: number, ev:SimEvent[],
-  ): void {
+    n: number, range: number, ev:SimEvent[], life=1.6,
+  ): boolean {
     const s = this.state;
     const b = s.build;
+    const tgt=this.nearestEnemy(s.px,s.py,range);if(!tgt)return true;
+    const pose=this.releasePose(tgt);if(!pose)return false;
     for (let i = 0; i < n; i++) {
-      const tgt = this.nearestEnemy(s.px, s.py, range);
-      if (!tgt) return;
       const spread = (i - (n - 1) / 2) * 0.12;
-      const base = Math.atan2(tgt.y - s.py, tgt.x - s.px) + spread;
-      for (const p of s.projs) {
+      const base = pose.heading + spread;
+      for (let index=0;index<s.projs.length;index++) {
+        const p=s.projs[index]!;
         if (p.active) continue;
-        p.active = true; p.x = s.px; p.y = s.py;
+        p.active = true; p.x = pose.muzzleX; p.y = pose.muzzleY;p.primary=true;
         p.vx = Math.cos(base) * st.speed; p.vy = Math.sin(base) * st.speed;
-        p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = 1.6;
+        p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = life;
         p.friendly = true; p.color = st.color; p.src = fam;
         p.visualTier=s.weaponStage[fam];
-        ev.push({type:"weapon_fired",family:fam,x:s.px,y:s.py,tx:tgt.x,ty:tgt.y});
+        ev.push({type:"weapon_fired",family:fam,x:p.x,y:p.y,tx:p.x+Math.cos(base)*100,ty:p.y+Math.sin(base)*100,release:{owner:'player-primary',time:s.elapsed,pose,heading:base,index:i,count:n,projectileIndex:index,targetX:tgt.x,targetY:tgt.y}});
         break;
       }
     }
+    return true;
   }
 
-  private beamStrike(fam: WeaponFamily, st: { damage: number; radius: number }, range: number, ev: SimEvent[]): void {
+  private beamStrike(fam: WeaponFamily, st: { damage: number; radius: number }, range: number, ev: SimEvent[]): boolean {
     const s = this.state;
     const tgt = this.nearestEnemy(s.px, s.py, range);
-    if (!tgt) return;
+    if (!tgt) return true;
+    const pose=this.releasePose(tgt);if(!pose)return false;
     const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
     // Capture aim before damage/death/split can reuse the pooled target object.
     const targetX = tgt.x, targetY = tgt.y;
     ev.push({ type: "beam_fired", family: fam, tier: s.weaponStage[fam],
-      x1: s.px, y1: s.py, x2: targetX, y2: targetY });
+      x1: pose.muzzleX, y1: pose.muzzleY, x2: targetX, y2: targetY,release:{owner:'player-primary',time:s.elapsed,pose,heading:pose.heading,index:0,count:1,targetX,targetY} });
     const lim = Math.min(hit.length, 10);
     if(fam==="energy" && s.build.chainUnlocked)this.arcChain(tgt,tgt.x,tgt.y,st.damage*s.build.damageMul,ev,"chain",hit,lim);
     for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * s.build.damageMul, fam, ev);
     s.beamFlash = { x2: targetX, y2: targetY, t: 0.12 };
+    return true;
   }
 
   private auraTick(fam: WeaponFamily, radius: number, dmg: number, ev: SimEvent[]): void {
@@ -1860,17 +1893,17 @@ export class RunSimulation {
     const eOn = activeFamilies(s.originId, s.expansionFamily).includes("energy");
     const dOn = activeFamilies(s.originId, s.expansionFamily).includes("defense");
     const fOn = activeFamilies(s.originId, s.expansionFamily).includes("field");
-    const tick = (fam: WeaponFamily, cd: number, fire: () => void): void => {
+    const tick = (fam: WeaponFamily, cd: number, fire: () => void|boolean): void => {
       const left = s.weaponCd[fam] - dt;
-      if (left <= 0) { s.weaponCd[fam] = cd; fire(); }
+      if (left <= 0) { s.weaponCd[fam] = cd; if(fire()===false)s.weaponCd[fam]=0; }
       else s.weaponCd[fam] = left;
     };
     // Kinetic: projectile stages fan shots; the Space beam stage fires a ray.
     if (kOn) {
       const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
       tick("kinetic", st.cooldown * cdM, () => {
-        if (st.archetype === "beam") this.beamStrike("kinetic", st, 800, ev);
-        else this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700,ev);
+        if (st.archetype === "beam") return this.beamStrike("kinetic", st, 800, ev);
+        else return this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700,ev);
       });
     }
     // Energy: projectile / aura / beam per stage, plus bonus-granted systems.
@@ -1887,8 +1920,7 @@ export class RunSimulation {
         tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, 800, ev));
       } else if (st.archetype === "projectile") {
         tick("energy", st.cooldown * cdM, () => {
-          const tgt = this.nearestEnemy(s.px, s.py, 640);
-          if (tgt) this.fireProjectile(s.px, s.py, tgt.x, tgt.y, st.speed || 380, st.damage * b.damageMul, st.color, "energy", true, st.radius * 0.8,ev);
+          return this.fireProjectileSpread('energy',{...st,speed:st.speed||380,radius:st.radius*.8},1,640,ev,HAZARD_GEOMETRY.projectileLife);
         });
       }
     }
@@ -1932,6 +1964,8 @@ export class RunSimulation {
     const s = this.state;
     const ev: SimEvent[] = [];
     if (s.over) return ev;
+    if(input.weaponMount&&input.weaponMount!==s.weaponRig.mode)s.weaponRig=createWeaponRig(input.weaponMount);
+    if(dt<=0)return ev;
     this.queryCount = 0;
 
     s.elapsed += dt;
@@ -2094,6 +2128,7 @@ export class RunSimulation {
     this.rebuildSpatial();
 
     // 7. Weapons + command squad + projectiles.
+    this.updatePrimaryRig(dt);
     this.updateWeapons(dt, ev);
     if (s.over) return ev;
     this.updateSquad(dt, ev);
@@ -2105,6 +2140,7 @@ export class RunSimulation {
     for (const p of s.projs) {
       if (!p.active) continue;
       p.life -= dt;
+      const oldX=p.x,oldY=p.y;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       if (p.life <= 0 || Math.abs(p.x - s.px) > 1400 || Math.abs(p.y - s.py) > 1400) {
@@ -2112,7 +2148,13 @@ export class RunSimulation {
         continue;
       }
       if (p.friendly) {
-        const hit = this.queryRadius(p.x, p.y, p.radius + 6, this.scratch);
+        const travel=Math.hypot(p.x-oldX,p.y-oldY);
+        const hit = this.queryRadius(p.primary?(oldX+p.x)/2:p.x,p.primary?(oldY+p.y)/2:p.y,p.radius+6+(p.primary?travel/2+MAX_PRIMARY_COLLIDER:0),this.scratch);
+        if(p.primary){
+          let best=Infinity,index=-1;
+          for(let i=0;i<hit.length;i++){const e=hit[i]!,t=sweptHit(oldX,oldY,p.x,p.y,e.x,e.y,e.radius+p.radius+6);if(t!==null&&t<best){best=t;index=i;}}
+          if(index<0)hit.length=0;else {hit[0]=hit[index]!;hit.length=1;p.x=oldX+(p.x-oldX)*best;p.y=oldY+(p.y-oldY)*best;}
+        }
         if (hit.length > 0) {
           const e = hit[0] as SimEnemy;
           const d = Math.max(1, Math.hypot(e.x - p.x, e.y - p.y));

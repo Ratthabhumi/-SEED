@@ -6,4 +6,5 @@ export interface InputFrame {
   moveY: number;
   /** Edge-triggered dash request for this tick. */
   dashPressed: boolean;
+  weaponMount?: import('../combat/weaponGeometry').WeaponMount;
 }

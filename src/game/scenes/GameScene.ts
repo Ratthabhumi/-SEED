@@ -1,3 +1,4 @@
+import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
 import { childCondition } from "../../core/progression/childWorld";
 import { historyTechName, currentWorldHistoryStart } from "../ui/historyTechName";
 import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
@@ -370,6 +371,7 @@ export class GameScene extends Phaser.Scene {
     this.archiveStorageOK = storeSave(localStorage, savedArchive);
     this.attemptId = this.archiveStorageOK ? begun.id : 0; this.archiveEarned = 0;
     this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw,
+      weaponMount:new URLSearchParams(location.search).get("equipment")==="hand"?"hand":"float",
       archivePerks: savedArchive.meta.purchased, archiveEnergyStart: savedArchive.meta.energyStart });
     this.surfaces.reset();
     this.blockingModal = null;
@@ -594,7 +596,7 @@ export class GameScene extends Phaser.Scene {
           for(const e of s.enemies)e.active=false;for(const p of s.projs)p.active=false;
           if(dense){
             for(let i=0;i<500;i++){const e=this.sim.spawnEnemy("chaser",false,false,i*.618,100+i%300,[]);if(e){e.speed=0;e.dmg=0;}}
-            for(let i=0;i<800;i++){const p=s.projs[i]!;Object.assign(p,{active:true,friendly:true,x:x+Math.cos(i*.618)*(100+i%500),y:y+Math.sin(i*.618)*(100+i%300),vx:120,vy:0,radius:4,color:0xffda76,src:"kinetic",visualTier:3});}
+            for(let i=0;i<800;i++){const p=s.projs[i]!;Object.assign(p,{active:true,friendly:true,x:x+Math.cos(i*.618)*(100+i%500),y:y+Math.sin(i*.618)*(100+i%300),vx:120,vy:0,radius:4,color:0xffda76,src:"kinetic",visualTier:3,primary:true});}
           }
           const save=loadSave(localStorage);save.settings.contrast=contrast?"high":"normal";storeSave(localStorage,save);
           const begin=performance.now();this.refreshGround(true);
@@ -755,7 +757,7 @@ export class GameScene extends Phaser.Scene {
           s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=999;
           for(const e of s.enemies)e.active=false;
           for(let i=0;i<500;i++){const e=this.sim.spawnEnemy(i%3===0?"ranged":"chaser",i%40===0,false,i*.618,200+i%280,[])!;e.hp=e.maxHp=1e8;e.dmg=0;}
-          for(let i=0;i<800;i++){const p=s.projs[i]!;Object.assign(p,{active:true,friendly:true,x:s.px+Math.cos(i*.618)*(100+i%500),y:s.py+Math.sin(i*.618)*(100+i%300),vx:120,vy:0,radius:4,color:0xffda76,src:"kinetic",visualTier:s.ageIndex,dmg:0,life:2.2});}
+          for(let i=0;i<800;i++){const p=s.projs[i]!;Object.assign(p,{active:true,friendly:true,x:s.px+Math.cos(i*.618)*(100+i%500),y:s.py+Math.sin(i*.618)*(100+i%300),vx:120,vy:0,radius:4,color:0xffda76,src:"kinetic",visualTier:s.ageIndex,primary:true,dmg:0,life:2.2});}
           if(boss){const e=this.sim.spawnEnemy("tank",false,true,0,250,[])!;e.hp=e.maxHp=1e8;}
           this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;
           return {fixture:true,enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length};
@@ -863,6 +865,8 @@ export class GameScene extends Phaser.Scene {
         stageFamilyReview: (family:"kinetic"|"energy"|"defense"|"field") => {
           const s=this.sim.state;this.paused=true;this.combatFeedback.reset(s.worldNonce);
           s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"engineers";
+          for(const p of s.projs)p.active=false;
+          for(const m of s.mines)m.active=false;
           s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
           for(const p of s.projs)p.active=false;for(const m of s.mines)m.active=false;for(const e of s.enemies)e.active=false;
           for(const a of s.squad)a.cd=999;
@@ -883,9 +887,12 @@ export class GameScene extends Phaser.Scene {
           }
           throw new Error(`${biome} review site not found`);
         },
+        staleThreatReview:()=>{const s=this.sim.state,p=s.projs.find(p=>!p.active)!;Object.assign(p,{active:true,x:s.px,y:s.py+150,vx:0,vy:0,dmg:7,radius:6,life:5,friendly:false,primary:false,src:"enemy"});},
         stageBossReview: (pattern:"slam"|"fan"|"cross"="slam") => {
           const s=this.sim.state;this.paused=true;s.ageIndex=5;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
           for(const e of s.enemies)e.active=false;
+          for(const p of s.projs)p.active=false;
+          for(const m of s.mines)m.active=false;
           s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
           for(const f of ["kinetic","energy","defense","field"] as const)s.weaponCd[f]=999;
           for(const a of s.squad)a.cd=999;
@@ -900,15 +907,17 @@ export class GameScene extends Phaser.Scene {
         content153Review:()=>({hostiles:this.hostileBatch.counts(),terrain:this.terrainPainter.counts(),motion:this.allyActors.referenceReview(),heroSize:WORLD_SCALE.hero}),
         terrainArrivalReview:()=>this.terrainPainter.arrivals(),
         siteArrivalReview:()=>this.siteArrival.review(),
-        equipmentMountReview:(mode:"hand"|"float")=>this.heroEquipment.setMount(mode),
+        weaponMuzzleReview:()=>{const art=this.heroEquipment.review(),release=this.heroEquipment.releaseReview(),r=release?.release,p=this.sim.state.projs[r?.projectileIndex??-1];return {player:[this.sim.state.px,this.sim.state.py],art,release,projectile:p?{active:p.active,x:p.x,y:p.y,vx:p.vx,vy:p.vy,primary:p.primary}:null};},
+        weaponOverlayReview:(enabled:boolean)=>this.heroEquipment.reviewOverlay(enabled),
+        equipmentMountReview:(mode:"hand"|"float")=>this.sim.step(0,{moveX:0,moveY:0,dashPressed:false,weaponMount:mode}),
         aimReleaseReview:(dx:number,dy:number)=>{
           // Stages target positions, then invokes the real canonical weapon
           // execution. Does not synthesize a release or modify damage/rules.
           const s=this.sim.state;this.paused=true;
           for(const e of s.enemies)if(e.active){e.x=s.px+dx;e.y=s.py+dy;e.hp=e.maxHp=10000;e.shield=0;}
           for(const f of ["kinetic","energy","field","defense"] as const)s.weaponCd[f]=999;
-          const f=s.originId==="resonant"?"energy":"kinetic";s.weaponCd[f]=0;
-          this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));
+          const f=originById(s.originId).families.find(f=>f==='kinetic'||f==='energy')??'kinetic';s.weaponCd[f]=0;
+          for(let ticks=0;ticks<120;ticks++){const events=this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false});this.handleEvents(events);if(events.some(e=>(e.type==="weapon_fired"||e.type==="beam_fired")&&e.release))break;}
           return {facing:this.heroActions.facing(s.elapsed),hash:this.sim.hash()};
         },
         bossDefeatArtReview:()=>{const boss=this.sim.state.enemies.find(e=>e.active&&e.boss);if(boss){boss.hp=0;boss.active=false;}},
@@ -932,7 +941,7 @@ export class GameScene extends Phaser.Scene {
         },
         terrainSourceParity:()=>this.terrainPainter.sourceParity(),
         siteArtReview:()=>this.landmarkArt.filter(a=>a.visible).map(a=>({texture:a.texture.key,frame:Number(a.frame.name),originY:a.originY,x:a.x,y:a.y,width:a.displayWidth,height:a.displayHeight})),
-        content153HostileFixture:()=>{const s=this.sim.state;for(let i=0;i<800;i++){const p=s.projs[i]!;p.friendly=false;p.src=["enemy-burst","enemy","boss-fan"][i%3]!;p.radius=i%3===2?8:i%3===1?6:4;p.color=i%3===2?0xff736d:0xff5a5a;}return {enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length,hash:this.sim.hash()};},
+        content153HostileFixture:()=>{const s=this.sim.state;for(let i=0;i<800;i++){const p=s.projs[i]!;p.friendly=false;p.primary=false;p.src=["enemy-burst","enemy","boss-fan"][i%3]!;p.radius=i%3===2?8:i%3===1?6:4;p.color=i%3===2?0xff736d:0xff5a5a;}return {enemies:s.enemies.filter(e=>e.active).length,projectiles:s.projs.filter(p=>p.active).length,hash:this.sim.hash()};},
         findTerrainBiome:(biome:string)=>{for(let x=-32;x<=32;x+=4)for(let y=-32;y<=32;y+=4)if(this.sim.chunks.get(this.sim.state.worldSeed,this.sim.state.worldNonce,x,y).biome===biome)return {x:x*512,y:y*512};throw Error("Biome absent in bounded visual probe");},
         startOrdinaryHostileCapture:()=>{
           const s=this.sim.state;if(s.elapsed>2)throw Error("Hostile capture requires fresh run");s.ageIndex=2;
@@ -964,7 +973,7 @@ export class GameScene extends Phaser.Scene {
           this.heroActions=new HeroActions();this.heroActions.sync(s.worldNonce);
           if(kind==="dash")s.dashT=.18;
           else if(kind==="death")s.over=true;
-          else this.heroActions.accept(kind==="attack"?{type:"weapon_fired",family:"energy",x:s.px,y:s.py,tx:s.px+100,ty:s.py}:kind==="hurt"?{type:"player_hurt",damage:1}:{type:"ability_used",id:"review"},s.elapsed,s.px,s.py);
+          else this.heroActions.accept(kind==="attack"?{type:"weapon_fired",family:"energy",x:s.px,y:s.py,tx:s.px+100,ty:s.py,release:{owner:"player-primary",time:s.elapsed,pose:weaponTransform(s.originId,primaryTier(s.originId,s.weaponStage),s.px,s.py,s.weaponRig,s.elapsed),heading:0,index:0,count:1}}:kind==="hurt"?{type:"player_hurt",damage:1}:{type:"ability_used",id:"review"},s.elapsed,s.px,s.py);
         },
         stageCombinationRecovery: () => {
           const s=this.sim.state; this.paused=true;

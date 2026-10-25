@@ -56,6 +56,8 @@ export interface SimProj {
   dmg: number; radius: number; life: number; friendly: boolean; color: number; src: string;
   /** Spawn-time weapon tier for presentation; does not affect collision or damage. */
   visualTier?:number;
+  /** Player-primary sweeps use the authentic launch segment; other emitters retain their rules. */
+  primary?:boolean;
 }
 
 export interface SimPickup { active: boolean; x: number; y: number; value: number; }
@@ -163,6 +165,7 @@ export interface RunState {
   relayCd: number;
   spawnT: number; eliteT: number; mineT: number; auraT: number;
   weaponCd: Record<WeaponFamily, number>;
+  weaponRig: import('../combat/weaponGeometry').WeaponRig;
   guardianAng: number; orbitAng: number;
   beamFlash: { x2: number; y2: number; t: number } | null;
   // Pools

@@ -1,0 +1,702 @@
+{
+  "classification": "READ_ONLY_AUTHORED_SOCKET_CALIBRATION_NOT_VISUAL_ACCEPTANCE",
+  "assetSHA256": "b3662c237dd84a82fb3afc3fdd2f86f3fd17223c91f3a356b340f18cad111a5c",
+  "frames": [
+    {
+      "frame": 0,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            92,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            113,
+            62
+          ],
+          "nearestVisibleInkPixels": 1.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            30,
+            78
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 1,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            89,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            114,
+            60
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            29,
+            75
+          ],
+          "nearestVisibleInkPixels": 1.0
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            89,
+            64
+          ],
+          "nearestVisibleInkPixels": 1.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            115,
+            61
+          ],
+          "nearestVisibleInkPixels": 6.324555320336759
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            21,
+            77
+          ],
+          "nearestVisibleInkPixels": 2.23606797749979
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            43,
+            74
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            106,
+            49
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            40,
+            65
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            43,
+            74
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            110,
+            58
+          ],
+          "nearestVisibleInkPixels": 5.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            44,
+            72
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            43,
+            74
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            110,
+            56
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            43,
+            68
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            49,
+            93
+          ],
+          "nearestVisibleInkPixels": 1.4142135623730951
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            109,
+            38
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            55,
+            73
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            49,
+            93
+          ],
+          "nearestVisibleInkPixels": 7.810249675906654
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            116,
+            45
+          ],
+          "nearestVisibleInkPixels": 1.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            71,
+            53
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 8,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            48,
+            84
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            114,
+            36
+          ],
+          "nearestVisibleInkPixels": 2.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            74,
+            47
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 9,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            49,
+            93
+          ],
+          "nearestVisibleInkPixels": 5.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            118,
+            42
+          ],
+          "nearestVisibleInkPixels": 3.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            70,
+            57
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 10,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            47,
+            77
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            116,
+            42
+          ],
+          "nearestVisibleInkPixels": 1.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            78,
+            51
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 11,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            54,
+            80
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            110,
+            40
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            73,
+            50
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 12,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            30,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            113,
+            59
+          ],
+          "nearestVisibleInkPixels": 5.830951894845301
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            20,
+            66
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 13,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            30,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            114,
+            58
+          ],
+          "nearestVisibleInkPixels": 6.082762530298219
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            22,
+            65
+          ],
+          "nearestVisibleInkPixels": 1.0
+        }
+      ]
+    },
+    {
+      "frame": 14,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            30,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            115,
+            57
+          ],
+          "nearestVisibleInkPixels": 5.0990195135927845
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            22,
+            65
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 15,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            30,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            116,
+            57
+          ],
+          "nearestVisibleInkPixels": 5.385164807134504
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            20,
+            65
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 16,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            30,
+            64
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            107,
+            57
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            21,
+            65
+          ],
+          "nearestVisibleInkPixels": 1.0
+        }
+      ]
+    },
+    {
+      "frame": 17,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            30,
+            64
+          ],
+          "nearestVisibleInkPixels": 4.123105625617661
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            108,
+            57
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            21,
+            65
+          ],
+          "nearestVisibleInkPixels": 5.0
+        }
+      ]
+    },
+    {
+      "frame": 18,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            63,
+            67
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            116,
+            46
+          ],
+          "nearestVisibleInkPixels": 1.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            85,
+            47
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 19,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            63,
+            67
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            117,
+            47
+          ],
+          "nearestVisibleInkPixels": 3.605551275463989
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            76,
+            46
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 20,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            63,
+            67
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            118,
+            47
+          ],
+          "nearestVisibleInkPixels": 3.1622776601683795
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            81,
+            51
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 21,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            63,
+            67
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            118,
+            47
+          ],
+          "nearestVisibleInkPixels": 3.605551275463989
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            76,
+            45
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 22,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            63,
+            67
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            119,
+            46
+          ],
+          "nearestVisibleInkPixels": 4.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            81,
+            49
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    },
+    {
+      "frame": 23,
+      "points": [
+        {
+          "name": "pivot",
+          "pixel": [
+            63,
+            67
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "muzzle",
+          "pixel": [
+            112,
+            41
+          ],
+          "nearestVisibleInkPixels": 0.0
+        },
+        {
+          "name": "rearAxis",
+          "pixel": [
+            74,
+            50
+          ],
+          "nearestVisibleInkPixels": 0.0
+        }
+      ]
+    }
+  ]
+}

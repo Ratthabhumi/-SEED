@@ -4,31 +4,36 @@ import type {RunState} from "../../core/sim/RunState";
 import {activeFamilies} from "../../core/progression/origins";
 import {NOVA_RADIUS,BULWARK_IFRAME} from "../../core/combat/squad";
 import type {WeaponFamily} from "../../core/combat/weapons";
-import {equipmentFrame} from "./combatSpriteIdentity";
-import {equipmentPose,playerRelease,floatingWeaponPosition} from "./weaponPose";
+import {primaryTier,weaponTransform} from "../../core/combat/weaponGeometry";
+import {playerRelease} from "./weaponPose";
 import type {SimEvent} from "../../core/sim/SimEvent";
-/** Original equipment rig. Posed bodies remain original atlases, no fake attacks. */
+/** Original equipment art, posed from the canonical simulation release rig. */
 export class HeroEquipment {
   private socketX=0;private socketY=-16;
   socket(x:number,y:number){this.socketX=x;this.socketY=y;}
+  private lastPose?:ReturnType<typeof weaponTransform>;
+  private debug=false;
+  private lastRelease?:Extract<SimEvent,{type:'weapon_fired'|'beam_fired'}>;
+  reviewOverlay(enabled:boolean){this.debug=enabled;}
+  releaseReview(){return this.lastRelease;}
   private weapon?:Phaser.GameObjects.Image;
   constructor(private scene?:Phaser.Scene,private mount:"hand"|"float"="float"){}
-  setMount(mode:"hand"|"float"){this.mount=mode;}
-  review(){return this.weapon&&this.weapon.visible?{mount:this.mount,texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,flipY:this.weapon.flipY,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
-  private world="";private released=-Infinity;private aim=0;
+
+  review(){return this.weapon&&this.weapon.visible?{mount:this.mount,pose:this.lastPose,release:this.lastRelease,texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,flipY:this.weapon.flipY,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
+  private world="";private released=-Infinity;
   private releasedFamily:WeaponFamily="kinetic";
   private ability="";private abilityAt=-Infinity;private abilityX=0;private abilityY=0;
   accept(event:SimEvent,world:string,time:number,x:number,y:number){
     const shot=playerRelease(event,x,y);
-    if(shot)this.fire(world,time,shot.x,shot.y,shot.tx,shot.ty,shot.family);
+    if(shot){this.fire(world,time,shot.x,shot.y,shot.tx,shot.ty,shot.family);this.lastRelease=event as typeof this.lastRelease;}
   }
-  reset(world:string){this.world=world;this.released=-Infinity;this.abilityAt=-Infinity;}
+  reset(world:string){this.world=world;this.released=-Infinity;this.abilityAt=-Infinity;this.lastRelease=undefined;}
   activate(world:string,time:number,id:string,x:number,y:number){if(this.world!==world)this.reset(world);this.ability=id;this.abilityAt=time;this.abilityX=x;this.abilityY=y;}
   fire(world:string,time:number,x:number,y:number,tx:number,ty:number,family:WeaponFamily){
     if(family!=="kinetic"&&family!=="energy")return;
-    if(this.world!==world)this.reset(world);this.released=time;this.aim=Math.atan2(ty-y,tx-x);this.releasedFamily=family;
+    if(this.world!==world)this.reset(world);this.released=time;this.releasedFamily=family;
   }
-  draw(g:Phaser.GameObjects.Graphics,s:RunState,facing:number,reduced:boolean,highContrast=false){
+  draw(g:Phaser.GameObjects.Graphics,s:RunState,_facing:number,reduced:boolean,highContrast=false){
     if(this.world!==s.worldNonce)this.reset(s.worldNonce);
     const enabled=activeFamilies(s.originId,s.expansionFamily);
     // Field traps and autonomous Defense units are separate world objects,
@@ -36,29 +41,19 @@ export class HeroEquipment {
     const handheld=this.releasedFamily==="kinetic"||this.releasedFamily==="energy";
     const family=s.elapsed-this.released<.16&&handheld&&enabled.includes(this.releasedFamily)?this.releasedFamily:enabled[0]!;
     const art=combatPresentation(s.originId,family,s.weaponStage[family]);
-    const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=fresh?this.aim:facing;
-    const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx;
-    const floating=floatingWeaponPosition(s.elapsed,reduced);
-    const row=Math.floor(equipmentFrame(s.originId,s.weaponStage[family])/6);
-    const pose=equipmentPose(ang,s.elapsed-this.released);
-    const x=s.px+(this.mount==="float"?floating.x:this.socketX)-nx*pose.recoil,y=s.py+(this.mount==="float"?floating.y:this.socketY)-ny*pose.recoil,len=art.weaponLength;
-    if(this.mount==="float"&&fresh){
-      // A visible tether anchors this cosmetic mount to the unchanged canonical
-      // emitter. Never move projectile origins or imply a second weapon hitbox.
-      g.lineStyle(1,highContrast?0xffffff:art.color,.5*fresh);g.lineBetween(s.px,s.py,x,y);
-      g.lineStyle(2,art.color,.7*fresh);g.strokeCircle(s.px,s.py,3);
-    }
+    this.mount=s.weaponRig.mode;
+    const pose=weaponTransform(s.originId,primaryTier(s.originId,s.weaponStage),s.px,s.py,s.weaponRig,s.elapsed);
+    this.lastPose=pose;
+    const fresh=Math.min(1,Math.max(0,1-(s.elapsed-this.released)/.16)),ang=pose.heading;
+    const nx=Math.cos(ang),ny=Math.sin(ang),px=-ny,py=nx,len=art.weaponLength;
+    const x=pose.muzzleX-nx*len,y=pose.muzzleY-ny*len;
     if(this.scene&&!highContrast){
-      const frame=equipmentFrame(s.originId,s.weaponStage[family]);
+      const frame=pose.frame;
       if(!this.weapon)this.weapon=this.scene.add.image(0,0,"combat-equipment",frame).setDepth(5);
       if(this.weapon.frame.name!==String(frame))this.weapon.setTexture("combat-equipment",frame);
-      // Original source grips, normalized to each 128px cell. The grip sits on
-      // the body's posed hand instead of placing the texture center 27u away.
-      const col=frame%6;
-      const grip=row===0?(col<3?[92,64]:[43,74]):row===1?[49,93]:row===2?[30,64]:[63,67];
-      // Phaser flips around the frame center: reflect the origin too, keeping
-      // the same authored grip pixel at the hand in either direction.
-      this.weapon.setOrigin(this.mount==="float"?.5:grip[0]!/128,this.mount==="float"?.5:pose.flipY?1-grip[1]!/128:grip[1]!/128).setPosition(x,y).setDisplaySize(56+art.stage*2,56+art.stage*2).setRotation(pose.rotation).setFlipY(pose.flipY).setVisible(!s.over);
+      this.weapon.setOrigin(pose.pivotX/128,pose.flipY?1-pose.pivotY/128:pose.pivotY/128)
+        .setPosition(pose.x,pose.y).setDisplaySize(pose.scale*128,pose.scale*128)
+        .setRotation(pose.rotation).setFlipY(pose.flipY).setVisible(!s.over);
     }else{
     this.weapon?.setVisible(false);
     // Age equipment: collar/material, physical braces and energy conduits.
@@ -73,11 +68,13 @@ export class HeroEquipment {
       g.lineStyle(6,0x0b1218,1);g.lineBetween(x-px*17,y-py*17,x+px*17,y+py*17);
       g.lineStyle(3,art.material,1);g.lineBetween(x-px*17,y-py*17,x+px*17,y+py*17);
       g.lineStyle(1,art.color,1);g.lineBetween(x-px*17,y-py*17,x-nx*8,y-ny*8);g.lineBetween(x+px*17,y+py*17,x-nx*8,y-ny*8);
+      g.lineStyle(2,art.color,1);g.lineBetween(x-nx*8,y-ny*8,pose.muzzleX,pose.muzzleY);
+      g.fillStyle(art.color,1);g.fillTriangle(pose.muzzleX,pose.muzzleY,pose.muzzleX-nx*6+px*3,pose.muzzleY-ny*6+py*3,pose.muzzleX-nx*6-px*3,pose.muzzleY-ny*6-py*3);
     }else if(art.shape==="fork"){
       g.lineStyle(6,0x0b1218,1);g.lineBetween(x-nx*10,y-ny*10,x+nx*len,y+ny*len);
       g.lineStyle(3,art.material,1);g.lineBetween(x-nx*10,y-ny*10,x+nx*len,y+ny*len);
       for(const side of [-1,1]){g.lineStyle(3,art.color,1);g.lineBetween(x+nx*(len-8),y+ny*(len-8),x+nx*len+px*9*side,y+ny*len+py*9*side);}
-      g.fillStyle(art.color,1);g.fillTriangle(x+nx*(len+5),y+ny*(len+5),x+nx*len+px*4,y+ny*len+py*4,x+nx*len-px*4,y+ny*len-py*4);
+      g.fillStyle(art.color,1);g.fillTriangle(pose.muzzleX,pose.muzzleY,x+nx*(len-5)+px*4,y+ny*(len-5)+py*4,x+nx*(len-5)-px*4,y+ny*(len-5)-py*4);
     }else if(art.shape==="prism"){
       g.fillStyle(0x172027,1);g.fillTriangle(x+nx*len,y+ny*len,x+px*12,y+py*12,x-px*12,y-py*12);
       g.lineStyle(3,art.material,1);g.strokeTriangle(x+nx*len,y+ny*len,x+px*12,y+py*12,x-px*12,y-py*12);
@@ -90,6 +87,15 @@ export class HeroEquipment {
     }
     }
     if(fresh&&!reduced){g.lineStyle(2,art.color,fresh);g.lineBetween(x+nx*len,y+ny*len,x+nx*(len+9*fresh),y+ny*(len+9*fresh));}
+    if(this.debug){
+      for(const [cx,cy,color] of [[s.px,s.py,0xffffff],[pose.x,pose.y,0x00ffff],[pose.muzzleX,pose.muzzleY,0xffff00]]){g.lineStyle(2,color,1);g.strokeCircle(cx!,cy!,5);}
+      const e=this.lastRelease;
+      if(e?.release){const birth=e.release.pose,p=s.projs[e.release.projectileIndex??-1];
+        g.lineStyle(2,0xff00ff,1);g.strokeCircle(birth.muzzleX,birth.muzzleY,4);
+        if(e.release.targetX!==undefined&&e.release.targetY!==undefined){g.lineStyle(2,0xff5555,1);g.strokeCircle(e.release.targetX,e.release.targetY,6);}
+        if(p?.active){g.lineStyle(2,0x00ff00,1);g.strokeCircle(p.x,p.y,5);g.lineBetween(birth.muzzleX,birth.muzzleY,p.x,p.y);}
+      }
+    }
     const age=s.elapsed-this.abilityAt;
     if(this.ability==="nova"&&age<.35){
       const fade=1-age/.35,r=NOVA_RADIUS*(.25+.75*age/.35);

@@ -70,7 +70,11 @@ export const WORLDGEN_VERSION = 3;
 // Full warnings/recoveries and lethal damage stay intact; encounter traces differ.
 // Content18: preserve the complete stationary recovery before phase transition.
 // Canonical encounter traces change; world topology and save schema do not.
-export const CONTENT_VERSION = 18;
+// Content19: canonical companion aiming, authored muzzles and primary shot sweeps.
+// Earlier replay collisions/hit times intentionally differ. Child laws stay pinned
+// to18: a firing correction must not silently reroll geography/world rules.
+export const CHILD_LAWS_CONTENT_VERSION = 18;
+export const CONTENT_VERSION = 19;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

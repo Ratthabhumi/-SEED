@@ -1,3 +1,28 @@
+## V3.5 authentic primary release —2026-10-25 (current)
+
+Parent DraftPR24 remains8edbc5b5afa3c5b4beb66341af8e993fb21aa6fa; main unchanged.
+One child feat/v35-authentic-weapon-muzzle-20261025. ADR0044 replaces cosmetic
+ellipse/tether with canonical target-aware rig,24 authored source axes/pivots/
+exits and explicit primary ownership. Actual projectile positions/velocities and
+beam starts use the same transform as the painted Image and HC fallback.
+Primary segment collision protects near targets; autonomous emitters retain
+independent origins. Content19 intentionally changes collisions/alignment time;
+worldgen3/save2 stay, child law seed explicitly pinned18. Float default, Hand
+comparison now canonical/hashed. Preserve original31, paintedHQ Boss preference,
+raw QA evidence and untracked BAT. Human fun/art/spacing acceptance remains open.
+Read-only pixel evidence72 points and targeted canonical tests pass. Local full check548/97 passed before final vertical-aim/cell-edge regressions;
+latest targeted18/18 pass. Final full check,
+clean-source CI, Natural36 comparison, browser/native/package and physical24 have
+separate exact-source receipts in the single DraftPR; do not infer completion
+from this handoff. Natural36 now compares PR24 outcomes and requires candidate
+repeatability, not historical equality. An exploratory partial7-case run and a
+native capture interrupted during1080p host slowdown are preserved locally;
+neither is a full pass. Screens inspected show actual birth at bow tip left/right.
+Boss fixture now retires old projectiles/mines. A controlled7HP contamination
+reproduction and real49HP Slam test distinguish causes; the historical failed
+trace's exact contaminating projectile remains unproven. See V35_WEAPON_MUZZLE.
+No new market research needed. No merge, force push, release, new dependency,
+asset bitmap change or synthetic human acceptance is authorized by these checks.
 ## V3.4 actual human recovery / floating primary —2026-10-25 (current)
 
 Reconciled remote DraftPR23/508537877b2c2606bfb6f6cf9844d2518ab7fbca;
