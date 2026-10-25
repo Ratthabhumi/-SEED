@@ -9,7 +9,7 @@
 //   movement (incl. siege) → spatial rebuild → weapons/squad/projectiles/
 //   collisions → mines → pickups/economy → territory upkeep → chunks/POI
 import type {ClaimStatus} from "../world/claimStatus";
-import {createWeaponRig,primaryTier,weaponTransform,aimFromPivot,angleDelta,sweptHit,type WeaponMount,type WeaponTransform} from '../combat/weaponGeometry';
+import {createWeaponRig,primaryTier,weaponTransform,aimFromPivot,advanceWeaponRig,angleDelta,sweptHit,type WeaponMount,type WeaponTransform} from '../combat/weaponGeometry';
 import {HAZARD_GEOMETRY} from "../combat/hazardGeometry";
 import {adaptationFor,createEvolution,stepEvolution} from "../combat/enemyEvolution";
 import { childKnowledgeFactor, childRaidInterval, childResearchBonusScale } from "../progression/childWorld";
@@ -1776,17 +1776,7 @@ export class RunSimulation {
   private updatePrimaryRig(dt:number):void {
     const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),target=this.nearestEnemy(s.px,s.py,800);
     if(!target)return;
-    // Select the authored mirror before solving the offset muzzle. Deriving
-    // it from the solved angle makes an off-axis grip oscillate at vertical aim.
-    const lateralTarget=target.x-s.px-r.x;
-    if(Math.abs(lateralTarget)>2)r.flipY=lateralTarget<0;
-    const aim=aimFromPivot(s.originId,tier,s.px,s.py,r,target.x,target.y);
-    r.heading+=Math.max(-14*dt,Math.min(14*dt,angleDelta(aim.heading,r.heading)));
-    const dx=r.mode==='float'?96*Math.cos(r.heading):18*Math.cos(r.heading);
-    let dy=r.mode==='float'?-112:-12;
-    const distance=Math.hypot(target.x-s.px-dx,target.y-s.py-dy);
-    if(r.mode==='float'&&distance<70)dy-=70-distance;
-    const blend=1-Math.exp(-10*dt);r.x+=(dx-r.x)*blend;r.y+=(dy-r.y)*blend;
+    advanceWeaponRig(s.originId,tier,s.px,s.py,r,target.x,target.y,dt);
   }
   private releasePose(target:{x:number;y:number}):WeaponTransform|null {
     const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),aim=aimFromPivot(s.originId,tier,s.px,s.py,r,target.x,target.y);

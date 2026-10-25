@@ -1,3 +1,30 @@
+## V3.6 combat readiness and measured diagnosis —2026-10-25 (current)
+
+Verified parent DraftPR25/fe04927d0a03f1478cdf4b57bb4aee40a68256dd; main unchanged.
+One child feat/v36-combat-performance-recovery-20261025. ADR0045 fixes aim-before-
+translation validation and near-target Hand starvation: position first, retract
+only inside authored barrel reach, then turn at unchanged14rad/s. Keep actual
+muzzle, explicit ownership, all damage/HP/cooldowns/count/speed/collision and art.
+Offline96-case ablation selected placement (zero-shot4->0; volleys130->156),
+rejecting lock (126) and combined lock (153). No manufactured21/36 target.
+Content20 changes canonical release traces; worldgen3/save2/child-law seed18 stay.
+Parent15 changed-win observations initially hit an RPC harness error despite
+15 completed hash assertions. Preserved failure, fixed async yields and reran
+parent15 cleanly; candidate15 also clean. Final Natural36 checks all PR25 hashes,
+observes both versions and repeats candidate without observers. All outcomes
+and source diagnostics belong to final receipts on the one child DraftPR.
+Short paired same-host pilot18 timing+2 instrumented windows shows wide A/A
+variance; no isolated P25 renderer regression. Both sources can fail1080 budgets.
+Existing ground/actor/projectile batching retained; no speculative renderer cache.
+Physical gate stays OPEN pending the final exact-source24 receipt, never inferred
+from green CI. Native source-backed operator route: private window at
+/?e2e=1&combatReview=1. Explicitly staged; no natural Human QA recording, even
+with qa=1. Ordinary QA preserved. EN/TH panel uses native buttons and cleanup.
+Owner BAT, raw telemetry, original31 statuses and paintedHQ Boss remain intact.
+True layered animation remains an artist dependency. See V36_RECOVERY for the
+short QA route, research decisions and integration gate. Prerequisite d3814a6
+is108 commits above main; PR25 adds86 (194 total before this child). No merge,
+rebase, retarget, force push, tag, release or HUMAN_FUN_PASS claim.
 ## V3.5 authentic primary release —2026-10-25 (current)
 
 Parent DraftPR24 remains8edbc5b5afa3c5b4beb66341af8e993fb21aa6fa; main unchanged.

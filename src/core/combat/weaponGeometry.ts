@@ -33,6 +33,23 @@ export function aimFromPivot(origin:string,tier:number,px:number,py:number,rig:W
  const p=weaponTransform(origin,tier,px,py,{...rig,heading:angle,firedAt:-1e6},0);
  return {heading:angle,forward:(tx-p.muzzleX)*Math.cos(angle)+(ty-p.muzzleY)*Math.sin(angle)};
 }
+/** Translate first, then aim from the anchor that will actually fire. Retract
+ * only when a nearby target would lie inside the authored muzzle reach. */
+export function advanceWeaponRig(origin:string,tier:number,px:number,py:number,rig:WeaponRig,tx:number,ty:number,dt:number):void{
+ if(Math.abs(tx-px-rig.x)>2)rig.flipY=tx-px-rig.x<0;
+ const planned=aimFromPivot(origin,tier,px,py,rig,tx,ty);
+ let x=(rig.mode==='float'?96:18)*Math.cos(planned.heading),y=rig.mode==='float'?-112:-12;
+ const m=WEAPON_SOCKETS[weaponFrame(origin,tier)]!,scale=(56+tier*2)/128;
+ const room=Math.hypot(m[2]-m[0],m[3]-m[1])*scale+4;
+ const dx=px+x-tx,dy=py+y-ty,d=Math.hypot(dx,dy);
+ if(d<room){
+  const nx=d>.001?dx/d:-Math.cos(rig.heading),ny=d>.001?dy/d:-Math.sin(rig.heading);
+  x+=nx*(room-d);y+=ny*(room-d);
+ }
+ const blend=1-Math.exp(-10*dt);rig.x+=(x-rig.x)*blend;rig.y+=(y-rig.y)*blend;
+ const aim=aimFromPivot(origin,tier,px,py,rig,tx,ty);
+ rig.heading+=Math.max(-14*dt,Math.min(14*dt,angleDelta(aim.heading,rig.heading)));
+}
 export function sweptHit(x:number,y:number,nx:number,ny:number,ex:number,ey:number,r:number):number|null{
  const dx=nx-x,dy=ny-y,ox=x-ex,oy=y-ey,c=ox*ox+oy*oy-r*r;
  if(c<=0)return 0;const a=dx*dx+dy*dy;if(a===0)return null;

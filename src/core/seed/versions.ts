@@ -74,7 +74,9 @@ export const WORLDGEN_VERSION = 3;
 // Earlier replay collisions/hit times intentionally differ. Child laws stay pinned
 // to18: a firing correction must not silently reroll geography/world rules.
 export const CHILD_LAWS_CONTENT_VERSION = 18;
-export const CONTENT_VERSION = 19;
+// Content20: resolve final-anchor aim and retract unreachable near-muzzle mounts.
+// Damage, cooldowns, swept collision and the authored source sockets are unchanged.
+export const CONTENT_VERSION = 20;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 export const SAVE_SCHEMA_VERSION = 2;
 

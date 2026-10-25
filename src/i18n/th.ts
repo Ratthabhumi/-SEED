@@ -3,6 +3,21 @@ import type {
  EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "review.combat.title": "ฉากตรวจการต่อสู้ — ไม่ใช่การเล่นตามธรรมชาติ",
+  "review.combat.warning": "ใช้หน้าต่างส่วนตัว ปุ่มเหล่านี้จัดฉากยุค เป้าหมาย และความพร้อมยิง โดยไม่บันทึกรายงาน Human QA ใช้ WASD เคลื่อนที่ และ Esc หยุดชั่วคราว",
+  "review.combat.bow": "ความพร้อมธนู",
+  "review.combat.near": "เป้าหมายประชิด · ถืออาวุธ",
+  "review.combat.stationary": "เป้าหมายอยู่นิ่ง",
+  "review.combat.moving": "เป้าหมายเคลื่อนที่",
+  "review.combat.left": "กลับไปทางซ้าย",
+  "review.combat.right": "กลับไปทางขวา",
+  "review.combat.multi": "ยิงหลายลูก",
+  "review.combat.beam": "ลำแสง",
+  "review.combat.float": "อาวุธลอย",
+  "review.combat.hand": "ถืออาวุธ",
+  "review.combat.boss": "สัญญาณบอส / หลบหลีก",
+  "review.combat.world": "โลก 2 · จัดฉากเงื่อนไข",
+  "review.combat.resume": "เคลื่อนไหวต่อ",
   "ui.loadingRun": "กำลังเตรียมโลกของคุณ…",
   "ui.exploreHint": "สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นพบสถานที่สำคัญ",
   "ui.signalExploreHint": "สำรวจพื้นที่ที่ยังไม่รู้จักเพื่อค้นหาสัญญาณต่างดาว แล้วกำจัดภัยรอบข้างก่อนยึด",

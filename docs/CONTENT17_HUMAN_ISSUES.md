@@ -1,5 +1,16 @@
 # Same31 complaints — home playable quality recovery
 
+##25 October V3.6 readiness delta (all31 identities/statuses retained)
+
+Engineering: fix final-anchor aiming and unreachable near-target Hand releases;
+retain source art, actual muzzle firing, warned Boss damage and world lifecycle.
+The explicit staged operator route supports short EN/TH720/1080 inspection, not
+natural human progression. Performance remains OPEN until exact-source physical
+receipt; no prior complaint is closed by ablations, CI or generated screenshots.
+Genuine painted anatomy and all human readability/fun judgments remain OPEN.
+See V36_RECOVERY and ADR0045; final results are separate DraftPR receipts.
+
+
 ##25 October V3.4 actual-play and owner feedback (same31 identities)
 
 Recovered cleanPR23 session63f14a27: Hunters→Space→Boss defeat→World2
