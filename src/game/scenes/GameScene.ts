@@ -383,7 +383,7 @@ export class GameScene extends Phaser.Scene {
     this.deathPersisted = false;
     ActorRenderer.frames(this);
     combatFrames(this);
-    this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images");
+    this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images",new URLSearchParams(location.search).get("actorTrim")!=="off");
     this.allyActors = new ActorRenderer(this,128,4);
     this.deathResponse=new DeathResponse(this);
     this.bossRig=new BossPresentation(this,this.bossArtMode);
@@ -545,6 +545,13 @@ export class GameScene extends Phaser.Scene {
         },
         kill: () => this.handleEvents(this.sim.e2eKillPlayer()),
         renderDiagnostics:()=>this.diagnostics?.snapshot()??null,
+        // Diagnostic-only pass isolation: camera-ignores a depth band; sim and art untouched.
+        layerCensus:()=>{const bands:Record<string,{count:number;visible:number;types:string[]}>={};
+          for(const c of this.children.list as Array<Phaser.GameObjects.GameObject&{depth:number;visible?:boolean}>){const k=String(c.depth);const b=bands[k]??={count:0,visible:0,types:[]};b.count++;if(c.visible!==false)b.visible++;if(!b.types.includes(c.type))b.types.push(c.type);}
+          return bands;},
+        layerIsolation:(min:number,max:number)=>{const cam=this.cameras.main;let hidden=0;
+          for(const c of this.children.list as Array<Phaser.GameObjects.GameObject&{depth:number;cameraFilter:number}>){if(c.depth>=min&&c.depth<=max){c.cameraFilter|=cam.id;hidden++;}else c.cameraFilter&=~cam.id;}
+          return hidden;},
         preparedGroundReview:(enabled?:boolean)=>{if(enabled!==undefined)this.preparedGround.enabled=enabled;return this.preparedGround.review();},
         preparedGroundFixture:(enabled:boolean,dx=0,dy=0)=>{const c=this.cameras.main;this.paused=true;c.stopFollow();c.ignore(this.children.list.filter(child=>child!==this.ground));c.setScroll(c.scrollX+dx,c.scrollY+dy);this.preparedGround.enabled=enabled;return this.sim.hash();},
         groundReview:()=>({bounds:groundViewport(this.cameras.main.scrollX,this.cameras.main.scrollY,this.scale.width,this.scale.height,this.cameras.main.zoom,{x:this.sim.state.px,y:this.sim.state.py}),commands:this.ground.commandBuffer.length}),

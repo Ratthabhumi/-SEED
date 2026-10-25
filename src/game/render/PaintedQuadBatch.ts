@@ -19,7 +19,8 @@ export class PaintedQuadBatch {
   const offset=this.count++*16,cs=Math.cos(angle),sn=Math.sin(angle);
   let u0=frame.u0,v0=frame.v0,u1=frame.u1,v1=frame.v1;
   if(bounds){
-   const dx=((bounds.x+bounds.w/2)/bounds.cell-.5)*w,dy=((bounds.y+bounds.h/2)/bounds.cell-.5)*h;
+   // A mirrored quad shows texel column t at -t, so the trimmed centre mirrors too.
+   const dx=((bounds.x+bounds.w/2)/bounds.cell-.5)*w*(flipX?-1:1),dy=((bounds.y+bounds.h/2)/bounds.cell-.5)*h;
    x+=cs*dx-sn*dy;y+=sn*dx+cs*dy;
    u0=frame.u0+(frame.u1-frame.u0)*bounds.x/bounds.cell;u1=frame.u0+(frame.u1-frame.u0)*(bounds.x+bounds.w)/bounds.cell;
    v0=frame.v0+(frame.v1-frame.v0)*bounds.y/bounds.cell;v1=frame.v0+(frame.v1-frame.v0)*(bounds.y+bounds.h)/bounds.cell;
