@@ -1,5 +1,12 @@
 # Same31 complaints — home playable quality recovery
 
+##25 October V3.7 delta (all31 identities/statuses retained)
+
+Owner accepted the V3.6 bow aim/float/release only. Performance diagnosis is in
+V37_READINESS (host-sensitive 1080p fill; no renderer change). The QA panel adds
+explicit ratings for responsiveness, threat readability, progression clarity,
+visual coherence and smoothness. No complaint is closed without a human rating.
+
 ##25 October V3.6 readiness delta (all31 identities/statuses retained)
 
 Engineering: fix final-anchor aiming and unreachable near-target Hand releases;

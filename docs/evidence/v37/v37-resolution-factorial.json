@@ -1,0 +1,2172 @@
+{
+  "classification": "BOUNDED_RESOLUTION_FACTORIAL_NOT_PHYSICAL_GATE_OR_HUMAN_PLAY",
+  "host": {
+    "cpu": "Intel(R) Core(TM) i5-9500 CPU @ 3.00GHz",
+    "cores": 6,
+    "platform": "win32"
+  },
+  "rows": [
+    {
+      "index": 0,
+      "condition": "PX720_WORLD720",
+      "graphics": "normal",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 1,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 4.099999999860302,
+        "workerPaintMaxMs": 30.299999999813735,
+        "deliveredMs": 4.300000000046566,
+        "evictions": 0,
+        "uploadCallMs": 0.19999999995343387,
+        "uploadMaxMs": 20.800000000046566,
+        "workerFailed": false,
+        "sourcePrepMs": 4.900000000139698,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 242,
+        "p50": 0.7999999998137355,
+        "p95": 1.6999999999534339,
+        "p99": 2.199999999953434
+      },
+      "frameInterval": {
+        "samples": 241,
+        "p50": 16.5999999998603,
+        "p95": 18.5,
+        "p99": 19.600000000093132
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 242,
+        "p50": 6.381641,
+        "p95": 7.942384,
+        "p99": 9.287379
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 1,
+      "condition": "PX720_WORLD720",
+      "graphics": "contrast",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 1,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 11087,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 154.69999999995343,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 5,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 248,
+        "p50": 1.3999999999068677,
+        "p95": 3,
+        "p99": 4.599999999860302
+      },
+      "frameInterval": {
+        "samples": 247,
+        "p50": 16.5,
+        "p95": 19.0999999998603,
+        "p99": 22.9000000001397
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 248,
+        "p50": 6.449974,
+        "p95": 7.797385,
+        "p99": 9.625461
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 2,
+      "condition": "PX720_WORLD1080",
+      "graphics": "normal",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 0.8,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 3.300000000046566,
+        "workerPaintMaxMs": 23.5999999998603,
+        "deliveredMs": 3.300000000046566,
+        "evictions": 0,
+        "uploadCallMs": 0.39999999990686774,
+        "uploadMaxMs": 25.399999999906868,
+        "workerFailed": false,
+        "sourcePrepMs": 4.699999999953434,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 242,
+        "p50": 0.7000000001862645,
+        "p95": 1.5,
+        "p99": 2
+      },
+      "frameInterval": {
+        "samples": 241,
+        "p50": 16.699999999953434,
+        "p95": 18.800000000046566,
+        "p99": 19.600000000093132
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 242,
+        "p50": 5.449478,
+        "p95": 6.561557,
+        "p99": 7.48622
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 3,
+      "condition": "PX720_WORLD1080",
+      "graphics": "contrast",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 0.8,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 18493,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 279.5,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 3.699999999953434,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 249,
+        "p50": 2,
+        "p95": 5.100000000093132,
+        "p99": 8.800000000046566
+      },
+      "frameInterval": {
+        "samples": 248,
+        "p50": 16.300000000046566,
+        "p95": 20.699999999953434,
+        "p99": 25.9000000001397
+      },
+      "over25ms": 4,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 249,
+        "p50": 6.44339,
+        "p95": 9.651294,
+        "p99": 10.438458
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 4,
+      "condition": "PX1080_WORLD720",
+      "graphics": "normal",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.5,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 3.8999999999068677,
+        "workerPaintMaxMs": 104.80000000004657,
+        "deliveredMs": 9.099999999860302,
+        "evictions": 0,
+        "uploadCallMs": 0.5999999998603016,
+        "uploadMaxMs": 39.700000000186265,
+        "workerFailed": false,
+        "sourcePrepMs": 6.400000000139698,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 224,
+        "p50": 1.8999999999068677,
+        "p95": 11.599999999860302,
+        "p99": 12.600000000093132
+      },
+      "frameInterval": {
+        "samples": 223,
+        "p50": 18.100000000093132,
+        "p95": 29.899999999906868,
+        "p99": 45.300000000046566
+      },
+      "over25ms": 20,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 225,
+        "p50": 10.219459,
+        "p95": 11.53687,
+        "p99": 12.555283
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 5,
+      "condition": "PX1080_WORLD720",
+      "graphics": "contrast",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.5,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 11087,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 195.9000000001397,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 5.300000000046566,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 220,
+        "p50": 6.7999999998137355,
+        "p95": 13.199999999953434,
+        "p99": 15.800000000046566
+      },
+      "frameInterval": {
+        "samples": 219,
+        "p50": 17.600000000093132,
+        "p95": 28.199999999953434,
+        "p99": 41.699999999953434
+      },
+      "over25ms": 18,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 220,
+        "p50": 10.333208,
+        "p95": 11.986618,
+        "p99": 13.99511
+      },
+      "longTasks": 1
+    },
+    {
+      "index": 6,
+      "condition": "PX1080_WORLD1080",
+      "graphics": "normal",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.2,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 8.200000000186265,
+        "workerPaintMaxMs": 84.30000000004657,
+        "deliveredMs": 11.699999999953434,
+        "evictions": 0,
+        "uploadCallMs": 0.30000000004656613,
+        "uploadMaxMs": 25.600000000093132,
+        "workerFailed": false,
+        "sourcePrepMs": 9.800000000046566,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 257,
+        "p50": 1.6999999999534339,
+        "p95": 7.099999999860302,
+        "p99": 13.100000000093132
+      },
+      "frameInterval": {
+        "samples": 256,
+        "p50": 17,
+        "p95": 28.600000000093132,
+        "p99": 38.199999999953434
+      },
+      "over25ms": 23,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 257,
+        "p50": 8.1928,
+        "p95": 9.92346,
+        "p99": 13.219863
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 7,
+      "condition": "PX1080_WORLD1080",
+      "graphics": "contrast",
+      "repeat": 0,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.2,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 18493,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 308.30000000004657,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 3.7999999998137355,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 246,
+        "p50": 3.6000000000931323,
+        "p95": 11.300000000046566,
+        "p99": 17.300000000046566
+      },
+      "frameInterval": {
+        "samples": 245,
+        "p50": 17,
+        "p95": 23.399999999906868,
+        "p99": 30.100000000093132
+      },
+      "over25ms": 11,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 247,
+        "p50": 8.411966,
+        "p95": 9.765627,
+        "p99": 10.436458
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 8,
+      "condition": "PX720_WORLD720",
+      "graphics": "normal",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 1,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 4.5,
+        "workerPaintMaxMs": 114,
+        "deliveredMs": 5.400000000139698,
+        "evictions": 0,
+        "uploadCallMs": 0.19999999995343387,
+        "uploadMaxMs": 29.5,
+        "workerFailed": false,
+        "sourcePrepMs": 6.300000000046566,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 242,
+        "p50": 1,
+        "p95": 2.300000000046566,
+        "p99": 3.3999999999068677
+      },
+      "frameInterval": {
+        "samples": 241,
+        "p50": 16.5,
+        "p95": 19.0999999998603,
+        "p99": 21.5
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 242,
+        "p50": 6.475807,
+        "p95": 7.889968,
+        "p99": 8.982214
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 9,
+      "condition": "PX720_WORLD720",
+      "graphics": "contrast",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 1,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 11087,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 236.19999999995343,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 4.800000000046566,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 243,
+        "p50": 1.6000000000931323,
+        "p95": 3.300000000046566,
+        "p99": 5.300000000046566
+      },
+      "frameInterval": {
+        "samples": 242,
+        "p50": 16.5,
+        "p95": 19.399999999906868,
+        "p99": 26.100000000093132
+      },
+      "over25ms": 3,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 243,
+        "p50": 6.215225,
+        "p95": 8.466716,
+        "p99": 10.543124
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 10,
+      "condition": "PX1080_WORLD1080",
+      "graphics": "normal",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.2,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 4.300000000046566,
+        "workerPaintMaxMs": 43.5,
+        "deliveredMs": 12.400000000139698,
+        "evictions": 0,
+        "uploadCallMs": 0.5999999998603016,
+        "uploadMaxMs": 35.5,
+        "workerFailed": false,
+        "sourcePrepMs": 4.399999999906868,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 285,
+        "p50": 1.5,
+        "p95": 6.899999999906868,
+        "p99": 12.399999999906868
+      },
+      "frameInterval": {
+        "samples": 284,
+        "p50": 16.799999999813735,
+        "p95": 21.800000000046566,
+        "p99": 29.199999999953434
+      },
+      "over25ms": 5,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 286,
+        "p50": 8.507132,
+        "p95": 10.068126,
+        "p99": 10.733957
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 11,
+      "condition": "PX1080_WORLD1080",
+      "graphics": "contrast",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.2,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 18493,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 243.39999999990687,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 7.900000000139698,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 242,
+        "p50": 4.2999999998137355,
+        "p95": 12.5,
+        "p99": 17.100000000093132
+      },
+      "frameInterval": {
+        "samples": 241,
+        "p50": 16.899999999906868,
+        "p95": 23.399999999906868,
+        "p99": 38.0999999998603
+      },
+      "over25ms": 9,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 243,
+        "p50": 8.555549,
+        "p95": 10.312958,
+        "p99": 11.762202
+      },
+      "longTasks": 1
+    },
+    {
+      "index": 12,
+      "condition": "PX1080_WORLD720",
+      "graphics": "normal",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.5,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 5.900000000139698,
+        "workerPaintMaxMs": 29,
+        "deliveredMs": 11,
+        "evictions": 0,
+        "uploadCallMs": 1.1999999999534339,
+        "uploadMaxMs": 57.9000000001397,
+        "workerFailed": false,
+        "sourcePrepMs": 8.600000000093132,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 226,
+        "p50": 3.699999999953434,
+        "p95": 11.400000000139698,
+        "p99": 15.199999999953434
+      },
+      "frameInterval": {
+        "samples": 225,
+        "p50": 17.699999999953434,
+        "p95": 27.300000000046566,
+        "p99": 34.800000000046566
+      },
+      "over25ms": 17,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 226,
+        "p50": 10.200125,
+        "p95": 11.490787,
+        "p99": 11.979535
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 13,
+      "condition": "PX1080_WORLD720",
+      "graphics": "contrast",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.5,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 11087,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 203.19999999995343,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 6.300000000046566,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 225,
+        "p50": 5.899999999906868,
+        "p95": 13.700000000186265,
+        "p99": 19.300000000046566
+      },
+      "frameInterval": {
+        "samples": 224,
+        "p50": 17.4000000001397,
+        "p95": 26.699999999953434,
+        "p99": 31.100000000093132
+      },
+      "over25ms": 16,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 225,
+        "p50": 10.215959,
+        "p95": 12.017451,
+        "p99": 12.691532
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 14,
+      "condition": "PX720_WORLD1080",
+      "graphics": "normal",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 0.8,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 4.699999999953434,
+        "workerPaintMaxMs": 95.80000000004657,
+        "deliveredMs": 7,
+        "evictions": 0,
+        "uploadCallMs": 0.30000000004656613,
+        "uploadMaxMs": 22.899999999906868,
+        "workerFailed": false,
+        "sourcePrepMs": 8,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 241,
+        "p50": 0.9000000001396984,
+        "p95": 1.8999999999068677,
+        "p99": 3.1000000000931323
+      },
+      "frameInterval": {
+        "samples": 240,
+        "p50": 16.5,
+        "p95": 19.100000000093132,
+        "p99": 21
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 241,
+        "p50": 5.443478,
+        "p95": 6.53639,
+        "p99": 7.35497
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 15,
+      "condition": "PX720_WORLD1080",
+      "graphics": "contrast",
+      "repeat": 1,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 0.8,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 18493,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 253.30000000004657,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 9.100000000093132,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 248,
+        "p50": 1.6999999999534339,
+        "p95": 3.0999999998603016,
+        "p99": 4.199999999953434
+      },
+      "frameInterval": {
+        "samples": 247,
+        "p50": 16.699999999953434,
+        "p95": 18.699999999953434,
+        "p99": 20.300000000046566
+      },
+      "over25ms": 1,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 248,
+        "p50": 5.432644,
+        "p95": 6.449974,
+        "p99": 7.342387
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 16,
+      "condition": "PX1080_WORLD720",
+      "graphics": "normal",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.5,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 27.699999999953434,
+        "workerPaintMaxMs": 882.6999999999534,
+        "deliveredMs": 50.89999999990687,
+        "evictions": 0,
+        "uploadCallMs": 2.5,
+        "uploadMaxMs": 47.5,
+        "workerFailed": false,
+        "sourcePrepMs": 6.399999999906868,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 214,
+        "p50": 2.699999999953434,
+        "p95": 11.800000000046566,
+        "p99": 13
+      },
+      "frameInterval": {
+        "samples": 213,
+        "p50": 18.300000000046566,
+        "p95": 33.5,
+        "p99": 43.39999999990687
+      },
+      "over25ms": 26,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 214,
+        "p50": 10.181792,
+        "p95": 11.766119,
+        "p99": 12.314034
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 17,
+      "condition": "PX1080_WORLD720",
+      "graphics": "contrast",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.5,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 11087,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 1713.3000000000466,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 7,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 224,
+        "p50": 4.5,
+        "p95": 12.199999999953434,
+        "p99": 16.199999999953434
+      },
+      "frameInterval": {
+        "samples": 223,
+        "p50": 17.300000000046566,
+        "p95": 25.4000000001397,
+        "p99": 35
+      },
+      "over25ms": 13,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 224,
+        "p50": 9.393295,
+        "p95": 11.005539,
+        "p99": 11.530703
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 18,
+      "condition": "PX1080_WORLD1080",
+      "graphics": "normal",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.2,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 12.300000000046566,
+        "workerPaintMaxMs": 256,
+        "deliveredMs": 15.899999999906868,
+        "evictions": 0,
+        "uploadCallMs": 0.5999999998603016,
+        "uploadMaxMs": 22.199999999953434,
+        "workerFailed": false,
+        "sourcePrepMs": 5.399999999906868,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 237,
+        "p50": 1.6000000000931323,
+        "p95": 7.2999999998137355,
+        "p99": 13.5
+      },
+      "frameInterval": {
+        "samples": 236,
+        "p50": 16.600000000093132,
+        "p95": 23.9000000001397,
+        "p99": 37.699999999953434
+      },
+      "over25ms": 11,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 237,
+        "p50": 8.703215,
+        "p95": 9.735794,
+        "p99": 10.372625
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 19,
+      "condition": "PX1080_WORLD1080",
+      "graphics": "contrast",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "dpr": 1,
+      "css": [
+        1920,
+        1080
+      ],
+      "backing": [
+        1920,
+        1080
+      ],
+      "drawingBuffer": [
+        1920,
+        1080
+      ],
+      "zoom": 1.2,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 18493,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 662.8000000000466,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 5.7000000001862645,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 237,
+        "p50": 4.2999999998137355,
+        "p95": 10.599999999860302,
+        "p99": 11.600000000093132
+      },
+      "frameInterval": {
+        "samples": 236,
+        "p50": 16.600000000093132,
+        "p95": 22,
+        "p99": 27
+      },
+      "over25ms": 7,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 236,
+        "p50": 8.668631,
+        "p95": 10.238625,
+        "p99": 10.931456
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 20,
+      "condition": "PX720_WORLD720",
+      "graphics": "normal",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 1,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 3.300000000046566,
+        "workerPaintMaxMs": 42.799999999813735,
+        "deliveredMs": 6.2000000001862645,
+        "evictions": 0,
+        "uploadCallMs": 0.30000000004656613,
+        "uploadMaxMs": 20,
+        "workerFailed": false,
+        "sourcePrepMs": 7.5,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 241,
+        "p50": 0.8999999999068677,
+        "p95": 2,
+        "p99": 3
+      },
+      "frameInterval": {
+        "samples": 240,
+        "p50": 16.699999999953434,
+        "p95": 18.799999999813735,
+        "p99": 20.4000000001397
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 241,
+        "p50": 6.507473,
+        "p95": 8.031217,
+        "p99": 9.237796
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 21,
+      "condition": "PX720_WORLD720",
+      "graphics": "contrast",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 1,
+      "worldView": [
+        1280,
+        720
+      ],
+      "groundCommands": 11087,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 250.5,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 6.599999999860302,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 241,
+        "p50": 1.5,
+        "p95": 2.4000000001396984,
+        "p99": 3.0999999998603016
+      },
+      "frameInterval": {
+        "samples": 240,
+        "p50": 16.5999999998603,
+        "p95": 18.600000000093132,
+        "p99": 19.699999999953434
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 241,
+        "p50": 6.410974,
+        "p95": 7.502053,
+        "p99": 8.997797
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 22,
+      "condition": "PX720_WORLD1080",
+      "graphics": "normal",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 0.8,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 0,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 196,
+        "misses": 49,
+        "pending": 0,
+        "uploads": 49,
+        "uploadBytes": 12845056,
+        "paintMs": 4.600000000093132,
+        "workerPaintMaxMs": 18.9000000001397,
+        "deliveredMs": 5.100000000093132,
+        "evictions": 0,
+        "uploadCallMs": 0.19999999995343387,
+        "uploadMaxMs": 22.199999999953434,
+        "workerFailed": false,
+        "sourcePrepMs": 5.399999999906868,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 49
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 242,
+        "p50": 0.6999999999534339,
+        "p95": 1.3999999999068677,
+        "p99": 2.199999999953434
+      },
+      "frameInterval": {
+        "samples": 241,
+        "p50": 16.699999999953434,
+        "p95": 18.100000000093132,
+        "p99": 19.100000000093132
+      },
+      "over25ms": 0,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 242,
+        "p50": 5.103062,
+        "p95": 6.262308,
+        "p99": 6.710223
+      },
+      "longTasks": 0
+    },
+    {
+      "index": 23,
+      "condition": "PX720_WORLD1080",
+      "graphics": "contrast",
+      "repeat": 2,
+      "source": {
+        "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+        "dirty": true,
+        "asset": "http://127.0.0.1:4198/assets/index-VLKDk_cI.js"
+      },
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)",
+      "browser": "153.0.8010.12",
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "css": [
+        1280,
+        720
+      ],
+      "backing": [
+        1280,
+        720
+      ],
+      "drawingBuffer": [
+        1280,
+        720
+      ],
+      "zoom": 0.8,
+      "worldView": [
+        1600,
+        900
+      ],
+      "groundCommands": 18493,
+      "actors": {
+        "actors": 500,
+        "activeRuns": 32,
+        "allocatedRuns": 32,
+        "maxRuns": 650,
+        "quadsPerRun": 16,
+        "bufferBytes": 40960
+      },
+      "terrain": {
+        "images": 15,
+        "tiles": 49,
+        "atlasBytes": 16777216,
+        "hits": 49,
+        "misses": 49,
+        "pending": 49,
+        "uploads": 0,
+        "uploadBytes": 0,
+        "paintMs": 0,
+        "workerPaintMaxMs": 0,
+        "deliveredMs": 147.10000000009313,
+        "evictions": 0,
+        "uploadCallMs": 0,
+        "uploadMaxMs": 0,
+        "workerFailed": false,
+        "sourcePrepMs": 5.800000000046566,
+        "fallbackAtlasBytes": 1048576,
+        "sourceMode": "offline-exact-rgba-canvas",
+        "mode": "worker-partial-upload",
+        "ready": 0
+      },
+      "foreground": "visible",
+      "renderCpuSubmit": {
+        "samples": 239,
+        "p50": 1.8000000000465661,
+        "p95": 4.900000000139698,
+        "p99": 8.100000000093132
+      },
+      "frameInterval": {
+        "samples": 238,
+        "p50": 16.399999999906868,
+        "p95": 21.0999999998603,
+        "p99": 29.199999999953434
+      },
+      "over25ms": 3,
+      "gpuMs": {
+        "supported": true,
+        "extension": "EXT_disjoint_timer_query",
+        "disjoint": 0,
+        "samples": 239,
+        "p50": 4.889813,
+        "p95": 6.812222,
+        "p99": 11.152455
+      },
+      "longTasks": 0
+    }
+  ],
+  "errors": [],
+  "complete": true
+}
