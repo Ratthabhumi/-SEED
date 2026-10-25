@@ -3,8 +3,7 @@ from PIL import Image
 from pathlib import Path
 import hashlib,json
 output={}
-for key,file,cols,rows,cell in [('shots','assets/seed/combat/projectiles-v1.png',4,4,96),('props','assets/seed/combat/world-props-v1.png',4,3,128),
- ('enemies','assets/seed/actors/enemies-v2.png',4,4,128),('boss','assets/seed/actors/boss-v2.png',4,2,256)]:
+for key,file,cols,rows,cell in [('shots','assets/seed/combat/projectiles-v1.png',4,4,96),('props','assets/seed/combat/world-props-v1.png',4,3,128)]:
  image=Image.open(file);boxes=[]
  for y in range(rows):
   for x in range(cols):

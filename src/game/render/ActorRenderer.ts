@@ -18,8 +18,8 @@ export class ActorRenderer {
   private count = 0;
   private ordered?:OrderedActorBatch;
   private styles=new WeakMap<ActorImage,{key:string;frame:string;size:number;origin:number;tint:number}>();
-  constructor(private scene: Phaser.Scene, private max: number, private depth: number, ordered=false, trim=true) {
-    if(ordered&&"gl" in scene.game.renderer)this.ordered=new OrderedActorBatch(scene,max,depth,trim);
+  constructor(private scene: Phaser.Scene, private max: number, private depth: number, ordered=false) {
+    if(ordered&&"gl" in scene.game.renderer)this.ordered=new OrderedActorBatch(scene,max,depth);
   }
   static frames(scene: Phaser.Scene): void {
     const outposts=scene.textures.get("outposts-v2");

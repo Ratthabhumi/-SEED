@@ -383,7 +383,7 @@ export class GameScene extends Phaser.Scene {
     this.deathPersisted = false;
     ActorRenderer.frames(this);
     combatFrames(this);
-    this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images",new URLSearchParams(location.search).get("actorTrim")!=="off");
+    this.enemyActors = new ActorRenderer(this,650,2,new URLSearchParams(location.search).get("actors")!=="images");
     this.allyActors = new ActorRenderer(this,128,4);
     this.deathResponse=new DeathResponse(this);
     this.bossRig=new BossPresentation(this,this.bossArtMode);
