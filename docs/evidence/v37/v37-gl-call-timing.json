@@ -1,0 +1,205 @@
+{
+  "classification": "DIAGNOSTIC_GL_CALL_ATTRIBUTION_NOT_PHYSICAL_GATE",
+  "rows": [
+    {
+      "id": "720-normal",
+      "width": 1280,
+      "height": 720,
+      "graphics": "normal",
+      "frames": 181,
+      "meanRenderCpuSubmitMs": 1.226,
+      "perFrame": {
+        "clear": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.033,
+          "maxMs": 0.3,
+          "kbPerFrame": 0
+        },
+        "bufferSubData": {
+          "callsPerFrame": 4,
+          "msPerFrame": 0.089,
+          "maxMs": 1.6,
+          "kbPerFrame": 169.1
+        },
+        "useProgram": {
+          "callsPerFrame": 3,
+          "msPerFrame": 0.004,
+          "maxMs": 0.1,
+          "kbPerFrame": 0
+        },
+        "bindTexture": {
+          "callsPerFrame": 2,
+          "msPerFrame": 0.013,
+          "maxMs": 0.7,
+          "kbPerFrame": 0
+        },
+        "drawElements": {
+          "callsPerFrame": 3,
+          "msPerFrame": 0.012,
+          "maxMs": 0.2,
+          "kbPerFrame": 0
+        }
+      }
+    },
+    {
+      "id": "1080-normal",
+      "width": 1920,
+      "height": 1080,
+      "graphics": "normal",
+      "frames": 176,
+      "meanRenderCpuSubmitMs": 2.652,
+      "perFrame": {
+        "clear": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.063,
+          "maxMs": 1.7,
+          "kbPerFrame": 0
+        },
+        "bufferSubData": {
+          "callsPerFrame": 4,
+          "msPerFrame": 0.294,
+          "maxMs": 29.1,
+          "kbPerFrame": 160.8
+        },
+        "useProgram": {
+          "callsPerFrame": 3,
+          "msPerFrame": 0.015,
+          "maxMs": 0.4,
+          "kbPerFrame": 0
+        },
+        "bindTexture": {
+          "callsPerFrame": 2,
+          "msPerFrame": 0.022,
+          "maxMs": 0.6,
+          "kbPerFrame": 0
+        },
+        "drawElements": {
+          "callsPerFrame": 3,
+          "msPerFrame": 0.022,
+          "maxMs": 0.5,
+          "kbPerFrame": 0
+        }
+      }
+    },
+    {
+      "id": "1080-normal-hide-combat-gfx",
+      "width": 1920,
+      "height": 1080,
+      "graphics": "normal",
+      "hide": [
+        0,
+        0
+      ],
+      "frames": 180,
+      "meanRenderCpuSubmitMs": 0.942,
+      "perFrame": {
+        "clear": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.031,
+          "maxMs": 0.3,
+          "kbPerFrame": 0
+        },
+        "bufferSubData": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.049,
+          "maxMs": 0.9,
+          "kbPerFrame": 144
+        },
+        "drawElements": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.006,
+          "maxMs": 0.1,
+          "kbPerFrame": 0
+        }
+      }
+    },
+    {
+      "id": "1080-contrast",
+      "width": 1920,
+      "height": 1080,
+      "graphics": "contrast",
+      "frames": 180,
+      "meanRenderCpuSubmitMs": 4.147,
+      "perFrame": {
+        "clear": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.104,
+          "maxMs": 6.8,
+          "kbPerFrame": 0
+        },
+        "bufferSubData": {
+          "callsPerFrame": 6,
+          "msPerFrame": 0.255,
+          "maxMs": 3.1,
+          "kbPerFrame": 376.3
+        },
+        "useProgram": {
+          "callsPerFrame": 4,
+          "msPerFrame": 0.016,
+          "maxMs": 0.4,
+          "kbPerFrame": 0
+        },
+        "drawElements": {
+          "callsPerFrame": 4,
+          "msPerFrame": 0.017,
+          "maxMs": 0.3,
+          "kbPerFrame": 0
+        },
+        "bindTexture": {
+          "callsPerFrame": 2,
+          "msPerFrame": 0.015,
+          "maxMs": 0.8,
+          "kbPerFrame": 0
+        }
+      }
+    },
+    {
+      "id": "1080-normal-repeat",
+      "width": 1920,
+      "height": 1080,
+      "graphics": "normal",
+      "frames": 168,
+      "meanRenderCpuSubmitMs": 1.745,
+      "perFrame": {
+        "clear": {
+          "callsPerFrame": 1,
+          "msPerFrame": 0.049,
+          "maxMs": 0.9,
+          "kbPerFrame": 0
+        },
+        "bufferSubData": {
+          "callsPerFrame": 4,
+          "msPerFrame": 0.116,
+          "maxMs": 1.7,
+          "kbPerFrame": 169.1
+        },
+        "useProgram": {
+          "callsPerFrame": 3,
+          "msPerFrame": 0.012,
+          "maxMs": 0.2,
+          "kbPerFrame": 0
+        },
+        "bindTexture": {
+          "callsPerFrame": 2,
+          "msPerFrame": 0.017,
+          "maxMs": 0.6,
+          "kbPerFrame": 0
+        },
+        "drawElements": {
+          "callsPerFrame": 3,
+          "msPerFrame": 0.012,
+          "maxMs": 0.3,
+          "kbPerFrame": 0
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "complete": true,
+  "source": {
+    "sha": "d4b66c2802b39e648edc11051e2268258fcf4a3f",
+    "dirty": true,
+    "asset": "http://127.0.0.1:4200/assets/index-DXj4xeqs.js"
+  },
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.101.2141)"
+}

@@ -1,5 +1,10 @@
 # Integration readiness —23 October2026
 
+25October V3.7: read-only audit (`evidence/v37/v37-pr-stack.json`) confirms 26 open
+Drafts, every base an ancestor of its head, prerequisite `d3814a6b` 108 above
+main, PR26 196 above main. Proposed (not executed) strategy and the five separate
+gates are in [V37_READINESS](V37_READINESS.md#integration-preflight-no-execution).
+
 25October V3.4: reconciled DraftPR23/508537877b2c2606bfb6f6cf9844d2518ab7fbca,
 192 above main, before this one child correction. Real cleanPR23 human evidence
 has now been recovered but is incomplete/unrated. The child does not authorize

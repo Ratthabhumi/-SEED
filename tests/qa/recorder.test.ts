@@ -66,6 +66,19 @@ describe("playtest recorder ratings and engagement", () => {
     expect(s.ageKnowledge[0]?.knowledge).toBe(512);
   });
 
+  it("ten experience questions fit the cap and none exists until the human rates it", () => {
+    const r = recorder();
+    for (const name of ["RUN_START", "BRONZE_REACHED", "SPACE_REACHED", "BOSS_DEFEATED", "CHILD_WORLD_STARTED"] as QaCheckpointName[]) r.checkpoint(name, ctx(900));
+    r.feedbackMark("positive", "อยากเล่นต่อ", "", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 0, projs: 0, build: "" }, ctx(950));
+    expect(r.snapshot().ratings).toHaveLength(0);
+    const questions = ["qa.rateCombat", "qa.rateBuild", "qa.rateDecision", "qa.rateReward", "qa.rateDesire",
+      "qa.rateResponsive", "qa.rateThreat", "qa.rateProgress", "qa.rateVisual", "qa.rateSmooth"];
+    questions.forEach((q, i) => r.rate(q, 1 + (i % 5), ctx(1000 + i)));
+    const s = r.snapshot();
+    expect(s.ratings.map((x) => x.question)).toEqual(questions);
+    expect(s.ratings.map((x) => x.score)).toEqual([1, 2, 3, 4, 5, 1, 2, 3, 4, 5]);
+  });
+
   it("feedback carries an unambiguous category", () => {
     const r = recorder();
     r.feedbackMark("read", "ภาพอ่านยาก", "", { px: 0, py: 0, chunk: "0,0", fps: 60, enemies: 0, projs: 0, build: "" }, ctx());

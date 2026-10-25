@@ -109,6 +109,7 @@ const FEEDBACK_GROUPS: Array<{ cat: EnKeys; key: string; labels: string[] }> = [
 
 const RATING_QUESTIONS: EnKeys[] = [
   "qa.rateCombat", "qa.rateBuild", "qa.rateDecision", "qa.rateReward", "qa.rateDesire",
+  "qa.rateResponsive", "qa.rateThreat", "qa.rateProgress", "qa.rateVisual", "qa.rateSmooth",
 ];
 
 function download(filename: string, text: string, mime: string): void {

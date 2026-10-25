@@ -22,6 +22,8 @@ for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`owne
  await press('world');await page.locator('#legacy-screen .card').first().click();await page.locator('#origin-screen .card').first().click();await page.locator('#child-intro-screen button').click();
  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.canonicalStressState().world)).toBe(2);
  await page.keyboard.press('Escape');await page.locator('#pause-restart-btn').click();await expect(page.locator('#combat-review')).toHaveCount(1);
+ // The panel re-mounts on Restart; wait for its styled line-height (NaN before), same >=1.7 contract.
+ await expect.poll(()=>page.locator('#combat-review').evaluate(root=>{const s=getComputedStyle(root);return parseFloat(s.lineHeight)/parseFloat(s.fontSize);}),{timeout:15000}).toBeGreaterThanOrEqual(1.7);
  const bounds=await page.locator('#combat-review').evaluate(root=>{const r=root.getBoundingClientRect();return {left:r.left,right:r.right,bottom:r.bottom,lineHeight:parseFloat(getComputedStyle(root).lineHeight),fontSize:parseFloat(getComputedStyle(root).fontSize)};});
  expect(bounds.left).toBeGreaterThanOrEqual(0);expect(bounds.right).toBeLessThanOrEqual(height===720?1280:1920);expect(bounds.bottom).toBeLessThanOrEqual(height);expect(bounds.lineHeight/bounds.fontSize).toBeGreaterThanOrEqual(1.7);
  await assertNoRawKeys(page);writeFileSync(`test-results/browser/v36-review-${height}-${lang}.json`,JSON.stringify({classification:'STAGED_OPERATOR_ROUTE_NOT_NATURAL_HUMAN_INPUT',near,bounds},null,2));

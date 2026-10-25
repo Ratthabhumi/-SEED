@@ -54,6 +54,20 @@ if (lockPanzoom.license !== 'MIT') {
 }
 console.log('✓ package-lock.json resolution and MIT licenses verified');
 
+// 2b. Bundled runtime dependencies must be credited in the shipped notices with verbatim license text.
+const notices = fs.readFileSync(path.resolve('public/THIRD_PARTY_NOTICES.txt'), 'utf8');
+for (const [name, file, source] of [
+  ['@dagrejs/dagre 3.1.1', 'licenses/DAGRE-MIT.txt', 'node_modules/@dagrejs/dagre/LICENSE'],
+  ['@panzoom/panzoom 4.6.2', 'licenses/PANZOOM-MIT.txt', 'node_modules/@panzoom/panzoom/MIT-License.txt'],
+]) {
+  if (!notices.includes(name) || !notices.includes(file)) fail(`THIRD_PARTY_NOTICES.txt must credit ${name} with ${file}`);
+  const shipped = path.resolve('public', file);
+  if (!fs.existsSync(shipped)) fail(`Shipped license text missing: public/${file}`);
+  else if (fs.existsSync(path.resolve(source)) && fs.readFileSync(shipped, 'utf8').replace(/\r\n/g, '\n') !== fs.readFileSync(path.resolve(source), 'utf8').replace(/\r\n/g, '\n'))
+    fail(`public/${file} must be a verbatim copy of ${source}`);
+}
+console.log('✓ Bundled dagre/panzoom credited in shipped notices with verbatim MIT texts');
+
 // 3. Verify required governance documentation files
 const requiredDocs = [
   'docs/ART_BIBLE.md',

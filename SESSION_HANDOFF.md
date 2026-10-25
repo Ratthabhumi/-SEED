@@ -1,4 +1,40 @@
-## V3.6 combat readiness and measured diagnosis —2026-10-25 (current)
+## V3.8 integration audit and candidate —2026-10-25 (current)
+
+Full-diff audit of the 108-commit prerequisite and the 200-commit stack
+(`scripts/audit-prerequisite.mjs`, `docs/V38_INTEGRATION_AUDIT.md`,
+`docs/evidence/v38/`). One confirmed blocker was fixed: bundled dagre/panzoom
+were missing from the shipped notices. Verbatim MIT texts were added and are
+now enforced by `verify-third-party` and `release:verify`. The merge-tree of the
+candidate into main equals the candidate tree (fast-forward-equivalent).
+Recommended: one Draft integration PR to main, merged with a merge commit after
+owner authorization. The physical retest is blocked by the uncontrolled host
+(Parsec session). The real human session (PR24 build) at 2550x1272 has frame
+p95 40–51 ms: fill-bound, sim fine. No ratings exist yet.
+
+## V3.7 frame pacing, experience readiness, integration preflight —2026-10-25
+
+Parent Draft PR26 `d4b66c28` (tree `32fca4f6`); child branch
+`feat/v37-frame-pacing-experience-20261025`. Owner accepted the V3.6 bow
+(aim/float/release) specifically; bow behaviour is frozen. Full report:
+`docs/V37_READINESS.md`, decision `docs/ADR/0046-*`, evidence `docs/evidence/v37/`.
+
+- 1080p diagnosis: cost follows covered screen pixels on the shared Intel UHD 630
+  (factorial + layer isolation). Ruled out: DPR/backing buffer, world area,
+  GL-call stalls (< 0.3 ms/frame). The same build later ran 1080p at render p95
+  ~1 ms with ~40% less GPU time, so host GPU contention dominated (Parsec
+  service present, streaming unverified). Strict gate stays 12/24 (not re-run;
+  no renderer change ships). Next: one physical24 run on a controlled host.
+- Actor alpha trimming: parity passed, no measurable benefit, reverted (kept in history).
+- New e2e-only hooks `layerCensus` / `layerIsolation`; scripts
+  `profile-resolution-factorial.mjs`, `profile-layer-isolation.mjs`, `profile-gl-call-timing.mjs`.
+- QA: five new explicit 1–5 rating questions (responsiveness, threat readability,
+  progression clarity, visual coherence, felt smooth), EN/TH; never inferred.
+- No gameplay change: Worldgen3/Content20/Save2; Natural36 unchanged by construction.
+- Integration: 108 prerequisite + 88 stack = 196 above main at PR26; 26 Drafts;
+  recommended single reviewed merge of the final tree after a prerequisite audit
+  (not executed, not authorized).
+
+## V3.6 combat readiness and measured diagnosis —2026-10-25
 
 Verified parent DraftPR25/fe04927d0a03f1478cdf4b57bb4aee40a68256dd; main unchanged.
 One child feat/v36-combat-performance-recovery-20261025. ADR0045 fixes aim-before-
