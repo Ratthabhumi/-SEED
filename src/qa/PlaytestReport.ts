@@ -193,6 +193,8 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(``);
   L.push(`## Performance Summary`);
   L.push(``);
+  L.push(`> Sparse QA samples (every 30 ticks, about 2 Hz at 60 FPS): slow-frame thresholds count sampled observations, not every rendered frame. These counts cannot establish native 1080p performance acceptance.`);
+  L.push(``);
   L.push(`| checkpoint | samples | fpsMin | frame p50/p95/p99 (ms) | sim p50/p95/p99 (ms) | ent/max proj/max pick | pools E/P/K max |`);
   L.push(`|---|---|---|---|---|---|---|`);
   if (snap.perfCheckpoints.length === 0) L.push(`| (no perf snapshots) | | | | | | |`);
@@ -212,9 +214,9 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(`- pickups max: ${peak((p) => p.pickupsMax)}`);
   L.push(`- worst frame: ${f2(Math.max(0, ...snap.perfCheckpoints.map((p) => p.worstFrameMs)))}ms`);
   L.push(`- worst sim step: ${f2(Math.max(0, ...snap.perfCheckpoints.map((p) => p.worstSimMs)))}ms`);
-  L.push(`- frames >33ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over33ms))}`);
-  L.push(`- frames >50ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over50ms))}`);
-  L.push(`- frames >100ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over100ms))}`);
+  L.push(`- sampled frames >33ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over33ms))}`);
+  L.push(`- sampled frames >50ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over50ms))}`);
+  L.push(`- sampled frames >100ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over100ms))}`);
   L.push(``);
   L.push(`## Pool Saturation`);
   L.push(``);
