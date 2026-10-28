@@ -77,7 +77,7 @@ describe("sparse performance evidence truth", () => {
     });
     r.perfSnapshot("boss", ctx(10));
     const report = renderMarkdown(r.snapshot());
-    expect(report).toContain("Sparse QA samples (every 30 ticks)");
+    expect(report).toContain("Sparse QA samples (every 30 ticks, about 2 Hz at 60 FPS)");
     expect(report).toContain("- sampled frames >33ms: 1");
     expect(report).toContain("- sampled frames >50ms: 1");
     expect(report).toContain("- sampled frames >100ms: 0");
