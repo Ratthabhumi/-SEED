@@ -64,3 +64,23 @@ describe("visual overflow analysis", () => {
     expect(() => analyzeRects([], { w: 0, h: 0 })).not.toThrow();
   });
 });
+
+
+describe("sparse performance evidence truth", () => {
+  it("does not mislabel sampled slow-frame observations as all rendered frames", () => {
+    const r = new PlaytestRecorder("EPOCH-GOLDEN-001", VERSIONS, 0, ORDER);
+    r.pushPerf({
+      fps: 18, frameMs: 55, simMs: 1.2,
+      enemies: 2, projs: 4, pickups: 0, mines: 0,
+      enemyPoolUsed: 2, projPoolUsed: 4, pickupPoolUsed: 0,
+      queries: 0, buckets: 0, chunkHits: 0, chunkMisses: 0,
+    });
+    r.perfSnapshot("boss", ctx(10));
+    const report = renderMarkdown(r.snapshot());
+    expect(report).toContain("Sparse QA samples (every 30 ticks)");
+    expect(report).toContain("- sampled frames >33ms: 1");
+    expect(report).toContain("- sampled frames >50ms: 1");
+    expect(report).toContain("- sampled frames >100ms: 0");
+    expect(report).not.toMatch(/^- frames >33ms:/m);
+  });
+});
