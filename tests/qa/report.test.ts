@@ -64,3 +64,44 @@ describe("visual overflow analysis", () => {
     expect(() => analyzeRects([], { w: 0, h: 0 })).not.toThrow();
   });
 });
+
+describe("missing performance evidence", () => {
+  it("marks unmeasured performance and entity counts as NOT SAMPLED without changing JSON", () => {
+    const r = new PlaytestRecorder("EPOCH-GOLDEN-001", VERSIONS, 0, ORDER);
+    const snap = r.snapshot();
+    expect(snap.perfSamples).toBe(0);
+    expect(snap.perfCheckpoints).toEqual([]);
+    const report = renderMarkdown(snap);
+    expect(report).toContain("(no perf snapshots)");
+    for (const metric of [
+      "enemies max", "projectiles max", "pickups max",
+      "worst frame", "worst sim step",
+    ]) {
+      expect(report).toContain(`- ${metric}: NOT SAMPLED`);
+    }
+    for (const ms of [33, 50, 100]) {
+      expect(report).toMatch(new RegExp(`^- (?:sampled )?frames >${ms}ms: NOT SAMPLED$`, "m"));
+    }
+    expect(JSON.parse(renderJSON(snap)).perfCheckpoints).toEqual([]);
+    expect(JSON.parse(renderJSON(snap)).perfSamples).toBe(0);
+  });
+
+  it("retains measured values when a performance checkpoint exists", () => {
+    const r = new PlaytestRecorder("EPOCH-GOLDEN-001", VERSIONS, 0, ORDER);
+    r.pushPerf({
+      fps: 18, frameMs: 55, simMs: 1.2,
+      enemies: 2, projs: 4, pickups: 1, mines: 0,
+      enemyPoolUsed: 2, projPoolUsed: 4, pickupPoolUsed: 1,
+      queries: 0, buckets: 0, chunkHits: 0, chunkMisses: 0,
+    });
+    r.perfSnapshot("boss", ctx(10));
+    const report = renderMarkdown(r.snapshot());
+    expect(report).toContain("- enemies max: 2");
+    expect(report).toContain("- projectiles max: 4");
+    expect(report).toContain("- pickups max: 1");
+    expect(report).toContain("- worst frame: 55.00ms");
+    expect(report).toContain("- worst sim step: 1.20ms");
+    expect(report).toMatch(/^- (?:sampled )?frames >33ms: 1$/m);
+    expect(report).not.toContain("NOT SAMPLED");
+  });
+});
