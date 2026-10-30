@@ -207,16 +207,20 @@ export function renderMarkdown(snap: RecorderSnapshot): string {
   L.push(``);
   L.push(`## Peak Entity Counts`);
   L.push(``);
-  const peak = (f: (p: CheckpointStats) => number): number =>
-    snap.perfCheckpoints.reduce((m, p) => Math.max(m, f(p)), 0);
-  L.push(`- enemies max: ${peak((p) => p.enemiesMax)}`);
-  L.push(`- projectiles max: ${peak((p) => p.projsMax)}`);
-  L.push(`- pickups max: ${peak((p) => p.pickupsMax)}`);
-  L.push(`- worst frame: ${f2(Math.max(0, ...snap.perfCheckpoints.map((p) => p.worstFrameMs)))}ms`);
-  L.push(`- worst sim step: ${f2(Math.max(0, ...snap.perfCheckpoints.map((p) => p.worstSimMs)))}ms`);
-  L.push(`- sampled frames >33ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over33ms))}`);
-  L.push(`- sampled frames >50ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over50ms))}`);
-  L.push(`- sampled frames >100ms: ${Math.max(0, ...snap.perfCheckpoints.map((p) => p.over100ms))}`);
+  // Empty checkpoints are missing observations, not measured zero latency or zero entities.
+  const hasPerfSnapshots = snap.perfCheckpoints.length > 0;
+  const measuredMax = (f: (p: CheckpointStats) => number): string =>
+    hasPerfSnapshots ? String(snap.perfCheckpoints.reduce((m, p) => Math.max(m, f(p)), 0)) : "NOT SAMPLED";
+  const measuredMs = (f: (p: CheckpointStats) => number): string =>
+    hasPerfSnapshots ? `${f2(Math.max(0, ...snap.perfCheckpoints.map(f)))}ms` : "NOT SAMPLED";
+  L.push(`- enemies max: ${measuredMax((p) => p.enemiesMax)}`);
+  L.push(`- projectiles max: ${measuredMax((p) => p.projsMax)}`);
+  L.push(`- pickups max: ${measuredMax((p) => p.pickupsMax)}`);
+  L.push(`- worst frame: ${measuredMs((p) => p.worstFrameMs)}`);
+  L.push(`- worst sim step: ${measuredMs((p) => p.worstSimMs)}`);
+  L.push(`- sampled frames >33ms: ${measuredMax((p) => p.over33ms)}`);
+  L.push(`- sampled frames >50ms: ${measuredMax((p) => p.over50ms)}`);
+  L.push(`- sampled frames >100ms: ${measuredMax((p) => p.over100ms)}`);
   L.push(``);
   L.push(`## Pool Saturation`);
   L.push(``);

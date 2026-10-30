@@ -1,3 +1,22 @@
+## V3.9 QA missing-sample evidence — 2026-10-30 (Draft candidate, not merged)
+
+Isolated GitHub branch `fix/v39-qa-no-samples-evidence-20261030`
+from integrated main `725cc79b`. No user local checkout, Parsec, gameplay,
+canonical simulation, bow, save, i18n, or dependency changes.
+`src/qa/PlaytestReport.ts` previously displayed zero worst-frame/sim latency,
+slow-sample counts and entity peaks when `perfCheckpoints=[]`. These are
+unmeasured, not observed zeros. Human Markdown now says `NOT SAMPLED` for
+these fields without changing `RecorderSnapshot` or JSON contracts. Valid
+performance checkpoints retain numeric outputs.
+
+Test-first RED commit `b29032c` was verified in GitHub Actions
+`40992597599` Node22: 1 failed (missing-sample expectation), 557 passed.
+Implementation commit `ad22646c` follows. Full exact-source CI and Draft PR
+verification remain required before claiming the change passed. This QA
+reporting correction is NOT a native 1080p receipt, player-facing improvement,
+or HUMAN_FUN_PASS. Issue #29 and separate sampled-frame Draft PR #30 remain
+open. Do not merge/release without owner authorization.
+
 ## V3.8 integration audit and candidate —2026-10-25 (current)
 
 Full-diff audit of the 108-commit prerequisite and the 200-commit stack
