@@ -55,6 +55,11 @@ npm run qa:finalize # sanitized summary + handoff section (docs only, no git)
 Raw reports stay in gitignored `test-results/human-playtests/`; only the
 sanitized `docs/playtests/latest-v020-engagement.md` is committable.
 
+QA/profiling also records bounded observed game-update intervals. In `?qa=1`,
+press F10 and download the separate aggregate JSON (EN/TH). This is not a count
+of GPU-presented frames or physical performance acceptance. See
+[`docs/V39_FRAME_INTERVAL_EVIDENCE.md`](docs/V39_FRAME_INTERVAL_EVIDENCE.md).
+
 ## Testing
 
 ```powershell

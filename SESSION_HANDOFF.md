@@ -1,4 +1,23 @@
-## V3.8 integration audit and candidate —2026-10-25 (current)
+## V3.9 frame interval evidence —2026-10-31 (current)
+
+Isolated mainline branch `feat/v39-frame-interval-evidence-20261030`, base725cc79b.
+Original V3.7 checkout, .cursor, owner BAT and private telemetry are preserved.
+PR30/caf6777 exact Report/tests reviewed6/6 with10/10 existing CI jobs verified:
+QA_CONSOLIDATED_READY_FOR_MERGE, not merged. PR31 unchanged/open.
+ADR0047 and V39_FRAME_INTERVAL_EVIDENCE document bounded257-counter observed
+update intervals, explicit overflow/missing/visibility/pause coverage and optional
+LoAF with no second RAF. QA F10 downloads a separate aggregate JSON; Recorder/
+Report/schema remain untouched.10 unit cases and19 targeted browser cases pass;
+local full check566/99, provenance/build and subsequent typecheck passed;
+full final-source validation/measurement receipts follow on the branch/Issue29.
+No new P1 confirmed by bounded HUD/decision/Boss review. Push the measurement
+branch but do not open a QA-only micro-PR or stack against unmerged PR30. Retain
+for a confirmed production improvement. Controlled host, human/art/strict1080p
+acceptance remain OPEN. Parsec presence is observed; active streaming is unknown.
+Do not stop remote access. Canonical versions3/20/2, child-law18 and bow unchanged.
+No merge/release/deploy or human-fun acceptance authority exercised.
+
+## V3.8 integration audit and candidate —2026-10-25 (historical)
 
 Full-diff audit of the 108-commit prerequisite and the 200-commit stack
 (`scripts/audit-prerequisite.mjs`, `docs/V38_INTEGRATION_AUDIT.md`,
