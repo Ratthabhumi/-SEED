@@ -9,7 +9,42 @@ on:
   pull_request:
 
 jobs:
+  baselines:
+    runs-on: ubuntu-latest
+    outputs:
+      canonical_changed: ${{ steps.scope.outputs.canonical_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - id: identity
+        run: echo "key=$(node scripts/resolve-legacy-baselines.mjs --identity)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        with:
+          path: scratch/legacy-baselines
+          key: legacy-v2-${{ runner.os }}-${{ steps.identity.outputs.key }}
+      # Always validate; a missing or rejected cache is rebuilt from pinned source.
+      - run: node scripts/resolve-legacy-baselines.mjs
+      - id: scope
+        run: |
+          if git diff --quiet origin/main...HEAD -- src/core src/content; then
+            echo "canonical_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "canonical_changed=true" >> $GITHUB_OUTPUT
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: legacy-baselines-${{ github.sha }}
+          path: scratch/legacy-baselines/
+          if-no-files-found: error
+          retention-days: 14
   render_evidence:
+    needs: baselines
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,10 +55,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - run: gh run download 38918375553 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/content18-baseline-official
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - run: node scripts/measure-content153.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: legacy-baselines-${{ github.sha }}
+          path: scratch/legacy-baselines
+      - run: node scripts/measure-content153.mjs --resolved
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -56,6 +92,7 @@ jobs:
           retention-days: 14
 
   e2e:
+    needs: baselines
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,25 +104,14 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:e2e
-      - run: gh run download 38918375553 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v3-pr18-official
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - run: gh run download 38990564374 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v3-pr19-official
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - run: python -m zipfile -e scratch/v3-pr18-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr18-dist
-      - run: python -m zipfile -e scratch/v3-pr19-official/seed-web-v0.2.0-dev.0.zip scratch/v3-pr19-dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: legacy-baselines-${{ github.sha }}
+          path: scratch/legacy-baselines
       - run: node scripts/capture-v3-recovery.mjs self
-      - run: gh run download 39822469156 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v32-pr21-official
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - run: python -m zipfile -e scratch/v32-pr21-official/seed-web-v0.2.0-dev.0.zip scratch/v32-pr21-dist
-      - run: gh run download 40153783585 --repo Ratthabhumi/-SEED --name seed-web-0.2.0-dev.0-node22 --dir scratch/v36-pr25-official
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - run: python -m zipfile -e scratch/v36-pr25-official/seed-web-v0.2.0-dev.0.zip scratch/v36-pr25-dist
-      - run: node scripts/capture-v32-slice.mjs test-results/v36-final scratch/v36-pr25-dist fe04927d0a03f1478cdf4b57bb4aee40a68256dd pr25
+      - run: node scripts/capture-v32-slice.mjs test-results/v36-final scratch/legacy-baselines/pr25/dist fe04927d0a03f1478cdf4b57bb4aee40a68256dd pr25
       - run: node scripts/capture-content153.mjs
+      - run: node scripts/inspect-dense-boss.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -125,6 +151,8 @@ jobs:
             test-results/browser/content153/*.webm
             test-results/browser/**/trace.zip
             test-results/browser/**/error-context.md
+            test-results/browser/**/frame-interval-evidence.json
+            test-results/browser/dense-boss/*.json
             test-results/evolution-performance.json
             test-results/v3-comparison/
             test-results/v36-final/
@@ -132,7 +160,7 @@ jobs:
           retention-days: 14
 
   analyze:
-    needs: verify
+    needs: [verify, baselines]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +172,10 @@ jobs:
       - run: npm run analyze
       - run: node scripts/run-progression-cohort.mjs
       - run: node scripts/run-natural-boss.mjs
+        if: needs.baselines.outputs.canonical_changed == 'true'
+      - name: Natural36 scope receipt
+        if: needs.baselines.outputs.canonical_changed != 'true'
+        run: echo 'Natural36 NOT_RUN_NO_CANONICAL_DELTA; no new cohort pass claimed.'
       - run: node scripts/run-boss-policy-experiment.mjs
       - uses: actions/upload-artifact@v4
         with:

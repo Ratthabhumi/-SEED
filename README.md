@@ -62,6 +62,10 @@ of GPU-presented frames or physical performance acceptance. See
 
 ## Testing
 
+CI prepares historical comparisons from pinned Git source/lockfiles with explicit
+original/reconstructed receipts; old Actions artifacts are not required. See
+[`docs/V39_CI_RECOVERY.md`](docs/V39_CI_RECOVERY.md) for recovery and reproduction.
+
 ```powershell
 npm run test       # vitest: 160+ tests — seed/world/tech/director/sim/i18n/save/balance
 npm run typecheck

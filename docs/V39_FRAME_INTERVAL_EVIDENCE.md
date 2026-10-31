@@ -1,5 +1,10 @@
 # V3.9 — Frame Interval Evidence v1
 
+31Oct continuation: the newer owner packet authorizes a coherent CI-recovery
+Draft in this same branch. See V39_CI_RECOVERY/ADR0048. The earlier QA-only
+micro-PR restriction below describes the first measurement milestone; it does
+not prohibit the subsequently authorized infrastructure recovery.
+
 ## Verified reconciliation
 
 Owner checkout preserved: `feat/v37-frame-pacing-experience-20261025`, including

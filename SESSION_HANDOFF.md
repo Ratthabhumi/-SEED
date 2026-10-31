@@ -1,4 +1,25 @@
-## V3.9 frame interval evidence —2026-10-31 (current)
+## V3.9 CI recovery continuation —2026-10-31 (current)
+
+Same V3.9 branch/mainline base; keep7909bfa histogram and owner V3.7 files.
+ADR0048 / V39_CI_RECOVERY replace old historical-run downloads with one shared
+source/lock-pinned baseline job. ORIGINAL_ARCHIVED vs RECONSTRUCTED_FROM_SOURCE
+vs UNAVAILABLE are explicit. Exact PR18 original recovered locally (5a88...);
+PR19/21/25 originals also verified. Local reconstruction rehearsals match all4
+normalized original trees; fresh ZIPs differ, as expected.13 targeted resolver
+tests pass, including retained negative evidence. Local full check579/100,
+third-party provenance and production build pass. Frozen final-source CI remains
+separately required; source comparison V2 never pretends original-ZIP V1 passed.
+No continue-on-error or gate removal. Natural36 runs only for canonical delta;
+otherwise explicitly NOT_RUN_NO_CANONICAL_DELTA. Current tests remain required.
+One bounded dense Boss inspection covers501 enemies/800 initial shots,8 EN/TH
+720/1080 Normal/HC warning pairs and two10s live windows, without a new profiler,
+refill or old24-case rerun. Final measured findings/CI/PR receipts follow in
+Issue29. No invented player-facing fix, new animation or acceptance claim.
+Latest owner packet allows one coherent CI-recovery Draft from this branch.
+PR30/caf6777 and PR31 remain unmerged/open; no release/deploy/permission change.
+Versions3/20/2, child-law18, bow and original31 statuses stay unchanged.
+
+## V3.9 frame interval evidence —2026-10-31 (historical milestone)
 
 Isolated mainline branch `feat/v39-frame-interval-evidence-20261030`, base725cc79b.
 Original V3.7 checkout, .cursor, owner BAT and private telemetry are preserved.
