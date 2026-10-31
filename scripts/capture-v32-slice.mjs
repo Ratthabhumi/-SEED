@@ -2,9 +2,14 @@ import {chromium} from '@playwright/test';
 import {preview} from 'vite';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {readPreviewBuild} from './read-preview-build.mjs';
+import {loadResolvedBaseline,CONTRACT} from './resolve-legacy-baselines.mjs';
+import {resolve} from 'node:path';
 
-// Compare the actual PR21 package, not a same-build legacy switch.
-const [output='test-results/v32-early',baselineDir='scratch/v32-pr21-dist',baselineSha='835a25f821b5aa0e8492c9f13787a3d7aa59f6ad',baselineLabel='pr21']=process.argv.slice(2);
+// Compare pinned PR21/PR25 source; receipt explicitly identifies reconstruction.
+const [output='test-results/v32-early',requestedDir,requestedSha,baselineLabel='pr21']=process.argv.slice(2);
+const prepared=loadResolvedBaseline(baselineLabel),baselineDir=prepared.dist,baselineSha=prepared.evidence.sourceSha;
+if(requestedDir&&resolve(requestedDir)!==resolve(baselineDir))throw Error('Comparison must use the validated resolved baseline directory');
+if(requestedSha&&requestedSha!==baselineSha)throw Error('Wrong requested baseline source');
 mkdirSync(output,{recursive:true});
 const servers=[],rows=[];
 const browser=await chromium.launch({headless:true,...(process.platform==='win32'?{args:['--use-gl=angle','--use-angle=d3d11']}: {})});
@@ -12,7 +17,7 @@ try{
  for(const [label,dir,port] of [[baselineLabel,baselineDir,4291],['candidate','dist',4292]]){
   const server=await preview({build:{outDir:dir},preview:{host:'127.0.0.1',port,strictPort:true}});servers.push(server);
   const url=`http://127.0.0.1:${port}`,build=await readPreviewBuild(url);
-  if(label===baselineLabel&&(build.sha!==baselineSha||build.dirty))throw Error('Wrong immutable baseline source');
+  if(build.dirty||(label===baselineLabel&&build.sha!==baselineSha))throw Error('Wrong immutable baseline source or dirty comparison');
   const context=await browser.newContext({viewport:{width:1280,height:720},recordVideo:{dir:output,size:{width:1280,height:720}}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>localStorage.setItem('seed-game-save-v1',JSON.stringify({schema:1,settings:{lang:'en',tutorialCompleted:true,uiScale:1,volume:0},archive:[],history:[],best:{}})));
@@ -58,6 +63,6 @@ try{
   rows.push({label,build,observations,errors,video:`${label}-slice.webm`});
   if(errors.length)throw Error(errors.join('; '));
  }
- writeFileSync(`${output}/comparison.json`,JSON.stringify({classification:'STAGED_NATIVE_OFFICIAL_BASELINE_COMPARISON_NOT_HUMAN_ACCEPTANCE',baselineLabel,rows,limitations:'Real canonical attacks in staged fixtures. Startup histories are not claimed identical. Ascension uses explicit ready fixture then actual canonical UI progression, not a natural victory. No new painted anatomy, natural progression or fun verdict.'},null,2));
+ writeFileSync(`${output}/comparison.json`,JSON.stringify({classification:'STAGED_NATIVE_SOURCE_PINNED_COMPARISON_NOT_HUMAN_ACCEPTANCE',evidenceContract:CONTRACT,baselineEvidence:prepared.evidence,baselineLabel,rows,limitations:'Real canonical attacks in staged fixtures. Startup histories are not claimed identical. Ascension uses explicit ready fixture then actual canonical UI progression, not a natural victory. No new painted anatomy, natural progression or fun verdict.'},null,2));
  console.log(baselineLabel+'/candidate native screenshots and moving slice saved: '+output);
 }finally{await browser.close();for(const s of servers)await new Promise(r=>s.httpServer.close(r));}

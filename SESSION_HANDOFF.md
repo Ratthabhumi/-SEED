@@ -1,4 +1,44 @@
-## V3.8 integration audit and candidate —2026-10-25 (current)
+## V3.9 CI recovery continuation —2026-10-31 (current)
+
+Same V3.9 branch/mainline base; keep7909bfa histogram and owner V3.7 files.
+ADR0048 / V39_CI_RECOVERY replace old historical-run downloads with one shared
+source/lock-pinned baseline job. ORIGINAL_ARCHIVED vs RECONSTRUCTED_FROM_SOURCE
+vs UNAVAILABLE are explicit. Exact PR18 original recovered locally (5a88...);
+PR19/21/25 originals also verified. Local reconstruction rehearsals match all4
+normalized original trees; fresh ZIPs differ, as expected.13 targeted resolver
+tests pass, including retained negative evidence. Local full check579/100,
+third-party provenance and production build pass. Frozen final-source CI remains
+separately required; source comparison V2 never pretends original-ZIP V1 passed.
+No continue-on-error or gate removal. Natural36 runs only for canonical delta;
+otherwise explicitly NOT_RUN_NO_CANONICAL_DELTA. Current tests remain required.
+One bounded dense Boss inspection covers501 enemies/800 initial shots,8 EN/TH
+720/1080 Normal/HC warning pairs and two10s live windows, without a new profiler,
+refill or old24-case rerun. Final measured findings/CI/PR receipts follow in
+Issue29. No invented player-facing fix, new animation or acceptance claim.
+Latest owner packet allows one coherent CI-recovery Draft from this branch.
+PR30/caf6777 and PR31 remain unmerged/open; no release/deploy/permission change.
+Versions3/20/2, child-law18, bow and original31 statuses stay unchanged.
+
+## V3.9 frame interval evidence —2026-10-31 (historical milestone)
+
+Isolated mainline branch `feat/v39-frame-interval-evidence-20261030`, base725cc79b.
+Original V3.7 checkout, .cursor, owner BAT and private telemetry are preserved.
+PR30/caf6777 exact Report/tests reviewed6/6 with10/10 existing CI jobs verified:
+QA_CONSOLIDATED_READY_FOR_MERGE, not merged. PR31 unchanged/open.
+ADR0047 and V39_FRAME_INTERVAL_EVIDENCE document bounded257-counter observed
+update intervals, explicit overflow/missing/visibility/pause coverage and optional
+LoAF with no second RAF. QA F10 downloads a separate aggregate JSON; Recorder/
+Report/schema remain untouched.10 unit cases and19 targeted browser cases pass;
+local full check566/99, provenance/build and subsequent typecheck passed;
+full final-source validation/measurement receipts follow on the branch/Issue29.
+No new P1 confirmed by bounded HUD/decision/Boss review. Push the measurement
+branch but do not open a QA-only micro-PR or stack against unmerged PR30. Retain
+for a confirmed production improvement. Controlled host, human/art/strict1080p
+acceptance remain OPEN. Parsec presence is observed; active streaming is unknown.
+Do not stop remote access. Canonical versions3/20/2, child-law18 and bow unchanged.
+No merge/release/deploy or human-fun acceptance authority exercised.
+
+## V3.8 integration audit and candidate —2026-10-25 (historical)
 
 Full-diff audit of the 108-commit prerequisite and the 200-commit stack
 (`scripts/audit-prerequisite.mjs`, `docs/V38_INTEGRATION_AUDIT.md`,

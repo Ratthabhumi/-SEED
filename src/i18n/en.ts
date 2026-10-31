@@ -649,6 +649,8 @@ export const en = {
   "power.inherited": "Inherited Legacy; persists between worlds",
   "power.orbitBonus": "Adds orbiting attackers to eligible active families",
   "power.auraBonus": "Extends the active Energy area attack",
+  "qa.frameIntervals": "Download observed update intervals (.json)",
+  "qa.frameIntervalsHint": "QA/profiling only; 1ms bucket estimates, not GPU presented frames. Hidden and paused periods are separate.",
 } as const;
 
 export type EnKeys = keyof typeof en;
