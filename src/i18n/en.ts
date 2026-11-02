@@ -329,6 +329,7 @@ export const en = {
   "mission.space.signal": "Secure an Alien Signal",
   "mission.space.guardian": "Defeat Age guardians (elites)",
   "ui.nextAge": "NEXT AGE",
+  "ui.nextStep": "Next step",
   "ui.buildPlan": "Technology goal",
   "ui.ownedBuild": "CURRENT BUILD",
   "ui.techMap": "Tech Map",

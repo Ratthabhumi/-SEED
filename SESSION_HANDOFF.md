@@ -1,4 +1,35 @@
-## V3.9 CI recovery continuation —2026-10-31 (current)
+## V4.1 gameplay integration —2026-11-02 (current)
+
+Branch `feat/v41-playable-core-20261102`, main725cc79b, integration base
+PR32/530c545 plus exact PR30/caf6777 Report/test files (includes PR31).
+Old PRs remain open/unmerged; desktop V3.7/private telemetry/Parsec untouched.
+See `docs/V41_GAMEPLAY_INTEGRATION.md` for runtime classifications and owner
+retest protocol. No external research or new dependency. Existing draft effect
+previews, full-logistics Later/Signal exception, Origin powers and Ascension
+were already live; do not recreate them or call them human-accepted.
+
+New presentation changes: one left-edge encounter toast with bounded queued
+dwell retention; safe priority overflow that cannot replace critical text with
+routine text; final-age Knowledge total without fictitious /1 bar; localized
+next-step from canonical ageGates; Thai next-age typo. Canonical simulation,
+balance, bow/muzzle, versions3/20/2 and child-law18 unchanged.
+Regression-first: missing encounter API and critical-overflow test failed;
+old browser bundle showed3 centered encounter toasts. Targeted3 unit cases now
+pass; full check584/101 passed before adding the third targeted unit assertion.
+Analyze6/6, ZIP and release:verify pass. Focused browser30 passed/1 startup404:
+trace shows GET /?e2e returned404 during concurrent check build. English mobile
+case passes3.8s when isolated; no threshold change. Four new EN/TH720/1080 cases
+pass. Preserve that interruption; exact-source CI follows in the Draft PR.
+No release script exists or was invented. Run builds before browser tests.
+Retained staged captures are outside disposable browser output at
+`test-results/v41-visible`; dirty candidate metadata is explicit.
+
+Human gameplay acceptance, original continuous animation and controlled native
+720/strict1080 performance remain open. Historical performance gates are not
+replaced by browser screenshots. Review final CI, then owner natural-play
+feedback to select the next milestone. No merge/release/deploy authorized.
+
+## V3.9 CI recovery continuation —2026-10-31 (historical)
 
 Same V3.9 branch/mainline base; keep7909bfa histogram and owner V3.7 files.
 ADR0048 / V39_CI_RECOVERY replace old historical-run downloads with one shared

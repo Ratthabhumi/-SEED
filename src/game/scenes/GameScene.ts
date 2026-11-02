@@ -45,7 +45,7 @@ import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
-import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, applyUiScale, isKeyRepeat } from "../ui";
+import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, setNotificationEncounter, applyUiScale, isKeyRepeat } from "../ui";
 import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
@@ -1538,7 +1538,8 @@ export class GameScene extends Phaser.Scene {
     // Knowledge card: progress toward the next age's threshold.
     const next = s.ageIndex + 1;
     const nextNeed = next < AGES.length ? (AGE_DEFS[next]?.knowledgeThreshold ?? 1) : 1;
-    knowNums.textContent = `${Math.floor(s.knowledgeTotal)} / ${nextNeed}`;
+    knowNums.textContent = next < AGES.length ? `${Math.floor(s.knowledgeTotal)} / ${nextNeed}` : `${Math.floor(s.knowledgeTotal)}`;
+    knowFill.parentElement!.hidden = next >= AGES.length;
     knowFill.style.width = `${Math.min(100, (s.knowledgeTotal / Math.max(1, nextNeed)) * 100)}%`;
     // Age card: one checklist row per gate (the SAME predicate as the sim).
     const ageCardKey=JSON.stringify([next,t("ui.nextAge"),s.ownedTags,s.breakthroughs,next<AGES.length?ageGates(next,s.knowledgeTotal,this.missionStateOf(s),this.dominionStateOf(s)):Math.floor(s.knowledgeTotal)]);
@@ -1552,6 +1553,10 @@ export class GameScene extends Phaser.Scene {
       title.textContent = `${t("ui.nextAge")}: ${t(`age.${AGES[next] as AgeId}` as EnKeys)}`;
       ageCard.appendChild(title);
       const gates = ageGates(next, s.knowledgeTotal, this.missionStateOf(s), this.dominionStateOf(s));
+      const unmet = gates.find(g => !g.done);
+      const step = unmet?.mission.find(m => !m.done) ?? unmet?.sub.find(d => !d.done) ?? unmet;
+      if (step) ageCard.appendChild(el("div", "next-action", undefined,
+        `${t("ui.nextStep")}: ${t(step.labelKey)} ${step.have}/${step.need}`));
       for (const g of gates) {
         const row = document.createElement("div");
         row.className = "gate-row" + (g.done ? " done" : "");
@@ -2479,6 +2484,7 @@ export class GameScene extends Phaser.Scene {
     if (!bar || !fill) return;
     const s = this.sim.state;
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    setNotificationEncounter(!!boss?.active);
     if (boss?.active) {
       bar.style.display = "block";
       const percent=Math.max(0,Math.min(100,Math.ceil(boss.hp/boss.maxHp*100)));
