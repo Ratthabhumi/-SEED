@@ -1,0 +1,22 @@
+{
+  "classification": "LOCAL_SOURCE_RECONSTRUCTION_REHEARSAL_NOT_FINAL_CI",
+  "sourceSha": "cf5aaf69277c992ca964ab25ac679d9750fdad0d",
+  "sourceDirty": false,
+  "lockSha256": "0523bc47a3d14938724d4519232257e408961b8104afa020d4026d6c4b40d08a",
+  "toolchain": {
+    "node": "v24.14.1",
+    "npm": "11.11.0",
+    "platform": "win32",
+    "arch": "x64",
+    "recipe": 2,
+    "recipeHash": "9cc7b3225e659f3fdf9205789b79544c84dd5e93eba1ecd179535c7ade081673"
+  },
+  "reconstructionClassification": "RECONSTRUCTED_FROM_SOURCE",
+  "originalZipSha256": "5a88b90bf0817e5793735a9f1886868b9c4d580d9bfe576930fc92db648ce46f",
+  "reconstructedZipSha256": "992912812c7e8c007231c0089989db3edf659d00af6e99f14b5c31d3faa20221",
+  "contentTreeSha256": "4c8acc3a92258d0ff7fb3c9758cd2f1974db4d38f41131b8d742606622fa7dd4",
+  "normalizedOriginalParity": "MATCH",
+  "zipBytesIdentical": false,
+  "files": 87,
+  "limitations": "Historical source clone is clean. Resolver was precommit during rehearsal; final-source CI remains separately required. No binary/render/gameplay acceptance inferred."
+}

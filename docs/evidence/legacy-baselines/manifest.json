@@ -1,0 +1,40 @@
+{
+  "contract": "SOURCE_PINNED_HISTORICAL_COMPARISON_V2",
+  "recipe": "Detached local Git clone, exact source and lock, npm ci, historical Vite build, clean embedded stamp, normalized extracted SHA256 tree; fixed-timestamp ZIP is a new archive.",
+  "reconstructionNodeMajor": 24,
+  "originalClaims": "ZIP hashes below remain historical anchors. Reconstruction is not the original official artifact; normalized parity is separate. CI does not require an old run's artifacts.",
+  "baselines": [
+    {
+      "id": "pr18",
+      "sourceSha": "cf5aaf69277c992ca964ab25ac679d9750fdad0d",
+      "lockSha256": "0523bc47a3d14938724d4519232257e408961b8104afa020d4026d6c4b40d08a",
+      "historicalRun": 38918375553,
+      "originalZipSha256": "5a88b90bf0817e5793735a9f1886868b9c4d580d9bfe576930fc92db648ce46f",
+      "originalContentTreeSha256": "4c8acc3a92258d0ff7fb3c9758cd2f1974db4d38f41131b8d742606622fa7dd4"
+    },
+    {
+      "id": "pr19",
+      "sourceSha": "9b5c1facd4bbab891b452051b392e5e460c76353",
+      "lockSha256": "0523bc47a3d14938724d4519232257e408961b8104afa020d4026d6c4b40d08a",
+      "historicalRun": 38990564374,
+      "originalZipSha256": "bff91657e8c50ddd86d4c098fa05dff45c049dd0ef4c99a0825385d999ed7d85",
+      "originalContentTreeSha256": "482b881a9b1d8b75affe36031404ec2930b4026146fa2efc6dadfb8670dc9439"
+    },
+    {
+      "id": "pr21",
+      "sourceSha": "835a25f821b5aa0e8492c9f13787a3d7aa59f6ad",
+      "lockSha256": "0523bc47a3d14938724d4519232257e408961b8104afa020d4026d6c4b40d08a",
+      "historicalRun": 39822469156,
+      "originalZipSha256": "4b296916f93bf8535d3bda85e9264fe5f686af7c7ec93db885fc8a713fd103ea",
+      "originalContentTreeSha256": "e098543a45dadc534f6509226590f1654dbc11a14a66bc4316824eaa364c3a86"
+    },
+    {
+      "id": "pr25",
+      "sourceSha": "fe04927d0a03f1478cdf4b57bb4aee40a68256dd",
+      "lockSha256": "0523bc47a3d14938724d4519232257e408961b8104afa020d4026d6c4b40d08a",
+      "historicalRun": 40153783585,
+      "originalZipSha256": "6078b3ea84e550b3928e0cb32263b627eb957ddf28e15b0023d7475c8732a6e0",
+      "originalContentTreeSha256": "7c4a35cf159c8367af5b3f6a16b29229940c492fd9a5a2610873dd9c043c8653"
+    }
+  ]
+}

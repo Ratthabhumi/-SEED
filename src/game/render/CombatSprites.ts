@@ -1,6 +1,7 @@
 import type Phaser from "phaser";
 import type {SimProj,SimMine,SimPickup} from "../../core/sim/RunState";
 import {originRow,projectileFrame} from "./combatSpriteIdentity";
+import {projectileRole} from "./ageVisualIdentity";
 import {PaintedQuadBatch} from "./PaintedQuadBatch";
 import bounds from "../assets/combatFrameBounds.json";
 /** A shared painted atlas, lazily allocated bounded slots. Danger and hit radii
@@ -23,7 +24,11 @@ export class CombatSprites {
   image.setPosition(x,y).setDisplaySize(w,h).setRotation(angle).setTint(tint).setVisible(true);
  }
  projectile(p:SimProj,origin:string){
-  const tier=Math.max(0,Math.min(5,p.visualTier??0)),height=Math.max(16,p.radius*2+8),width=Math.min(52,Math.max(32,height*(tier>=3?2.4:2.8)));
+  const tier=Math.max(0,Math.min(5,p.visualTier??0)),height=Math.max(16,p.radius*2+8);
+  // Existing authored frames retain their source identity. Distinct aspect
+  // ratios make bolts, energy pulses and support fire readable at a glance.
+  const role=projectileRole(p),ratio=role==="energy"?1.8:role==="defense"||role==="squad"?1.25:tier>=3?2.4:2.8;
+  const width=Math.min(52,Math.max(24,height*ratio));
   this.draw(projectileFrame(origin,p),p.x,p.y,width,height,Math.atan2(p.vy,p.vx),tier<3?0xe2d2b3:0xffffff);
  }
  mine(m:SimMine,origin:string){this.draw(12+originRow(origin),m.x,m.y,36,36,0,0xffffff);}

@@ -1,0 +1,1407 @@
+{
+  "candidateSource": "a644ef86b3f99546db2ae1fa7d4afe8605b7b207",
+  "candidateDirty": false,
+  "baselineHarness": "36 observations;1 RPC error; not clean PASS",
+  "classification": "SYNTHETIC_POLICIES_NOT_HUMAN_ACCEPTANCE",
+  "before": {
+    "reached": 29,
+    "wins": 26,
+    "deaths": 0,
+    "attacks": 425,
+    "phase2Attacks": 205,
+    "medianReachedFightDuration": 25.049999999977217,
+    "replayEqual": 36
+  },
+  "after": {
+    "reached": 29,
+    "wins": 24,
+    "deaths": 2,
+    "attacks": 394,
+    "phase2Attacks": 174,
+    "medianReachedFightDuration": 19.13333333331593,
+    "replayEqual": 36
+  },
+  "afterOutpostTotals": {
+    "bossSiegeWarnings": 0,
+    "outpostDamage": 1794,
+    "raidsRepelled": 0,
+    "outpostsLost": 5,
+    "peakSiegeUnits": 3
+  },
+  "rows": [
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "balanced",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "a7a71c99",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "a7a71c99"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "damage",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "2c2a9d9c",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "2c2a9d9c"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "survival",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "975d0a77",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "975d0a77"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 13.24999999998795,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "22c6d570",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 13.91666666665401,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "759b29ae"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 6.766666666660512,
+        "attacks": 1,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "ec489c93",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 6.766666666660512,
+        "attacks": 1,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "3a62a4ea"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "survival",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 17.34999999998422,
+        "attacks": 3,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "95cba532",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 18.54999999998313,
+        "attacks": 3,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "dfc1f8bd"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 14.633333333320024,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "6dd2a0c5",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 14.266666666653691,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "113dfaa0"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 7.116666666660194,
+        "attacks": 1,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "bf2807e6",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 6.9999999999936335,
+        "attacks": 1,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "aa42eab2"
+      }
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "origin": "hunters",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "survival",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 16.68333333331816,
+        "attacks": 3,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "19e5f85d",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 18.56666666664978,
+        "attacks": 4,
+        "phase2Attacks": 2,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "a6ab9315"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "balanced",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "4f384d2c",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "4f384d2c"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 81.58333333325925,
+        "attacks": 17,
+        "phase2Attacks": 12,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "77ac8d6c",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 63.116666666609376,
+        "attacks": 13,
+        "phase2Attacks": 8,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 252,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 3
+        },
+        "replayEqual": true,
+        "endpointHash": "0c947b9a"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "survival",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 450.6999999995902,
+        "attacks": 89,
+        "phase2Attacks": 34,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "56c87205",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": false,
+        "playerDead": true,
+        "duration": 382.96666666631836,
+        "attacks": 75,
+        "phase2Attacks": 20,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 342,
+          "raidsRepelled": 0,
+          "outpostsLost": 1,
+          "peakSiegeUnits": 3
+        },
+        "replayEqual": true,
+        "endpointHash": "9ad07b54"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 41.86666666662859,
+        "attacks": 9,
+        "phase2Attacks": 7,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "08949ed2",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 32.59999999997035,
+        "attacks": 7,
+        "phase2Attacks": 5,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "6a1e23f3"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 15.68333333331907,
+        "attacks": 3,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "b75c9c62",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 15.36666666665269,
+        "attacks": 3,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "534d7b43"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "survival",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 79.33333333326118,
+        "attacks": 17,
+        "phase2Attacks": 14,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "57340c4d",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 46.666666666624224,
+        "attacks": 10,
+        "phase2Attacks": 7,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "0102c49d"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 29.16666666664014,
+        "attacks": 6,
+        "phase2Attacks": 5,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "ee9ac82e",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 28.016666666641186,
+        "attacks": 6,
+        "phase2Attacks": 5,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "56e6b445"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 30.06666666663932,
+        "attacks": 6,
+        "phase2Attacks": 5,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "e276838c",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": false,
+        "playerDead": true,
+        "duration": 19.416666666649007,
+        "attacks": 4,
+        "phase2Attacks": 3,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "d76acdfa"
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "origin": "engineers",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "survival",
+        "reached": true,
+        "killed": false,
+        "playerDead": false,
+        "duration": 708.5666666660223,
+        "attacks": 143,
+        "phase2Attacks": 74,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "02cc7991",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": false,
+        "playerDead": false,
+        "duration": 708.5666666660223,
+        "attacks": 148,
+        "phase2Attacks": 79,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 900,
+          "raidsRepelled": 0,
+          "outpostsLost": 3,
+          "peakSiegeUnits": 3
+        },
+        "replayEqual": true,
+        "endpointHash": "cccfdd6c"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 62.43333333327655,
+        "attacks": 12,
+        "phase2Attacks": 5,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "b98e6c3f",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 59.21666666661281,
+        "attacks": 11,
+        "phase2Attacks": 4,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "b43fbd9c"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 25.049999999977217,
+        "attacks": 5,
+        "phase2Attacks": 3,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "977355af",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 16.78333333331807,
+        "attacks": 3,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "05e6bdd7"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "survival",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "63338a21",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "63338a21"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 9.3833333333248,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "9d4e79ea",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 9.3833333333248,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "fe8c8506"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 5.549999999994952,
+        "attacks": 1,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "ce341fa4",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 5.549999999994952,
+        "attacks": 1,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "ce341fa4"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "survival",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 9.966666666657602,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "89796ec5",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 9.966666666657602,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "dafe70af"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 20.98333333331425,
+        "attacks": 4,
+        "phase2Attacks": 2,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "f6053ef3",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 19.13333333331593,
+        "attacks": 4,
+        "phase2Attacks": 2,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "70e86d21"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 10.28333333332398,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "56412a0f",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 10.28333333332398,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "5bcdaf4e"
+      }
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "origin": "resonant",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "survival",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 31.733333333304472,
+        "attacks": 6,
+        "phase2Attacks": 4,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "1f1130f3",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 28.06666666664114,
+        "attacks": 5,
+        "phase2Attacks": 3,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "4014f2f9"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "balanced",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "e36ab764",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "e36ab764"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 77.96666666659587,
+        "attacks": 16,
+        "phase2Attacks": 9,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "91de2d7a",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 69.34999999993704,
+        "attacks": 15,
+        "phase2Attacks": 8,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "72b1b23f"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-GOLDEN-001",
+        "mode": "survival",
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "replayEqual": true,
+        "endpointHash": "a18fc0c4",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": false,
+        "killed": false,
+        "playerDead": false,
+        "duration": 0,
+        "attacks": 0,
+        "phase2Attacks": 0,
+        "unreachedCause": "time-limit-before-space",
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "a18fc0c4"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 9.566666666657966,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "3be1ae91",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 10.916666666656738,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "7d295792"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 9.299999999991542,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "f10751ac",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 8.73333333332539,
+        "attacks": 2,
+        "phase2Attacks": 1,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "0e2ef6b5"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-GOLDEN-002",
+        "mode": "survival",
+        "reached": true,
+        "killed": false,
+        "playerDead": false,
+        "duration": 28.199999999974352,
+        "attacks": 5,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "b939670c",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": false,
+        "playerDead": false,
+        "duration": 28.199999999974352,
+        "attacks": 5,
+        "phase2Attacks": 0,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "b939670c"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "balanced",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 54.11666666661745,
+        "attacks": 11,
+        "phase2Attacks": 8,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "6ce45969",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 47.5333333332901,
+        "attacks": 10,
+        "phase2Attacks": 7,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "e6f0e4f2"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "damage",
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 32.316666666637275,
+        "attacks": 7,
+        "phase2Attacks": 5,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "bd5b4100",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": true,
+        "playerDead": false,
+        "duration": 22.599999999979445,
+        "attacks": 5,
+        "phase2Attacks": 3,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 0,
+          "raidsRepelled": 0,
+          "outpostsLost": 0,
+          "peakSiegeUnits": 0
+        },
+        "replayEqual": true,
+        "endpointHash": "8a031edb"
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "before": {
+        "origin": "sentinels",
+        "seed": "EPOCH-STRESS-001",
+        "mode": "survival",
+        "reached": true,
+        "killed": false,
+        "playerDead": false,
+        "duration": 245.69999999977665,
+        "attacks": 46,
+        "phase2Attacks": 8,
+        "unreachedCause": null,
+        "replayEqual": true,
+        "endpointHash": "cab339ee",
+        "outpostInteractions": null
+      },
+      "after": {
+        "reached": true,
+        "killed": false,
+        "playerDead": false,
+        "duration": 245.69999999977665,
+        "attacks": 46,
+        "phase2Attacks": 8,
+        "unreachedCause": null,
+        "outpostInteractions": {
+          "bossSiegeWarnings": 0,
+          "outpostDamage": 300,
+          "raidsRepelled": 0,
+          "outpostsLost": 1,
+          "peakSiegeUnits": 3
+        },
+        "replayEqual": true,
+        "endpointHash": "065842a3"
+      }
+    }
+  ],
+  "matchedVictories": {
+    "count": 24,
+    "beforeMedianDuration": 17.01666666665119,
+    "afterMedianDuration": 17.6666666666506
+  },
+  "disposition": "SUPERSEDED: no boss-initiated siege in36 policies; owner clarified direct base defense; E2E/render workflows canceled, not failed or passed."
+}

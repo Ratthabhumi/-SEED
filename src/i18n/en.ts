@@ -329,6 +329,7 @@ export const en = {
   "mission.space.signal": "Secure an Alien Signal",
   "mission.space.guardian": "Defeat Age guardians (elites)",
   "ui.nextAge": "NEXT AGE",
+  "ui.nextStep": "Next step",
   "ui.buildPlan": "Technology goal",
   "ui.ownedBuild": "CURRENT BUILD",
   "ui.techMap": "Tech Map",
@@ -367,6 +368,8 @@ export const en = {
   "ui.buildHistory": "BUILD HISTORY",
   "ui.squad": "Squad",
   "ui.ability": "Ability",
+  "ui.powerReadyHint": "F: Origin power ready — use it against nearby threats",
+  "ui.baseCommandHint": "Q: rally · E: focus · R: hold · M: manage bases",
   "squad.hunters.name": "Skirmisher Pack",
   "squad.engineers.name": "Combat Drones",
   "squad.resonant.name": "Resonance Wisps",
@@ -631,6 +634,8 @@ export const en = {
   "claim.NO_SITE": "Explore to discover a nearby site",
   "ui.loadout": "Active powers",
   "combat.boss.phaseTransition": "The Architect reforms — attack sequence changing",
+  "combat.boss.siege": "The Architect targets your outpost — defend or repair it",
+  "combat.boss.defendBase": "Defend outpost",
   "combat.boss.phase1": "THE ARCHITECT · PHASE I",
   "combat.boss.phase2": "THE ARCHITECT · PHASE II",
   "combat.boss.approach": "Repositioning — watch the next windup",
@@ -649,6 +654,8 @@ export const en = {
   "power.inherited": "Inherited Legacy; persists between worlds",
   "power.orbitBonus": "Adds orbiting attackers to eligible active families",
   "power.auraBonus": "Extends the active Energy area attack",
+  "qa.frameIntervals": "Download observed update intervals (.json)",
+  "qa.frameIntervalsHint": "QA/profiling only; 1ms bucket estimates, not GPU presented frames. Hidden and paused periods are separate.",
 } as const;
 
 export type EnKeys = keyof typeof en;

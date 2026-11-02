@@ -3,7 +3,9 @@ import { t } from "../i18n/i18n";
 import type { EnKeys } from "../i18n/en";
 import {NotificationManager,type NotificationPriority} from "./ui/NotificationManager";
 let notifications:NotificationManager|undefined;
-export function clearNotifications():void {notifications?.dispose();notifications=undefined;}
+let notificationEncounter=false;
+export function setNotificationEncounter(active:boolean):void {notificationEncounter=active;notifications?.setEncounterActive(active);}
+export function clearNotifications():void {notifications?.dispose();notifications=undefined;notificationEncounter=false;}
 export function notificationCounts():{visible:number;queued:number}{return notifications?.counts()??{visible:0,queued:0};}
 
 /** Root overlay container (single instance over the Phaser canvas). */
@@ -41,6 +43,7 @@ export function button(labelKey: EnKeys, onClick: () => void, cls = "btn"): HTML
 /** Transient toast message (age transitions, breakthroughs, POIs). */
 export function toast(titleKey: EnKeys, titleParam?: string, sub?: string, ms = 2600): void {
   notifications??=new NotificationManager(uiRoot());
+  notifications.setEncounterActive(notificationEncounter);
   const priority:NotificationPriority=titleKey.startsWith("combat.boss.")||["ui.bossWarning","ui.raidIncoming","ui.outpostLost"].includes(titleKey)?"critical":titleKey.startsWith("claim.")||["ui.techAcquired","ui.ageReached","ui.missionComplete","ui.raidRepelled"].includes(titleKey)?"important":"info";
   notifications.push(titleParam?`${t(titleKey)} — ${titleParam}`:t(titleKey),sub,ms,priority);
 }

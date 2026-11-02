@@ -36,7 +36,9 @@ describe('painted boss canonical presentation',()=>{
  it('retains historical baseline and shows the authored hit and transition cells',()=>{
   const a={...createBossEncounter(),phase:'recover' as const,timer:.1};
   expect(paintedBossPose(8,false,a,0,false,true).frame).toBe(4);
-  expect(paintedBossPose(8,false,a,.1).frame).toBe(6);
+  // Sustained damage uses tint; the actual recovery pose remains legible.
+  expect(paintedBossPose(8,false,a,.1).frame).toBe(0);
+  expect(paintedBossPose(8,false,undefined,.1).frame).toBe(6);
   expect(paintedBossPose(8,false,{...a,phase:'phase-transition'}).frame).toBe(3);
  });
  it('has no wall-clock drift and suppresses secondary motion for Reduced Effects',()=>{

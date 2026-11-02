@@ -30,7 +30,7 @@ import { generateTechGraph } from "../tech/generator";
 import { eligibleTech, expandTechWeb } from "../tech/web";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
 import { combinationRoute } from "../tech/combinationRoute";
-import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "../combat/bossEncounter";
+import {createBossEncounter,stepBossEncounter,bossAreaHit,bossFanOffsets,BOSS_ENCOUNTER} from "../combat/bossEncounter";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CHILD_LAWS_CONTENT_VERSION } from "../seed/versions";
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
@@ -1048,8 +1048,29 @@ export class RunSimulation {
   // ------------------------------------------------------------------ raids
   private raidTargets() {
     const s=this.state;
+    const boss=s.enemies.find(e=>e.active&&e.boss),target=boss?.encounter?.outpostId;
     return s.territories.filter(t=>!t.disabled&&!!t.spec).sort((a,b)=>
+      (a.poiId===target?-1:b.poiId===target?1:0)||
       Math.hypot(a.x-s.px,a.y-s.py)-Math.hypot(b.x-s.px,b.y-s.py)||(a.poiId<b.poiId?-1:a.poiId>b.poiId?1:0));
+  }
+  /** One actual boss target, shared with raids. Change it only at safe phases;
+   * distant bases require physical travel, never remote damage. */
+  private bossOutpostTarget(e:SimEnemy,ev:SimEvent[]) {
+    const a=e.encounter;if(!a?.enraged)return undefined;
+    const current=territoryById(this.state.territories,a.outpostId);
+    if(current&&!current.disabled&&current.spec)return current;
+    if(a.phase!=="approach"&&a.phase!=="phase-transition")return undefined;
+    const targets=this.raidTargets();
+    const target=targets.find(t=>t.poiId===this.state.raid?.poiId)??targets.sort((x,y)=>Math.hypot(x.x-e.x,x.y-e.y)-Math.hypot(y.x-e.x,y.y-e.y)||(x.poiId<y.poiId?-1:1))[0];
+    a.outpostId=target?.poiId??"";
+    if(target)ev.push({type:"boss_outpost_targeted",poiId:target.poiId});
+    return target;
+  }
+  private damageOutpost(t:RunState["territories"][number],damage:number,ev:SimEvent[],boss=false):void {
+    if(t.disabled||damage<=0)return;
+    const accepted=Math.min(Math.max(0,t.hp),damage);t.hp-=accepted;
+    if(boss&&accepted>0)ev.push({type:"boss_outpost_hit",poiId:t.poiId,damage:accepted});
+    if(t.hp<=0)this.loseOutpost({poiId:t.poiId},ev);
   }
   private raidIsOnlyGate(): boolean {
     const s=this.state,next=AGE_DEFS[s.ageIndex+1];
@@ -1077,7 +1098,8 @@ export class RunSimulation {
         // Prefer the closest defensible base; exact ties retain one seeded draw.
         const first=targets[0]!;const distance=Math.hypot(first.x-s.px,first.y-s.py);
         const nearby=targets.filter(t=>Math.abs(Math.hypot(t.x-s.px,t.y-s.py)-distance)<.01);
-        const pick = nearby[this.streams.event.nextInt(0, nearby.length)]!;
+        const bossTarget=s.enemies.find(e=>e.active&&e.boss)?.encounter?.outpostId;
+        const pick = targets.find(t=>t.poiId===bossTarget)??nearby[this.streams.event.nextInt(0, nearby.length)]!;
         s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false, spawned:0 };
         ev.push({ type: "raid_incoming", poiId: pick.poiId, seconds: RAID_WARN_SEC });
       }
@@ -2063,8 +2085,7 @@ export class RunSimulation {
           e.hitCd -= dt;
           if (sd < 70 && e.hitCd <= 0) {
             e.hitCd = 1;
-            t.hp -= e.dmg;
-            if (t.hp <= 0) this.loseOutpost({ poiId: t.poiId }, ev);
+            this.damageOutpost(t,e.dmg,ev);
           }
           if (s.over) return ev;
           continue;
@@ -2075,19 +2096,25 @@ export class RunSimulation {
       const d = Math.max(1, Math.hypot(dx, dy));
       const phase=e.evolution?.phase;const shots=e.evolution?.shots;
       const bossPhase=e.encounter?.phase;
-      const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,s.px,s.py,dt,(pattern,x,y)=>{
+      const post=e.boss?this.bossOutpostTarget(e,ev):undefined;
+      const assault=!!post&&e.encounter!.cycle%2===0;
+      const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,assault?post!.x:s.px,assault?post!.y:s.py,dt,(pattern,x,y)=>{
         ev.push({type:"boss_attack_fired",pattern,x,y});
         if(pattern==="fan") {
           const angle=Math.atan2(y-e.y,x-e.x);
           // Deliberate central gap; warnings expose this safe direction.
-          for(const offset of [-.6,-.4,-.2,.2,.4,.6])this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
+          for(const offset of bossFanOffsets(e.encounter!.enraged))this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
         } else {
           if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev,"boss-"+pattern);
           for(let i=0;i<s.squad.length;i++){const a=s.squad[i];if(a.active&&bossAreaHit(pattern,e.x,e.y,x,y,a.x,a.y))this.damageAlly(i,e.dmg);}
+          if(post&&!post.disabled&&Math.hypot(post.x-e.x,post.y-e.y)<=600&&bossAreaHit(pattern,e.x,e.y,x,y,post.x,post.y))this.damageOutpost(post,e.dmg,ev,true);
         }
-      });
+      },assault?0:s.vx,assault?0:s.vy);
       if(e.encounter?.phase==="warning"&&bossPhase!=="warning")ev.push({type:"boss_attack_warning",pattern:e.encounter.pattern});
-      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition")ev.push({type:"boss_phase_changed",phase:2});
+      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition"){
+        ev.push({type:"boss_phase_changed",phase:2});
+        this.bossOutpostTarget(e,ev);
+      }
       const evolved=bossMoved||stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
       if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
       if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});
