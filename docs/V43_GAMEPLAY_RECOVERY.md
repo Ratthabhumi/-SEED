@@ -5,6 +5,32 @@ Branch `feat/v43-gameplay-recovery-20261102`, base PR33/7847d7b, main725cc79b.
 One campaign/Draft; no main merge, history rewrite, release or deployment.
 Original .cursor, launcher and private reports are preserved. No external research.
 
+## Owner follow-up and active Content22 revision
+
+Owner recalls prior enjoyment as **1/5**, controls as usable, and requests visible
+character/Fashion growth and an actual boss-versus-base defense loop. No numeric
+control/boss sub-ratings or candidate acceptance are inferred. This feedback is
+recorded here, not retroactively inserted into raw reports117/118.
+
+The Content21 nearby-raid prototypea644ef8 reached29 Bosses/24 wins/2 deaths
+with36 clean replay assertions, but produced **zero new boss-siege warnings**.
+That failed the intended natural defense objective. Its remaining CI was
+canceled on owner steering; no full-CI pass is claimed. All outcomes remain in
+evidence/v43/rejected-raid-natural36.json and the PR receipt.
+
+**Active implementation: ADR0050, Content22.** The boss now selects one real
+active base, physically approaches it, and alternates base-directed and
+player-directed attack cycles. Actual warned slam/cross geometry within600u
+damages the same base HP through the same loss/repair helper as siege units.
+Raids coordinate on that one target. HUD names it; accepted boss-specific damage
+is separately observable. No remote damage, fake raid, base grant or new damage
+model. Target identity is hashed, cleared on the normal world lifecycle, and
+reconsidered only at safe phases. The old nearby-raid trigger is removed.
+
+The remaining sections retain historical campaign evidence; references to the
+Content21 raid trigger are superseded by this section and ADR0050. Final
+Natural36/CI receipts must identify the new exact commit, not a644ef8.
+
 ## Evidence and implementation
 
 Human session qa-37482-vk8rai used clean7847d7b, Golden001/Hunters,2550x1272
@@ -37,11 +63,17 @@ Origin frames but have family-dependent aspect ratios; hostile art, collision
 radii, high-contrast and reduced-effects paths remain intact. Floating primary
 rig and actual muzzle ownership are preserved rather than fabricated duplicates.
 
-Content20→21 intentionally versions changed encounter traces. Worldgen3,
+Content20→21→22 intentionally versions changed encounter traces;21 is the retained superseded prototype. Worldgen3,
 Save2 and child-law content18 stay pinned. Updated version/timing assertions
 document that intentional contract; no tests or acceptance gates removed.
 
 ## Verification and measurements
+
+Content22 local `npm run check`:595/595 tests in104 files, typecheck, notices
+and production build PASS. ZIP and release:verify PASS. Protected7735 files
+unchanged. Four actual-assault regressions include a semantic failing control
+against archiveda644ef8 and passing current source. Final browser/Natural36/CI
+receipts are recorded in DraftPR34 without rewriting source after CI.
 
 Before/after captures at720/1080/2550x1272 EN/TH use staged existing hooks and
 live outside disposable browser output in test-results/v43-visible. Their build
@@ -87,7 +119,7 @@ Before/after source identities and final receipts are on the campaign PR.
 |2|IMPROVED_PENDING_HUMAN|game/render/CombatSprites.ts|Uniform shot ratios → distinct family ratios, same real Origin frames|B; H identity|
 |3|REPRO_NOT_CONFIRMED|game/render/WorldRenderer.ts|Existing measured grounded sites retained; no blind enlargement|B3 viewports; H scale|
 |4|VERIFIED_EXISTING|core/emergence/outpostLogistics.ts|Canonical6/6/Later/Signal validation already live|outpostSoftlock B; H purpose|
-|5|IMPROVED_PENDING_HUMAN|core/sim/RunSimulation.ts|Ordinary raid only → one bounded nearby phase2 siege|U/N; H defensibility|
+|5|IMPROVED_PENDING_HUMAN|core/sim/RunSimulation.ts|Ordinary raid only → actual boss base assault sharing HP/repair|U/N; H defensibility|
 |6|VERIFIED_EXISTING|game/scenes/GameScene.ts|Existing pins/effect previews retained|decision browser tests; H choice quality|
 |7|IMPROVED_PENDING_HUMAN|game/render/CombatSprites.ts|Same-sized friendly shots → role-specific aspect ratios|B; H cohesion|
 |8|REPRO_NOT_CONFIRMED|game/render/ActorRenderer.ts|Existing camera/actor hierarchy retained|B3 viewports; H FOV|
@@ -99,7 +131,7 @@ Before/after source identities and final receipts are on the campaign PR.
 |14|IMPROVED_PENDING_HUMAN|game/render/CombatSprites.ts|Space family emitters kept; shot proportions clarified|Emitter/browser tests; H impact|
 |15|ART_SOURCE_BLOCKED|game/render/ReferenceAnimation.ts|Existing real poses; no continuous six-age anatomy source|Asset/source tests; original frames required|
 |16|VERIFIED_EXISTING|game/render/HeroEquipment.ts|One accepted floating mount and canonical muzzle retained|weaponMuzzle/release tests; H smoothness|
-|17|IMPROVED_PENDING_HUMAN|core/combat/bossEncounter.ts|Similar cadence → strafe, bounded lead, denser fan, nearby siege|U/N; H challenge/fairness|
+|17|IMPROVED_PENDING_HUMAN|core/combat/bossEncounter.ts|Similar cadence → strafe, bounded lead, denser fan, actual base assault|U/N; H challenge/fairness|
 |18|VERIFIED_EXISTING|core/sim/RunSimulation.ts|Legacy/family inheritance already live|Ascension/World2 tests; H replay interest|
 |19|VERIFIED_EXISTING|game/ui/DecisionInputBoundary.ts|Space throughout Draft already guarded|Queued/focused/repeat B; H original complaint|
 |20|IMPROVED_PENDING_HUMAN|GameScene, i18n/en.ts, th.ts|No observed F use → contextual ready prompt|EN/TH B; H discoverability|
@@ -110,11 +142,11 @@ Before/after source identities and final receipts are on the campaign PR.
 |25|IMPROVED_PENDING_HUMAN|game/render/CombatSprites.ts, hostileArt.ts|Real hostile sources preserved; friendly family shape separation improved|B/HC regressions; H threat clarity|
 |26|VERIFIED_EXISTING|game/ui/DecisionInputBoundary.ts|Physical release/context/blur guard already live|Draft/Pause/Tech/Civ/blur B plus new EN/TH picker case; H original failure|
 |27|REPRO_NOT_CONFIRMED|game/render/VisualLanguage.ts|No universal multiplier or changed collision size|B3 viewports; H perceived size|
-|28|IMPROVED_PENDING_HUMAN|core/combat/bossEncounter.ts|Phase2 pattern labels → actual strafe/lead/fan/siege escalation|U/N; H perception|
+|28|IMPROVED_PENDING_HUMAN|core/combat/bossEncounter.ts|Phase2 pattern labels → actual strafe/lead/fan/base-assault escalation|U/N; H perception|
 |29|DEFERRED_WITH_REASON|HeroEquipment.ts, core/combat/weaponGeometry.ts|One authoritative primary rig; no per-extra-weapon muzzle model|Existing float foundation retained; extra weapons need explicit canonical emitter design|
 |30|REPRO_NOT_CONFIRMED|GameScene.refreshGround, TerrainPainter.ts|Sites drawn independently of asynchronous terrain preparation|POI pixel/arrival B; no physical latency certification|
 |31|FIXED_ENGINEERING|game/render/paintedBossPose.ts|Continuous hit pose/jitter hides attacks → action pose + tint|2 RED→GREEN regressions; H art/pixel preference still open|
-|32|IMPROVED_PENDING_HUMAN|RunSimulation, SimEvent.ts|No boss-directed outpost pressure → one real nearby warned siege|U/N, existing repair/defense; H meaningful response|
+|32|IMPROVED_PENDING_HUMAN|RunSimulation, SimEvent.ts|Boss walks to a named owned base and damages it only through actual warned attacks|U/N, existing repair/defense; H meaningful response|
 |33|IMPROVED_PENDING_HUMAN|bossEncounter.ts, BossTelegraph.ts|Pure snapshot aim → bounded pre-warning prediction, frozen afterward|U shared warning/shot geometry; H fairness|
 
 ## Owner retest and blockers
@@ -136,3 +168,20 @@ painted cells, not upscaling or a rejected replacement rig. Native60Hz validatio
 requires a controlled host; a48Hz trace cannot certify strict60FPS acceptance.
 Next campaign should use actual retest findings and delivered source animation,
 not another speculative content subsystem. No external research dependency here.
+
+## Bounded design brief for ChatGPT — retention and visible growth
+
+Owner enjoyment baseline is1/5; technical playability has not earned attachment.
+Existing runtime: auto-attack/Draft/Outpost/Ages/Boss/Ascension, plus persistent
+Insight purchases in core/progression/archiveLedger.ts. These are not an existing
+Fashion inventory or reward-collection loop. Current original costume/pose assets
+are finite; new high-quality Fashion/continuous motion needs actual production.
+
+Design one small reward loop linking successful base defense, visible character
+growth and reasons to replay. Specify reward catalogue/visual deliverables, how
+rewards are earned, meaningful choices versus random draws, duplicate handling,
+unlock pacing over the first3 runs, and how collection is displayed. Respect
+seeded isolated RNG and explicit save migration if new persistent data is needed.
+Define one human test: does the reward make the owner want another run, and is
+its visual improvement apparent? Avoid building a new large inventory/gacha
+architecture before those decisions. No external research was performed here.

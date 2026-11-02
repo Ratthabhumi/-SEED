@@ -1,15 +1,12 @@
 import type {SimEnemy} from "../sim/RunState";
 export type BossPattern="slam"|"fan"|"cross";
-export interface BossEncounter {phase:"approach"|"warning"|"commit"|"attack"|"recover"|"phase-transition";timer:number;cycle:number;pattern:BossPattern;aimX:number;aimY:number;enraged:boolean;}
+export interface BossEncounter {phase:"approach"|"warning"|"commit"|"attack"|"recover"|"phase-transition";timer:number;cycle:number;pattern:BossPattern;aimX:number;aimY:number;enraged:boolean;outpostId:string;}
 export const BOSS_ENCOUNTER={warning:1.15,recovery:1.6,cooldown:2.2,phase2Cooldown:1.1,transition:.4,slamRadius:105,crossHalfWidth:24,crossLength:360,shotSpeed:230} as const;
-export const createBossEncounter=():BossEncounter=>({phase:"approach",timer:2.2,cycle:0,pattern:"slam",aimX:0,aimY:0,enraged:false});
+export const createBossEncounter=():BossEncounter=>({phase:"approach",timer:2.2,cycle:0,pattern:"slam",aimX:0,aimY:0,enraged:false,outpostId:""});
 export const bossWarningDuration=(pattern:BossPattern,enraged=false):number=>(pattern==="fan"?1.35:pattern==="cross"?1.4:BOSS_ENCOUNTER.warning)*(enraged?.8:1);
 const FAN_NORMAL=[-.6,-.4,-.2,.2,.4,.6] as const;
 const FAN_ENRAGED=[-.8,-.65,-.5,-.35,-.2,.2,.35,.5,.65,.8] as const;
 export const bossFanOffsets=(enraged=false):readonly number[]=>enraged?FAN_ENRAGED:FAN_NORMAL;
-/** Nearby targets only: a shorter siege warning creates an actual encounter
- * decision while still granting travel time. Ordinary raids keep their30s. */
-export const BOSS_SIEGE_WARN_SEC=12;
 export const bossRecoveryDuration=(pattern:BossPattern):number=>pattern==="fan"?1.4:pattern==="cross"?1.8:1.85;
 /** Fixed-step, fixed aim, no RNG. Phase two adds a third spatial problem,
  * not HP. Pattern-dependent generous warnings and stationary recovery persist. */

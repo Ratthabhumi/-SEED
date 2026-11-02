@@ -1465,11 +1465,13 @@ export class GameScene extends Phaser.Scene {
     if(encounter){
       encounter.hidden=!boss;
       if(boss?.encounter){
-        const a=boss.encounter,identity=`${a.enraged}:${a.phase}:${a.pattern}:${getLang()}`;
+        const a=boss.encounter,target=this.sim.state.territories.find(p=>p.poiId===a.outpostId&&!p.disabled);
+        const identity=`${a.enraged}:${a.phase}:${a.pattern}:${a.outpostId}:${!!target}:${getLang()}`;
         if(encounter.dataset.identity!==identity){
           encounter.dataset.identity=identity;encounter.dataset.phase=a.phase;
           encounter.replaceChildren(el("strong","",a.enraged?"combat.boss.phase2":"combat.boss.phase1"),el("span","",`combat.boss.${a.phase}` as EnKeys));
           if(["warning","commit","attack"].includes(a.phase))encounter.appendChild(el("small","",`combat.boss.${a.pattern}` as EnKeys));
+          if(target)encounter.appendChild(el("small","boss-target",undefined,`${t("combat.boss.defendBase")}: ${t(`poi.${target.poiType}.name` as EnKeys)} [M]`));
         }
       }
     }
@@ -3526,6 +3528,16 @@ export class GameScene extends Phaser.Scene {
       switch (e.type) {
         case "boss_attack_warning": toast(`combat.boss.${e.pattern}` as EnKeys);sfx.boss();break;
         case "boss_phase_changed":toast("combat.boss.phaseTransition");sfx.boss();break;
+        case "boss_outpost_targeted": {
+          const post=s.territories.find(p=>p.poiId===e.poiId);
+          if(post)toast("combat.boss.siege",`${t(`poi.${post.poiType}.name` as EnKeys)} [M]`);
+          this.qa?.noteSimEvent("boss-outpost-target",e.poiId);break;
+        }
+        case "boss_outpost_hit": {
+          const post=s.territories.find(p=>p.poiId===e.poiId);
+          if(post)this.floatTextAt(post.x,post.y,`−${Math.ceil(e.damage)}`,"#ff8878");
+          this.qa?.noteSimEvent("boss-outpost-hit",`${e.poiId}:${e.damage}`);break;
+        }
         case "boss_attack_fired": sfx.weapon("field");break;
         case "weapon_fired": sfx.weapon(e.family,s.originId); break;
         case "mine_detonated": sfx.weapon("field"); break;

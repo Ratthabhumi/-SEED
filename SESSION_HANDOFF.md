@@ -1,3 +1,20 @@
+## V4.3 owner-directed base defense revision —2026-11-02
+
+Owner recalled fun1/5; controls usable. Wants visible Fashion/character growth
+and the actual boss trying to destroy bases. Preserve this real feedback without
+fabricating sub-ratings or editing rawQA. See ADR0050 and the updated single
+V43_GAMEPLAY_RECOVERY report/design brief. No new gacha/inventory implemented.
+
+Content21/a644ef8's clean Natural36 had29 reached/24 wins/2 deaths, but zero
+boss-initiated sieges. All outcomes retained; remaining E2E/render runs canceled
+on changed owner priority. Content22 replaces the inert nearby-raid trigger
+with the actual boss approaching one named base and alternating base/player
+attack cycles. Only committed in-range geometry damages shared outpostHP; normal
+raid units coordinate on the same target. Identity is canonical/hashed; no
+teleport or second damage model. Worldgen3/Save2/child-law18 stay pinned.
+Content22 local check PASS:595 tests/104 files, typecheck, notices and production build. ZIP/release:verify PASS. Four direct-assault regressions have a real RED control. Protected7735 files unchanged. Browser captures are staged only; final Natural36 and exact-source CI receipts follow on the same DraftPR34. Existing
+QA server stamps7847d7b and needs OWNER restart before a clean new-build run.
+
 ## V4.3 gameplay recovery — 2026-11-02 (current)
 
 Primary owner checkout is Desktop/Co-op/-SEED; never resume the obsolete v39

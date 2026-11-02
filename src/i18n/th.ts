@@ -636,6 +636,7 @@ export const th: Record<EnKeys, string> = {
   "ui.loadout": "พลังที่ใช้งานอยู่",
   "combat.boss.phaseTransition": "สถาปนิกเปลี่ยนร่าง — เตรียมรับลำดับโจมตีใหม่",
   "combat.boss.siege": "สถาปนิกเล็งโจมตีฐานของคุณ — ป้องกันหรือซ่อมแซมฐาน",
+  "combat.boss.defendBase": "ปกป้องฐาน",
   "combat.boss.phase1": "สถาปนิก · ระยะที่ 1",
   "combat.boss.phase2": "สถาปนิก · ระยะที่ 2",
   "combat.boss.approach": "กำลังเปลี่ยนตำแหน่ง — สังเกตท่าเตรียมโจมตี",

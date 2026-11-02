@@ -635,6 +635,7 @@ export const en = {
   "ui.loadout": "Active powers",
   "combat.boss.phaseTransition": "The Architect reforms — attack sequence changing",
   "combat.boss.siege": "The Architect targets your outpost — defend or repair it",
+  "combat.boss.defendBase": "Defend outpost",
   "combat.boss.phase1": "THE ARCHITECT · PHASE I",
   "combat.boss.phase2": "THE ARCHITECT · PHASE II",
   "combat.boss.approach": "Repositioning — watch the next windup",

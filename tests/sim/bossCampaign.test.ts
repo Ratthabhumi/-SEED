@@ -30,15 +30,15 @@ describe('V4.3 bounded boss escalation',()=>{
   const before=[boss.x,boss.y];stepBossEncounter(boss,300,300,1/60,()=>{});
   expect([boss.encounter!.aimX,boss.encounter!.aimY]).toEqual([42,17]);expect([boss.x,boss.y]).toEqual(before);
  });
- it('warns one real nearby outpost through the existing raid model and causes no immediate damage',()=>{
+ it('announces one real base without creating a phantom raid or immediate damage',()=>{
   const {sim,s,boss}=arena();
   s.territories=[{poiId:'owned',poiType:'ruin',x:100,y:0,spec:'research',tier:1,hp:300,maxHp:300,disabled:false,garrisoned:false,heldSince:0,repairT:0}];
   boss.hp=boss.maxHp*.4;const events=sim.step(1/60,idle);
-  expect(s.raid?.poiId).toBe('owned');expect(s.raid?.tMinus).toBe(12);expect(s.territories[0]!.hp).toBe(300);
-  expect(events).toContainEqual({type:'raid_incoming',poiId:'owned',seconds:12,source:'boss'});
+  expect(s.raid).toBeNull();expect(boss.encounter!.outpostId).toBe('owned');expect(s.territories[0]!.hp).toBe(300);
+  expect(events).toContainEqual({type:'boss_outpost_targeted',poiId:'owned'});
   const raid=s.raid;sim.step(1/60,idle);expect(s.raid).toBe(raid);
  });
- it('does not target distant land or replace an existing raid',()=>{
+ it('does not create or replace independent raids',()=>{
   for(const existing of [false,true]){
    const {sim,s,boss}=arena();s.territories=[{poiId:'far',poiType:'ruin',x:1600,y:0,spec:'research',tier:1,hp:300,maxHp:300,disabled:false,garrisoned:false,heldSince:0,repairT:0}];
    if(existing)s.raid={poiId:'far',tMinus:20,landed:false,spawned:0};
