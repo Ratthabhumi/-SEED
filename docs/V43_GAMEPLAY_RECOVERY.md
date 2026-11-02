@@ -1,3 +1,20 @@
+## Historical fixture compatibility correction —2026-11-03
+
+Content22 af4a97d clean analysis:36 replay-equal,29 reached/7 wins/0 deaths;
+74 actual target announcements,139 boss-only accepted outpost hits/6684.4HP.
+All36 outcomes retained in DraftPR34. Synthetic policy still camps the revealed
+stronghold instead of following the moving boss. Sharp win decline and long
+approach remain material pacing risks requiring an actual human defense retest;
+no policy retuning after outcomes and no gameplay acceptance claimed.
+
+CI browser suite passed249 cases, then the historical capture comparison failed:
+old encounters lack outpostId, while Content22 uses empty string for no target.
+The capture signature now normalizes only absent/null to the empty no-target
+identity; all other fields and nonempty identities remain compared. Two tests
+cover empty compatibility and actual target/pose/timer/HP/position mismatches.
+No simulation, gameplay thresholds or CI gates changed in this correction.
+Local full check PASS:597 tests/105 files, typecheck/notices/build. The actual source-pinned PR18/PR19/candidate capture passes; its original raw signature fails and only outpostId differs. Final exact-source receipts stay in DraftPR34; the old failure is retained.
+
 # V4.3 consolidated gameplay recovery — 2026-11-02
 
 Primary owner checkout: `C:\Users\MewMew\Desktop\Co-op\-SEED`.

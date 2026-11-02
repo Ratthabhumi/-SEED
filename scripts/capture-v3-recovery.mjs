@@ -3,6 +3,7 @@ import {mkdirSync,writeFileSync} from 'node:fs';
 import {readPreviewBuild} from './read-preview-build.mjs';
 import {preview} from 'vite';
 import {loadResolvedBaseline,CONTRACT} from './resolve-legacy-baselines.mjs';
+import {bossVisualSignature} from './bossVisualFixture.mjs';
 const baseline18=loadResolvedBaseline('pr18'),baseline19=loadResolvedBaseline('pr19');
 let [parent18='http://127.0.0.1:4181',parent19='http://127.0.0.1:4182',candidate='http://127.0.0.1:4183',output='test-results/v3-early-visual']=process.argv.slice(2);
 const servers=[];
@@ -36,7 +37,7 @@ try{
  }
  // Full canonical snapshots include startup RNG/timers unrelated to this art
  // fixture. Compare every displayed boss/encounter field, not those histories.
- const visualBoss=r=>{const b=r.initial.boss.boss;return JSON.stringify({x:b.x,y:b.y,hp:b.hp,maxHp:b.maxHp,radius:b.radius,encounter:b.encounter});};
+ const visualBoss=r=>bossVisualSignature(r.initial.boss.boss);
  writeFileSync(`${output}/comparison.json`,JSON.stringify({classification:'MATCHED_SOURCE_PINNED_PARENT_NATIVE_STAGED_NOT_HUMAN_ART_APPROVAL',evidenceContract:CONTRACT,rows,limitations:'Staged boss/encounter/viewport/camera/settings are matched; startup canonical histories are not equal. Early candidate may be dirty. No natural-play or new painted anatomy claim.'},null,2));
  if(rows.some(r=>visualBoss(r)!==visualBoss(rows[0])))throw Error('Boss fixture mismatch');
  if(rows.some(r=>r.initial.camera.zoom!==rows[0].initial.camera.zoom||JSON.stringify(r.initial.camera.view)!==JSON.stringify(rows[0].initial.camera.view)))throw Error('Camera mismatch');
