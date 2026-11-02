@@ -7,7 +7,7 @@ export function assertComparisonBuilds(builds,expectedBaseline=LEGACY_WORLD_BASE
  if(builds.A.dirty||builds.B.dirty)throw Error('Comparison requires clean compiled builds');
  if(builds.A.sha!==expectedBaseline)throw Error('Expected exact baseline '+expectedBaseline+'; served '+builds.A.sha);
 }
-export async function captureWorldComparison(before,after,out,expectedBaseline=LEGACY_WORLD_BASELINE){
+export async function captureWorldComparison(before,after,out,expectedBaseline=LEGACY_WORLD_BASELINE,baselineEvidence=null){
  mkdirSync(out,{recursive:true});const rows=[],errors=[],positions={},builds={A:await readPreviewBuild(before),B:await readPreviewBuild(after)};
  assertComparisonBuilds(builds,expectedBaseline);
  const browser=await chromium.launch({headless:true,...(process.platform==='win32'?{args:['--use-gl=angle','--use-angle=d3d11']}: {})});
@@ -40,7 +40,7 @@ export async function captureWorldComparison(before,after,out,expectedBaseline=L
    }
    await context.close();
   }
-  writeFileSync(out+'/index.json',JSON.stringify({classification:'MATCHED_WORLDGEN3_STAGED_PRESENTATION_NOT_HUMAN_ART_OR_FUN_PASS',expectedBaseline,builds,gpu,rows,errors,limitations:'Same seed/coordinates, age, zoom and graphics mode per A/B material pair. Worker-disabled fallbacks and fully prepared states are separate. CPU post-render observations do not certify photons/GPU execution. Source-art preference and animation production remain human gates.'},null,2));
+  writeFileSync(out+'/index.json',JSON.stringify({classification:'MATCHED_WORLDGEN3_STAGED_PRESENTATION_NOT_HUMAN_ART_OR_FUN_PASS',expectedBaseline,baselineEvidence,builds,gpu,rows,errors,limitations:'Same seed/coordinates, age, zoom and graphics mode per A/B material pair. Worker-disabled fallbacks and fully prepared states are separate. CPU post-render observations do not certify photons/GPU execution. Source-art preference and animation production remain human gates.'},null,2));
   if(errors.length)throw Error(JSON.stringify(errors));
  }finally{await browser.close();}
 }

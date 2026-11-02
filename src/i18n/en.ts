@@ -329,6 +329,7 @@ export const en = {
   "mission.space.signal": "Secure an Alien Signal",
   "mission.space.guardian": "Defeat Age guardians (elites)",
   "ui.nextAge": "NEXT AGE",
+  "ui.nextStep": "Next step",
   "ui.buildPlan": "Technology goal",
   "ui.ownedBuild": "CURRENT BUILD",
   "ui.techMap": "Tech Map",
@@ -649,6 +650,8 @@ export const en = {
   "power.inherited": "Inherited Legacy; persists between worlds",
   "power.orbitBonus": "Adds orbiting attackers to eligible active families",
   "power.auraBonus": "Extends the active Energy area attack",
+  "qa.frameIntervals": "Download observed update intervals (.json)",
+  "qa.frameIntervalsHint": "QA/profiling only; 1ms bucket estimates, not GPU presented frames. Hidden and paused periods are separate.",
 } as const;
 
 export type EnKeys = keyof typeof en;

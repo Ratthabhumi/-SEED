@@ -331,7 +331,8 @@ export const th: Record<EnKeys, string> = {
   "mission.atomic.elite": "ปราบอีลิต (2)",
   "mission.space.signal": "ยึดสัญญาณเอเลี่ยน",
   "mission.space.guardian": "ปราบผู้พิทักษ์ยุค (อีลิต)",
-  "ui.nextAge": "ยุคอนต่อไป",
+  "ui.nextAge": "ยุคต่อไป",
+  "ui.nextStep": "ขั้นต่อไป",
   "ui.buildPlan": "เป้าหมายเทคโนโลยี",
   "ui.ownedBuild": "สิ่งที่สร้างแล้ว",
   "ui.techMap": "แผนที่เทคโนโลยี",
@@ -651,4 +652,6 @@ export const th: Record<EnKeys, string> = {
   "power.orbitBonus": "เพิ่มหน่วยโจมตีโคจรให้สายอาวุธที่ใช้งานและรองรับ",
   "power.auraBonus": "ขยายสนามโจมตีของสายพลังงานที่ใช้งาน",
 
+  "qa.frameIntervals": "ดาวน์โหลดช่วงเวลาระหว่างอัปเดต (.json)",
+  "qa.frameIntervalsHint": "เฉพาะ QA/การวัดผล: ประมาณค่าด้วยช่วง 1ms ไม่ใช่จำนวนภาพที่ GPU แสดง แยกช่วงซ่อนแท็บและหยุดเกม",
 };

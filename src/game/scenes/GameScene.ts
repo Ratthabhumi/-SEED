@@ -45,11 +45,12 @@ import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
-import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, applyUiScale, isKeyRepeat } from "../ui";
+import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, setNotificationEncounter, applyUiScale, isKeyRepeat } from "../ui";
 import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
+import {createFrameIntervalMonitor} from '../../qa/FrameIntervalMonitor';
 import {onceKeyboardEvent} from "../input/onceKeyboardEvent";
 import { drawEnemy } from "../render/EnemyRenderer";
 import {eligibleFamilies} from "../../core/director/director";
@@ -198,6 +199,7 @@ export class GameScene extends Phaser.Scene {
   private simSamples: number[] = [];
   private frameSamples: number[] = [];
   private lastFrameAt = 0;
+  private frameIntervals:ReturnType<typeof createFrameIntervalMonitor>=null;
   private renderSamples: number[] = [];
   private renderStart = 0;
   private onPreRender = () => { this.renderStart = performance.now(); };
@@ -399,6 +401,9 @@ export class GameScene extends Phaser.Scene {
     this.lastGroundKey = "";this.groundProbe=undefined;
     this.simSamples = [];
     this.frameSamples = []; this.lastFrameAt = 0;
+    const timingQuery=new URLSearchParams(location.search);
+    this.frameIntervals=createFrameIntervalMonitor(timingQuery.get('profile')==='1'||
+      (isQAMode(location.search)&&!combatReviewRequested(location.search)),document.hidden);
     this.renderSamples = [];
     this.uniqueTiming=new URLSearchParams(location.search).has("e2e");this.uniqueFrames=[];this.uniqueSim=[];
     this.game.events.on(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
@@ -587,7 +592,8 @@ export class GameScene extends Phaser.Scene {
         friendlyBatchLifetime:()=>{const batch=this.friendlyBatch;return ()=>batch.counts();},
         numericFeedbackCounts:()=>this.numericFeedback?.counts()??null,
         resetRenderDiagnostics:()=>this.diagnostics?.reset(),
-        resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
+        resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;this.frameIntervals?.reset(document.hidden);},
+        frameIntervalEvidence:()=>this.frameIntervals?.snapshot()??null,
         actorPresentation: () => this.allyActors.review(),
         streamingMove:(x:number,y:number)=>{
           const s=this.sim.state,dx=x-s.px,dy=y-s.py;this.paused=true;s.px=x;s.py=y;
@@ -1073,6 +1079,8 @@ export class GameScene extends Phaser.Scene {
   private startQa(): void {
     const adapter = {
       frame: () => this.buildQaFrame(),
+      frameIntervals:()=>this.frameIntervals?{...this.frameIntervals.snapshot(),
+        buildSha:import.meta.env.SEED_BUILD_SHA,buildDirty:import.meta.env.SEED_BUILD_DIRTY}:null,
       snapshot: () => {
         try {
           return this.sim.snapshot();
@@ -1278,11 +1286,14 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onHidden = (): void => {
+    this.frameIntervals?.setHidden(document.hidden);
+    this.lastFrameAt=0; // browser inactivity is not an active gameplay stall
     const s = this.sim?.state;
     if (s && document.hidden && !this.paused && !s.over && !s.draftOpen) this.togglePause();
   };
 
   private onShutdown(): void {
+    this.frameIntervals?.dispose();this.frameIntervals=null;
     this.bossLaneObserver?.disconnect();this.bossLaneObserver=undefined;
     this.decisionInput.dispose();
     clearNotifications();
@@ -1527,7 +1538,8 @@ export class GameScene extends Phaser.Scene {
     // Knowledge card: progress toward the next age's threshold.
     const next = s.ageIndex + 1;
     const nextNeed = next < AGES.length ? (AGE_DEFS[next]?.knowledgeThreshold ?? 1) : 1;
-    knowNums.textContent = `${Math.floor(s.knowledgeTotal)} / ${nextNeed}`;
+    knowNums.textContent = next < AGES.length ? `${Math.floor(s.knowledgeTotal)} / ${nextNeed}` : `${Math.floor(s.knowledgeTotal)}`;
+    knowFill.parentElement!.hidden = next >= AGES.length;
     knowFill.style.width = `${Math.min(100, (s.knowledgeTotal / Math.max(1, nextNeed)) * 100)}%`;
     // Age card: one checklist row per gate (the SAME predicate as the sim).
     const ageCardKey=JSON.stringify([next,t("ui.nextAge"),s.ownedTags,s.breakthroughs,next<AGES.length?ageGates(next,s.knowledgeTotal,this.missionStateOf(s),this.dominionStateOf(s)):Math.floor(s.knowledgeTotal)]);
@@ -1541,6 +1553,10 @@ export class GameScene extends Phaser.Scene {
       title.textContent = `${t("ui.nextAge")}: ${t(`age.${AGES[next] as AgeId}` as EnKeys)}`;
       ageCard.appendChild(title);
       const gates = ageGates(next, s.knowledgeTotal, this.missionStateOf(s), this.dominionStateOf(s));
+      const unmet = gates.find(g => !g.done);
+      const step = unmet?.mission.find(m => !m.done) ?? unmet?.sub.find(d => !d.done) ?? unmet;
+      if (step) ageCard.appendChild(el("div", "next-action", undefined,
+        `${t("ui.nextStep")}: ${t(step.labelKey)} ${step.have}/${step.need}`));
       for (const g of gates) {
         const row = document.createElement("div");
         row.className = "gate-row" + (g.done ? " done" : "");
@@ -2468,6 +2484,7 @@ export class GameScene extends Phaser.Scene {
     if (!bar || !fill) return;
     const s = this.sim.state;
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    setNotificationEncounter(!!boss?.active);
     if (boss?.active) {
       bar.style.display = "block";
       const percent=Math.max(0,Math.min(100,Math.ceil(boss.hp/boss.maxHp*100)));
@@ -3766,8 +3783,10 @@ export class GameScene extends Phaser.Scene {
     // Phaser delta may be smoothed; performance evidence uses wall-clock frames.
     // Canonical stepping below continues to use the engine delta unchanged.
     const frameAt = performance.now();
+    let frameInterval:number|null=null;
     if (this.lastFrameAt > 0) {
       const frameMs = frameAt - this.lastFrameAt;
+      frameInterval=frameMs;
       this.pushSample(this.frameSamples, frameMs);
       this.fpsEMA += (1000 / Math.max(frameMs, 0.1) - this.fpsEMA) * 0.05;
     }
@@ -3782,6 +3801,7 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     // Map overlays pause stepping (informational screens, not decisions).
     const stepping = !this.paused && !s.over && !s.draftOpen && !this.blockingModal && !this.techMapOpen && !this.civMapOpen;
+    this.frameIntervals?.update(frameInterval,!stepping);
     if (stepping) {
       this.sampleMove();
       const steps = this.acc.steps(dt);
