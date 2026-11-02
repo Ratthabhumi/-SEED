@@ -39,7 +39,7 @@ export type SimEvent =
   | { type: "outpost_recalled"; poiId: string; spec: OutpostSpec }
   | { type: "outpost_lost"; poiId: string }
   | { type: "outpost_repaired"; poiId: string }
-  | { type: "raid_incoming"; poiId: string; seconds: number }
+  | { type: "raid_incoming"; poiId: string; seconds: number; source?: "boss" }
   | { type: "raid_repelled"; poiId: string }
   | { type: "squad_command"; mode: SquadMode }
   | { type: "ability_used"; id: string }

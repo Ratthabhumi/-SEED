@@ -3,11 +3,17 @@ export type BossPattern="slam"|"fan"|"cross";
 export interface BossEncounter {phase:"approach"|"warning"|"commit"|"attack"|"recover"|"phase-transition";timer:number;cycle:number;pattern:BossPattern;aimX:number;aimY:number;enraged:boolean;}
 export const BOSS_ENCOUNTER={warning:1.15,recovery:1.6,cooldown:2.2,phase2Cooldown:1.1,transition:.4,slamRadius:105,crossHalfWidth:24,crossLength:360,shotSpeed:230} as const;
 export const createBossEncounter=():BossEncounter=>({phase:"approach",timer:2.2,cycle:0,pattern:"slam",aimX:0,aimY:0,enraged:false});
-export const bossWarningDuration=(pattern:BossPattern):number=>pattern==="fan"?1.35:pattern==="cross"?1.4:BOSS_ENCOUNTER.warning;
+export const bossWarningDuration=(pattern:BossPattern,enraged=false):number=>(pattern==="fan"?1.35:pattern==="cross"?1.4:BOSS_ENCOUNTER.warning)*(enraged?.8:1);
+const FAN_NORMAL=[-.6,-.4,-.2,.2,.4,.6] as const;
+const FAN_ENRAGED=[-.8,-.65,-.5,-.35,-.2,.2,.35,.5,.65,.8] as const;
+export const bossFanOffsets=(enraged=false):readonly number[]=>enraged?FAN_ENRAGED:FAN_NORMAL;
+/** Nearby targets only: a shorter siege warning creates an actual encounter
+ * decision while still granting travel time. Ordinary raids keep their30s. */
+export const BOSS_SIEGE_WARN_SEC=12;
 export const bossRecoveryDuration=(pattern:BossPattern):number=>pattern==="fan"?1.4:pattern==="cross"?1.8:1.85;
 /** Fixed-step, fixed aim, no RNG. Phase two adds a third spatial problem,
  * not HP. Pattern-dependent generous warnings and stationary recovery persist. */
-export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:(pattern:BossPattern,x:number,y:number)=>void):boolean {
+export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:(pattern:BossPattern,x:number,y:number)=>void,vx=0,vy=0):boolean {
   const a=e.encounter;if(!e.boss||!a)return false;
   const dx=px-e.x,dy=py-e.y,d=Math.max(1,Math.hypot(dx,dy));a.timer-=dt;
   // Cancel uncommitted warnings, but finish a committed attack AND its full
@@ -18,10 +24,15 @@ export function stepBossEncounter(e:SimEnemy,px:number,py:number,dt:number,fire:
   }
   if(a.phase==="approach") {
     if(d>230){e.x+=dx/d*e.speed*dt;e.y+=dy/d*e.speed*dt;}
+    // Phase two repositions between attacks, never during fixed-origin warnings.
+    if(a.enraged&&d<=600){const side=a.cycle%2?1:-1;e.x-=dy/d*e.speed*.55*dt*side;e.y+=dx/d*e.speed*.55*dt*side;}
     if(a.timer<=0 && d<=600){
       const patterns:BossPattern[]=a.enraged?["cross","fan","slam","fan","cross","slam"]:["slam","fan"];
       a.pattern=patterns[a.cycle%patterns.length];a.aimX=px;a.aimY=py;
-      a.phase="warning";a.timer=bossWarningDuration(a.pattern);
+      // A bounded lead is committed once. The warning shows the actual target;
+      // neither target nor attack origin follows a dodge after this point.
+      if(a.enraged){const lead=Math.hypot(vx,vy)*.2,k=lead>72?72/lead:1;a.aimX+=vx*.2*k;a.aimY+=vy*.2*k;}
+      a.phase="warning";a.timer=bossWarningDuration(a.pattern,a.enraged);
     }
   } else if(a.phase==="warning" && a.timer<=0) {
     a.phase="commit";a.timer=.14;

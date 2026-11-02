@@ -1352,6 +1352,8 @@ export class GameScene extends Phaser.Scene {
     status.appendChild(identLine);
     const squadLine = el("div", "status-squad");
     status.appendChild(squadLine);
+    const commandHint = el("div", "command-hint");
+    status.appendChild(commandHint);
     dock.appendChild(status);
     // Bottom-center knowledge progress (SECONDARY).
     const know = el("div", "knowledge-card");
@@ -1451,7 +1453,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = {
       stats, age, compass, status, hpLine, hpFill, identLine, squadLine,
       know, knowNums, knowFill, ageCard, goals, ascendWrap, terrBar, techBtn,
-      civBtn, minimap: mm, bossBar, bossFill, hint,
+      civBtn, minimap: mm, bossBar, bossFill, hint, commandHint,
     };
     this.loadout=new AbilityLoadout();hud.append(this.loadout.node);
     this.refreshHUD();
@@ -1532,6 +1534,10 @@ export class GameScene extends Phaser.Scene {
     abilSpan.textContent = ` ${abilTxt}`;
     abilBadge.appendChild(abilSpan);
     squadLine.appendChild(abilBadge);
+    const powerPrompt=s.stats.abilityUses===0&&s.abilityCd<=0&&s.enemies.some(e=>e.active&&Math.hypot(e.x-s.px,e.y-s.py)<600);
+    const commandHint=this.hud.commandHint;
+    commandHint.textContent=powerPrompt?t("ui.powerReadyHint"):s.territories.some(p=>!p.disabled)?t("ui.baseCommandHint"):"";
+    commandHint.hidden=!commandHint.textContent;
     // Civilization Map button: disclosed once territory management matters.
     const civBtn = this.hud.civBtn as HTMLElement | undefined;
     if (civBtn) civBtn.style.display = s.territories.length > 0 ? "" : "none";
@@ -3594,7 +3600,7 @@ export class GameScene extends Phaser.Scene {
         case "raid_incoming": {
           const terr = this.sim.state.territories.find((x) => x.poiId === e.poiId);
           const nm = terr ? t(`poi.${terr.poiType}.name` as EnKeys) : e.poiId;
-          toast("ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
+          toast(e.source==="boss"?"combat.boss.siege":"ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
           sfx.boss();
           this.spawnVfx("seed_raid_alert", s.px, s.py, 1.1, 0xff5533, 600, Phaser.BlendModes.ADD);
           this.qa?.noteSimEvent("raid_incoming", `${e.poiId}:${Math.ceil(e.seconds)}s`);

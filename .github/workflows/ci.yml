@@ -155,6 +155,8 @@ jobs:
             test-results/browser/dense-boss/*.json
             test-results/v41-visible/*.json
             test-results/v41-visible/*.png
+            test-results/v43-visible/*.json
+            test-results/v43-visible/*.png
             test-results/evolution-performance.json
             test-results/v3-comparison/
             test-results/v36-final/

@@ -419,6 +419,8 @@ button, input { font-family: inherit; }
 .status-hp { font-size: var(--font-heading); font-weight: 800; color: #ff8a8a; }
 .status-ident { font-size: var(--font-body); color: var(--text); font-weight: 600; }
 .status-squad { font-size: var(--font-caption); color: #9fd8ff; margin-top: 2px; }
+.command-hint {font-size:var(--font-caption);color:var(--accent);line-height:1.7;overflow-wrap:anywhere;margin-top:4px}
+.command-hint[hidden] {display:none}
 .mini-bar { height: 12px; background: #141c2a; border: 1px solid #2c3a52; border-radius: 6px; overflow: hidden; margin-top: 4px; }
 .mini-fill { height: 100%; transition: width 0.15s; }
 .mini-fill.hp { background: linear-gradient(90deg, #ff5a5a, #ff9a3c); }

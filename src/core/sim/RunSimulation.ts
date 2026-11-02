@@ -30,7 +30,7 @@ import { generateTechGraph } from "../tech/generator";
 import { eligibleTech, expandTechWeb } from "../tech/web";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
 import { combinationRoute } from "../tech/combinationRoute";
-import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "../combat/bossEncounter";
+import {createBossEncounter,stepBossEncounter,bossAreaHit,bossFanOffsets,BOSS_ENCOUNTER,BOSS_SIEGE_WARN_SEC} from "../combat/bossEncounter";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CHILD_LAWS_CONTENT_VERSION } from "../seed/versions";
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
@@ -2080,14 +2080,20 @@ export class RunSimulation {
         if(pattern==="fan") {
           const angle=Math.atan2(y-e.y,x-e.x);
           // Deliberate central gap; warnings expose this safe direction.
-          for(const offset of [-.6,-.4,-.2,.2,.4,.6])this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
+          for(const offset of bossFanOffsets(e.encounter!.enraged))this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
         } else {
           if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev,"boss-"+pattern);
           for(let i=0;i<s.squad.length;i++){const a=s.squad[i];if(a.active&&bossAreaHit(pattern,e.x,e.y,x,y,a.x,a.y))this.damageAlly(i,e.dmg);}
         }
-      });
+      },nx*sp,ny*sp);
       if(e.encounter?.phase==="warning"&&bossPhase!=="warning")ev.push({type:"boss_attack_warning",pattern:e.encounter.pattern});
-      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition")ev.push({type:"boss_phase_changed",phase:2});
+      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition"){
+        ev.push({type:"boss_phase_changed",phase:2});
+        // One escalation can threaten one nearby, defensible owned site. Reuse
+        // the existing warned siege, HP, repair and defeat/repel rules verbatim.
+        const target=!s.raid?this.raidTargets().find(t=>Math.hypot(t.x-s.px,t.y-s.py)<=700):undefined;
+        if(target){s.raid={poiId:target.poiId,tMinus:BOSS_SIEGE_WARN_SEC,landed:false,spawned:0};ev.push({type:"raid_incoming",poiId:target.poiId,seconds:BOSS_SIEGE_WARN_SEC,source:"boss"});}
+      }
       const evolved=bossMoved||stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
       if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
       if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});
