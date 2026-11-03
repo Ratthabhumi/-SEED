@@ -4,6 +4,7 @@
 import { cleanLedger, defaultLedger, type ArchiveLedger } from "../progression/archiveLedger";
 import { SAVE_SCHEMA_VERSION } from "../seed/versions";
 import { AGES } from "../tech/graph";
+import {cleanCollection,defaultCollection,type LegacyCollection} from '../progression/legacyCollection';
 
 export type Lang = "en" | "th";
 
@@ -32,6 +33,7 @@ export interface SaveData {
   settings: Settings;
   archive: string[];
   meta: ArchiveLedger;
+  collection: LegacyCollection;
   best: BestStats;
   history: string[];
 }
@@ -52,6 +54,7 @@ export function defaultSave(): SaveData {
     },
     archive: [],
     meta: defaultLedger(),
+    collection: defaultCollection(),
     best: { bestTimeSec: 0, bestKills: 0, bestAge: "stone", bestAscension: 0, runs: 0 },
     history: [],
   };
@@ -100,12 +103,13 @@ export function loadSave(storage: Pick<Storage, "getItem">): SaveData {
     if (!raw) return defaultSave();
     const parsed = JSON.parse(raw) as Partial<SaveData>;
     if (typeof parsed !== "object" || parsed === null) return defaultSave();
-    if (parsed.schema !== SAVE_SCHEMA_VERSION && parsed.schema !== 1) return defaultSave();
+    if (parsed.schema !== SAVE_SCHEMA_VERSION && parsed.schema !== 1 && parsed.schema !== 2) return defaultSave();
     return {
       schema: SAVE_SCHEMA_VERSION,
       settings: cleanSettings(parsed.settings),
       archive: cleanStrings(parsed.archive, 64),
       meta: cleanLedger(parsed.schema === 1 ? undefined : parsed.meta),
+      collection: cleanCollection(parsed.schema===3?parsed.collection:undefined),
       best: cleanBest(parsed.best),
       history: cleanStrings(parsed.history, 50),
     };

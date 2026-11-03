@@ -11,7 +11,7 @@ export function bossRigPose(time:number,moving:boolean,a?:BossEncounter,flash=0,
   if(a){
     const raised=a.pattern==="fan"?.65:a.pattern==="cross"?1.15:2.25;
     if(a.phase==="warning"||a.phase==="commit"){
-      const u=a.phase==="commit"?1:ease(1-a.timer/bossWarningDuration(a.pattern));
+      const u=a.phase==="commit"?1:ease(1-a.timer/bossWarningDuration(a.pattern,a.enraged));
       lift=-8*u;shoulder=.06+(raised-.06)*u;elbow=.16+.6*u;spread=(a.pattern==="cross"?.7:.12)*u;lean=-.08*u;pulse=1+.12*u;
     }else if(a.phase==="attack"){
       const u=ease(1-a.timer/.18);shoulder=raised*(1-u)+(a.pattern==="fan"?.5:-.35)*u;elbow=.76*(1-u)+.1*u;lift=-8+20*u;lean=-.08+.24*u;spread=a.pattern==="cross"?.7:.12*(1-u);pulse=1.12+.08*u;

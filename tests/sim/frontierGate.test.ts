@@ -137,7 +137,7 @@ describe("space → stronghold → boss canonical flow", () => {
     // Approach the revealed stronghold: the boss answers proximity.
     s.px = s.stronghold?.x ?? 0;
     s.py = s.stronghold?.y ?? 0;
-    let warned = false;
+    let warned = seen.includes("boss_warning");
     for (let i = 0; i < 10 && !s.bossSpawned; i++) {
       for (const e of sim.step(1 / 60, IDLE)) {
         seen.push(e.type);

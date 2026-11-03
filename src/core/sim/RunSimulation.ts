@@ -1,3 +1,4 @@
+import {BEAM_TARGET_RANGE} from "../combat/weapons";
 // Framework-independent run simulation (ADR 0003).
 //
 // One RunSimulation instance == one run attempt. Restarting a seed means
@@ -30,7 +31,7 @@ import { generateTechGraph } from "../tech/generator";
 import { eligibleTech, expandTechWeb } from "../tech/web";
 import { checkBreakthroughs, BREAKTHROUGHS } from "../tech/synergy";
 import { combinationRoute } from "../tech/combinationRoute";
-import {createBossEncounter,stepBossEncounter,bossAreaHit,BOSS_ENCOUNTER} from "../combat/bossEncounter";
+import {createBossEncounter,stepBossEncounter,bossAreaHit,bossFanOffsets,BOSS_ENCOUNTER} from "../combat/bossEncounter";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CHILD_LAWS_CONTENT_VERSION } from "../seed/versions";
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
@@ -766,15 +767,18 @@ export class RunSimulation {
    * Deterministic ENEMY STRONGHOLD site (§23): a seed-derived bearing at
    * fixed range, snapped to the nearest major POI (megasite/worldtree/
    * signal) when one exists nearby, else the raw point. Pure function of
-   * worldSeed + static worldgen — chunk/POI generation is untouched.
+   * Without a base use the historical distant site. With an active base,
+   * derive an enemy approach from owned geography BEFORE any boss exists.
+   * Chunk/POI generation and already revealed positions remain untouched.
    */
   private revealStronghold(ev: SimEvent[]): void {
     const s = this.state;
     if (s.stronghold?.revealed) return;
     const h = fnv1a32(`${s.worldSeed}::stronghold`);
     const ang = (h % 360) * (Math.PI / 180);
-    const rawX = Math.cos(ang) * 6000;
-    const rawY = Math.sin(ang) * 6000;
+    const home=s.territories.filter(t=>t.spec&&!t.disabled).sort((a,b)=>Math.hypot(a.x-s.px,a.y-s.py)-Math.hypot(b.x-s.px,b.y-s.py)||(a.poiId<b.poiId?-1:a.poiId>b.poiId?1:0))[0];
+    const rawX = (home?.x??0)+Math.cos(ang)*(home?600:6000);
+    const rawY = (home?.y??0)+Math.sin(ang)*(home?600:6000);
     let bx = rawX;
     let by = rawY;
     let bd = 1600;
@@ -784,6 +788,7 @@ export class RunSimulation {
         const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
         for (const poi of desc.poi) {
           if (poi.type !== "megasite" && poi.type !== "worldtree" && poi.type !== "signal") continue;
+          if(home){const gap=Math.hypot(poi.wx-home.x,poi.wy-home.y);if(gap<400||gap>900||s.territories.some(t=>t.poiId===poi.id))continue;}
           const d = Math.hypot(poi.wx - rawX, poi.wy - rawY);
           if (d < bd) {
             bd = d;
@@ -1048,8 +1053,34 @@ export class RunSimulation {
   // ------------------------------------------------------------------ raids
   private raidTargets() {
     const s=this.state;
+    const boss=s.enemies.find(e=>e.active&&e.boss),target=boss?.encounter?.outpostId;
     return s.territories.filter(t=>!t.disabled&&!!t.spec).sort((a,b)=>
+      (a.poiId===target?-1:b.poiId===target?1:0)||
       Math.hypot(a.x-s.px,a.y-s.py)-Math.hypot(b.x-s.px,b.y-s.py)||(a.poiId<b.poiId?-1:a.poiId>b.poiId?1:0));
+  }
+  /** One actual boss target, shared with raids. Change it only at safe phases;
+   * distant bases require physical travel, never remote damage. */
+  private bossOutpostTarget(e:SimEnemy,ev:SimEvent[]) {
+    const a=e.encounter;if(!a?.enraged)return undefined;
+    const safe=a.phase==="approach"||a.phase==="phase-transition";
+    if(a.outpostId&&a.assaultLeft<=0&&safe){a.outpostId="";a.defenseCd=24;return undefined;}
+    const current=territoryById(this.state.territories,a.outpostId);
+    if(current&&!current.disabled&&current.spec)return current;
+    if(a.outpostId&&safe){a.outpostId="";a.assaultLeft=0;a.defenseCd=24;return undefined;}
+    if(!safe||a.defenseCd>0)return undefined;
+    const s=this.state,arena=s.stronghold??e;
+    const targets=this.raidTargets().filter(t=>Math.hypot(t.x-e.x,t.y-e.y)<=1000&&Math.hypot(t.x-s.px,t.y-s.py)<=1200&&Math.hypot(t.x-arena.x,t.y-arena.y)<=1600);
+    const target=targets.find(t=>t.poiId===this.state.raid?.poiId)??targets.sort((x,y)=>Math.hypot(x.x-e.x,x.y-e.y)-Math.hypot(y.x-e.x,y.y-e.y)||(x.poiId<y.poiId?-1:1))[0];
+    a.outpostId=target?.poiId??"";
+    a.assaultLeft=target?12:0;if(!target)a.defenseCd=4;
+    if(target)ev.push({type:"boss_outpost_targeted",poiId:target.poiId});
+    return target;
+  }
+  private damageOutpost(t:RunState["territories"][number],damage:number,ev:SimEvent[],boss=false):void {
+    if(t.disabled||damage<=0)return;
+    const accepted=Math.min(Math.max(0,t.hp),damage);t.hp-=accepted;
+    if(boss&&accepted>0)ev.push({type:"boss_outpost_hit",poiId:t.poiId,damage:accepted});
+    if(t.hp<=0)this.loseOutpost({poiId:t.poiId},ev);
   }
   private raidIsOnlyGate(): boolean {
     const s=this.state,next=AGE_DEFS[s.ageIndex+1];
@@ -1077,7 +1108,8 @@ export class RunSimulation {
         // Prefer the closest defensible base; exact ties retain one seeded draw.
         const first=targets[0]!;const distance=Math.hypot(first.x-s.px,first.y-s.py);
         const nearby=targets.filter(t=>Math.abs(Math.hypot(t.x-s.px,t.y-s.py)-distance)<.01);
-        const pick = nearby[this.streams.event.nextInt(0, nearby.length)]!;
+        const bossTarget=s.enemies.find(e=>e.active&&e.boss)?.encounter?.outpostId;
+        const pick = targets.find(t=>t.poiId===bossTarget)??nearby[this.streams.event.nextInt(0, nearby.length)]!;
         s.raid = { poiId: pick.poiId, tMinus: RAID_WARN_SEC, landed: false, spawned:0 };
         ev.push({ type: "raid_incoming", poiId: pick.poiId, seconds: RAID_WARN_SEC });
       }
@@ -1892,7 +1924,7 @@ export class RunSimulation {
     if (kOn) {
       const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
       tick("kinetic", st.cooldown * cdM, () => {
-        if (st.archetype === "beam") return this.beamStrike("kinetic", st, 800, ev);
+        if (st.archetype === "beam") return this.beamStrike("kinetic", st, BEAM_TARGET_RANGE, ev);
         else return this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700,ev);
       });
     }
@@ -1907,7 +1939,7 @@ export class RunSimulation {
         }
       }
       if (st.archetype === "beam" || b.beamUnlocked) {
-        tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, 800, ev));
+        tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, BEAM_TARGET_RANGE, ev));
       } else if (st.archetype === "projectile") {
         tick("energy", st.cooldown * cdM, () => {
           return this.fireProjectileSpread('energy',{...st,speed:st.speed||380,radius:st.radius*.8},1,640,ev,HAZARD_GEOMETRY.projectileLife);
@@ -2063,8 +2095,7 @@ export class RunSimulation {
           e.hitCd -= dt;
           if (sd < 70 && e.hitCd <= 0) {
             e.hitCd = 1;
-            t.hp -= e.dmg;
-            if (t.hp <= 0) this.loseOutpost({ poiId: t.poiId }, ev);
+            this.damageOutpost(t,e.dmg,ev);
           }
           if (s.over) return ev;
           continue;
@@ -2075,19 +2106,26 @@ export class RunSimulation {
       const d = Math.max(1, Math.hypot(dx, dy));
       const phase=e.evolution?.phase;const shots=e.evolution?.shots;
       const bossPhase=e.encounter?.phase;
-      const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,s.px,s.py,dt,(pattern,x,y)=>{
+      if(e.encounter){e.encounter.assaultLeft=Math.max(0,e.encounter.assaultLeft-dt);e.encounter.defenseCd=Math.max(0,e.encounter.defenseCd-dt);}
+      const post=e.boss?this.bossOutpostTarget(e,ev):undefined;
+      const assault=!!post&&e.encounter!.cycle%2===0;
+      const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,assault?post!.x:s.px,assault?post!.y:s.py,dt,(pattern,x,y)=>{
         ev.push({type:"boss_attack_fired",pattern,x,y});
         if(pattern==="fan") {
           const angle=Math.atan2(y-e.y,x-e.x);
           // Deliberate central gap; warnings expose this safe direction.
-          for(const offset of [-.6,-.4,-.2,.2,.4,.6])this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
+          for(const offset of bossFanOffsets(e.encounter!.enraged))this.fireProjectile(e.x,e.y,e.x+Math.cos(angle+offset)*500,e.y+Math.sin(angle+offset)*500,BOSS_ENCOUNTER.shotSpeed,e.dmg,0xff736d,"boss-fan",false,8);
         } else {
           if(bossAreaHit(pattern,e.x,e.y,x,y,s.px,s.py))this.hurtPlayer(e.dmg,ev,"boss-"+pattern);
           for(let i=0;i<s.squad.length;i++){const a=s.squad[i];if(a.active&&bossAreaHit(pattern,e.x,e.y,x,y,a.x,a.y))this.damageAlly(i,e.dmg);}
+          if(post&&!post.disabled&&Math.hypot(post.x-e.x,post.y-e.y)<=600&&bossAreaHit(pattern,e.x,e.y,x,y,post.x,post.y))this.damageOutpost(post,e.dmg,ev,true);
         }
-      });
+      },assault?0:s.vx,assault?0:s.vy);
       if(e.encounter?.phase==="warning"&&bossPhase!=="warning")ev.push({type:"boss_attack_warning",pattern:e.encounter.pattern});
-      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition")ev.push({type:"boss_phase_changed",phase:2});
+      if(e.encounter?.phase==="phase-transition"&&bossPhase!=="phase-transition"){
+        ev.push({type:"boss_phase_changed",phase:2});
+        this.bossOutpostTarget(e,ev);
+      }
       const evolved=bossMoved||stepEvolution(e,s.px,s.py,dt,this.evolutionShot);
       if(phase!==e.evolution?.phase&&e.evolution?.phase==='warning')ev.push({type:'enemy_attack_warning',kind:e.evolution.id,x:e.x,y:e.y});
       if(e.evolution&&((e.evolution.id==='rush'&&phase!=='attack'&&e.evolution.phase==='attack')||(e.evolution.id==='burst'&&shots!==undefined&&e.evolution.shots<shots)))ev.push({type:'enemy_attack_fired',kind:e.evolution.id});

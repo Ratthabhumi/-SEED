@@ -1,0 +1,2752 @@
+{
+  "sourceSha": "ed85984ee4f437b7490adbb794c975d40c5fcf8e",
+  "classification": "SYNTHETIC_POLICIES_NOT_HUMAN_FUN_OR_CAUSAL_PROOF",
+  "replayEqual": 36,
+  "spawnEqual": 36,
+  "fixed": {
+    "reached": 29,
+    "wins": 24,
+    "deaths": 2,
+    "medianFightReached": 19.13333333331593,
+    "medianFightWon": 17.6666666666506,
+    "medianPhase2Reached": 7.716666666659648,
+    "chaseSeconds": 50.866666666666625,
+    "inBeamAcquisitionSeconds": 1916.81666666641,
+    "bossOnlyAcceptedBaseDamage": 0,
+    "bossWindowLosses": 5,
+    "bossWindowRaidsRepelled": 0
+  },
+  "aware": {
+    "reached": 29,
+    "wins": 23,
+    "deaths": 3,
+    "medianFightReached": 16.266666666651872,
+    "medianFightWon": 14.983333333319706,
+    "medianPhase2Reached": 5.0333333333287555,
+    "chaseSeconds": 49.1333333333333,
+    "inBeamAcquisitionSeconds": 1669.2166666665655,
+    "bossOnlyAcceptedBaseDamage": 0,
+    "bossWindowLosses": 5,
+    "bossWindowRaidsRepelled": 0
+  },
+  "rows": [
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 65,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 153.72,
+            "spent": 153.72,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 278.07,
+            "spent": 124.35,
+            "knowledge": 1510
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 395.83,
+            "spent": 117.77,
+            "knowledge": 2892
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 459.43,
+            "spent": 63.6,
+            "knowledge": 4518
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 64,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 148.48,
+            "spent": 148.48,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 270.83,
+            "spent": 122.35,
+            "knowledge": 1502
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 396.83,
+            "spent": 126,
+            "knowledge": 3057
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 452.9,
+            "spent": 56.07,
+            "knowledge": 4500
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 47,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 142.35,
+            "spent": 142.35,
+            "knowledge": 502
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 311.83,
+            "spent": 169.48,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 479.73,
+            "spent": 167.9,
+            "knowledge": 2804
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 606.63,
+            "spent": 126.9,
+            "knowledge": 4576
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 13.91666666665401,
+        "phase2": 5.9833333333278915,
+        "chase": 1.3166666666666669,
+        "inRange": 12.616666666666873,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 12.783333333321707,
+        "phase2": 5.099999999995362,
+        "chase": 1.3166666666666669,
+        "inRange": 11.466666666666816,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 31,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 144.82,
+            "spent": 144.82,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 283.9,
+            "spent": 139.08,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 406.6,
+            "spent": 122.7,
+            "knowledge": 2809
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 485.8,
+            "spent": 79.2,
+            "knowledge": 4514
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 592.6,
+            "spent": 106.8,
+            "knowledge": 6504
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 6.766666666660512,
+        "phase2": 1.2166666666655601,
+        "chase": 1.2833333333333337,
+        "inRange": 5.499999999999986,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 6.766666666660512,
+        "phase2": 1.2166666666655601,
+        "chase": 1.2833333333333337,
+        "inRange": 5.483333333333319,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 32,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 155.73,
+            "spent": 155.73,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 365.22,
+            "spent": 209.48,
+            "knowledge": 1503
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 482.62,
+            "spent": 117.4,
+            "knowledge": 2808
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 637.5,
+            "spent": 154.88,
+            "knowledge": 4542
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 730.73,
+            "spent": 93.23,
+            "knowledge": 6507
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 18.54999999998313,
+        "phase2": 5.466666666661695,
+        "chase": 1.2000000000000006,
+        "inRange": 17.366666666666962,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 15.516666666652554,
+        "phase2": 4.666666666662422,
+        "chase": 1.2000000000000006,
+        "inRange": 14.316666666666958,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 38,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 141.68,
+            "spent": 141.68,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 249.3,
+            "spent": 107.62,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 363.8,
+            "spent": 114.5,
+            "knowledge": 2812
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 469.02,
+            "spent": 105.22,
+            "knowledge": 6124
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 592.02,
+            "spent": 123,
+            "knowledge": 11235
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 14.266666666653691,
+        "phase2": 5.183333333328619,
+        "chase": 1.8499999999999983,
+        "inRange": 12.43333333333353,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": false,
+        "dead": true,
+        "duration": 9.933333333324299,
+        "phase2": 0.9666666666657875,
+        "chase": 1.8499999999999983,
+        "inRange": 8.099999999999982,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 29,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 116.87,
+            "spent": 116.87,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 222.32,
+            "spent": 105.45,
+            "knowledge": 1658
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 286.65,
+            "spent": 64.33,
+            "knowledge": 2809
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 347.7,
+            "spent": 61.05,
+            "knowledge": 4522
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 391.5,
+            "spent": 43.8,
+            "knowledge": 6525
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 6.9999999999936335,
+        "phase2": 1.3999999999987267,
+        "chase": 1.7499999999999987,
+        "inRange": 5.266666666666653,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 6.9999999999936335,
+        "phase2": 1.3999999999987267,
+        "chase": 1.7499999999999987,
+        "inRange": 5.249999999999987,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 34,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 122.67,
+            "spent": 122.67,
+            "knowledge": 503
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 250.25,
+            "spent": 127.58,
+            "knowledge": 1503
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 378.42,
+            "spent": 128.17,
+            "knowledge": 2814
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 471.38,
+            "spent": 92.97,
+            "knowledge": 4509
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 597.02,
+            "spent": 125.63,
+            "knowledge": 8639
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 18.56666666664978,
+        "phase2": 7.716666666659648,
+        "chase": 1.649999999999999,
+        "inRange": 16.933333333333653,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 2
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 16.733333333318114,
+        "phase2": 5.8833333333279825,
+        "chase": 1.649999999999999,
+        "inRange": 15.083333333333663,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 30,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 116.87,
+            "spent": 116.87,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 222.32,
+            "spent": 105.45,
+            "knowledge": 1658
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 286.65,
+            "spent": 64.33,
+            "knowledge": 2809
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 351.55,
+            "spent": 64.9,
+            "knowledge": 4580
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 391.52,
+            "spent": 39.97,
+            "knowledge": 6503
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 63,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 154.25,
+            "spent": 154.25,
+            "knowledge": 502
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 364.02,
+            "spent": 209.77,
+            "knowledge": 1885
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 433.52,
+            "spent": 69.5,
+            "knowledge": 2809
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 576.73,
+            "spent": 143.22,
+            "knowledge": 5201
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 63.116666666609376,
+        "phase2": 34.716666666635206,
+        "chase": 1.8833333333333315,
+        "inRange": 61.249999999997804,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 8
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 54.749999999950205,
+        "phase2": 25.74999999997658,
+        "chase": 1.8833333333333315,
+        "inRange": 52.86666666666495,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 43,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 146.93,
+            "spent": 146.93,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 312.15,
+            "spent": 165.22,
+            "knowledge": 1506
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 477.92,
+            "spent": 165.77,
+            "knowledge": 2820
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 570,
+            "spent": 92.08,
+            "knowledge": 4521
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 953.02,
+            "spent": 383.02,
+            "knowledge": 15378
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": false,
+        "dead": true,
+        "duration": 382.96666666631836,
+        "phase2": 83.26666666659094,
+        "chase": 2.0999999999999974,
+        "inRange": 380.8833333333156,
+        "baseDamage": 0,
+        "losses": 1,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 20
+      },
+      "aware": {
+        "reached": true,
+        "won": false,
+        "dead": false,
+        "duration": 574.6499999994775,
+        "phase2": 154.34999999985962,
+        "chase": 2.0999999999999974,
+        "inRange": 572.5666666664746,
+        "baseDamage": 0,
+        "losses": 2,
+        "repelled": 0,
+        "choices": 50,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 154.38,
+            "spent": 154.38,
+            "knowledge": 505
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 281.7,
+            "spent": 127.32,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 438.82,
+            "spent": 157.12,
+            "knowledge": 2803
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 574.83,
+            "spent": 136.02,
+            "knowledge": 4707
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 618.88,
+            "spent": 44.05,
+            "knowledge": 6514
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 32.59999999997035,
+        "phase2": 21.466666666647143,
+        "chase": 1.5833333333333326,
+        "inRange": 31.033333333332852,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 5
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 20.516666666648007,
+        "phase2": 9.666666666657875,
+        "chase": 1.5833333333333326,
+        "inRange": 18.93333333333354,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 30,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 160.05,
+            "spent": 160.05,
+            "knowledge": 503
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 319.17,
+            "spent": 159.12,
+            "knowledge": 1547
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 442.02,
+            "spent": 122.85,
+            "knowledge": 2959
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 506.55,
+            "spent": 64.53,
+            "knowledge": 4507
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 578.38,
+            "spent": 71.83,
+            "knowledge": 6504
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 15.36666666665269,
+        "phase2": 4.466666666662604,
+        "chase": 1.8333333333333317,
+        "inRange": 13.550000000000253,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 14.983333333319706,
+        "phase2": 5.9833333333278915,
+        "chase": 1.8333333333333317,
+        "inRange": 13.150000000000233,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 31,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 147.93,
+            "spent": 147.93,
+            "knowledge": 502
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 333.65,
+            "spent": 185.72,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 461.05,
+            "spent": 127.4,
+            "knowledge": 2804
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 547.1,
+            "spent": 86.05,
+            "knowledge": 4503
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 618.52,
+            "spent": 71.42,
+            "knowledge": 6514
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 46.666666666624224,
+        "phase2": 30.14999999997258,
+        "chase": 1.4,
+        "inRange": 45.283333333332045,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 7
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 71.59999999993488,
+        "phase2": 60.74999999994475,
+        "chase": 1.4,
+        "inRange": 70.1999999999973,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 34,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 165.15,
+            "spent": 165.15,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 321.7,
+            "spent": 156.55,
+            "knowledge": 1501
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 453.27,
+            "spent": 131.57,
+            "knowledge": 2820
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 585.08,
+            "spent": 131.82,
+            "knowledge": 4500
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 666.92,
+            "spent": 81.83,
+            "knowledge": 6503
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 28.016666666641186,
+        "phase2": 19.11666666664928,
+        "chase": 1.816666666666665,
+        "inRange": 26.21666666666646,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 5
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 13.133333333321389,
+        "phase2": 4.633333333329119,
+        "chase": 1.816666666666665,
+        "inRange": 11.316666666666809,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 32,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 146.38,
+            "spent": 146.38,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 213.05,
+            "spent": 66.67,
+            "knowledge": 1502
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 338.67,
+            "spent": 125.62,
+            "knowledge": 2876
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 403.85,
+            "spent": 65.18,
+            "knowledge": 4512
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 463.7,
+            "spent": 59.85,
+            "knowledge": 6507
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": false,
+        "dead": true,
+        "duration": 19.416666666649007,
+        "phase2": 10.416666666657193,
+        "chase": 1.7833333333333319,
+        "inRange": 17.65000000000028,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 3
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 13.8166666666541,
+        "phase2": 4.849999999995589,
+        "chase": 1.7833333333333319,
+        "inRange": 12.03333333333351,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 30,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 159.03,
+            "spent": 159.03,
+            "knowledge": 505
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 305.28,
+            "spent": 146.25,
+            "knowledge": 1502
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 434.13,
+            "spent": 128.85,
+            "knowledge": 2806
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 527.58,
+            "spent": 93.45,
+            "knowledge": 4500
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 640.82,
+            "spent": 113.23,
+            "knowledge": 6523
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": false,
+        "dead": false,
+        "duration": 708.5666666660223,
+        "phase2": 330.14999999969984,
+        "chase": 2.066666666666664,
+        "inRange": 706.5166666663528,
+        "baseDamage": 0,
+        "losses": 3,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 79
+      },
+      "aware": {
+        "reached": true,
+        "won": false,
+        "dead": true,
+        "duration": 349.69999999968195,
+        "phase2": 9.816666666657738,
+        "chase": 2.066666666666664,
+        "inRange": 347.6500000000125,
+        "baseDamage": 0,
+        "losses": 2,
+        "repelled": 0,
+        "choices": 53,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 145.02,
+            "spent": 145.02,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 245.08,
+            "spent": 100.07,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 358.22,
+            "spent": 113.13,
+            "knowledge": 2803
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 418.85,
+            "spent": 60.63,
+            "knowledge": 4510
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 480,
+            "spent": 61.15,
+            "knowledge": 6503
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 59.21666666661281,
+        "phase2": 17.699999999983902,
+        "chase": 2.1833333333333305,
+        "inRange": 57.04999999999804,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 4
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 43.71666666662691,
+        "phase2": 23.799999999978354,
+        "chase": 2.1833333333333305,
+        "inRange": 41.53333333333226,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 39,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 140,
+            "spent": 140,
+            "knowledge": 502
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 298.75,
+            "spent": 158.75,
+            "knowledge": 1504
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 466.75,
+            "spent": 168,
+            "knowledge": 2801
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 539.45,
+            "spent": 72.7,
+            "knowledge": 4500
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 756.02,
+            "spent": 216.57,
+            "knowledge": 11202
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 16.78333333331807,
+        "phase2": 5.549999999994952,
+        "chase": 1.9999999999999978,
+        "inRange": 14.800000000000315,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 16.266666666651872,
+        "phase2": 5.0333333333287555,
+        "chase": 1.9999999999999978,
+        "inRange": 14.266666666666955,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 43,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 135.1,
+            "spent": 135.1,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 270.82,
+            "spent": 135.72,
+            "knowledge": 1511
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 391.1,
+            "spent": 120.28,
+            "knowledge": 2801
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 454.73,
+            "spent": 63.63,
+            "knowledge": 4500
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 717.02,
+            "spent": 262.28,
+            "knowledge": 15821
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 32,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 140.23,
+            "spent": 140.23,
+            "knowledge": 505
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 301.98,
+            "spent": 161.75,
+            "knowledge": 1504
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 9.3833333333248,
+        "phase2": 3.7166666666632864,
+        "chase": 1.4499999999999997,
+        "inRange": 7.949999999999977,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 8.349999999992406,
+        "phase2": 2.5666666666643323,
+        "chase": 1.4499999999999997,
+        "inRange": 6.899999999999981,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 41,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 146.9,
+            "spent": 146.9,
+            "knowledge": 503
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 323.38,
+            "spent": 176.48,
+            "knowledge": 1501
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 647.02,
+            "spent": 323.63,
+            "knowledge": 5894
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 706.02,
+            "spent": 59,
+            "knowledge": 10127
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 827.02,
+            "spent": 121,
+            "knowledge": 15210
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 5.549999999994952,
+        "phase2": 0,
+        "chase": 1.0833333333333344,
+        "inRange": 4.483333333333323,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 5.8833333333279825,
+        "phase2": 0.33333333333303017,
+        "chase": 1.0833333333333344,
+        "inRange": 4.799999999999988,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 53,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 145.57,
+            "spent": 145.57,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 313.97,
+            "spent": 168.4,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 439.92,
+            "spent": 125.95,
+            "knowledge": 2816
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 510.9,
+            "spent": 70.98,
+            "knowledge": 4514
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 1139.02,
+            "spent": 628.12,
+            "knowledge": 34993
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 9.966666666657602,
+        "phase2": 3.216666666663741,
+        "chase": 1.1166666666666676,
+        "inRange": 8.866666666666687,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 9.599999999991269,
+        "phase2": 2.9333333333306655,
+        "chase": 1.1166666666666676,
+        "inRange": 8.483333333333334,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 49,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 153.62,
+            "spent": 153.62,
+            "knowledge": 502
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 325.17,
+            "spent": 171.55,
+            "knowledge": 1507
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 474.65,
+            "spent": 149.48,
+            "knowledge": 2800
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 541.68,
+            "spent": 67.03,
+            "knowledge": 4506
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 1102.02,
+            "spent": 560.33,
+            "knowledge": 25334
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 19.13333333331593,
+        "phase2": 7.9499999999927695,
+        "chase": 1.3333333333333335,
+        "inRange": 17.816666666666936,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 2
+      },
+      "aware": {
+        "reached": true,
+        "won": false,
+        "dead": true,
+        "duration": 16.733333333318114,
+        "phase2": 5.0333333333287555,
+        "chase": 1.3333333333333335,
+        "inRange": 15.416666666667012,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 37,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 112.05,
+            "spent": 112.05,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 203.95,
+            "spent": 91.9,
+            "knowledge": 1502
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 261.92,
+            "spent": 57.97,
+            "knowledge": 2819
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 301.05,
+            "spent": 39.13,
+            "knowledge": 4543
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 383,
+            "spent": 81.95,
+            "knowledge": 10197
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 10.28333333332398,
+        "phase2": 2.816666666664105,
+        "chase": 1.4333333333333331,
+        "inRange": 8.866666666666687,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 10.583333333323708,
+        "phase2": 3.116666666663832,
+        "chase": 1.4333333333333331,
+        "inRange": 9.150000000000034,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 31,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 122.03,
+            "spent": 122.03,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 225.62,
+            "spent": 103.58,
+            "knowledge": 1505
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 325.63,
+            "spent": 100.02,
+            "knowledge": 2800
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 384.83,
+            "spent": 59.2,
+            "knowledge": 4522
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 440.12,
+            "spent": 55.28,
+            "knowledge": 6509
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "resonant",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 28.06666666664114,
+        "phase2": 13.933333333320661,
+        "chase": 1.3000000000000003,
+        "inRange": 26.783333333333093,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 3
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 29.14999999997349,
+        "phase2": 12.733333333321752,
+        "chase": 1.3000000000000003,
+        "inRange": 27.8499999999997,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 34,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 122.03,
+            "spent": 122.03,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 226.47,
+            "spent": 104.43,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 338.63,
+            "spent": 112.17,
+            "knowledge": 2886
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 384.22,
+            "spent": 45.58,
+            "knowledge": 4514
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 442.27,
+            "spent": 58.05,
+            "knowledge": 6547
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 27,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 186.7,
+            "spent": 186.7,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 290.05,
+            "spent": 103.35,
+            "knowledge": 1500
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 69.34999999993704,
+        "phase2": 31.183333333304972,
+        "chase": 1.7166666666666655,
+        "inRange": 67.64999999999745,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 8
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 62.81666666660965,
+        "phase2": 39.03333333329783,
+        "chase": 1.7166666666666655,
+        "inRange": 61.09999999999781,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 41,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 187.4,
+            "spent": 187.4,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 311.52,
+            "spent": 124.12,
+            "knowledge": 1504
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 756.02,
+            "spent": 444.5,
+            "knowledge": 2906
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 933.43,
+            "spent": 177.42,
+            "knowledge": 8749
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 1000.02,
+            "spent": 66.58,
+            "knowledge": 12504
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": false,
+        "won": false,
+        "dead": false,
+        "duration": null,
+        "phase2": 0,
+        "chase": 0,
+        "inRange": 0,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 28,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 203.6,
+            "spent": 203.6,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 386.38,
+            "spent": 182.78,
+            "knowledge": 1500
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 1005.22,
+            "spent": 618.83,
+            "knowledge": 2951
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 10.916666666656738,
+        "phase2": 4.849999999995589,
+        "chase": 1.6166666666666658,
+        "inRange": 9.316666666666709,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 9.566666666657966,
+        "phase2": 3.4999999999968168,
+        "chase": 1.6166666666666658,
+        "inRange": 7.949999999999977,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 37,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 182.82,
+            "spent": 182.82,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 303.3,
+            "spent": 120.48,
+            "knowledge": 1506
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 448.22,
+            "spent": 144.92,
+            "knowledge": 2801
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 577.25,
+            "spent": 129.03,
+            "knowledge": 4502
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 803.02,
+            "spent": 225.77,
+            "knowledge": 11061
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 8.73333333332539,
+        "phase2": 3.183333333330438,
+        "chase": 1.4666666666666663,
+        "inRange": 7.283333333333313,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 1
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 7.583333333326436,
+        "phase2": 1.866666666664969,
+        "chase": 1.4666666666666663,
+        "inRange": 6.11666666666665,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 35,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 183.87,
+            "spent": 183.87,
+            "knowledge": 500
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 324.45,
+            "spent": 140.58,
+            "knowledge": 1506
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 480.8,
+            "spent": 156.35,
+            "knowledge": 2803
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 622.02,
+            "spent": 141.22,
+            "knowledge": 5102
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 826.02,
+            "spent": 204,
+            "knowledge": 9778
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-002",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": false,
+        "dead": false,
+        "duration": 28.199999999974352,
+        "phase2": 0,
+        "chase": 1.4333333333333331,
+        "inRange": 26.783333333333093,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 0
+      },
+      "aware": {
+        "reached": true,
+        "won": false,
+        "dead": false,
+        "duration": 28.199999999974352,
+        "phase2": 0,
+        "chase": 1.4333333333333331,
+        "inRange": 26.783333333333093,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 32,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 206.73,
+            "spent": 206.73,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 331.22,
+            "spent": 124.48,
+            "knowledge": 1503
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 1009.02,
+            "spent": 677.8,
+            "knowledge": 2949
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 1143.02,
+            "spent": 134,
+            "knowledge": 5740
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 1158.02,
+            "spent": 15,
+            "knowledge": 6896
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "balanced",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 47.5333333332901,
+        "phase2": 30.3833333333057,
+        "chase": 1.7166666666666655,
+        "inRange": 45.833333333332014,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 7
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 23.899999999978263,
+        "phase2": 11.733333333322662,
+        "chase": 1.7166666666666655,
+        "inRange": 22.183333333333355,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 46,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 169.1,
+            "spent": 169.1,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 268.9,
+            "spent": 99.8,
+            "knowledge": 1507
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 497.88,
+            "spent": 228.98,
+            "knowledge": 2813
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 617.52,
+            "spent": 119.63,
+            "knowledge": 10032
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 680.52,
+            "spent": 63,
+            "knowledge": 21044
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "damage",
+      "fixed": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 22.599999999979445,
+        "phase2": 11.04999999998995,
+        "chase": 1.6166666666666658,
+        "inRange": 21.00000000000009,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 3
+      },
+      "aware": {
+        "reached": true,
+        "won": true,
+        "dead": false,
+        "duration": 18.316666666650008,
+        "phase2": 7.349999999993315,
+        "chase": 1.6166666666666658,
+        "inRange": 16.700000000000333,
+        "baseDamage": 0,
+        "losses": 0,
+        "repelled": 0,
+        "choices": 33,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 188,
+            "spent": 188,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 378.02,
+            "spent": 190.02,
+            "knowledge": 2056
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 431.8,
+            "spent": 53.78,
+            "knowledge": 2800
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 589.98,
+            "spent": 158.18,
+            "knowledge": 5704
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 656.02,
+            "spent": 66.03,
+            "knowledge": 7920
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-STRESS-001",
+      "mode": "survival",
+      "fixed": {
+        "reached": true,
+        "won": false,
+        "dead": false,
+        "duration": 245.69999999977665,
+        "phase2": 33.88333333330252,
+        "chase": 5.883333333333318,
+        "inRange": 239.83333333341633,
+        "baseDamage": 0,
+        "losses": 1,
+        "repelled": 0,
+        "targets": 0,
+        "attacks": 8
+      },
+      "aware": {
+        "reached": true,
+        "won": false,
+        "dead": false,
+        "duration": 245.69999999977665,
+        "phase2": 216.38333333313665,
+        "chase": 4.149999999999991,
+        "inRange": 241.56666666675105,
+        "baseDamage": 0,
+        "losses": 1,
+        "repelled": 0,
+        "choices": 54,
+        "ageTimes": [
+          {
+            "world": 1,
+            "from": 0,
+            "to": 1,
+            "time": 197.15,
+            "spent": 197.15,
+            "knowledge": 501
+          },
+          {
+            "world": 1,
+            "from": 1,
+            "to": 2,
+            "time": 300.78,
+            "spent": 103.63,
+            "knowledge": 1501
+          },
+          {
+            "world": 1,
+            "from": 2,
+            "to": 3,
+            "time": 754.02,
+            "spent": 453.23,
+            "knowledge": 3073
+          },
+          {
+            "world": 1,
+            "from": 3,
+            "to": 4,
+            "time": 939.4,
+            "spent": 185.38,
+            "knowledge": 6518
+          },
+          {
+            "world": 1,
+            "from": 4,
+            "to": 5,
+            "time": 945.82,
+            "spent": 6.42,
+            "knowledge": 6586
+          }
+        ],
+        "invalidStepOnlyAbilityUses": 0,
+        "invalidStepOnlyCommandUses": 0
+      },
+      "sameSpawn": true,
+      "replayEqual": true
+    }
+  ],
+  "disposition": "REJECTED_DISTANCE_FILTER_ONLY: no boss-only base damage in either cohort. Direct ability/command usage counters omitted direct action events and must NOT be read as actual zero usage. Final correction derives pre-spawn approach from owned geography and observes all real action events.",
+  "invalidStepOnlyUsageCounters": {
+    "abilityUses": 0,
+    "commandUses": 0,
+    "draftChoices": 1428
+  }
+}

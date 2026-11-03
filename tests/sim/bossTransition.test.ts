@@ -6,9 +6,9 @@ describe("boss safe-boundary phase transition",()=>{
  it("tightens phase-two downtime while preserving the complete dodge and punish windows",()=>{
   const e=boss();e.hp=e.maxHp*.49;const fired:number[]=[];let clock=0;
   for(let i=0;i<780;i++){clock=i/60;stepBossEncounter(e,0,0,1/60,()=>fired.push(clock));}
-  // Old timing first fires after >2.3s; new transition still grants the full
-  // 1.4s cross warning + commitment. Faster cadence comes only from dead time.
-  expect(fired[0]).toBeGreaterThanOrEqual(.4+bossWarningDuration('cross')+.14);
+  // Content21 intentionally shortens phase-two warnings by20%; the complete
+  // declared warning and unchanged commitment/recovery still must be granted.
+  expect(fired[0]).toBeGreaterThanOrEqual(.4+bossWarningDuration('cross',true)+.14);
   expect(fired[0]).toBeLessThan(2.1);expect(fired.length).toBeGreaterThanOrEqual(3);
   expect(bossRecoveryDuration('cross')).toBe(1.8);expect(bossRecoveryDuration('fan')).toBe(1.4);
  });

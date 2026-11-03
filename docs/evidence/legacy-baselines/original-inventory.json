@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-10-31 Asia/Bangkok",
+  "contract": "HISTORICAL_ORIGINAL_ARCHIVE_INTEGRITY_INVENTORY_NOT_A_VISUAL_PASS",
+  "hashSources": {
+    "pr18": "Existing immutable original ZIP pin in measure-content153.mjs; recovered authorized local archive",
+    "pr19": "Historical overhaul-final2-official-receipt.json push Node22 innerSha256, artifact12084478255",
+    "pr21": "Fresh official run39822469156 / artifact12445032739 download; clean835a25f embedded identity verified",
+    "pr25": "Historical v35-package-proof.json run40153783585 / artifact12584335091"
+  },
+  "baselines": [
+    {
+      "id": "pr18",
+      "sourceSha": "cf5aaf69277c992ca964ab25ac679d9750fdad0d",
+      "classification": "ORIGINAL_ARCHIVED",
+      "zipSha256": "5a88b90bf0817e5793735a9f1886868b9c4d580d9bfe576930fc92db648ce46f",
+      "contentTreeSha256": "4c8acc3a92258d0ff7fb3c9758cd2f1974db4d38f41131b8d742606622fa7dd4",
+      "files": 87,
+      "remoteArtifactAvailableAtCheck": false
+    },
+    {
+      "id": "pr19",
+      "sourceSha": "9b5c1facd4bbab891b452051b392e5e460c76353",
+      "classification": "ORIGINAL_ARCHIVED",
+      "zipSha256": "bff91657e8c50ddd86d4c098fa05dff45c049dd0ef4c99a0825385d999ed7d85",
+      "contentTreeSha256": "482b881a9b1d8b75affe36031404ec2930b4026146fa2efc6dadfb8670dc9439",
+      "files": 88,
+      "remoteArtifactAvailableAtCheck": false
+    },
+    {
+      "id": "pr21",
+      "sourceSha": "835a25f821b5aa0e8492c9f13787a3d7aa59f6ad",
+      "classification": "ORIGINAL_ARCHIVED",
+      "zipSha256": "4b296916f93bf8535d3bda85e9264fe5f686af7c7ec93db885fc8a713fd103ea",
+      "contentTreeSha256": "e098543a45dadc534f6509226590f1654dbc11a14a66bc4316824eaa364c3a86",
+      "files": 88,
+      "remoteArtifactAvailableAtCheck": true
+    },
+    {
+      "id": "pr25",
+      "sourceSha": "fe04927d0a03f1478cdf4b57bb4aee40a68256dd",
+      "classification": "ORIGINAL_ARCHIVED",
+      "zipSha256": "6078b3ea84e550b3928e0cb32263b627eb957ddf28e15b0023d7475c8732a6e0",
+      "contentTreeSha256": "7c4a35cf159c8367af5b3f6a16b29229940c492fd9a5a2610873dd9c043c8653",
+      "files": 88,
+      "remoteArtifactAvailableAtCheck": true
+    }
+  ]
+}

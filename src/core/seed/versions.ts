@@ -76,9 +76,17 @@ export const WORLDGEN_VERSION = 3;
 export const CHILD_LAWS_CONTENT_VERSION = 18;
 // Content20: resolve final-anchor aim and retract unreachable near-muzzle mounts.
 // Damage, cooldowns, swept collision and the authored source sockets are unchanged.
-export const CONTENT_VERSION = 20;
+// Content21: committed bounded boss lead, phase-two strafe/dense warned fan,
+// and one nearby outpost siege through the existing raid model. Replays change;
+// world geometry, child laws and persistent settings/archive schema stay pinned.
+// Content22: the actual boss assaults one owned outpost, sharing its HP/repair
+// and raid target. Physical approach and fixed warned geometry prevent remote damage.
+// Content23 bounds near-arena assault windows and reengagement; no new damage model.
+// Content24 aligns the pre-spawn enemy approach with real owned geography.
+export const CONTENT_VERSION = 24;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
-export const SAVE_SCHEMA_VERSION = 2;
+// Schema3 preserves v1/v2 progress and Insight, adding a validated cosmetic collection.
+export const SAVE_SCHEMA_VERSION = 3;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;
 

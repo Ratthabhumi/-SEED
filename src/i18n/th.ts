@@ -1,8 +1,24 @@
 // Thai strings — same keys as en.ts (parity enforced by test). Natural modern Thai gaming tone.
-import type {
- EnKeys } from "./en";
+import type { EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "collection.title": 'ของสะสมมรดกอารยธรรม',
+  "evolution.stats": 'พลังโจมตีพื้นฐาน / ระยะห่างการโจมตี',
+  "collection.equip": 'สวมใส่',
+  "collection.unequip": 'ถอดออก',
+  "collection.locked": 'ยังไม่ปลดล็อก',
+  "collection.earned": 'ปลดล็อกมรดกแล้ว',
+  "collection.dawn": 'ตรารุ่งอรุณ',
+  "collection.dawnRule": 'พัฒนาไปถึงยุคสำริด',
+  "collection.ward": 'ตราผู้พิทักษ์',
+  "collection.wardRule": 'ป้องกันการรุกรานฐานสำเร็จจริง',
+  "collection.prism": 'ประกายปริซึม',
+  "collection.prismRule": 'เล่นถึงยุคสำริดด้วยชาติกำเนิดต่างกันสองแบบ',
+  "collection.star": 'เครื่องประดับดวงดาว',
+  "collection.starRule": 'เอาชนะบอส',
+  "collection.chronicle": 'ถ้วยบันทึกอารยธรรม',
+  "collection.chronicleRule": 'จุติสู่โลกถัดไป',
+
   "review.combat.title": "ฉากตรวจการต่อสู้ — ไม่ใช่การเล่นตามธรรมชาติ",
   "review.combat.warning": "ใช้หน้าต่างส่วนตัว ปุ่มเหล่านี้จัดฉากยุค เป้าหมาย และความพร้อมยิง โดยไม่บันทึกรายงาน Human QA ใช้ WASD เคลื่อนที่ และ Esc หยุดชั่วคราว",
   "review.combat.bow": "ความพร้อมธนู",
@@ -331,7 +347,8 @@ export const th: Record<EnKeys, string> = {
   "mission.atomic.elite": "ปราบอีลิต (2)",
   "mission.space.signal": "ยึดสัญญาณเอเลี่ยน",
   "mission.space.guardian": "ปราบผู้พิทักษ์ยุค (อีลิต)",
-  "ui.nextAge": "ยุคอนต่อไป",
+  "ui.nextAge": "ยุคต่อไป",
+  "ui.nextStep": "ขั้นต่อไป",
   "ui.buildPlan": "เป้าหมายเทคโนโลยี",
   "ui.ownedBuild": "สิ่งที่สร้างแล้ว",
   "ui.techMap": "แผนที่เทคโนโลยี",
@@ -370,6 +387,8 @@ export const th: Record<EnKeys, string> = {
   "ui.buildHistory": "ประวัติการสร้าง",
   "ui.squad": "กองกำลัง",
   "ui.ability": "ความสามารถ",
+  "ui.powerReadyHint": "F: พลังชาติกำเนิดพร้อมใช้ — รับมือศัตรูใกล้ตัว",
+  "ui.baseCommandHint": "Q: รวมพล · E: เล็งเป้า · R: ตั้งรับ · M: จัดการฐาน",
   "squad.hunters.name": "ฝูงจู่โจม",
   "squad.engineers.name": "โดรนรบ",
   "squad.resonant.name": "วิญญาณพฤกษ์",
@@ -632,6 +651,8 @@ export const th: Record<EnKeys, string> = {
   "claim.NO_SITE": "สำรวจเพื่อค้นหาสถานที่ใกล้เคียง",
   "ui.loadout": "พลังที่ใช้งานอยู่",
   "combat.boss.phaseTransition": "สถาปนิกเปลี่ยนร่าง — เตรียมรับลำดับโจมตีใหม่",
+  "combat.boss.siege": "สถาปนิกเล็งโจมตีฐานของคุณ — ป้องกันหรือซ่อมแซมฐาน",
+  "combat.boss.defendBase": "ปกป้องฐาน",
   "combat.boss.phase1": "สถาปนิก · ระยะที่ 1",
   "combat.boss.phase2": "สถาปนิก · ระยะที่ 2",
   "combat.boss.approach": "กำลังเปลี่ยนตำแหน่ง — สังเกตท่าเตรียมโจมตี",
@@ -651,4 +672,6 @@ export const th: Record<EnKeys, string> = {
   "power.orbitBonus": "เพิ่มหน่วยโจมตีโคจรให้สายอาวุธที่ใช้งานและรองรับ",
   "power.auraBonus": "ขยายสนามโจมตีของสายพลังงานที่ใช้งาน",
 
+  "qa.frameIntervals": "ดาวน์โหลดช่วงเวลาระหว่างอัปเดต (.json)",
+  "qa.frameIntervalsHint": "เฉพาะ QA/การวัดผล: ประมาณค่าด้วยช่วง 1ms ไม่ใช่จำนวนภาพที่ GPU แสดง แยกช่วงซ่อนแท็บและหยุดเกม",
 };

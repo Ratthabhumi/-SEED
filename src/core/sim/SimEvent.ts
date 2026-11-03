@@ -10,6 +10,8 @@ import type {EnemyFamily} from "../director/director";
 export type SimEvent =
   | {type:"boss_attack_warning";pattern:import("../combat/bossEncounter").BossPattern}
   | {type:"boss_phase_changed";phase:2}
+  | {type:"boss_outpost_targeted";poiId:string}
+  | {type:"boss_outpost_hit";poiId:string;damage:number}
   | {type:"boss_attack_fired";pattern:import("../combat/bossEncounter").BossPattern;x:number;y:number}
   | { type: "weapon_fired"; family: WeaponFamily; x: number; y: number; tx: number; ty: number; release?: import('../combat/weaponGeometry').PrimaryRelease }
   | { type: "weapon_impact"; family: WeaponFamily; x: number; y: number; hpDamage: number; shieldDamage: number }
@@ -39,7 +41,7 @@ export type SimEvent =
   | { type: "outpost_recalled"; poiId: string; spec: OutpostSpec }
   | { type: "outpost_lost"; poiId: string }
   | { type: "outpost_repaired"; poiId: string }
-  | { type: "raid_incoming"; poiId: string; seconds: number }
+  | { type: "raid_incoming"; poiId: string; seconds: number; source?: "boss" }
   | { type: "raid_repelled"; poiId: string }
   | { type: "squad_command"; mode: SquadMode }
   | { type: "ability_used"; id: string }

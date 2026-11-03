@@ -1,3 +1,6 @@
+import {defaultCollection,earnCollection,COLLECTIBLES,type LegacyCollection,type CollectionAchievement} from '../../core/progression/legacyCollection';
+import {legacyCollectionPanel} from '../legacyCollectionPanel';
+import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
 import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
@@ -45,11 +48,12 @@ import { t, setLang, getLang } from "../../i18n/i18n";
 import type { EnKeys } from "../../i18n/en";
 import { loadSave, storeSave } from "../../core/save/save";
 import { sfx } from "../audio/sfx";
-import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, applyUiScale, isKeyRepeat } from "../ui";
+import { uiRoot, clearUI, el, button, toast, clearNotifications, notificationCounts, setNotificationEncounter, applyUiScale, isKeyRepeat } from "../ui";
 import { SurfaceCoordinator } from "../ui/surfaces";
 import { TITLE_SEED_KEY, TITLE_ORIGIN_KEY } from "./TitleScene";
 import { isQAMode, GOLDEN_QA_SEED } from "../../qa/qaMode";
 import { QaSession, type QaFrameData, type QaPOIInfo } from "../../qa/qaPanel";
+import {createFrameIntervalMonitor} from '../../qa/FrameIntervalMonitor';
 import {onceKeyboardEvent} from "../input/onceKeyboardEvent";
 import { drawEnemy } from "../render/EnemyRenderer";
 import {eligibleFamilies} from "../../core/director/director";
@@ -122,6 +126,7 @@ export class GameScene extends Phaser.Scene {
   private deathPersisted = false;
   private attemptId = 0;
   private archiveEarned = 0;
+  private cosmetics:LegacyCollection=defaultCollection();
   private archiveStorageOK = true;
 
   private enemyActors!: ActorRenderer;
@@ -198,6 +203,7 @@ export class GameScene extends Phaser.Scene {
   private simSamples: number[] = [];
   private frameSamples: number[] = [];
   private lastFrameAt = 0;
+  private frameIntervals:ReturnType<typeof createFrameIntervalMonitor>=null;
   private renderSamples: number[] = [];
   private renderStart = 0;
   private onPreRender = () => { this.renderStart = performance.now(); };
@@ -368,6 +374,7 @@ export class GameScene extends Phaser.Scene {
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
+    this.cosmetics=savedArchive.collection;
     const begun = beginAttempt(savedArchive.meta); savedArchive.meta = begun.ledger;
     this.archiveStorageOK = storeSave(localStorage, savedArchive);
     this.attemptId = this.archiveStorageOK ? begun.id : 0; this.archiveEarned = 0;
@@ -399,6 +406,9 @@ export class GameScene extends Phaser.Scene {
     this.lastGroundKey = "";this.groundProbe=undefined;
     this.simSamples = [];
     this.frameSamples = []; this.lastFrameAt = 0;
+    const timingQuery=new URLSearchParams(location.search);
+    this.frameIntervals=createFrameIntervalMonitor(timingQuery.get('profile')==='1'||
+      (isQAMode(location.search)&&!combatReviewRequested(location.search)),document.hidden);
     this.renderSamples = [];
     this.uniqueTiming=new URLSearchParams(location.search).has("e2e");this.uniqueFrames=[];this.uniqueSim=[];
     this.game.events.on(Phaser.Core.Events.PRE_RENDER, this.onPreRender);
@@ -587,7 +597,8 @@ export class GameScene extends Phaser.Scene {
         friendlyBatchLifetime:()=>{const batch=this.friendlyBatch;return ()=>batch.counts();},
         numericFeedbackCounts:()=>this.numericFeedback?.counts()??null,
         resetRenderDiagnostics:()=>this.diagnostics?.reset(),
-        resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;},
+        resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;this.frameIntervals?.reset(document.hidden);},
+        frameIntervalEvidence:()=>this.frameIntervals?.snapshot()??null,
         actorPresentation: () => this.allyActors.review(),
         streamingMove:(x:number,y:number)=>{
           const s=this.sim.state,dx=x-s.px,dy=y-s.py;this.paused=true;s.px=x;s.py=y;
@@ -859,6 +870,9 @@ export class GameScene extends Phaser.Scene {
           signalSecured: this.sim.state.signalSecured,
           territories: this.sim.state.territories,
         }),
+        // Explicit staged browser fixture; never used by natural policies or Human QA.
+        stageDefenseReview:()=>{const s=this.sim.state,base=s.territories.find(t=>t.spec&&!t.disabled),boss=s.enemies.find(e=>e.active&&e.boss);if(!base||!boss)return false;s.px=base.x;s.py=base.y;boss.x=base.x+250;boss.y=base.y;if(s.stronghold){s.stronghold.x=base.x;s.stronghold.y=base.y;}return true;},
+        legacyCollectionReview:()=>({collection:this.cosmetics,world:this.sim.state.ascension+1}),
         stageActorReview: (dense = false) => {
           const s=this.sim.state; s.ageIndex=3;s.ageElapsed=0;s.build.hp=s.build.maxHp=1e9;
           for(const e of s.enemies)e.active=false;
@@ -1073,6 +1087,8 @@ export class GameScene extends Phaser.Scene {
   private startQa(): void {
     const adapter = {
       frame: () => this.buildQaFrame(),
+      frameIntervals:()=>this.frameIntervals?{...this.frameIntervals.snapshot(),
+        buildSha:import.meta.env.SEED_BUILD_SHA,buildDirty:import.meta.env.SEED_BUILD_DIRTY}:null,
       snapshot: () => {
         try {
           return this.sim.snapshot();
@@ -1278,11 +1294,14 @@ export class GameScene extends Phaser.Scene {
   };
 
   private onHidden = (): void => {
+    this.frameIntervals?.setHidden(document.hidden);
+    this.lastFrameAt=0; // browser inactivity is not an active gameplay stall
     const s = this.sim?.state;
     if (s && document.hidden && !this.paused && !s.over && !s.draftOpen) this.togglePause();
   };
 
   private onShutdown(): void {
+    this.frameIntervals?.dispose();this.frameIntervals=null;
     this.bossLaneObserver?.disconnect();this.bossLaneObserver=undefined;
     this.decisionInput.dispose();
     clearNotifications();
@@ -1341,6 +1360,8 @@ export class GameScene extends Phaser.Scene {
     status.appendChild(identLine);
     const squadLine = el("div", "status-squad");
     status.appendChild(squadLine);
+    const commandHint = el("div", "command-hint");
+    status.appendChild(commandHint);
     dock.appendChild(status);
     // Bottom-center knowledge progress (SECONDARY).
     const know = el("div", "knowledge-card");
@@ -1440,7 +1461,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = {
       stats, age, compass, status, hpLine, hpFill, identLine, squadLine,
       know, knowNums, knowFill, ageCard, goals, ascendWrap, terrBar, techBtn,
-      civBtn, minimap: mm, bossBar, bossFill, hint,
+      civBtn, minimap: mm, bossBar, bossFill, hint, commandHint,
     };
     this.loadout=new AbilityLoadout();hud.append(this.loadout.node);
     this.refreshHUD();
@@ -1452,11 +1473,17 @@ export class GameScene extends Phaser.Scene {
     if(encounter){
       encounter.hidden=!boss;
       if(boss?.encounter){
-        const a=boss.encounter,identity=`${a.enraged}:${a.phase}:${a.pattern}:${getLang()}`;
+        const a=boss.encounter,target=this.sim.state.territories.find(p=>p.poiId===a.outpostId&&!p.disabled);
+        const identity=`${a.enraged}:${a.phase}:${a.pattern}:${a.outpostId}:${!!target}:${getLang()}`;
         if(encounter.dataset.identity!==identity){
           encounter.dataset.identity=identity;encounter.dataset.phase=a.phase;
           encounter.replaceChildren(el("strong","",a.enraged?"combat.boss.phase2":"combat.boss.phase1"),el("span","",`combat.boss.${a.phase}` as EnKeys));
           if(["warning","commit","attack"].includes(a.phase))encounter.appendChild(el("small","",`combat.boss.${a.pattern}` as EnKeys));
+          if(target)encounter.appendChild(el("small","boss-target"));
+        }
+        const targetLine=encounter.querySelector('.boss-target');
+        if(targetLine&&target){const dx=target.x-this.sim.state.px,dy=target.y-this.sim.state.py,arrows=['→','↘','↓','↙','←','↖','↑','↗'];const arrow=arrows[(Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8];
+          targetLine.textContent=`${t('combat.boss.defendBase')}: ${t(`poi.${target.poiType}.name` as EnKeys)} · ${Math.ceil(target.hp)}/${target.maxHp} HP · ${arrow} ${Math.round(Math.hypot(dx,dy))}u · ${Math.ceil(a.assaultLeft)}s · [F] [Q/E/R] [M]`;
         }
       }
     }
@@ -1521,13 +1548,18 @@ export class GameScene extends Phaser.Scene {
     abilSpan.textContent = ` ${abilTxt}`;
     abilBadge.appendChild(abilSpan);
     squadLine.appendChild(abilBadge);
+    const powerPrompt=s.stats.abilityUses===0&&s.abilityCd<=0&&s.enemies.some(e=>e.active&&Math.hypot(e.x-s.px,e.y-s.py)<600);
+    const commandHint=this.hud.commandHint;
+    commandHint.textContent=powerPrompt?t("ui.powerReadyHint"):s.territories.some(p=>!p.disabled)?t("ui.baseCommandHint"):"";
+    commandHint.hidden=!commandHint.textContent;
     // Civilization Map button: disclosed once territory management matters.
     const civBtn = this.hud.civBtn as HTMLElement | undefined;
     if (civBtn) civBtn.style.display = s.territories.length > 0 ? "" : "none";
     // Knowledge card: progress toward the next age's threshold.
     const next = s.ageIndex + 1;
     const nextNeed = next < AGES.length ? (AGE_DEFS[next]?.knowledgeThreshold ?? 1) : 1;
-    knowNums.textContent = `${Math.floor(s.knowledgeTotal)} / ${nextNeed}`;
+    knowNums.textContent = next < AGES.length ? `${Math.floor(s.knowledgeTotal)} / ${nextNeed}` : `${Math.floor(s.knowledgeTotal)}`;
+    knowFill.parentElement!.hidden = next >= AGES.length;
     knowFill.style.width = `${Math.min(100, (s.knowledgeTotal / Math.max(1, nextNeed)) * 100)}%`;
     // Age card: one checklist row per gate (the SAME predicate as the sim).
     const ageCardKey=JSON.stringify([next,t("ui.nextAge"),s.ownedTags,s.breakthroughs,next<AGES.length?ageGates(next,s.knowledgeTotal,this.missionStateOf(s),this.dominionStateOf(s)):Math.floor(s.knowledgeTotal)]);
@@ -1541,6 +1573,10 @@ export class GameScene extends Phaser.Scene {
       title.textContent = `${t("ui.nextAge")}: ${t(`age.${AGES[next] as AgeId}` as EnKeys)}`;
       ageCard.appendChild(title);
       const gates = ageGates(next, s.knowledgeTotal, this.missionStateOf(s), this.dominionStateOf(s));
+      const unmet = gates.find(g => !g.done);
+      const step = unmet?.mission.find(m => !m.done) ?? unmet?.sub.find(d => !d.done) ?? unmet;
+      if (step) ageCard.appendChild(el("div", "next-action", undefined,
+        `${t("ui.nextStep")}: ${t(step.labelKey)} ${step.have}/${step.need}`));
       for (const g of gates) {
         const row = document.createElement("div");
         row.className = "gate-row" + (g.done ? " done" : "");
@@ -2468,6 +2504,7 @@ export class GameScene extends Phaser.Scene {
     if (!bar || !fill) return;
     const s = this.sim.state;
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
+    setNotificationEncounter(!!boss?.active);
     if (boss?.active) {
       bar.style.display = "block";
       const percent=Math.max(0,Math.min(100,Math.ceil(boss.hp/boss.maxHp*100)));
@@ -2963,6 +3000,8 @@ export class GameScene extends Phaser.Scene {
     const replayBtn = button("ui.resetTutorial", () => this.showReplayConfirm(screen));
     replayBtn.id = "replay-tutorial-btn";
     help.appendChild(replayBtn);
+    help.classList.add('pause-help');
+    help.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;save.collection=c;}));
 
     // RUN — run-scoped navigation, away from both Resume and Danger.
     const run = section("ui.pauseRun");
@@ -2985,7 +3024,7 @@ export class GameScene extends Phaser.Scene {
     screen.addEventListener("keydown", (event) => {
       if (event.key !== "Tab") return;
       const scope = screen.querySelector(".confirm-nested") ?? panel;
-      const controls = Array.from(scope.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      const controls = Array.from(scope.querySelectorAll<HTMLElement>('button:not(:disabled),summary,input:not(:disabled),select:not(:disabled),a[href],[tabindex="0"]')).filter(control=>control.getClientRects().length>0);
       if (!controls.length) return;
       event.preventDefault();
       const index = controls.indexOf(document.activeElement as HTMLButtonElement);
@@ -3127,6 +3166,7 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(el("p", "archive-result", undefined, `${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${s.ascension+1} · ${t("meta.earned")}: +${this.archiveEarned}`));
     if (!this.archiveStorageOK) panel.appendChild(el("p", "", "meta.storage"));
     panel.appendChild(el("div", "", "ui.runChronicle"));
+    panel.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;}));
     const dl = document.createElement("dl");
     dl.className = "chron";
     const famKey = (["kinetic", "energy", "defense", "field"] as string[]).includes(s.topDamageSource)
@@ -3306,11 +3346,13 @@ export class GameScene extends Phaser.Scene {
         g.textContent = `${t(`tech.${spine.id}.name` as EnKeys)} — ${t(`tech.${spine.id}.description` as EnKeys)}`;
         panel.appendChild(g);
       }
+      const steps=el('div','evolution-steps');
+      for(const [i,id] of AGES.entries()){const step=el('span',i<=idx?'reached':'',`age.${id}` as EnKeys);if(i===idx)step.setAttribute('aria-current','step');steps.append(step);}panel.append(steps);
       const forms = activeFamilies(s.originId, s.expansionFamily)
-        .map((f) => t(getWeaponStage(f, idx).nameKey as EnKeys)).join(" · ");
+        .map((f) => {const st=getWeaponStage(f,s.weaponStage[f]);return `${t(st.nameKey as EnKeys)} · ${Number((st.damage*s.build.damageMul).toFixed(1))} / ${Number((st.cooldown*Math.max(.3,s.build.cooldownMul)).toFixed(2))}s`;}).join(" · ");
       const w = document.createElement("div");
       w.className = "toast-sub";
-      w.textContent = forms;
+      w.textContent = `${t('evolution.stats')}: ${forms}`;
       panel.appendChild(w);
       // One-line purpose: what this age asks of the civilization next.
       const goal = AGE_DEFS[idx];
@@ -3494,6 +3536,10 @@ export class GameScene extends Phaser.Scene {
     let knowledgeCollected=0;
     const save = loadSave(localStorage);
     for (const e of ev) {
+      const achievement:CollectionAchievement|undefined=e.type==='age_reached'?{type:'age',origin:s.originId,age:AGES.indexOf(e.age)}:e.type==='raid_repelled'?{type:'defense'}:e.type==='boss_killed'?{type:'boss'}:e.type==='ascended'?{type:'ascend'}:undefined;
+      if(achievement){const fresh=loadSave(localStorage),next=earnCollection(fresh.collection,achievement),earned=next.owned.filter(id=>!fresh.collection.owned.includes(id));
+        if(JSON.stringify(next)!==JSON.stringify(fresh.collection)){fresh.collection=next;if(storeSave(localStorage,fresh)){this.cosmetics=next;for(const id of earned)toast('collection.earned',t(`collection.${id}` as EnKeys));}else toast('meta.storage');}
+      }
       this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId);
       this.heroEquipment.accept(e,s.worldNonce,s.elapsed,s.px,s.py);
       if(e.type==="ability_used")this.heroEquipment.activate(s.worldNonce,s.elapsed,e.id,s.px,s.py);
@@ -3503,6 +3549,16 @@ export class GameScene extends Phaser.Scene {
       switch (e.type) {
         case "boss_attack_warning": toast(`combat.boss.${e.pattern}` as EnKeys);sfx.boss();break;
         case "boss_phase_changed":toast("combat.boss.phaseTransition");sfx.boss();break;
+        case "boss_outpost_targeted": {
+          const post=s.territories.find(p=>p.poiId===e.poiId);
+          if(post)toast("combat.boss.siege",`${t(`poi.${post.poiType}.name` as EnKeys)} [M]`);
+          this.qa?.noteSimEvent("boss-outpost-target",e.poiId);break;
+        }
+        case "boss_outpost_hit": {
+          const post=s.territories.find(p=>p.poiId===e.poiId);
+          if(post)this.floatTextAt(post.x,post.y,`−${Math.ceil(e.damage)}`,"#ff8878");
+          this.qa?.noteSimEvent("boss-outpost-hit",`${e.poiId}:${e.damage}`);break;
+        }
         case "boss_attack_fired": sfx.weapon("field");break;
         case "weapon_fired": sfx.weapon(e.family,s.originId); break;
         case "mine_detonated": sfx.weapon("field"); break;
@@ -3577,7 +3633,7 @@ export class GameScene extends Phaser.Scene {
         case "raid_incoming": {
           const terr = this.sim.state.territories.find((x) => x.poiId === e.poiId);
           const nm = terr ? t(`poi.${terr.poiType}.name` as EnKeys) : e.poiId;
-          toast("ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
+          toast(e.source==="boss"?"combat.boss.siege":"ui.raidIncoming", `${nm} · ${Math.ceil(e.seconds)}s`);
           sfx.boss();
           this.spawnVfx("seed_raid_alert", s.px, s.py, 1.1, 0xff5533, 600, Phaser.BlendModes.ADD);
           this.qa?.noteSimEvent("raid_incoming", `${e.poiId}:${Math.ceil(e.seconds)}s`);
@@ -3766,8 +3822,10 @@ export class GameScene extends Phaser.Scene {
     // Phaser delta may be smoothed; performance evidence uses wall-clock frames.
     // Canonical stepping below continues to use the engine delta unchanged.
     const frameAt = performance.now();
+    let frameInterval:number|null=null;
     if (this.lastFrameAt > 0) {
       const frameMs = frameAt - this.lastFrameAt;
+      frameInterval=frameMs;
       this.pushSample(this.frameSamples, frameMs);
       this.fpsEMA += (1000 / Math.max(frameMs, 0.1) - this.fpsEMA) * 0.05;
     }
@@ -3782,6 +3840,7 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     // Map overlays pause stepping (informational screens, not decisions).
     const stepping = !this.paused && !s.over && !s.draftOpen && !this.blockingModal && !this.techMapOpen && !this.civMapOpen;
+    this.frameIntervals?.update(frameInterval,!stepping);
     if (stepping) {
       this.sampleMove();
       const steps = this.acc.steps(dt);
@@ -4038,8 +4097,10 @@ export class GameScene extends Phaser.Scene {
     const reference=this.allyActors.referenceReview();
     this.heroEquipment.socket(reference?(reference.socket[0]!-64)*WORLD_SCALE.hero/128*(heroPose.flip?-1:1):0,reference?(reference.socket[1]!-83.2)*WORLD_SCALE.hero/128:-16);
     this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects,hc);
+    let cosmeticTrails=0;
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
+      if(p.friendly&&p.primary&&this.cosmetics.equipped.trail&&!this.reducedEffects&&cosmeticTrails++<12){const speed=Math.max(1,Math.hypot(p.vx,p.vy));g.lineStyle(2,hc?0xffffff:0xb49cff,.8);g.lineBetween(p.x,p.y,p.x-p.vx/speed*20,p.y-p.vy/speed*20);}
       if (p.friendly) {if(hc){if(!this.friendlyBatch.draw(p,wopts))drawFriendlyProj(g,p,wopts);}else this.combatSprites.projectile(p,s.originId);}
       else if(this.vectorHostiles||!this.hostileBatch.draw(p,hc))drawHostileProj(g, p, wopts);
     }
@@ -4089,6 +4150,7 @@ export class GameScene extends Phaser.Scene {
     }
     // Player: unique silhouette (camera still follows the invisible anchor).
     this.playerArc.setPosition(s.px, s.py);
+    drawLegacyCosmetics(g,this.cosmetics,s.px,s.py,s.ageIndex,hc);
     drawPlayer(g, s.px, s.py, 16, {
       facing: this.playerFacing,
       dashing: s.dashT > 0,
@@ -4174,6 +4236,8 @@ export class GameScene extends Phaser.Scene {
     if (s.bossIndex < 0) return;
     const boss = s.enemies[s.bossIndex];
     if (!boss?.active) return;
+    const base=s.territories.find(t=>t.poiId===boss.encounter?.outpostId&&!t.disabled);
+    if(base)drawOffscreenIndicator(g,{scrollX:cam.worldView.x,scrollY:cam.worldView.y,width:cam.width,height:cam.height,zoom:z},base.x,base.y,0xffd36b,15);
     drawOffscreenIndicator(g, {
       scrollX: cam.worldView.x,
       scrollY: cam.worldView.y,

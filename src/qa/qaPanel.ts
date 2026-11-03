@@ -14,6 +14,7 @@ import { GOLDEN_QA_SEED } from "./qaMode";
 // &seed=). The recorder is retargeted to the actual session seed in start().
 import { t } from "../i18n/i18n";
 import type { EnKeys } from "../i18n/en";
+import type {FrameIntervalEvidence} from './FrameIntervalMonitor';
 
 export interface QaObjective {
   killsHave: number;
@@ -89,6 +90,7 @@ export interface QaFrameData {
 
 export interface QaAdapter {
   frame(): QaFrameData;
+  frameIntervals?(): (FrameIntervalEvidence & {buildSha:string;buildDirty:boolean})|null;
   snapshot(): string;
   lang(): string;
   versions(): QaVersions;
@@ -769,6 +771,15 @@ export class QaSession {
         this.panel.appendChild(dl);
       }
     }
+    if(this.adapter.frameIntervals&&!this.panel.querySelector('#qa-frame-interval-download')){
+      const button=document.createElement('button');button.id='qa-frame-interval-download';button.className='btn';
+      button.style.lineHeight='1.8';button.addEventListener('click',()=>{
+        const data=this.adapter.frameIntervals?.();
+        if(data)download('frame-interval-evidence.json',JSON.stringify(data,null,2),'application/json');
+      });this.panel.appendChild(button);
+    }
+    const intervalDownload=this.panel.querySelector('#qa-frame-interval-download');
+    if(intervalDownload){intervalDownload.textContent=t('qa.frameIntervals');intervalDownload.setAttribute('title',t('qa.frameIntervalsHint'));}
     if (this.listBox) {
       this.listBox.innerHTML =
         this.collapsed
