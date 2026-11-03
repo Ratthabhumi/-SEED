@@ -1554,3 +1554,9 @@ Full check PASS:607 tests/108 files, typecheck, third-party notices and producti
 One browser attempt failed because concurrent Windows Compress-Archive locked a served PNG (EBUSY) and Vite preview stopped. It is retained as a harness failure, not called a gameplay pass; the identical browser suite passed once packaging finished. No thresholds or tests removed. Final compiled artifact/CI/cohort receipts will identify the committed source in the Draft PR.
 
 Previously protected7735-file set:7733 unchanged. Only mutable human-playtests/latest.json/latest.md pointers differ from the prior-session snapshot; those current pointers and all raw historical files are retained, not reverted or published. Additional newer private files were not enumerated by that older manifest. No claim that an existing QA process represents a clean V4.4 human session; owner must restart it.
+
+## Closed Thai pause regression correction
+
+985d059 push E2E retained254 passes/1 failure/1 pre-existing skip:closed Thai1280x720 pause scroll764px exceeded client678px. Move the optional collection into existing Help, expanding that section across the grid only when open. Original no-scroll assertion and Thai line-height remain unchanged. Focused original evolution/Insight/World2/collection tests10/10 PASS; Thai closed client=scroll=675px, English783px at1080p; typecheck PASS. No core/content/evaluation changes. Remaining superseded CI canceled; final exact-source receipts close pending gates in PR35.
+
+One earlier exact-source local1280EN smoke aborted during provenance fetch (15 other cases passed); retain it, never relabel it a local pass. Final independent CI covers that case. Native performance/human/art acceptance remain separate.

@@ -3000,6 +3000,8 @@ export class GameScene extends Phaser.Scene {
     const replayBtn = button("ui.resetTutorial", () => this.showReplayConfirm(screen));
     replayBtn.id = "replay-tutorial-btn";
     help.appendChild(replayBtn);
+    help.classList.add('pause-help');
+    help.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;save.collection=c;}));
 
     // RUN — run-scoped navigation, away from both Resume and Danger.
     const run = section("ui.pauseRun");
@@ -3015,7 +3017,6 @@ export class GameScene extends Phaser.Scene {
         this.restartRun();
       }
     }, "btn danger"));
-    panel.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;save.collection=c;}));
     screen.appendChild(panel);
     root.appendChild(screen);
     this.surfaces.suspendContext();
