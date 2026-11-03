@@ -1,3 +1,11 @@
+## Content24 — owned-geography correction,2026-11-03
+
+The Content23/ed85984 distance-filter prototype had zero boss-only base damage in both36-case cohorts. All cases remain in docs/evidence/v44-rejected-distance-filter.json; its direct usage counters are invalid because direct action events were omitted, NOT proof of zero actual use. Remaining superseded CI canceled to avoid profiling rejected source. No overall pass transferred.
+
+Root cause: original stronghold is near6000u from world origin, unrelated to owned bases. Before any boss exists, Content24 chooses a seeded600u approach from the nearest active specialized owned base, optionally snapped to an unowned major POI400–900u away. No invented base, changed logistics, moved territory, changed terrain or boss teleport. Revealed locations stay fixed; no active base keeps historical fallback. Existing warning/proximity/HP/damage and12s/24s windows remain. See ADR0052. Save3 unchanged.
+
+Defender-aware counts real direct API events once through observe(); its first victory also reads the actual canonical boss count. Historical controller unchanged, and its step-only usage fields are explicitly incomplete. Real RED geography control was5728.83u from base; corrected tests pass. A single natural Golden002/Hunters/survival working-delta check observed one target,2 actual base hits/98HP and boss victory in21.37s, no grants. This is a bounded diagnostic, not the final cohort or human acceptance. All final exact-source cohort/CI receipts belong in PR35.
+
 ## V4.4 —2026-11-03
 
 Primary owner checkout; feat/v44-retention-defense-20261103 from caeeb5d/PR34. See docs/V44_OWNER_PACKET.md, ADR0051 and implementation plan. Content23 bounds near-arena assault windows; Save3 adds earned collection with v1/v2 migration preserving Insight. Historical policy unchanged; separate defender-aware cohort and engagement observation. No research/new dependencies/main merge/release/deploy. Final-source receipts belong in the new Draft PR; all human/fun/native/art gates remain separate. Preserve .cursor, launcher and private QA.

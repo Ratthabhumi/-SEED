@@ -8,6 +8,7 @@ export function defenderAwarePolicy(sim:RunSimulation,limit=900,options:{mode?:"
   let target={x:0,y:0},lastAge=0,lastAgeAt=0,choices=0,bossVictories=0;const ages:any[]=[],raids:any[]=[],samples:any[]=[],worlds:any[]=[];
   let chaseSeconds=0,inAttackRangeSeconds=0,phaseTwoSeconds=0,bossBaseDamage=0,baseLosses=0,defenses=0,abilityUses=0,commandUses=0;const selected:string[]=[];let raidWait=0,overshoot=0;
   const observe=(events:ReturnType<RunSimulation["step"]>)=>{
+    for(const e of events){if(e.type==='boss_outpost_hit')bossBaseDamage+=e.damage;if(e.type==='outpost_lost')baseLosses++;if(e.type==='raid_repelled')defenses++;if(e.type==='ability_used')abilityUses++;if(e.type==='squad_command')commandUses++;}
     for(const event of events)if(["raid_incoming","raid_repelled","outpost_lost","outpost_repaired"].includes(event.type))raids.push({world:sim.state.ascension+1,runTime:Number(sim.state.runElapsed.toFixed(2)),time:Number(sim.state.elapsed.toFixed(2)),...event});
   };
   for(let tick=0;tick<limit*60&&!sim.state.over;tick++){
@@ -80,7 +81,7 @@ export function defenderAwarePolicy(sim:RunSimulation,limit=900,options:{mode?:"
     const events=sim.step(1/60,{moveX:dx/distance,moveY:dy/distance,dashPressed:s.dashCd<=0&&(projectileDanger||!!foe&&close<95||!!warning&&warning.evolution!.timer<.2)});
     observe(events);
     const boss=s.enemies.find(e=>e.active&&e.boss);if(boss){const d=Math.hypot(boss.x-s.px,boss.y-s.py);const beam=activeFamilies(s.originId,s.expansionFamily).some(f=>getWeaponStage(f,s.weaponStage[f]).archetype==='beam'||f==='energy'&&s.build.beamUnlocked);if(d>BEAM_TARGET_RANGE&&Math.hypot(s.vx,s.vy)>0)chaseSeconds+=1/60;if(beam&&d<=BEAM_TARGET_RANGE)inAttackRangeSeconds+=1/60;if(boss.encounter?.enraged)phaseTwoSeconds+=1/60;}
-    for(const e of events){if(e.type==='boss_outpost_hit')bossBaseDamage+=e.damage;if(e.type==='outpost_lost')baseLosses++;if(e.type==='raid_repelled')defenses++;if(e.type==='ability_used')abilityUses++;if(e.type==='squad_command')commandUses++;}
+
     if(options.onStep?.(sim,events))break;
     if(s.ageIndex!==lastAge){ages.push({world:s.ascension+1,from:lastAge,to:s.ageIndex,time:Number(s.elapsed.toFixed(2)),spent:Number((s.elapsed-lastAgeAt).toFixed(2)),knowledge:Math.floor(s.knowledgeTotal)});lastAge=s.ageIndex;lastAgeAt=s.elapsed;}
     if(s.ascendReady){

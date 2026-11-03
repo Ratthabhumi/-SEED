@@ -6,3 +6,8 @@ it('intercepts the actual boss and produces the same snapshot on replay',()=>{
   const report=defenderAwarePolicy(sim,2,{onStep:sim=>sim.state.elapsed>=.5});return {sim,report};};
  const a=run(),b=run();expect(a.sim.state.px).toBeLessThan(0);expect(a.sim.snapshot()).toBe(b.sim.snapshot());expect(a.report.policy).toBe('defender-aware-intercept-v1');expect(a.report.defenseMetrics.inAttackRangeSeconds).toBeGreaterThan(0);
 });
+it('counts real direct Origin-power events rather than reporting their absence from step events as zero use',()=>{
+ const sim=new RunSimulation({masterSeed:'DIRECT-ACTION-OBSERVATION'});sim.state.spawnT=sim.state.eliteT=sim.state.mineT=999;
+ sim.spawnEnemy('swarm',false,false,0,180,[]);sim.spawnEnemy('swarm',false,false,Math.PI,180,[]);
+ const report=defenderAwarePolicy(sim,.1);expect(report.defenseMetrics.abilityUses).toBe(1);expect(sim.state.abilityCd).toBeGreaterThan(0);
+});

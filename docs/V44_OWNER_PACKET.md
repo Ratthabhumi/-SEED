@@ -1,3 +1,11 @@
+## Content24 — owned-geography correction,2026-11-03
+
+The Content23/ed85984 distance-filter prototype had zero boss-only base damage in both36-case cohorts. All cases remain in docs/evidence/v44-rejected-distance-filter.json; its direct usage counters are invalid because direct action events were omitted, NOT proof of zero actual use. Remaining superseded CI canceled to avoid profiling rejected source. No overall pass transferred.
+
+Root cause: original stronghold is near6000u from world origin, unrelated to owned bases. Before any boss exists, Content24 chooses a seeded600u approach from the nearest active specialized owned base, optionally snapped to an unowned major POI400–900u away. No invented base, changed logistics, moved territory, changed terrain or boss teleport. Revealed locations stay fixed; no active base keeps historical fallback. Existing warning/proximity/HP/damage and12s/24s windows remain. See ADR0052. Save3 unchanged.
+
+Defender-aware counts real direct API events once through observe(); its first victory also reads the actual canonical boss count. Historical controller unchanged, and its step-only usage fields are explicitly incomplete. Real RED geography control was5728.83u from base; corrected tests pass. A single natural Golden002/Hunters/survival working-delta check observed one target,2 actual base hits/98HP and boss victory in21.37s, no grants. This is a bounded diagnostic, not the final cohort or human acceptance. All final exact-source cohort/CI receipts belong in PR35.
+
 # V4.4 — แฟ้มตัดสินใจของเจ้าของเกม
 
 สาขา feat/v44-retention-defense-20261103 ต่อจาก PR34/caeeb5d โดยตรง ในโฟลเดอร์หลัก Desktop/Co-op/-SEED; ไม่ merge main, release หรือ deploy ข้อมูล SHA/CI และผลจำลองสุดท้ายอยู่ใน receipt ของ Draft PR รอบนี้ เพื่อไม่เปลี่ยน source หลังตรวจ CI
@@ -16,7 +24,7 @@
 | อาวุธ/ภาพ | คง floating primary และ muzzle/beam geometry เดิม ไม่มีระบบยิงซ้ำ/อาวุธปลอม คง hostile glyph, hit feedback และ source art ที่มีอยู่ งานรอบนี้ไม่ได้ผลิต painted anatomy ใหม่ |
 | การจำลอง | historical responsive-route-planner-v2 ไม่แก้ไข เพิ่ม defender-aware-intercept-v1 แยกชื่อและผล: อ่านบอสจริง/แนวสกัดฐาน ใช้คำสั่ง Focus จริง บันทึกเดินไล่/อยู่ในระยะ acquisition800u ของ beam ที่เปิดใช้งาน/phase2/ฐาน/ability/command พร้อม replay ทุกเส้นทาง |
 | ข้อจำกัด metric | acquisition800u ไม่ใช่หลักฐานว่าโดนเป้าหมายหรือ cooldown พร้อม การเดินไล่นับเมื่อเคลื่อนอยู่นอก800u ความเสียหาย/การเสียฐานของ policy ใหม่เป็นทั้งรอบ ต้องไม่สับสนกับ boss-only accepted damage |
-| ความเข้ากันได้ | Worldgen3 และ child laws18 คงเดิม Content23 ระบุการเปลี่ยน encounter replay; Save3 มี migration แยกจากข้อมูลจำลอง |
+| ความเข้ากันได้ | Worldgen3 และ child laws18 คงเดิม Content24 ระบุการเปลี่ยน encounter replay; Save3 มี migration แยกจากข้อมูลจำลอง |
 | QA/หลักฐาน | เก็บผลล้มเหลวและทุก non-win; การทดสอบภาพจัดฉากไม่ใช่ Human Playtest; เก็บรายงานส่วนตัวและ launcher เดิม ไม่แก้ Recorder/Report contracts |
 | ประสิทธิภาพ | ยังไม่รับรอง native60Hz: baseline2550×1272/~48Hz, sampled worst66.50ms, simulation2.72ms, Boss CPU-submit p9514.90ms เป็นคนละ metric ไม่มีการลดเกณฑ์หรืออ้าง GPU/presentation จาก screenshot |
 | สถานะรับงาน | รอผล final-source check/browser/สอง cohorts/CI ใน PR receipt เพื่อกำหนด HUMAN_RETEST_READY; HUMAN_FUN_PASS ยังไม่เกิด คะแนนสนุกเดิม1/5 คงอยู่จนได้ feedback ใหม่ |

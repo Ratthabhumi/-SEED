@@ -767,15 +767,18 @@ export class RunSimulation {
    * Deterministic ENEMY STRONGHOLD site (§23): a seed-derived bearing at
    * fixed range, snapped to the nearest major POI (megasite/worldtree/
    * signal) when one exists nearby, else the raw point. Pure function of
-   * worldSeed + static worldgen — chunk/POI generation is untouched.
+   * Without a base use the historical distant site. With an active base,
+   * derive an enemy approach from owned geography BEFORE any boss exists.
+   * Chunk/POI generation and already revealed positions remain untouched.
    */
   private revealStronghold(ev: SimEvent[]): void {
     const s = this.state;
     if (s.stronghold?.revealed) return;
     const h = fnv1a32(`${s.worldSeed}::stronghold`);
     const ang = (h % 360) * (Math.PI / 180);
-    const rawX = Math.cos(ang) * 6000;
-    const rawY = Math.sin(ang) * 6000;
+    const home=s.territories.filter(t=>t.spec&&!t.disabled).sort((a,b)=>Math.hypot(a.x-s.px,a.y-s.py)-Math.hypot(b.x-s.px,b.y-s.py)||(a.poiId<b.poiId?-1:a.poiId>b.poiId?1:0))[0];
+    const rawX = (home?.x??0)+Math.cos(ang)*(home?600:6000);
+    const rawY = (home?.y??0)+Math.sin(ang)*(home?600:6000);
     let bx = rawX;
     let by = rawY;
     let bd = 1600;
@@ -785,6 +788,7 @@ export class RunSimulation {
         const desc = this.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
         for (const poi of desc.poi) {
           if (poi.type !== "megasite" && poi.type !== "worldtree" && poi.type !== "signal") continue;
+          if(home){const gap=Math.hypot(poi.wx-home.x,poi.wy-home.y);if(gap<400||gap>900||s.territories.some(t=>t.poiId===poi.id))continue;}
           const d = Math.hypot(poi.wx - rawX, poi.wy - rawY);
           if (d < bd) {
             bd = d;
