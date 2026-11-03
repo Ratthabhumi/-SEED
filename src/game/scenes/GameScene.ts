@@ -1,6 +1,9 @@
 import {defaultCollection,earnCollection,COLLECTIBLES,type LegacyCollection,type CollectionAchievement} from '../../core/progression/legacyCollection';
 import {legacyCollectionPanel} from '../legacyCollectionPanel';
 import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
+import {bossThreat,bossStrikeTargetsBase} from '../ui/bossThreat';
+import {changedWeaponForms} from '../ui/weaponEvolution';
+import {powerOpportunity} from '../ui/powerOpportunity';
 import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
@@ -127,6 +130,8 @@ export class GameScene extends Phaser.Scene {
   private attemptId = 0;
   private archiveEarned = 0;
   private cosmetics:LegacyCollection=defaultCollection();
+  private earnedThisAttempt:LegacyCollection['owned']=[];
+  private observedWeaponStages:Record<WeaponFamily,number>={kinetic:0,energy:0,defense:0,field:0};
   private archiveStorageOK = true;
 
   private enemyActors!: ActorRenderer;
@@ -375,12 +380,14 @@ export class GameScene extends Phaser.Scene {
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
     this.cosmetics=savedArchive.collection;
+    this.earnedThisAttempt=[];
     const begun = beginAttempt(savedArchive.meta); savedArchive.meta = begun.ledger;
     this.archiveStorageOK = storeSave(localStorage, savedArchive);
     this.attemptId = this.archiveStorageOK ? begun.id : 0; this.archiveEarned = 0;
     this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw,
       weaponMount:new URLSearchParams(location.search).get("equipment")==="hand"?"hand":"float",
       archivePerks: savedArchive.meta.purchased, archiveEnergyStart: savedArchive.meta.energyStart });
+    this.observedWeaponStages={...this.sim.state.weaponStage};
     this.surfaces.reset();
     this.blockingModal = null;
     this.modalT = 0;
@@ -1474,11 +1481,12 @@ export class GameScene extends Phaser.Scene {
       encounter.hidden=!boss;
       if(boss?.encounter){
         const a=boss.encounter,target=this.sim.state.territories.find(p=>p.poiId===a.outpostId&&!p.disabled);
-        const identity=`${a.enraged}:${a.phase}:${a.pattern}:${a.outpostId}:${!!target}:${getLang()}`;
+        const identity=`${a.enraged}:${a.phase}:${a.pattern}:${a.outpostId}:${!!target}:${bossStrikeTargetsBase(a)}:${getLang()}`;
         if(encounter.dataset.identity!==identity){
           encounter.dataset.identity=identity;encounter.dataset.phase=a.phase;
           encounter.replaceChildren(el("strong","",a.enraged?"combat.boss.phase2":"combat.boss.phase1"),el("span","",`combat.boss.${a.phase}` as EnKeys));
           if(["warning","commit","attack"].includes(a.phase))encounter.appendChild(el("small","",`combat.boss.${a.pattern}` as EnKeys));
+          if(["warning","commit","attack","recover"].includes(a.phase))encounter.appendChild(el("small","boss-aim",a.outpostId&&!target?'combat.boss.aimFixed':target&&bossStrikeTargetsBase(a)?'combat.boss.aimBase':'combat.boss.aimPlayer'));
           if(target)encounter.appendChild(el("small","boss-target"));
         }
         const targetLine=encounter.querySelector('.boss-target');
@@ -1546,11 +1554,12 @@ export class GameScene extends Phaser.Scene {
     abilBadge.appendChild(abilIcon);
     const abilSpan = document.createElement("span");
     abilSpan.textContent = ` ${abilTxt}`;
+    abilBadge.title=t(abil.descKey);
     abilBadge.appendChild(abilSpan);
     squadLine.appendChild(abilBadge);
-    const powerPrompt=s.stats.abilityUses===0&&s.abilityCd<=0&&s.enemies.some(e=>e.active&&Math.hypot(e.x-s.px,e.y-s.py)<600);
+    const powerPrompt=powerOpportunity(s);
     const commandHint=this.hud.commandHint;
-    commandHint.textContent=powerPrompt?t("ui.powerReadyHint"):s.territories.some(p=>!p.disabled)?t("ui.baseCommandHint"):"";
+    commandHint.textContent=powerPrompt?`${t(abil.nameKey)} [F] · ${t(`quality.power.${originById(s.originId).id}` as EnKeys)}`:s.territories.some(p=>!p.disabled)?t("ui.baseCommandHint"):"";
     commandHint.hidden=!commandHint.textContent;
     // Civilization Map button: disclosed once territory management matters.
     const civBtn = this.hud.civBtn as HTMLElement | undefined;
@@ -2030,7 +2039,12 @@ export class GameScene extends Phaser.Scene {
         icon.alt = sp.id;
         b.appendChild(icon);
         const txt = document.createElement("span");
-        txt.textContent = `${t(sp.name)} — ${this.outpostBonusText(sp.id, 1, site?.x, site?.y)} — ${t("ui.logisticsCost")}: ${cost}`;
+        txt.className='spec-choice-copy';
+        const name=document.createElement('strong');name.textContent=t(sp.name);
+        const benefit=document.createElement('span');benefit.textContent=this.outpostBonusText(sp.id,1,site?.x,site?.y);
+        const purpose=document.createElement('small');purpose.textContent=t(`quality.outpost.${sp.id}` as EnKeys);
+        const price=document.createElement('small');price.textContent=`${t("ui.logisticsCost")}: ${cost}`;
+        txt.append(name,benefit,purpose,price);
         b.appendChild(txt);
         if (!canAfford) {
           b.title = t("ui.insufficientLogistics");
@@ -2137,17 +2151,17 @@ export class GameScene extends Phaser.Scene {
     screen.id = "civmap-screen";
     const panel = el("div", "panel panel-lg civmap-panel");
     panel.appendChild(el("h2", "", "ui.civilizationMap"));
+    const body=el('div','civmap-body'),side=el('div','civmap-side');
     const cv = document.createElement("canvas");
     cv.width = 420;
     cv.height = 300;
-    panel.appendChild(cv);
+    body.appendChild(cv);
     const list = el("div", "civmap-list");
-    panel.appendChild(list);
     // Selected-outpost management (v0.23.1): click the map to inspect;
     // only relevant actions, every button labeled with icon + purpose.
     const detail = el("div", "civmap-detail");
     detail.id = "civmap-detail";
-    panel.appendChild(detail);
+    side.append(detail,list);body.append(side);panel.append(body);
     panel.appendChild(button("ui.back", () => this.toggleCivMap(), "btn primary"));
     screen.appendChild(panel);
     root.appendChild(screen);
@@ -2185,11 +2199,16 @@ export class GameScene extends Phaser.Scene {
         this.trackedPoiId = terr.poiId;
         const root = detail as unknown as { __refresh?: () => void };
         root.__refresh?.();
+        Array.from(list.querySelectorAll<HTMLButtonElement>('[data-poi-id]')).find(b=>b.dataset.poiId===terr.poiId)?.focus({preventScroll:true});
       });
       const specKey = terr.spec === "" ? null : (`ui.spec${terr.spec[0]?.toUpperCase()}${terr.spec.slice(1)}` as EnKeys);
       const raidMark = s.raid && s.raid.poiId === terr.poiId ? ` ⚠ ${t("ui.raidIncoming")} ${Math.ceil(s.raid.tMinus)}s` : "";
+      const threat=bossThreat(s);
+      const bossMark=threat?.target.poiId===terr.poiId?` ⚠ ${t('quality.bossThreat')} ${Math.ceil(threat.encounter.assaultLeft)}s`:'';
+      d.dataset.poiId=terr.poiId;
+      if(bossMark)d.dataset.threat='boss';else if(raidMark)d.dataset.threat='raid';
       d.textContent = `${tracked ? "◎ " : "◈ "}${t(`poi.${terr.poiType}.name` as EnKeys)} · ` +
-        `${specKey ? t(specKey) : "—"} · T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}${terr.disabled ? " · ✗" : ""}${raidMark}`;
+        `${specKey ? t(specKey) : "—"} · T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}${terr.disabled ? " · ✗" : ""}${raidMark}${bossMark}`;
       list.appendChild(d);
     }
     if (s.stronghold?.revealed) {
@@ -2228,12 +2247,13 @@ export class GameScene extends Phaser.Scene {
     detail.appendChild(head);
 
     const raided = s.raid?.poiId === terr.poiId;
-    const stateTxt = terr.disabled ? t("ui.siteDisabled") : raided ? t("ui.siteRaid") : t("ui.siteActive");
+    const threat=bossThreat(s),bossTarget=threat?.target.poiId===terr.poiId;
+    const stateTxt = terr.disabled ? t("ui.siteDisabled") : bossTarget ? `${t('quality.bossThreat')} (${Math.ceil(threat!.encounter.assaultLeft)}s)` : raided ? t("ui.siteRaid") : t("ui.siteActive");
     const specTxt = terr.spec === ""
       ? t("ui.outpostSpec")
       : t(`ui.spec${terr.spec[0]?.toUpperCase()}${terr.spec.slice(1)}` as EnKeys);
     const rows: Array<[string, string]> = [
-      [t("ui.siteState"), `${stateTxt}${raided && s.raid ? ` (${Math.ceil(s.raid.tMinus)}s)` : ""}`],
+      [t("ui.siteState"), `${stateTxt}${raided && s.raid ? ` · ${t('quality.raidThreat')} (${Math.ceil(s.raid.tMinus)}s)` : ""}`],
       [specTxt, `T${terr.tier} · HP ${Math.ceil(terr.hp)}/${terr.maxHp}`],
       [t("ui.siteBonus"), terr.spec === "" ? "—" : this.outpostBonusText(terr.spec, terr.tier, terr.x, terr.y)],
       [t("ui.siteBiome"), t(`biome.${this.sim.siteBiome(terr.x, terr.y)}.role` as EnKeys)],
@@ -2245,6 +2265,7 @@ export class GameScene extends Phaser.Scene {
       r.textContent = `${k}: ${v}`;
       detail.appendChild(r);
     }
+    if(terr.spec)detail.appendChild(el('p','context-purpose',`quality.outpost.${terr.spec}` as EnKeys));
     if (terr.disabled) {
       const rep = document.createElement("div");
       rep.className = "context-purpose";
@@ -2402,6 +2423,13 @@ export class GameScene extends Phaser.Scene {
         ctx.stroke();
         ctx.strokeStyle = "rgba(83,224,200,0.4)";
         ctx.lineWidth = 1;
+      }
+      const threat=bossThreat(s);
+      if(threat?.target.poiId===terr.poiId){
+        const b=toXY(threat.boss.x,threat.boss.y);
+        ctx.save();ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+        ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(a.x,a.y);ctx.stroke();ctx.setLineDash([]);
+        ctx.strokeRect(a.x-9,a.y-9,18,18);ctx.restore();
       }
       // Tracked-outpost ring (presentation-only selection, never canonical).
       if (this.trackedPoiId === terr.poiId) {
@@ -3166,6 +3194,7 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(el("p", "archive-result", undefined, `${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${s.ascension+1} · ${t("meta.earned")}: +${this.archiveEarned}`));
     if (!this.archiveStorageOK) panel.appendChild(el("p", "", "meta.storage"));
     panel.appendChild(el("div", "", "ui.runChronicle"));
+    if(this.earnedThisAttempt.length){const earned=el('p','attempt-collectibles');earned.textContent=`${t('quality.earnedAttempt')}: ${this.earnedThisAttempt.map(id=>t(`collection.${id}` as EnKeys)).join(' · ')}`;panel.append(earned);}
     panel.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;}));
     const dl = document.createElement("dl");
     dl.className = "chron";
@@ -3337,6 +3366,7 @@ export class GameScene extends Phaser.Scene {
   private showAgeTransition(age: AgeId): void {
     const s = this.sim.state;
     const idx = AGES.indexOf(age);
+    const changes=changedWeaponForms(this.observedWeaponStages,s.weaponStage,activeFamilies(s.originId,s.expansionFamily));
     this.showBlocking("age-screen", 1.1, (screen) => {
       const panel = el("div", "panel panel-md");
       panel.appendChild(el("h1", "logo", `age.${age}` as EnKeys));
@@ -3354,6 +3384,7 @@ export class GameScene extends Phaser.Scene {
       w.className = "toast-sub";
       w.textContent = `${t('evolution.stats')}: ${forms}`;
       panel.appendChild(w);
+      for(const change of changes){const line=el('p','weapon-evolution');line.textContent=`${t(getWeaponStage(change.family,change.before).nameKey as EnKeys)} → ${t(getWeaponStage(change.family,change.after).nameKey as EnKeys)}`;panel.append(line);}
       // One-line purpose: what this age asks of the civilization next.
       const goal = AGE_DEFS[idx];
       if (goal) {
@@ -3538,7 +3569,7 @@ export class GameScene extends Phaser.Scene {
     for (const e of ev) {
       const achievement:CollectionAchievement|undefined=e.type==='age_reached'?{type:'age',origin:s.originId,age:AGES.indexOf(e.age)}:e.type==='raid_repelled'?{type:'defense'}:e.type==='boss_killed'?{type:'boss'}:e.type==='ascended'?{type:'ascend'}:undefined;
       if(achievement){const fresh=loadSave(localStorage),next=earnCollection(fresh.collection,achievement),earned=next.owned.filter(id=>!fresh.collection.owned.includes(id));
-        if(JSON.stringify(next)!==JSON.stringify(fresh.collection)){fresh.collection=next;if(storeSave(localStorage,fresh)){this.cosmetics=next;for(const id of earned)toast('collection.earned',t(`collection.${id}` as EnKeys));}else toast('meta.storage');}
+        if(JSON.stringify(next)!==JSON.stringify(fresh.collection)){fresh.collection=next;if(storeSave(localStorage,fresh)){this.cosmetics=next;for(const id of earned){if(!this.earnedThisAttempt.includes(id))this.earnedThisAttempt.push(id);toast('collection.earned',t(`collection.${id}` as EnKeys));}}else toast('meta.storage');}
       }
       this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId);
       this.heroEquipment.accept(e,s.worldNonce,s.elapsed,s.px,s.py);
@@ -3772,7 +3803,7 @@ export class GameScene extends Phaser.Scene {
       if(!this.reducedEffects)this.floatTextAt(s.px,s.py-28,"+"+Number(knowledgeCollected.toFixed(1)),"#85ecff");
       if(!this.knowledgeHintShown){this.knowledgeHintShown=true;toast("ui.knowledgePickupHint");}
     }
-    void s;
+    this.observedWeaponStages={...s.weaponStage};
   }
 
   // ------------------------------------------------------------- frame

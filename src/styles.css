@@ -566,8 +566,19 @@ button, input { font-family: inherit; }
 .prompt-key-icon { width: 18px; height: 18px; image-rendering: pixelated; vertical-align: -2px; }
 .structure-preview-icon { width: 28px; height: 28px; image-rendering: pixelated; vertical-align: middle; margin-right: 8px; }
 .terr-spec-btn { display: inline-flex; align-items: center; gap: 8px; }
-.civmap-panel { width: min(640px, 94vw); }
-.civmap-panel canvas { width: 100%; border-radius: 8px; border: 1px solid #2c3a52; }
+.spec-choice-copy { display: grid; gap: 5px; text-align: start; white-space: normal; }
+.spec-choice-copy small { font-weight: normal; line-height: 1.7; }
+.civmap-site[data-threat="boss"] { border: 2px solid var(--gold, #ffd36b); }
+.boss-aim { font-weight: 700; }
+.legacy-progress { line-height: 1.7; }
+.civmap-panel { width: min(1140px, 94vw); height: min(840px, calc(100dvh - 40px)); display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+.civmap-panel > h2 { flex: 0 0 auto; }
+.civmap-panel > .btn { flex: 0 0 auto; align-self: center; }
+.civmap-body { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 18px; min-height: 0; flex: 1; overflow: auto; }
+.civmap-panel canvas { display: block; box-sizing: border-box; width: 100%; height: auto; align-self: start; border-radius: 8px; border: 1px solid #2c3a52; }
+.civmap-side { min-width: 0; min-height: 0; overflow: auto; padding: 2px; }
+.civmap-side .civmap-site { width: 100%; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 760px) { .civmap-body { display: flex; flex-direction: column; } .civmap-side { flex: 0 0 auto; overflow: visible; } }
 .civmap-list { font-size: var(--font-body); line-height: 1.8; margin: 10px 0; text-align: left; }
 .civmap-tracked { color: var(--accent); font-weight: 700; }
 .civmap-capacity { color: var(--muted); font-size: var(--font-caption); margin-top: 6px; }
