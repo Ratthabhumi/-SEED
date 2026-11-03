@@ -1,3 +1,7 @@
+# V4.5 core quality — 2026-11-03
+
+Primary owner checkout Desktop/Co-op/-SEED. Branch feat/v45-core-quality-20261103 from PR35/c12c8f7, no merge/main/deploy. See docs/V45_OWNER_PACKET.md for matrix, preserved33 complaints, RED evidence, source-art dependencies and clean owner protocol. Presentation only; Worldgen3/Content24/Save3/child18 unchanged. Final exact-source check/browser/package/CI receipts will be in the new Draft PR. Human fun remains1/5, acceptance pending. Private QA/.cursor/original untracked Play-SEED-QA.bat preserved.
+
 ## Content24 — owned-geography correction,2026-11-03
 
 The Content23/ed85984 distance-filter prototype had zero boss-only base damage in both36-case cohorts. All cases remain in docs/evidence/v44-rejected-distance-filter.json; its direct usage counters are invalid because direct action events were omitted, NOT proof of zero actual use. Remaining superseded CI canceled to avoid profiling rejected source. No overall pass transferred.

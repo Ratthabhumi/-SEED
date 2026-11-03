@@ -1,0 +1,15 @@
+{
+  "classification": "AUTOMATED_ENGINEERING_REGRESSIONS_NOT_HUMAN_ACCEPTANCE",
+  "parent": "c12c8f71111a87b29b58ddbc2e5f310ae49ca7ee",
+  "negativeObservations": [
+    {"case":"Star and Chronicle monochrome identity", "source":"parent", "actual":"identical triangle geometry", "redTests":1},
+    {"case":"High contrast cosmetic outline", "source":"parent", "actual":"ornament retains non-white color", "redTests":1},
+    {"case":"Keyboard equip focus EN/TH", "source":"parent", "actual":"new equipped button inactive after replaceChildren", "redTests":2},
+    {"case":"Actual boss target on map EN/TH", "source":"parent", "actual":"expected one data-threat=boss node, received zero", "redTests":2},
+    {"case":"Selected base state visible at 720p EN/TH", "source":"V45 pre-layout candidate", "actual":"Received: viewport ratio 0", "redTests":2, "discovery":"73-case browser text/state checks passed; raster inspection found clipping; viewport regression reproduced it"}
+  ],
+  "preservedLocally": ["scratch/v45-identity-red.log", "scratch/v45-browser-red.log", "scratch/v45-red-browser/", "scratch/v45-map-layout-red.log", "scratch/v45-map-layout-red-browser/"],
+  "thresholdsLowered": false,
+  "humanFunBaseline": 1,
+  "newHumanRating": null
+}

@@ -2,6 +2,22 @@
 import type { EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "quality.earnedAttempt": "มรดกใหม่ที่บันทึกจากรอบนี้",
+  "quality.raidThreat": "การบุกปล้น",
+  "combat.boss.aimFixed": "ล็อกเป้าที่พื้นที่เตือนแล้ว · หลบตามสัญญาณ",
+  "collection.next": "ปลดล็อกชิ้นถัดไป",
+  "collection.complete": "สะสมมรดกครบทั้งห้าชิ้นแล้ว",
+  "collection.origins": "ชาติกำเนิดที่ถึงยุคสำริด",
+  "quality.bossThreat": "บอสบุกฐาน",
+  "combat.boss.aimBase": "ท่าโจมตีเล็งฐานของคุณ · เข้าป้องกัน แล้วสวนช่วงพัก",
+  "combat.boss.aimPlayer": "ท่าโจมตีเล็งคุณ · หลบออกจากพื้นที่เตือน",
+  "quality.power.hunters": "ใช้ระดมยิงเมื่อศัตรูล้อมรอบตัว",
+  "quality.power.engineers": "ใช้โอเวอร์ไดรฟ์เมื่อมีจังหวะยิงเป้าหมายสำคัญต่อเนื่อง",
+  "quality.power.resonant": "ใช้โนวาเมื่อศัตรูเข้ามารวมกันใกล้ตัว",
+  "quality.power.sentinels": "ใช้ปราการเพื่อฟื้นพลังชีวิตและรับมือจังหวะอันตราย",
+  "quality.outpost.research": "เร่งองค์ความรู้สู่ยุคถัดไป ป้องกันฐานเพื่อรักษาโบนัส",
+  "quality.outpost.military": "เพิ่มช่องกองกำลังหนึ่งช่อง วางฐานเพื่อช่วยป้องกันพื้นที่",
+  "quality.outpost.economy": "จุดพักฟื้น อยู่ใกล้ฐานเพื่อฟื้นพลังชีวิต",
   "collection.title": 'ของสะสมมรดกอารยธรรม',
   "evolution.stats": 'พลังโจมตีพื้นฐาน / ระยะห่างการโจมตี',
   "collection.equip": 'สวมใส่',
