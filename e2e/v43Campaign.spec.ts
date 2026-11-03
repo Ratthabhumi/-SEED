@@ -28,7 +28,7 @@ for(const lang of ['en','th'] as const)test(`held movement releases through an o
 for(const lang of ['en','th'] as const)test(`boss defense goal identifies a real owned base ${lang}`,async({page})=>{
  await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang});
  await page.evaluate(()=>(window as any).__seedE2E.stageSpecRegression(false,true));await page.keyboard.press('Escape');
- await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageBossReview('slam');h.bossPhaseReview();h.setAgeIndex(5);});
+ await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageBossReview('slam');h.stageDefenseReview();h.bossPhaseReview();h.setAgeIndex(5);});
  await expect(page.locator('.boss-target')).toContainText(lang==='th'?'ปกป้องฐาน':'Defend outpost');
  await expect(page.locator('.boss-target')).toContainText('[M]');
  mkdirSync(out,{recursive:true});await page.screenshot({path:`${out}/base-defense-${lang}.png`});

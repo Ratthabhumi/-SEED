@@ -1,3 +1,4 @@
+import {legacyCollectionPanel} from '../legacyCollectionPanel';
 // Title screen: seed input + language + animated backdrop. DOM for text (Thai-safe).
 import Phaser from "phaser";
 import {heroPortrait} from "../ui/heroPortrait";
@@ -170,7 +171,7 @@ export class TitleScene extends Phaser.Scene {
         label.append(choice, t("meta.energyStart")); choices.append(label);
       }
     };
-    renderArchive(); layout.append(archive);
+    renderArchive(); layout.append(archive,legacyCollectionPanel());
 
     const row = el("div", "btn-row");
     row.appendChild(button("ui.settings", () => this.showSettings()));

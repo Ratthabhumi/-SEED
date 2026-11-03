@@ -1,8 +1,8 @@
 import type {SimEnemy} from "../sim/RunState";
 export type BossPattern="slam"|"fan"|"cross";
-export interface BossEncounter {phase:"approach"|"warning"|"commit"|"attack"|"recover"|"phase-transition";timer:number;cycle:number;pattern:BossPattern;aimX:number;aimY:number;enraged:boolean;outpostId:string;}
+export interface BossEncounter {phase:"approach"|"warning"|"commit"|"attack"|"recover"|"phase-transition";timer:number;cycle:number;pattern:BossPattern;aimX:number;aimY:number;enraged:boolean;outpostId:string;assaultLeft:number;defenseCd:number;}
 export const BOSS_ENCOUNTER={warning:1.15,recovery:1.6,cooldown:2.2,phase2Cooldown:1.1,transition:.4,slamRadius:105,crossHalfWidth:24,crossLength:360,shotSpeed:230} as const;
-export const createBossEncounter=():BossEncounter=>({phase:"approach",timer:2.2,cycle:0,pattern:"slam",aimX:0,aimY:0,enraged:false,outpostId:""});
+export const createBossEncounter=():BossEncounter=>({phase:"approach",timer:2.2,cycle:0,pattern:"slam",aimX:0,aimY:0,enraged:false,outpostId:"",assaultLeft:0,defenseCd:0});
 export const bossWarningDuration=(pattern:BossPattern,enraged=false):number=>(pattern==="fan"?1.35:pattern==="cross"?1.4:BOSS_ENCOUNTER.warning)*(enraged?.8:1);
 const FAN_NORMAL=[-.6,-.4,-.2,.2,.4,.6] as const;
 const FAN_ENRAGED=[-.8,-.65,-.5,-.35,-.2,.2,.35,.5,.65,.8] as const;

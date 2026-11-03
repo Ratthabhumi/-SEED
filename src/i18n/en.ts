@@ -1,5 +1,22 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "collection.title": 'Civilization Legacy Collection',
+  "evolution.stats": 'Base hit / attack interval',
+  "collection.equip": 'Equip',
+  "collection.unequip": 'Unequip',
+  "collection.locked": 'Locked',
+  "collection.earned": 'Legacy unlocked',
+  "collection.dawn": 'Dawn Emblem',
+  "collection.dawnRule": 'Reach the Bronze Age.',
+  "collection.ward": 'Guardian Emblem',
+  "collection.wardRule": 'Successfully defend a real outpost raid.',
+  "collection.prism": 'Prism Trail',
+  "collection.prismRule": 'Reach Bronze with two different Origins.',
+  "collection.star": 'Star Ornament',
+  "collection.starRule": 'Defeat a Boss.',
+  "collection.chronicle": 'Chronicle Trophy',
+  "collection.chronicleRule": 'Ascend into another world.',
+
   "review.combat.title": "Staged combat review — not natural progression",
   "review.combat.warning": "Use a private browser window. These buttons stage ages, targets and readiness; no Human QA report is recorded. WASD moves; Esc pauses.",
   "review.combat.bow": "Bow readiness",

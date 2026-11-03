@@ -1,8 +1,24 @@
 // Thai strings — same keys as en.ts (parity enforced by test). Natural modern Thai gaming tone.
-import type {
- EnKeys } from "./en";
+import type { EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "collection.title": 'ของสะสมมรดกอารยธรรม',
+  "evolution.stats": 'พลังโจมตีพื้นฐาน / ระยะห่างการโจมตี',
+  "collection.equip": 'สวมใส่',
+  "collection.unequip": 'ถอดออก',
+  "collection.locked": 'ยังไม่ปลดล็อก',
+  "collection.earned": 'ปลดล็อกมรดกแล้ว',
+  "collection.dawn": 'ตรารุ่งอรุณ',
+  "collection.dawnRule": 'พัฒนาไปถึงยุคสำริด',
+  "collection.ward": 'ตราผู้พิทักษ์',
+  "collection.wardRule": 'ป้องกันการรุกรานฐานสำเร็จจริง',
+  "collection.prism": 'ประกายปริซึม',
+  "collection.prismRule": 'เล่นถึงยุคสำริดด้วยชาติกำเนิดต่างกันสองแบบ',
+  "collection.star": 'เครื่องประดับดวงดาว',
+  "collection.starRule": 'เอาชนะบอส',
+  "collection.chronicle": 'ถ้วยบันทึกอารยธรรม',
+  "collection.chronicleRule": 'จุติสู่โลกถัดไป',
+
   "review.combat.title": "ฉากตรวจการต่อสู้ — ไม่ใช่การเล่นตามธรรมชาติ",
   "review.combat.warning": "ใช้หน้าต่างส่วนตัว ปุ่มเหล่านี้จัดฉากยุค เป้าหมาย และความพร้อมยิง โดยไม่บันทึกรายงาน Human QA ใช้ WASD เคลื่อนที่ และ Esc หยุดชั่วคราว",
   "review.combat.bow": "ความพร้อมธนู",

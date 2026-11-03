@@ -1,3 +1,4 @@
+import {BEAM_TARGET_RANGE} from "../combat/weapons";
 // Framework-independent run simulation (ADR 0003).
 //
 // One RunSimulation instance == one run attempt. Restarting a seed means
@@ -1057,12 +1058,17 @@ export class RunSimulation {
    * distant bases require physical travel, never remote damage. */
   private bossOutpostTarget(e:SimEnemy,ev:SimEvent[]) {
     const a=e.encounter;if(!a?.enraged)return undefined;
+    const safe=a.phase==="approach"||a.phase==="phase-transition";
+    if(a.outpostId&&a.assaultLeft<=0&&safe){a.outpostId="";a.defenseCd=24;return undefined;}
     const current=territoryById(this.state.territories,a.outpostId);
     if(current&&!current.disabled&&current.spec)return current;
-    if(a.phase!=="approach"&&a.phase!=="phase-transition")return undefined;
-    const targets=this.raidTargets();
+    if(a.outpostId&&safe){a.outpostId="";a.assaultLeft=0;a.defenseCd=24;return undefined;}
+    if(!safe||a.defenseCd>0)return undefined;
+    const s=this.state,arena=s.stronghold??e;
+    const targets=this.raidTargets().filter(t=>Math.hypot(t.x-e.x,t.y-e.y)<=1000&&Math.hypot(t.x-s.px,t.y-s.py)<=1200&&Math.hypot(t.x-arena.x,t.y-arena.y)<=1600);
     const target=targets.find(t=>t.poiId===this.state.raid?.poiId)??targets.sort((x,y)=>Math.hypot(x.x-e.x,x.y-e.y)-Math.hypot(y.x-e.x,y.y-e.y)||(x.poiId<y.poiId?-1:1))[0];
     a.outpostId=target?.poiId??"";
+    a.assaultLeft=target?12:0;if(!target)a.defenseCd=4;
     if(target)ev.push({type:"boss_outpost_targeted",poiId:target.poiId});
     return target;
   }
@@ -1914,7 +1920,7 @@ export class RunSimulation {
     if (kOn) {
       const st = getWeaponStage("kinetic", s.weaponStage.kinetic);
       tick("kinetic", st.cooldown * cdM, () => {
-        if (st.archetype === "beam") return this.beamStrike("kinetic", st, 800, ev);
+        if (st.archetype === "beam") return this.beamStrike("kinetic", st, BEAM_TARGET_RANGE, ev);
         else return this.fireProjectileSpread("kinetic", st, st.count + b.bonusProjectiles, 700,ev);
       });
     }
@@ -1929,7 +1935,7 @@ export class RunSimulation {
         }
       }
       if (st.archetype === "beam" || b.beamUnlocked) {
-        tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, 800, ev));
+        tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, BEAM_TARGET_RANGE, ev));
       } else if (st.archetype === "projectile") {
         tick("energy", st.cooldown * cdM, () => {
           return this.fireProjectileSpread('energy',{...st,speed:st.speed||380,radius:st.radius*.8},1,640,ev,HAZARD_GEOMETRY.projectileLife);
@@ -2096,6 +2102,7 @@ export class RunSimulation {
       const d = Math.max(1, Math.hypot(dx, dy));
       const phase=e.evolution?.phase;const shots=e.evolution?.shots;
       const bossPhase=e.encounter?.phase;
+      if(e.encounter){e.encounter.assaultLeft=Math.max(0,e.encounter.assaultLeft-dt);e.encounter.defenseCd=Math.max(0,e.encounter.defenseCd-dt);}
       const post=e.boss?this.bossOutpostTarget(e,ev):undefined;
       const assault=!!post&&e.encounter!.cycle%2===0;
       const bossMoved=e.boss && !!e.encounter && stepBossEncounter(e,assault?post!.x:s.px,assault?post!.y:s.py,dt,(pattern,x,y)=>{

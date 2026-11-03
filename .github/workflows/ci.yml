@@ -157,6 +157,7 @@ jobs:
             test-results/v41-visible/*.png
             test-results/v43-visible/*.json
             test-results/v43-visible/*.png
+            test-results/v44-visible/*.png
             test-results/evolution-performance.json
             test-results/v3-comparison/
             test-results/v36-final/
@@ -180,13 +181,17 @@ jobs:
       - name: Natural36 scope receipt
         if: needs.baselines.outputs.canonical_changed != 'true'
         run: echo 'Natural36 NOT_RUN_NO_CANONICAL_DELTA; no new cohort pass claimed.'
+      - run: node scripts/run-defender-aware.mjs
+        if: needs.baselines.outputs.canonical_changed == 'true'
       - run: node scripts/run-boss-policy-experiment.mjs
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: progression-cohort-${{ github.sha }}
           path: |
             test-results/integrated-progression-cohort.json
             test-results/content153-natural-boss.json
             test-results/content18-boss-policy-experiment.json
+            test-results/v44-defender-aware.json
           if-no-files-found: error
           retention-days: 14

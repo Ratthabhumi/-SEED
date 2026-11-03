@@ -81,9 +81,11 @@ export const CHILD_LAWS_CONTENT_VERSION = 18;
 // world geometry, child laws and persistent settings/archive schema stay pinned.
 // Content22: the actual boss assaults one owned outpost, sharing its HP/repair
 // and raid target. Physical approach and fixed warned geometry prevent remote damage.
-export const CONTENT_VERSION = 22;
+// Content23 bounds near-arena assault windows and reengagement; no new damage model.
+export const CONTENT_VERSION = 23;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
-export const SAVE_SCHEMA_VERSION = 2;
+// Schema3 preserves v1/v2 progress and Insight, adding a validated cosmetic collection.
+export const SAVE_SCHEMA_VERSION = 3;
 
 export const GOLDEN_SEEDS = ["EPOCH-GOLDEN-001", "EPOCH-GOLDEN-002", "EPOCH-STRESS-001"] as const;
 

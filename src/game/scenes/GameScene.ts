@@ -1,3 +1,6 @@
+import {defaultCollection,earnCollection,COLLECTIBLES,type LegacyCollection,type CollectionAchievement} from '../../core/progression/legacyCollection';
+import {legacyCollectionPanel} from '../legacyCollectionPanel';
+import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
 import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
@@ -123,6 +126,7 @@ export class GameScene extends Phaser.Scene {
   private deathPersisted = false;
   private attemptId = 0;
   private archiveEarned = 0;
+  private cosmetics:LegacyCollection=defaultCollection();
   private archiveStorageOK = true;
 
   private enemyActors!: ActorRenderer;
@@ -370,6 +374,7 @@ export class GameScene extends Phaser.Scene {
     const originRaw = sessionStorage.getItem(TITLE_ORIGIN_KEY) ?? "";
     sessionStorage.removeItem(TITLE_ORIGIN_KEY);
     const savedArchive = loadSave(localStorage);
+    this.cosmetics=savedArchive.collection;
     const begun = beginAttempt(savedArchive.meta); savedArchive.meta = begun.ledger;
     this.archiveStorageOK = storeSave(localStorage, savedArchive);
     this.attemptId = this.archiveStorageOK ? begun.id : 0; this.archiveEarned = 0;
@@ -865,6 +870,9 @@ export class GameScene extends Phaser.Scene {
           signalSecured: this.sim.state.signalSecured,
           territories: this.sim.state.territories,
         }),
+        // Explicit staged browser fixture; never used by natural policies or Human QA.
+        stageDefenseReview:()=>{const s=this.sim.state,base=s.territories.find(t=>t.spec&&!t.disabled),boss=s.enemies.find(e=>e.active&&e.boss);if(!base||!boss)return false;s.px=base.x;s.py=base.y;boss.x=base.x+250;boss.y=base.y;if(s.stronghold){s.stronghold.x=base.x;s.stronghold.y=base.y;}return true;},
+        legacyCollectionReview:()=>({collection:this.cosmetics,world:this.sim.state.ascension+1}),
         stageActorReview: (dense = false) => {
           const s=this.sim.state; s.ageIndex=3;s.ageElapsed=0;s.build.hp=s.build.maxHp=1e9;
           for(const e of s.enemies)e.active=false;
@@ -1471,7 +1479,11 @@ export class GameScene extends Phaser.Scene {
           encounter.dataset.identity=identity;encounter.dataset.phase=a.phase;
           encounter.replaceChildren(el("strong","",a.enraged?"combat.boss.phase2":"combat.boss.phase1"),el("span","",`combat.boss.${a.phase}` as EnKeys));
           if(["warning","commit","attack"].includes(a.phase))encounter.appendChild(el("small","",`combat.boss.${a.pattern}` as EnKeys));
-          if(target)encounter.appendChild(el("small","boss-target",undefined,`${t("combat.boss.defendBase")}: ${t(`poi.${target.poiType}.name` as EnKeys)} [M]`));
+          if(target)encounter.appendChild(el("small","boss-target"));
+        }
+        const targetLine=encounter.querySelector('.boss-target');
+        if(targetLine&&target){const dx=target.x-this.sim.state.px,dy=target.y-this.sim.state.py,arrows=['→','↘','↓','↙','←','↖','↑','↗'];const arrow=arrows[(Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8];
+          targetLine.textContent=`${t('combat.boss.defendBase')}: ${t(`poi.${target.poiType}.name` as EnKeys)} · ${Math.ceil(target.hp)}/${target.maxHp} HP · ${arrow} ${Math.round(Math.hypot(dx,dy))}u · ${Math.ceil(a.assaultLeft)}s · [F] [Q/E/R] [M]`;
         }
       }
     }
@@ -3003,6 +3015,7 @@ export class GameScene extends Phaser.Scene {
         this.restartRun();
       }
     }, "btn danger"));
+    panel.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;save.collection=c;}));
     screen.appendChild(panel);
     root.appendChild(screen);
     this.surfaces.suspendContext();
@@ -3010,7 +3023,7 @@ export class GameScene extends Phaser.Scene {
     screen.addEventListener("keydown", (event) => {
       if (event.key !== "Tab") return;
       const scope = screen.querySelector(".confirm-nested") ?? panel;
-      const controls = Array.from(scope.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      const controls = Array.from(scope.querySelectorAll<HTMLElement>('button:not(:disabled),summary,input:not(:disabled),select:not(:disabled),a[href],[tabindex="0"]')).filter(control=>control.getClientRects().length>0);
       if (!controls.length) return;
       event.preventDefault();
       const index = controls.indexOf(document.activeElement as HTMLButtonElement);
@@ -3152,6 +3165,7 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(el("p", "archive-result", undefined, `${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${s.ascension+1} · ${t("meta.earned")}: +${this.archiveEarned}`));
     if (!this.archiveStorageOK) panel.appendChild(el("p", "", "meta.storage"));
     panel.appendChild(el("div", "", "ui.runChronicle"));
+    panel.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;}));
     const dl = document.createElement("dl");
     dl.className = "chron";
     const famKey = (["kinetic", "energy", "defense", "field"] as string[]).includes(s.topDamageSource)
@@ -3331,11 +3345,13 @@ export class GameScene extends Phaser.Scene {
         g.textContent = `${t(`tech.${spine.id}.name` as EnKeys)} — ${t(`tech.${spine.id}.description` as EnKeys)}`;
         panel.appendChild(g);
       }
+      const steps=el('div','evolution-steps');
+      for(const [i,id] of AGES.entries()){const step=el('span',i<=idx?'reached':'',`age.${id}` as EnKeys);if(i===idx)step.setAttribute('aria-current','step');steps.append(step);}panel.append(steps);
       const forms = activeFamilies(s.originId, s.expansionFamily)
-        .map((f) => t(getWeaponStage(f, idx).nameKey as EnKeys)).join(" · ");
+        .map((f) => {const st=getWeaponStage(f,s.weaponStage[f]);return `${t(st.nameKey as EnKeys)} · ${Number((st.damage*s.build.damageMul).toFixed(1))} / ${Number((st.cooldown*Math.max(.3,s.build.cooldownMul)).toFixed(2))}s`;}).join(" · ");
       const w = document.createElement("div");
       w.className = "toast-sub";
-      w.textContent = forms;
+      w.textContent = `${t('evolution.stats')}: ${forms}`;
       panel.appendChild(w);
       // One-line purpose: what this age asks of the civilization next.
       const goal = AGE_DEFS[idx];
@@ -3519,6 +3535,10 @@ export class GameScene extends Phaser.Scene {
     let knowledgeCollected=0;
     const save = loadSave(localStorage);
     for (const e of ev) {
+      const achievement:CollectionAchievement|undefined=e.type==='age_reached'?{type:'age',origin:s.originId,age:AGES.indexOf(e.age)}:e.type==='raid_repelled'?{type:'defense'}:e.type==='boss_killed'?{type:'boss'}:e.type==='ascended'?{type:'ascend'}:undefined;
+      if(achievement){const fresh=loadSave(localStorage),next=earnCollection(fresh.collection,achievement),earned=next.owned.filter(id=>!fresh.collection.owned.includes(id));
+        if(JSON.stringify(next)!==JSON.stringify(fresh.collection)){fresh.collection=next;if(storeSave(localStorage,fresh)){this.cosmetics=next;for(const id of earned)toast('collection.earned',t(`collection.${id}` as EnKeys));}else toast('meta.storage');}
+      }
       this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId);
       this.heroEquipment.accept(e,s.worldNonce,s.elapsed,s.px,s.py);
       if(e.type==="ability_used")this.heroEquipment.activate(s.worldNonce,s.elapsed,e.id,s.px,s.py);
@@ -4076,8 +4096,10 @@ export class GameScene extends Phaser.Scene {
     const reference=this.allyActors.referenceReview();
     this.heroEquipment.socket(reference?(reference.socket[0]!-64)*WORLD_SCALE.hero/128*(heroPose.flip?-1:1):0,reference?(reference.socket[1]!-83.2)*WORLD_SCALE.hero/128:-16);
     this.equipmentGraphics.clear();this.heroEquipment.draw(this.equipmentGraphics,s,this.playerFacing,this.reducedEffects,hc);
+    let cosmeticTrails=0;
     for (const p of s.projs) {
       if (!p.active || !vis(p.x, p.y)) continue;
+      if(p.friendly&&p.primary&&this.cosmetics.equipped.trail&&!this.reducedEffects&&cosmeticTrails++<12){const speed=Math.max(1,Math.hypot(p.vx,p.vy));g.lineStyle(2,hc?0xffffff:0xb49cff,.8);g.lineBetween(p.x,p.y,p.x-p.vx/speed*20,p.y-p.vy/speed*20);}
       if (p.friendly) {if(hc){if(!this.friendlyBatch.draw(p,wopts))drawFriendlyProj(g,p,wopts);}else this.combatSprites.projectile(p,s.originId);}
       else if(this.vectorHostiles||!this.hostileBatch.draw(p,hc))drawHostileProj(g, p, wopts);
     }
@@ -4127,6 +4149,7 @@ export class GameScene extends Phaser.Scene {
     }
     // Player: unique silhouette (camera still follows the invisible anchor).
     this.playerArc.setPosition(s.px, s.py);
+    drawLegacyCosmetics(g,this.cosmetics,s.px,s.py,s.ageIndex,hc);
     drawPlayer(g, s.px, s.py, 16, {
       facing: this.playerFacing,
       dashing: s.dashT > 0,
@@ -4212,6 +4235,8 @@ export class GameScene extends Phaser.Scene {
     if (s.bossIndex < 0) return;
     const boss = s.enemies[s.bossIndex];
     if (!boss?.active) return;
+    const base=s.territories.find(t=>t.poiId===boss.encounter?.outpostId&&!t.disabled);
+    if(base)drawOffscreenIndicator(g,{scrollX:cam.worldView.x,scrollY:cam.worldView.y,width:cam.width,height:cam.height,zoom:z},base.x,base.y,0xffd36b,15);
     drawOffscreenIndicator(g, {
       scrollX: cam.worldView.x,
       scrollY: cam.worldView.y,

@@ -1,3 +1,7 @@
+## V4.4 —2026-11-03
+
+Primary owner checkout; feat/v44-retention-defense-20261103 from caeeb5d/PR34. See docs/V44_OWNER_PACKET.md, ADR0051 and implementation plan. Content23 bounds near-arena assault windows; Save3 adds earned collection with v1/v2 migration preserving Insight. Historical policy unchanged; separate defender-aware cohort and engagement observation. No research/new dependencies/main merge/release/deploy. Final-source receipts belong in the new Draft PR; all human/fun/native/art gates remain separate. Preserve .cursor, launcher and private QA.
+
 ## Historical fixture compatibility correction —2026-11-03
 
 Content22 af4a97d clean analysis:36 replay-equal,29 reached/7 wins/0 deaths;
@@ -1534,3 +1538,11 @@ coordinates/zoom, matching D700ms/W500ms comparison input, and separate preparat
 versus encounter wall times. Performance uses safe4187/4188 and preserves all
 failed rows before enforcing paused-state hash/density invariants. No new gates
 are certified until final exact-head CI/artifacts complete.
+
+## Local verification before final source commit
+
+Full check PASS:607 tests/108 files, typecheck, third-party notices and production build. First full check retained a schema2 expectation failure; the version assertion now follows SAVE_SCHEMA_VERSION while all data/Insight assertions remain. Focused initial browser16/16 passed; final sequential browser22/22 passed across EN/TH and720/1080/2550x1272, including keyboard collection entry, paused canonical equality under cosmetic/settings changes and actual canonical World2 transition/Chronicle unlock in the staged browser fixture. ZIP/release:verify PASS after sequencing.
+
+One browser attempt failed because concurrent Windows Compress-Archive locked a served PNG (EBUSY) and Vite preview stopped. It is retained as a harness failure, not called a gameplay pass; the identical browser suite passed once packaging finished. No thresholds or tests removed. Final compiled artifact/CI/cohort receipts will identify the committed source in the Draft PR.
+
+Previously protected7735-file set:7733 unchanged. Only mutable human-playtests/latest.json/latest.md pointers differ from the prior-session snapshot; those current pointers and all raw historical files are retained, not reverted or published. Additional newer private files were not enumerated by that older manifest. No claim that an existing QA process represents a clean V4.4 human session; owner must restart it.

@@ -1,6 +1,8 @@
 // Weapon families × 6 age tiers. Archetypes reuse the same projectile/aura/orbit systems.
 export type WeaponFamily = "kinetic" | "energy" | "defense" | "field";
 export type Archetype = "projectile" | "beam" | "aura" | "orbit" | "summon" | "mine";
+/** Canonical beam target acquisition, shared with read-only evaluation. */
+export const BEAM_TARGET_RANGE=800;
 
 export interface WeaponStage {
   nameKey: string;

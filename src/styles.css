@@ -831,3 +831,8 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 #ui #notification-stack[data-encounter="true"] {top:50%;left:max(12px,env(safe-area-inset-left));transform:translateY(-50%);width:min(300px,calc(25vw - 16px))}
 .run-loading .panel {width:min(32rem,calc(100vw - 2rem));text-align:center;line-height:1.7}
 .run-loading progress {width:100%;height:1rem;accent-color:var(--gold,#ffd36b)}
+
+/* Earned collection: bounded previews, accessible native controls. */
+.legacy-collection{margin:12px 0;line-height:1.7}.legacy-collection summary{cursor:pointer;font-weight:700;padding:10px}.legacy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}.legacy-card{padding:14px;border:1px solid #42516a;border-radius:12px;background:#121d2b}.legacy-card h3{margin:4px 0}.legacy-card p{min-height:3.4em}.legacy-preview{height:62px;font-size:42px;text-align:center;background:#08121d;border-radius:10px}.legacy-card button{width:100%}.boss-target{display:block;white-space:normal}
+.evolution-steps{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.evolution-steps span{padding:5px 9px;border:1px solid #42516a;border-radius:8px;opacity:.55}.evolution-steps .reached{opacity:1}.evolution-steps [aria-current]{border-color:#ffd36b;color:#ffd36b}
+#pause-screen .pause-panel>.legacy-collection{grid-column:1/-1}
