@@ -27,6 +27,8 @@ export interface TestSaveOptions {
   tutorialCompleted?: boolean;
   lang?: "en" | "th";
   uiScale?: 1 | 1.25 | 1.5 | 2;
+  reducedEffects?: boolean;
+  contrast?: 'normal'|'high';
   bossArt?: "rig" | "baseline" | "painted";
   /** Scoped startup budget; caller must document measured slow initialization. */
   startupTimeoutMs?: number;
@@ -40,8 +42,9 @@ export async function prepareSave(page: Page, opts: TestSaveOptions = {}): Promi
       lang: opts.lang ?? "en",
       shake: true,
       volume: 0.6,
-      contrast: "normal",
+      contrast: opts.contrast ?? "normal",
       uiScale: opts.uiScale ?? 1,
+      reducedEffects: opts.reducedEffects ?? false,
       tutorialCompleted: opts.tutorialCompleted ?? true,
     },
     archive: [],

@@ -1,3 +1,7 @@
+# V4.6 combat/civilization field feedback —2026-11-03
+
+Primary Desktop/Co-op/-SEED; branch feat/v46-combat-defense-20261103 from9be405c/PR36. See docs/V46_OWNER_PACKET.md and docs/art/V46_ANIMATION_PRODUCTION.json. Resolved damage feedback/actual tier/audio channel, world base HP/canonical economy reach and bounded milestone/base beats. Core extracts800constant only, no balance change:Worldgen3/Content24/Save3/child18. One review P2 test gap fixed with actual boss-loss/repair and positive effect assertions. Local harness/startup/draft-setting failures preserved; final exact-source receipts in new Draft PR. Human baseline1/5, art/native/fun gates pending. Preserve .cursor/BAT/private QA; no merge/release/deploy/Parsec changes.
+
 # V4.5 core quality — 2026-11-03
 
 Primary owner checkout Desktop/Co-op/-SEED. Branch feat/v45-core-quality-20261103 from PR35/c12c8f7, no merge/main/deploy. See docs/V45_OWNER_PACKET.md for matrix, preserved33 complaints, RED evidence, source-art dependencies and clean owner protocol. Presentation only; Worldgen3/Content24/Save3/child18 unchanged. Final exact-source check/browser/package/CI receipts will be in the new Draft PR. Human fun remains1/5, acceptance pending. Private QA/.cursor/original untracked Play-SEED-QA.bat preserved.

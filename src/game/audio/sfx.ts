@@ -1,9 +1,11 @@
+import{ImpactSoundGate,type ImpactCue}from'./impactCue';
 // Procedural Web Audio SFX — original synthesized sounds, no external assets.
 export class Sfx {
   private ctx: AudioContext | null = null;
   private volume = 0.6;
   private voices=new Set<OscillatorNode>();
   private lastTone=new Map<string,number>();
+  private impactGate=new ImpactSoundGate();
 
   setVolume(v: number): void {
     this.volume = Math.min(1, Math.max(0, v));
@@ -57,6 +59,14 @@ export class Sfx {
     this.tone(energy ? 720 : 190, 0.1, energy ? "triangle" : "sawtooth", 0.06, energy ? -480 : -100);
   }
   hit(): void { this.tone(220, 0.07, "square", 0.10, -80); }
+  impact(cue:ImpactCue):void{
+    if(!this.ctx||this.volume===0||!this.impactGate.allow(this.ctx.currentTime))return;
+    if(cue.shield)this.tone(1080,.055,'sine',.07,-300);
+    else if(cue.family==='kinetic')this.tone(185,.045,'triangle',.065,-100);
+    else if(cue.family==='energy')this.tone(760,.055,'sine',.065,-410);
+    else if(cue.family==='defense')this.tone(410,.065,'triangle',.065,90);
+    else this.tone(115,.07,'sawtooth',.055,-55);
+  }
   kill(): void { this.tone(330, 0.12, "sawtooth", 0.12, -180); }
   pickup(): void { this.tone(660, 0.08, "sine", 0.10, 220); }
   levelup(): void { this.tone(523, 0.16, "triangle", 0.18, 260); }

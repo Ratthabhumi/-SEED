@@ -124,13 +124,14 @@ export function militaryBonusSlots(ts: readonly Territory[]): number {
   return n;
 }
 
+export const ECONOMY_REGEN_RADIUS=800;
 /** Economy: +1.5 hp/s per tier while the player is near an active post. */
 export function economyRegenAt(ts: readonly Territory[], px: number, py: number, multiplier: (t: Territory) => number = () => 1): number {
   let regen = 0;
   for (const t of ts) {
     if (t.disabled || t.spec !== "economy") continue;
     const d = Math.hypot(t.x - px, t.y - py);
-    if (d <= 800) regen += 1.5 * t.tier * multiplier(t);
+    if (d <= ECONOMY_REGEN_RADIUS) regen += 1.5 * t.tier * multiplier(t);
   }
   return regen;
 }

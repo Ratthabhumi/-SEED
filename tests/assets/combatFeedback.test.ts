@@ -53,7 +53,8 @@ describe("canonical signature beam feedback",()=>{
     for(let i=0;i<200;i++){fx.accept(beam,1,false);fx.accept(hit,1,false);}
     expect(fx.counts(1)).toEqual({beams:COMBAT_FEEDBACK_BUDGET.beams,impacts:COMBAT_FEEDBACK_BUDGET.impacts});
     expect(fx.counts(1)).toEqual(fx.counts(1));expect(fx.counts(1.3)).toEqual({beams:0,impacts:0});
-    fx.accept(beam,2,true);fx.accept(hit,2,true);expect(fx.counts(2)).toEqual({beams:1,impacts:0});
+    // Reduced mode keeps essential static hit confirmation, without particles.
+    fx.accept(beam,2,true);fx.accept(hit,2,true);expect(fx.counts(2)).toEqual({beams:1,impacts:1});
     fx.syncWorld("child");expect(fx.counts(0)).toEqual({beams:0,impacts:0});
   });
   it("offscreen effects submit no draw calls; reduced mode retains the released attack line",()=>{

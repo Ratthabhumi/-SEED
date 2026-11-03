@@ -26,8 +26,11 @@ for(const lang of ['en','th'] as const)test('real Atomic beam release, pause and
   await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(.3));expect((await state()).beams).toBe(0);expect((await state()).impacts).toBe(0);
   await page.keyboard.press('Escape');await page.keyboard.press('Escape');await page.locator('#pause-reducedEffects').check();await page.keyboard.press('Escape');
   await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageEvolution('resonant',4);h.primeSignature();h.advanceEvolution(.17);});
-  expect((await state()).reduced).toBe(true);expect((await state()).beams).toBe(1);expect((await state()).impacts).toBe(0);
+  // Reduced Effects preserves essential actual-hit confirmation (V4.6),
+  // while the bounded static marker and released beam still expire.
+  expect((await state()).reduced).toBe(true);expect((await state()).beams).toBe(1);expect((await state()).impacts).toBeGreaterThan(0);
   await page.screenshot({path:'test-results/browser/signature-reduced-'+lang+'.png'});
+  await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(.2));expect((await state()).beams).toBe(0);expect((await state()).impacts).toBe(0);
   await assertNoRawKeys(page);
   // Fixture pause has no menu: first Escape resumes, second opens the normal menu.
   await page.keyboard.press('Escape');await page.keyboard.press('Escape');await page.locator('#pause-restart-btn').click();

@@ -4,6 +4,9 @@ import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
 import {bossThreat,bossStrikeTargetsBase} from '../ui/bossThreat';
 import {changedWeaponForms} from '../ui/weaponEvolution';
 import {powerOpportunity} from '../ui/powerOpportunity';
+import{impactCue}from'../audio/impactCue';
+import{drawBaseSupport,baseSupport}from'../render/BaseSupport';
+import{CivilizationBeats}from'../render/CivilizationBeats';
 import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
@@ -147,6 +150,7 @@ export class GameScene extends Phaser.Scene {
   private artLastX = 0;
   private artLastY = 0;
   private gfx!: Phaser.GameObjects.Graphics;
+  private feedbackInk!:Phaser.GameObjects.Graphics;
   private ground!: Phaser.GameObjects.Graphics;
   private preparedGround!:PreparedGround;
   private playerArc!: Phaser.GameObjects.Arc;
@@ -182,6 +186,8 @@ export class GameScene extends Phaser.Scene {
   private landmarkArt: Phaser.GameObjects.Image[] = [];
   private reducedEffects=false;
   private combatFeedback = new CombatFeedback();
+  private civilizationBeats=new CivilizationBeats();
+  private beatWorld='';
   private knowledgeHintShown=false;
   private knowledgeCollectUntil=-Infinity;
   private arcs: Array<{x1:number;y1:number;x2:number;y2:number;until:number;relay:boolean}> = [];
@@ -406,6 +412,7 @@ export class GameScene extends Phaser.Scene {
     document.documentElement.dataset.contrast=loadSave(localStorage).settings.contrast;
     this.actorMotion.reset();this.artWorld=this.sim.state.worldNonce;this.enemyWarningT.rush=this.enemyWarningT.burst=-Infinity;
     this.combatFeedback.reset(this.sim.state.worldNonce);
+    this.civilizationBeats.reset();this.beatWorld=this.sim.state.worldNonce;
     this.combatFeedback.initialize(this);
     this.knowledgeHintShown=false;this.knowledgeCollectUntil=-Infinity;
     this.artLastX=this.sim.state.px; this.artLastY=this.sim.state.py;
@@ -439,6 +446,7 @@ export class GameScene extends Phaser.Scene {
     this.preparedGround.enabled=false;
     if(this.diagnostics)this.diagnostics.wrap(this.ground,'renderWebGL','render.Graphics');
     this.gfx = this.add.graphics().setDepth(0);
+    this.feedbackInk=this.add.graphics().setDepth(38).setName('hit-confirmation');
     this.equipmentGraphics=this.add.graphics().setDepth(5);
     this.ground.setName("ground");this.gfx.setName("combat");this.equipmentGraphics.setName("equipment");
     this.playerArc = this.add.circle(0, 0, 16, 0xffd166) as unknown as Phaser.GameObjects.Arc;
@@ -880,6 +888,34 @@ export class GameScene extends Phaser.Scene {
         // Explicit staged browser fixture; never used by natural policies or Human QA.
         stageDefenseReview:()=>{const s=this.sim.state,base=s.territories.find(t=>t.spec&&!t.disabled),boss=s.enemies.find(e=>e.active&&e.boss);if(!base||!boss)return false;s.px=base.x;s.py=base.y;boss.x=base.x+250;boss.y=base.y;if(s.stronghold){s.stronghold.x=base.x;s.stronghold.y=base.y;}return true;},
         legacyCollectionReview:()=>({collection:this.cosmetics,world:this.sim.state.ascension+1}),
+        // Staged engineering fixtures only; never part of Human QA or policies.
+        stageSupportReview:(poiId:string,disable=false)=>{
+          const s=this.sim.state,post=s.territories.find(p=>p.poiId===poiId);if(!post)throw Error('Claim a real site first');
+          if(disable){
+            const h=(window as any).__seedE2E;h.stageBossReview('slam');h.stageDefenseReview();h.bossPhaseReview();post.hp=1;
+            let lost=false;for(let i=0;i<600;i++){const events=this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false});this.handleEvents(events);if(events.some(e=>e.type==='outpost_lost'&&e.poiId===poiId)){lost=true;break;}}
+            if(!lost)throw Error('Canonical boss assault did not destroy the staged1HP base');
+            for(const boss of s.enemies)boss.active=false;for(const p of s.projs)if(!p.friendly)p.active=false;
+            s.build.hp=Math.min(s.build.hp,s.build.maxHp*.5); // Staged room for the subsequent real repair/heal observation.
+          }
+          else{
+            for(const other of [...s.territories])if(other.poiId!==poiId)this.handleEvents(this.sim.dismantleOutpost(other.poiId));
+            this.handleEvents(this.sim.setOutpostSpec(poiId,'economy'));if(post.spec!=='economy')throw Error('Canonical specialization rejected');
+            post.hp=post.maxHp*.5;s.build.hp=s.build.maxHp*.5;
+            for(const e of s.enemies)e.active=false;for(const a of s.squad)a.cd=999;
+            s.spawnT=s.eliteT=s.mineT=999;s.px=post.x+Math.min(150,CLAIM_REACH_RADIUS-10);s.py=post.y;
+          }
+          this.paused=true;this.cameras.main.centerOn(s.px,s.py);this.refreshGround(true);this.refreshHUD();
+          return {poiId:post.poiId,hp:s.build.hp};
+        },
+        v46FeedbackReview:()=>{const s=this.sim.state;return{classification:'STAGED_ENGINEERING_REVIEW',feedbackDepth:this.feedbackInk.depth,feedbackCommands:this.feedbackInk.commandBuffer.length,hp:s.build.hp,elapsed:s.elapsed,beats:this.civilizationBeats.count(s.elapsed),feedback:this.combatFeedback.counts(s.elapsed),posts:s.territories.map(p=>({id:p.poiId,disabled:p.disabled,hp:p.hp,repair:p.repairT,...baseSupport(p,s,this.sim.siteMultiplier(p.x,p.y,'economy'))}))};},
+        advanceFeedbackEvent:(kind:'impact'|'repair')=>{
+          const s=this.sim.state;for(let i=0;i<(kind==='impact'?180:720);i++){
+            const events=this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false});this.handleEvents(events);
+            const event=events.find(e=>kind==='repair'?e.type==='outpost_repaired':(e.type==='weapon_impact'||e.type==='energy_impact')&&e.hpDamage+e.shieldDamage>0);
+            if(event){this.paused=true;this.refreshHUD();return{event,cue:impactCue(events),feedback:this.combatFeedback.counts(s.elapsed),beats:this.civilizationBeats.count(s.elapsed)};}
+          }throw Error('Bounded canonical feedback event not observed');
+        },
         stageActorReview: (dense = false) => {
           const s=this.sim.state; s.ageIndex=3;s.ageElapsed=0;s.build.hp=s.build.maxHp=1e9;
           for(const e of s.enemies)e.active=false;
@@ -3562,6 +3598,7 @@ export class GameScene extends Phaser.Scene {
   private handleEvents(ev: SimEvent[]): void {
     const s = this.sim.state;
     this.combatFeedback.syncWorld(s.worldNonce);
+    if(this.beatWorld!==s.worldNonce){this.civilizationBeats.reset();this.beatWorld=s.worldNonce;}
     this.tutorial?.onSimEvents(ev);
     let killsThisFrame = 0;
     let knowledgeCollected=0;
@@ -3571,7 +3608,10 @@ export class GameScene extends Phaser.Scene {
       if(achievement){const fresh=loadSave(localStorage),next=earnCollection(fresh.collection,achievement),earned=next.owned.filter(id=>!fresh.collection.owned.includes(id));
         if(JSON.stringify(next)!==JSON.stringify(fresh.collection)){fresh.collection=next;if(storeSave(localStorage,fresh)){this.cosmetics=next;for(const id of earned){if(!this.earnedThisAttempt.includes(id))this.earnedThisAttempt.push(id);toast('collection.earned',t(`collection.${id}` as EnKeys));}}else toast('meta.storage');}
       }
-      this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId);
+    this.combatFeedback.accept(e, s.elapsed, this.reducedEffects,s.originId,s.weaponStage);
+      if(e.type==='age_reached'||e.type==='breakthrough')this.civilizationBeats.add(e.type==='age_reached'?'age':'breakthrough',s.px,s.py,s.elapsed);
+      if(e.type==='boss_phase_changed'){const boss=s.enemies.find(b=>b.active&&b.boss);if(boss)this.civilizationBeats.add('phase',boss.x,boss.y,s.elapsed);}
+      if(e.type==='boss_outpost_hit'||e.type==='outpost_lost'||e.type==='outpost_repaired'){const post=s.territories.find(p=>p.poiId===e.poiId);if(post)this.civilizationBeats.add(e.type==='boss_outpost_hit'?'hit':e.type==='outpost_lost'?'lost':'repaired',post.x,post.y,s.elapsed);}
       this.heroEquipment.accept(e,s.worldNonce,s.elapsed,s.px,s.py);
       if(e.type==="ability_used")this.heroEquipment.activate(s.worldNonce,s.elapsed,e.id,s.px,s.py);
       if(e.type==="enemy_killed")this.deathResponse.accept(e,s.elapsed,s.worldNonce,this.reducedEffects);
@@ -3798,6 +3838,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (ev.some(e=>e.type==="energy_arc")) sfx.energy();
     if (killsThisFrame > 0) sfx.kill();
+    const contact=impactCue(ev);if(contact)sfx.impact(contact);
     if(knowledgeCollected>0){
       sfx.pickup();this.knowledgeCollectUntil=s.elapsed+.25;
       if(!this.reducedEffects)this.floatTextAt(s.px,s.py-28,"+"+Number(knowledgeCollected.toFixed(1)),"#85ecff");
@@ -4047,6 +4088,7 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     const g = this.gfx;
     g.clear();
+    this.feedbackInk.clear();
     const cam = this.cameras.main;
     const vx0 = cam.worldView.x - 128;
     const vy0 = cam.worldView.y - 128;
@@ -4056,6 +4098,9 @@ export class GameScene extends Phaser.Scene {
     const now = performance.now() / 1000;
     const hc = this.highContrast();
     const wopts = { time: now, highContrast: hc, reducedEffects:this.reducedEffects,origin:s.originId };
+    let recoveryPost:typeof s.territories[number]|undefined,recoveryDistance=960;
+    for(const post of s.territories){if(post.spec!=='economy'||post.disabled)continue;const d=Math.hypot(post.x-s.px,post.y-s.py);if(d<recoveryDistance){recoveryDistance=d;recoveryPost=post;}}
+    for(const post of s.territories){if(!vis(post.x,post.y)&&post!==recoveryPost)continue;drawBaseSupport(g,post,s,hc,post.spec==='economy'?this.sim.siteMultiplier(post.x,post.y,'economy'):1,post===recoveryPost);}
     this.arcs=this.arcs.filter(a=>a.until>s.elapsed);
     for(const arc of this.arcs){g.lineStyle(3,arc.relay?0xffda76:0x85ecff,0.9);g.lineBetween(arc.x1,arc.y1,arc.x2,arc.y2);}
     // Focused target = nearest foe to the player (HP bar while focused).
@@ -4169,7 +4214,8 @@ export class GameScene extends Phaser.Scene {
     this.hostileBatch.end();
     this.friendlyBatch.end();
     this.combatFeedback.syncWorld(s.worldNonce);
-    this.combatFeedback.draw(g,s.elapsed,this.reducedEffects,vis);
+    this.combatFeedback.draw(g,s.elapsed,this.reducedEffects,vis,hc,this.feedbackInk);
+    this.civilizationBeats.draw(this.feedbackInk,s.elapsed,this.reducedEffects,hc,vis);
     if(!this.reducedEffects && this.knowledgeCollectUntil>s.elapsed){
       const f=(this.knowledgeCollectUntil-s.elapsed)/.25;g.lineStyle(2,phaserColors.research,f*.5);g.strokeCircle(s.px,s.py,12+(1-f)*14);
     }
