@@ -18,6 +18,7 @@ describe("all-family resolved feedback",()=>{
     const ev=sim.step(1/60,{moveX:0,moveY:0,dashPressed:false});
     expect(ev.some(e=>e.type==="mine_detonated")).toBe(true);expect(ev.some(e=>e.type==="weapon_impact"&&e.family==="field")).toBe(true);
     const f=new CombatFeedback();f.reset("one");for(let i=0;i<100;i++)for(const e of ev)f.accept(e,0,false);expect(f.counts(0).impacts).toBeLessThanOrEqual(32);
-    f.reset("two");for(const e of ev)f.accept(e,0,true);expect(f.counts(0).impacts).toBe(0);
+    // Mine expansion stays off; real resolved hits retain static confirmation.
+    f.reset("two");for(const e of ev)f.accept(e,0,true);expect(f.counts(0).impacts).toBe(ev.filter(e=>(e.type==='weapon_impact'||e.type==='energy_impact')&&e.hpDamage+e.shieldDamage>0).length);
   });
 });

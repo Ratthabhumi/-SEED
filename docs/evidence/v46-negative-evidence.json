@@ -1,0 +1,59 @@
+{
+  "classification": "ENGINEERING_NEGATIVE_EVIDENCE_NOT_HUMAN_ACCEPTANCE",
+  "parent": "9be405c9d20ddc72971c0ff4587909a9439c7bdc",
+  "red": [
+    {
+      "kind": "parent_source",
+      "case": "Reduced impact confirmation",
+      "actual": "0 instead of1"
+    },
+    {
+      "kind": "parent_source",
+      "case": "Zero resolved damage",
+      "actual": "1 instead of0"
+    },
+    {
+      "kind": "working_delta",
+      "case": "Toggle reduced during detonation",
+      "actual": "draws hit mark for detonation"
+    },
+    {
+      "kind": "working_delta_source_and_raster",
+      "case": "Contact ink behind actors",
+      "actual": "combat Graphics depth0; browser foreground assertion received0 expected>6",
+      "fix": "one fixed foreground Graphics plus nonempty command-buffer assertion"
+    }
+  ],
+  "harness": [
+    {
+      "case": "Preview startup",
+      "cause": "Started browser before build completed",
+      "result": "webServer60000ms timeout"
+    },
+    {
+      "case": "EN1280startup",
+      "result": "existing15000ms startRun timeout",
+      "thresholdChanged": false
+    },
+    {
+      "case": "Reduced-setting fixture",
+      "result": "waited for pause checkbox while actual Draft owned Esc",
+      "fix": "seed setting before start, retain Draft guard"
+    }
+  ],
+  "review": {
+    "rounds": 1,
+    "finding": "P2 missing positive visual assertions/direct-disable bypassed loss event",
+    "resolution": "canonical warned boss destroys staged1HP base; actual repair event; active impact and beat assertions plus expiry"
+  },
+  "preserved": "scratch/v46-* logs and scratch/v46-browser-pre-review/",
+  "newHumanScores": null,
+  "contractMigration": {
+    "cases": 2,
+    "oldExpectation": "Reduced impact0",
+    "actual": "3 real contact slots",
+    "newExpectation": "positive real impact and bounded expiry",
+    "basis": "Owner supplied accessibility contract retains essential cues",
+    "thresholdsLowered": false
+  }
+}
