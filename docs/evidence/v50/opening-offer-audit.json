@@ -1,0 +1,325 @@
+{
+  "classification": "STAGED_ELIGIBILITY_AUDIT_NOT_NATURAL_TIMING",
+  "rows": [
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "hunters",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-field-1",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "application-kinetic-0",
+          "effects": [
+            "damageMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "engineers",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-defense-1",
+          "effects": [
+            "regenAdd"
+          ]
+        },
+        {
+          "id": "application-defense-0",
+          "effects": [
+            "maxHpAdd"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "resonant",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-field-1",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "application-energy-0",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "sentinels",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-defense-1",
+          "effects": [
+            "regenAdd"
+          ]
+        },
+        {
+          "id": "application-defense-0",
+          "effects": [
+            "maxHpAdd"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "hunters",
+      "eligible": 9,
+      "eligibleBehavior": [
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "stone-trap",
+          "effects": [
+            "mineAdd"
+          ]
+        },
+        {
+          "id": "application-kinetic-1",
+          "effects": [
+            "cooldownMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "engineers",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-kinetic-1",
+          "effects": [
+            "cooldownMul"
+          ]
+        },
+        {
+          "id": "application-defense-1",
+          "effects": [
+            "regenAdd"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "resonant",
+      "eligible": 9,
+      "eligibleBehavior": [
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "stone-trap",
+          "effects": [
+            "mineAdd"
+          ]
+        },
+        {
+          "id": "application-energy-1",
+          "effects": [
+            "pickupMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "sentinels",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-energy-1",
+          "effects": [
+            "pickupMul"
+          ]
+        },
+        {
+          "id": "application-defense-1",
+          "effects": [
+            "regenAdd"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "hunters",
+      "eligible": 9,
+      "eligibleBehavior": [
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "application-field-1",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "application-kinetic-0",
+          "effects": [
+            "damageMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "engineers",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-defense-1",
+          "effects": [
+            "regenAdd"
+          ]
+        },
+        {
+          "id": "application-kinetic-0",
+          "effects": [
+            "damageMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "resonant",
+      "eligible": 9,
+      "eligibleBehavior": [
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "application-field-1",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "application-energy-0",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "sentinels",
+      "eligible": 8,
+      "eligibleBehavior": [],
+      "offered": [
+        {
+          "id": "application-defense-1",
+          "effects": [
+            "regenAdd"
+          ]
+        },
+        {
+          "id": "application-energy-0",
+          "effects": [
+            "knowledgeMul"
+          ]
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            "damageMul"
+          ]
+        }
+      ]
+    }
+  ]
+}

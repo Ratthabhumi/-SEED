@@ -8,6 +8,7 @@ import badlands from "../../../assets/seed/terrain/badlands-v1.png";
 import {TERRAIN_CELL as CELL,TERRAIN_STRIDE as STRIDE,TERRAIN_PAD as PAD} from "./terrainTile";
 import {TERRAIN_TYPED_UNPACK} from "./terrainUpload";
 import {periodicTerrainSource} from "./naturalTerrain";
+import {worldPresentation} from './worldPresentation';
 export const TERRAIN_TEXTURES={verdant,arid,tundra,badlands};
 const IDS:BiomeId[]=["verdant","arid","tundra","badlands"],ATLAS=2048,SLOTS=64,KEY="painted-ground-atlas";
 interface Entry{slot:number;used:number;serial:number;ready:boolean;readyAt:number;biome:BiomeId;requestedAt:number;requestSimTime:number;workerStartedAt?:number;workerCompletedAt?:number;fallbackAt?:number;preparedAt?:number;fullyPreparedAt?:number;fallbackFrame?:number;preparedFrame?:number;uploadMs?:number;}
@@ -26,10 +27,12 @@ export class TerrainPainter {
  private hits=0;private misses=0;private uploads=0;private paintMs=0;private uploadCallMs=0;private uploadMaxMs=0;private workerFailed=false;
  private uploadedFrame=-1;
  private highContrast=false;
+ private theme=worldPresentation(0);
  private workerPaintMaxMs=0;
  private deliveredMs=0;private sentAt=0;private evictions=0;
  private sourcePrepMs=0;
  diagnosticTargets(){return {tile:this.tileContext,backing:this.atlas.getContext()};}
+ presentationReview(){return this.images.filter(a=>a.visible).map(a=>a.tintTopLeft);}
  constructor(private scene:Phaser.Scene,sourcePath:'runtime'|'prebaked-png'|'offline-canvas'='offline-canvas'){
   this.atlas=(scene.textures.exists(KEY)?scene.textures.get(KEY):scene.textures.createCanvas(KEY,ATLAS,ATLAS)) as Phaser.Textures.CanvasTexture;
   this.atlas.setFilter(0); // No mip chain: subregion updates keep linear sampling valid.
@@ -85,7 +88,13 @@ export class TerrainPainter {
     if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,256,256)!;texture.getContext().putImageData(new ImageData(pixels,256,256),0,0);texture.refresh();}return pixels;
    });
  }
- refresh(cx:number,cy:number,radius:number,chunk:(x:number,y:number)=>ChunkDescriptor,highContrast:boolean,world:string,simTime=0):void{
+ refresh(cx:number,cy:number,radius:number,chunk:(x:number,y:number)=>ChunkDescriptor,highContrast:boolean,world:string,simTime=0,ascension=0):void{
+  const theme=worldPresentation(ascension,highContrast);
+  if(theme.ground!==this.theme.ground||theme.fallback!==this.theme.fallback){
+   for(const image of this.images)image.setTint(theme.ground);
+   for(const image of this.fallbacks)image.setTint(theme.fallback);
+  }
+  this.theme=theme;
   if(world!==this.world){this.world=world;this.epoch++;this.cache.clear();this.jobs=[];this.ready=[];}
   const stamp=++this.clock;this.visible=[];
   this.highContrast=highContrast;
@@ -133,12 +142,12 @@ export class TerrainPainter {
   const now=performance.now();let count=0;
   for(const v of this.visible){const entry=this.cache.get(v.key);if(!entry)continue;
    const index=count++,alpha=entry.ready?Math.min(1,(now-entry.readyAt)/160):0;
-   let image=this.images[index];if(!image){image=this.scene.add.image(0,0,KEY,entry.slot).setDepth(-11).setOrigin(0,0);this.images.push(image);}
-   let fallback=this.fallbacks[index];if(!fallback){fallback=this.scene.add.image(0,0,`terrain-periodic-${entry.biome}`).setDepth(-12).setOrigin(0,0);this.fallbacks.push(fallback);}
+   let image=this.images[index];if(!image){image=this.scene.add.image(0,0,KEY,entry.slot).setDepth(-11).setOrigin(0,0).setTint(this.theme.ground);this.images.push(image);}
+   let fallback=this.fallbacks[index];if(!fallback){fallback=this.scene.add.image(0,0,`terrain-periodic-${entry.biome}`).setDepth(-12).setOrigin(0,0).setTint(this.theme.fallback);this.fallbacks.push(fallback);}
    if(this.assigned[index]!==entry){
     this.assigned[index]=entry;
     image.setTexture(KEY,entry.slot).setPosition(v.x*512,v.y*512).setDisplaySize(512,512);
-    fallback.setTexture(`terrain-periodic-${entry.biome}`).setPosition(v.x*512,v.y*512).setDisplaySize(512,512).setTint(0xb8b8b8).setFlip(false,false);
+    fallback.setTexture(`terrain-periodic-${entry.biome}`).setPosition(v.x*512,v.y*512).setDisplaySize(512,512).setFlip(false,false);
    }
    image.setAlpha(alpha).setVisible(alpha>0);fallback.setVisible(alpha<1);
    if(alpha<1&&entry.fallbackAt===undefined){entry.fallbackAt=now;entry.fallbackFrame=frame;}

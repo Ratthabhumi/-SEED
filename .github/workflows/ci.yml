@@ -164,6 +164,7 @@ jobs:
             test-results/v48-visible/*.png
             test-results/v49-visible/*.png
             test-results/v49-visible/opening.json
+            test-results/v50-visible/*.png
             test-results/evolution-performance.json
             test-results/v3-comparison/
             test-results/v36-final/

@@ -49,7 +49,16 @@ it('Signal architecture persists after discovery and differs from every other PO
  expect(found.calls.length).toBeGreaterThan(other.calls.length);expect(signal.calls).not.toEqual(other.calls);
 });
 it('painted undiscovered destinations retain distinct identifying ink when the art pool is unavailable',()=>{
- const base={wx:0,wy:0,time:0,highContrast:false,painted:true,found:false},ruin=recorder(),meteor=recorder();
+ const base={wx:0,wy:0,time:0,highContrast:false,painted:false,found:false},ruin=recorder(),meteor=recorder();
  drawPoi(ruin.g,{...base,type:'ruin'});drawPoi(meteor.g,{...base,type:'meteor'});
  expect(ruin.calls).not.toEqual(meteor.calls);
+});
+it('painted POIs have no floating glyphs or range rings; fallback is static and readable in high contrast',()=>{
+ for(const highContrast of [false,true])for(const painted of [false,true]){
+  const a=recorder(),b=recorder(),args={wx:40,wy:80,type:'ruin' as const,found:false,painted,highContrast};
+  drawPoi(a.g,{...args,time:0});drawPoi(b.g,{...args,time:5});expect(a.calls).toEqual(b.calls);
+  expect(a.calls.some(c=>c[0]==='strokeCircle')).toBe(false);
+  if(painted&&!highContrast)expect(a.calls.filter(c=>c[0]==='fillRect')).toHaveLength(0);
+  else expect(a.calls.filter(c=>c[0]==='fillRect').length).toBeGreaterThan(0);
+ }
 });

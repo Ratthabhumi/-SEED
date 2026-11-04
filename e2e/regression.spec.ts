@@ -202,7 +202,8 @@ test("industrial payoff precedes expansion choice, one modal at a time", async (
   // Race-free sequencing proof: a MutationObserver records every modal
   // insertion synchronously, so even a sub-polling-lifetime age payoff is
   // observed. Overlap at insertion time is recorded too — and forbidden.
-  await expect(page.locator("#expansion-screen")).toBeVisible({ timeout: 30000 });
+  // V5.0: the milestone remains readable until deliberately acknowledged.
+  await expect(page.locator("#age-screen")).toBeVisible({ timeout: 30000 });
   const log = (await page.evaluate(
     () => (window as unknown as { __modalLog?: string[] }).__modalLog ?? [],
   )) as string[];
@@ -211,7 +212,7 @@ test("industrial payoff precedes expansion choice, one modal at a time", async (
   expect(log.join("|")).not.toContain("OVERLAP");
   // Dismiss whatever payoff/questions remain, then choose the expansion.
   const cont = page.locator("#age-screen").getByRole("button", { name: "Continue" });
-  if ((await cont.count()) > 0) await cont.click({ timeout: 2000 }).catch(() => {});
+  await cont.click();
   await expect(page.locator("#expansion-screen")).toBeVisible({ timeout: 10000 });
   expect(await page.locator("#age-screen").count()).toBe(0);
   expect(await page.locator("#expansion-screen .card").count()).toBe(2);

@@ -7,6 +7,7 @@ it('floating primary release aims weapon without restarting body punch or walkin
  const event={type:'weapon_fired' as const,family:'kinetic' as const,x:pose.muzzleX,y:pose.muzzleY,tx:200,ty:0,release:{owner:'player-primary' as const,time:1,pose,heading:0,index:0,count:1}};
  actions.accept(event,1,0,0,'float');
  expect(actions.pose(1.05,false,false,false)).toBe('idle');expect(actions.pose(1.05,true,false,false)).toBe('walk');expect(actions.revision).toBe(0);
- expect(actions.facing(1.05)).toBe(0);
+ // V5.0 owner regression: detached weapons aim independently of the body.
+ expect(actions.facing(1.05)).toBeUndefined();
  actions.accept(event,1,0,0,'hand');expect(actions.pose(1.05,false,false,false)).toBe('attack');
 });

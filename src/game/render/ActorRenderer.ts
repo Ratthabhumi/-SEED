@@ -119,5 +119,5 @@ export class ActorRenderer {
   end(): void { this.ordered?.end();for(let i=this.count;i<this.images.length;i++)this.images[i]!.setVisible(false); }
   get size(): number { return this.ordered?.size??this.images.length; }
   batchCounts(){return this.ordered?.counts()??null;}
-  review():unknown[] { return this.ordered?.review()??this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,x:i.x,y:i.y,width:i.displayWidth,height:i.displayHeight,screenWidth:i.displayWidth*this.scene.cameras.main.zoom,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
+  review():unknown[] { return this.ordered?.review()??this.images.filter(i=>i.visible).map(i=>({texture:i.texture.key,frame:i.frame.name,rotation:i.rotation,flipX:i.flipX,tint:i.tintTopLeft,x:i.x,y:i.y,width:i.displayWidth,height:i.displayHeight,screenWidth:i.displayWidth*this.scene.cameras.main.zoom,inView:this.scene.cameras.main.worldView.contains(i.x,i.y)})); }
 }

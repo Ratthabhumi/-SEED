@@ -6,7 +6,7 @@ export class HeroActions {
   private world=""; private attack=-Infinity; private hurt=-Infinity; private special=-Infinity;
   private aim=0;
   private bodyAttack=false;
-  facing(t:number){return this.attack>t?this.aim:undefined;}
+  facing(t:number){return this.bodyAttack&&this.attack>t?this.aim:undefined;}
   sync(world:string):void {if(this.world!==world){this.world=world;this.attack=this.hurt=this.special=-Infinity;}}
   accept(e:SimEvent,t:number,x:number,y:number,mount:'hand'|'float'='hand'):void {
     if(e.type==="beam_fired" || e.type==="weapon_fired") {
