@@ -34,6 +34,7 @@ import { combinationRoute } from "../tech/combinationRoute";
 import {createBossEncounter,stepBossEncounter,bossAreaHit,bossFanOffsets,BOSS_ENCOUNTER} from "../combat/bossEncounter";
 import { generateWorldLaws, type WorldLaws } from "../emergence/worldLaws";
 import { CHILD_LAWS_CONTENT_VERSION } from "../seed/versions";
+import {ordinaryWaveInterval} from '../director/ordinaryRhythm';
 import { generateOffers, type OfferCandidate } from "../emergence/offerEngine";
 import { calculateMaxLogistics, calculateLogisticsCost } from "../emergence/outpostLogistics";
 import { canAdvanceAge, AGE_DEFS, type DominionState } from "../progression/ages";
@@ -1706,7 +1707,7 @@ export class RunSimulation {
         const fam = pickFamily(this.streams.enemy, s.ageIndex);
         this.spawnEnemy(fam, false, false, this.streams.enemy.nextFloat() * Math.PI * 2, 700 + this.streams.enemy.nextFloat() * 250, ev);
       }
-      s.spawnT = 2.2;
+      s.spawnT = ordinaryWaveInterval(s.elapsed,s.ascension,s.stats.techsTaken>0,s.bossSpawned);
     }
     s.eliteT -= dt;
     if (s.eliteT <= 0) {
@@ -1824,8 +1825,11 @@ export class RunSimulation {
     const b = s.build;
     const tgt=this.nearestEnemy(s.px,s.py,range);if(!tgt)return true;
     const pose=this.releasePose(tgt);if(!pose)return false;
-    for (let i = 0; i < n; i++) {
-      const spread = (i - (n - 1) / 2) * 0.12;
+    const count=Math.ceil(n);
+    for (let i = 0; i < count; i++) {
+      // Kinetic upgrades preserve the aimed primary lane, then add flanks.
+      // Energy retains its symmetric volley; Conduction owns cluster behavior.
+      const spread = fam==='kinetic'?(i===0?0:Math.ceil(i/2)*.12*(i%2?-1:1)):(i-(n-1)/2)*.12;
       const base = pose.heading + spread;
       for (let index=0;index<s.projs.length;index++) {
         const p=s.projs[index]!;
@@ -1835,7 +1839,7 @@ export class RunSimulation {
         p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = life;
         p.friendly = true; p.color = st.color; p.src = fam;
         p.visualTier=s.weaponStage[fam];
-        ev.push({type:"weapon_fired",family:fam,x:p.x,y:p.y,tx:p.x+Math.cos(base)*100,ty:p.y+Math.sin(base)*100,release:{owner:'player-primary',time:s.elapsed,pose,heading:base,index:i,count:n,projectileIndex:index,targetX:tgt.x,targetY:tgt.y}});
+        ev.push({type:"weapon_fired",family:fam,x:p.x,y:p.y,tx:p.x+Math.cos(base)*100,ty:p.y+Math.sin(base)*100,release:{owner:'player-primary',time:s.elapsed,pose,heading:base,index:i,count,projectileIndex:index,targetX:tgt.x,targetY:tgt.y}});
         break;
       }
     }
@@ -2186,7 +2190,8 @@ export class RunSimulation {
         if (hit.length > 0) {
           const e = hit[0] as SimEnemy;
           const d = Math.max(1, Math.hypot(e.x - p.x, e.y - p.y));
-          const kb = 14;
+          // Conduction keeps groups in reach; Kinetic/base Energy still push.
+          const kb = p.src==='energy'&&s.build.chainUnlocked?0:14;
           if (p.src === "energy" && s.build.chainUnlocked) this.arcChain(e,e.x,e.y,p.dmg,ev,"chain");
           this.hurtEnemy(e, p.dmg, p.src, ev, ((e.x - p.x) / d) * kb, ((e.y - p.y) / d) * kb);
           p.active = false;
@@ -2209,8 +2214,15 @@ export class RunSimulation {
         if (m.active) continue;
         const st = getWeaponStage("field", s.weaponStage.field);
         m.active = true;
-        m.x = s.px + (this.streams.event.nextFloat() - 0.5) * 300;
-        m.y = s.py + (this.streams.event.nextFloat() - 0.5) * 300;
+        // Consume exactly the same two event draws in either placement mode.
+        const jx=this.streams.event.nextFloat()-.5,jy=this.streams.event.nextFloat()-.5;
+        const speed=Math.hypot(s.vx,s.vy);
+        if(speed>1){
+          const dx=s.vx/speed,dy=s.vy/speed,column=placed%5;
+          const lateral=column===0?0:Math.ceil(column/2)*48*(column%2?-1:1),rear=72+Math.floor(placed/5)*48;
+          m.x=s.px-dx*rear-dy*lateral+jx*12;
+          m.y=s.py-dy*rear+dx*lateral+jy*12;
+        }else{m.x=s.px+jx*300;m.y=s.py+jy*300;}
         m.dmg = st.damage * b.damageMul;
         m.radius = st.radius;
         m.life = 12;

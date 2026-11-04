@@ -1,0 +1,347 @@
+{
+  "parent": "1edd86ee7a3d5a0e3d54898050996f9687edfff4",
+  "classification": "STAGED_BUILD_PROBES_AND_BOUNDED180S_HISTORICAL_POLICY_NOT_HUMAN_FUN",
+  "builds": [
+    {
+      "before": {
+        "build": "kinetic",
+        "upgraded": false,
+        "angles": [
+          0
+        ],
+        "damage": 12,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 13.99999999999999
+      },
+      "after": {
+        "build": "kinetic",
+        "upgraded": false,
+        "angles": [
+          0
+        ],
+        "damage": 12,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 13.99999999999999
+      },
+      "replayEqual": true
+    },
+    {
+      "before": {
+        "build": "kinetic",
+        "upgraded": true,
+        "angles": [
+          -0.06000000000000005,
+          0.06000000000000005
+        ],
+        "damage": 12,
+        "firstHit": 0.4333333333333333,
+        "targetDisplacement": 13.999999999999993
+      },
+      "after": {
+        "build": "kinetic",
+        "upgraded": true,
+        "angles": [
+          0,
+          -0.12
+        ],
+        "damage": 12,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 13.99999999999999
+      },
+      "replayEqual": true
+    },
+    {
+      "before": {
+        "build": "energy",
+        "upgraded": false,
+        "angles": [
+          0
+        ],
+        "damage": 10,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 13.999999999999993
+      },
+      "after": {
+        "build": "energy",
+        "upgraded": false,
+        "angles": [
+          0
+        ],
+        "damage": 10,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 13.999999999999993
+      },
+      "replayEqual": true
+    },
+    {
+      "before": {
+        "build": "energy",
+        "upgraded": true,
+        "angles": [
+          0
+        ],
+        "damage": 10,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 13.999999999999993
+      },
+      "after": {
+        "build": "energy",
+        "upgraded": true,
+        "angles": [
+          0
+        ],
+        "damage": 10,
+        "firstHit": 0.41666666666666663,
+        "targetDisplacement": 0
+      },
+      "replayEqual": true
+    },
+    {
+      "before": {
+        "build": "field",
+        "upgraded": false,
+        "count": 1,
+        "rearOffsets": [
+          37.52319042105228
+        ],
+        "lateralWidth": 0,
+        "mines": [
+          {
+            "x": 41.18985708771894,
+            "y": 49.08386596944183,
+            "radius": 60,
+            "damage": 22
+          }
+        ],
+        "rng": [
+          "V48-CONTROL",
+          "-80909632,442836626,-907119166,2315551460",
+          "2500944881,3854511641,2012104213,3959113336",
+          "3424807359,1313317108,713114987,23397922",
+          "2148542796,455928085,2201303926,1580295805",
+          "1124336078,304271760,276460460,2118684404"
+        ]
+      },
+      "after": {
+        "build": "field",
+        "upgraded": false,
+        "count": 1,
+        "rearOffsets": [
+          -70.49907238315791
+        ],
+        "lateralWidth": 0,
+        "mines": [
+          {
+            "x": -66.83240571649124,
+            "y": 1.9633546387776732,
+            "radius": 60,
+            "damage": 22
+          }
+        ],
+        "rng": [
+          "V48-CONTROL",
+          "-80909632,442836626,-907119166,2315551460",
+          "2500944881,3854511641,2012104213,3959113336",
+          "3424807359,1313317108,713114987,23397922",
+          "2148542796,455928085,2201303926,1580295805",
+          "1124336078,304271760,276460460,2118684404"
+        ]
+      },
+      "replayEqual": true
+    },
+    {
+      "before": {
+        "build": "field",
+        "upgraded": true,
+        "count": 3,
+        "rearOffsets": [
+          37.52319042105228,
+          117.05859813373536,
+          -42.2553607262671
+        ],
+        "lateralWidth": 51.51151204481721,
+        "mines": [
+          {
+            "x": 41.18985708771894,
+            "y": 49.08386596944183,
+            "radius": 60,
+            "damage": 22
+          },
+          {
+            "x": 120.72526480040203,
+            "y": 32.88194329943508,
+            "radius": 60,
+            "damage": 22
+          },
+          {
+            "x": -38.588694059600435,
+            "y": -2.427646075375378,
+            "radius": 60,
+            "damage": 22
+          }
+        ],
+        "rng": [
+          "V48-CONTROL",
+          "-1854863328,-1422290295,-1181637956,2700372549",
+          "2500944881,3854511641,2012104213,3959113336",
+          "3424807359,1313317108,713114987,23397922",
+          "2148542796,455928085,2201303926,1580295805",
+          "1124336078,304271760,276460460,2118684404"
+        ]
+      },
+      "after": {
+        "build": "field",
+        "upgraded": true,
+        "count": 3,
+        "rearOffsets": [
+          -70.49907238315791,
+          -67.31765607465059,
+          -73.69021442905068
+        ],
+        "lateralWidth": 94.58761642500758,
+        "mines": [
+          {
+            "x": -66.83240571649124,
+            "y": 1.9633546387776732,
+            "radius": 60,
+            "damage": 22
+          },
+          {
+            "x": -63.650989407983914,
+            "y": -46.6847222680226,
+            "radius": 60,
+            "damage": 22
+          },
+          {
+            "x": -70.02354776238401,
+            "y": 47.902894156984985,
+            "radius": 60,
+            "damage": 22
+          }
+        ],
+        "rng": [
+          "V48-CONTROL",
+          "-1854863328,-1422290295,-1181637956,2700372549",
+          "2500944881,3854511641,2012104213,3959113336",
+          "3424807359,1313317108,713114987,23397922",
+          "2148542796,455928085,2201303926,1580295805",
+          "1124336078,304271760,276460460,2118684404"
+        ]
+      },
+      "replayEqual": true
+    }
+  ],
+  "pacing": [
+    {
+      "before": {
+        "origin": "hunters",
+        "firstKill": 4.116666666666657,
+        "firstChoice": 14.56666666666697,
+        "kills": 347,
+        "longestKillGap": 4.116666666666657,
+        "emptyNear300Seconds": 77.3999999999969,
+        "meanNear300": 1.0780555555555555,
+        "maxNear300": 8,
+        "outcome": "time-limit",
+        "seconds": 180,
+        "age": "bronze",
+        "selected": [
+          "stone-fire",
+          "stone-tools",
+          "weave-stone-warfare-culture",
+          "web:weave-stone-warfare-culture:1",
+          "web:stone-tools:1",
+          "application-kinetic-1",
+          "web:application-kinetic-1:1",
+          "application-kinetic-0",
+          "web:web:weave-stone-warfare-culture:1:1"
+        ]
+      },
+      "after": {
+        "origin": "hunters",
+        "firstKill": 3.3166666666666598,
+        "firstChoice": 16.63333333333367,
+        "kills": 345,
+        "longestKillGap": 3.3166666666666598,
+        "emptyNear300Seconds": 91.9833333333294,
+        "meanNear300": 0.9070370370370371,
+        "maxNear300": 5,
+        "outcome": "time-limit",
+        "seconds": 180,
+        "age": "bronze",
+        "selected": [
+          "stone-fire",
+          "stone-tools",
+          "weave-stone-warfare-culture",
+          "web:weave-stone-warfare-culture:1",
+          "web:stone-tools:1",
+          "application-kinetic-1",
+          "web:application-kinetic-1:1",
+          "web:web:stone-tools:1:1",
+          "web:web:stone-tools:1:0",
+          "application-kinetic-0",
+          "web:web:web:stone-tools:1:0:1",
+          "web:web:application-kinetic-1:1:1",
+          "weave-bronze-industry-science"
+        ]
+      },
+      "replayEqual": true
+    },
+    {
+      "before": {
+        "origin": "resonant",
+        "firstKill": 4.116666666666657,
+        "firstChoice": 14.616666666666973,
+        "kills": 324,
+        "longestKillGap": 4.116666666666657,
+        "emptyNear300Seconds": 65.33333333333091,
+        "meanNear300": 1.3725925925925926,
+        "maxNear300": 9,
+        "outcome": "time-limit",
+        "seconds": 180,
+        "age": "bronze",
+        "selected": [
+          "stone-fire",
+          "stone-tools",
+          "weave-stone-warfare-culture",
+          "application-energy-0",
+          "web:application-energy-0:1",
+          "stone-totem",
+          "web:stone-totem:1",
+          "application-field-1",
+          "web:weave-stone-warfare-culture:1",
+          "web:stone-totem:0"
+        ]
+      },
+      "after": {
+        "origin": "resonant",
+        "firstKill": 3.3166666666666598,
+        "firstChoice": 14.400000000000295,
+        "kills": 327,
+        "longestKillGap": 3.3166666666666598,
+        "emptyNear300Seconds": 96.61666666666247,
+        "meanNear300": 0.7752777777777777,
+        "maxNear300": 7,
+        "outcome": "time-limit",
+        "seconds": 180,
+        "age": "bronze",
+        "selected": [
+          "weave-stone-warfare-culture",
+          "stone-fire",
+          "stone-tools",
+          "stone-totem",
+          "web:stone-fire:1",
+          "web:stone-tools:1",
+          "web:stone-totem:0",
+          "web:web:stone-fire:1:1",
+          "web:web:stone-totem:0:1",
+          "web:web:stone-tools:1:1",
+          "web:web:web:stone-fire:1:1:1",
+          "web:web:web:stone-totem:0:1:1"
+        ]
+      },
+      "replayEqual": true
+    }
+  ],
+  "protectedOwnerFilesUnchanged": 8174
+}
