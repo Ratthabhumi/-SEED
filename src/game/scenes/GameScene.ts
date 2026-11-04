@@ -9,6 +9,7 @@ import{CivilizationBeats}from'../render/CivilizationBeats';
 import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
+import {worldPresentation} from '../render/worldPresentation';
 import { historyTechName, currentWorldHistoryStart } from "../ui/historyTechName";
 import { effectBeforeAfter, effectSummary } from "../ui/techEffects";
 // GameScene — ADAPTER (ADR 0003). Owns no canonical gameplay state.
@@ -612,6 +613,7 @@ export class GameScene extends Phaser.Scene {
         actorRasterState:()=>this.reviewActors?.review(),
         groundRasterReview:()=>{const s=this.sim.state,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},s.px-320,s.py-180);},
         referenceAnimation:()=>this.allyActors.referenceReview(),
+        worldPresentationReview:()=>({world:this.sim.state.ascension+1,theme:worldPresentation(this.sim.state.ascension,this.highContrast()),terrain:this.terrainPainter.presentationReview(),landmarks:this.landmarkArt.filter(a=>a.visible).map(a=>a.tintTopLeft),heroTint:this.allyActors.heroTintReview(),hash:this.sim.hash()}),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
         friendlyBatchCounts:()=>this.friendlyBatch.counts(),
         friendlyBatchLifetime:()=>{const batch=this.friendlyBatch;return ()=>batch.counts();},
@@ -3383,7 +3385,9 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     const idx = AGES.indexOf(age);
     const changes=changedWeaponForms(this.observedWeaponStages,s.weaponStage,activeFamilies(s.originId,s.expansionFamily));
-    this.showBlocking("age-screen", 1.1, (screen) => {
+    // A readable acknowledgement, not a timed toast: queued mandatory choices
+    // only open after a fresh activation of Continue.
+    this.showBlocking("age-screen", 0, (screen) => {
       const panel = el("div", "panel panel-md");
       panel.appendChild(el("h1", "logo", `age.${age}` as EnKeys));
       const spine = CRITICAL_SPINE.find((c) => c.age === age);
@@ -3563,6 +3567,7 @@ export class GameScene extends Phaser.Scene {
       const panel = el("div", "panel panel-lg child-intro");
       const body = el("div", "child-intro-body"); panel.appendChild(body);
       body.appendChild(el("h2", "", "child.title"));
+      body.appendChild(el("h3", "world-theme", worldPresentation(s.ascension).title));
       body.appendChild(el("p", "", "child.reset"));
       body.appendChild(el("h3", "", "child.inherited"));
       for (const id of s.legacies) { const def = legacyDefById(id); if (def) body.appendChild(el("p", "", undefined, `${t(def.nameKey)}: ${effectSummary(def.effects)}`)); }
@@ -4006,7 +4011,8 @@ export class GameScene extends Phaser.Scene {
       time: now,
       highContrast: this.highContrast(),
     });
-    this.terrainPainter.refresh(cx,cy,R,getChunk,this.highContrast(),s.worldNonce,s.elapsed);
+    this.terrainPainter.refresh(cx,cy,R,getChunk,this.highContrast(),s.worldNonce,s.elapsed,s.ascension);
+    const worldTheme=worldPresentation(s.ascension,this.highContrast());
     // POI markers live in the ground pass (rebuilt on chunk/age/discovery change).
     // Claimed territories get age-dressing: the map grows a civilization.
     const terrByPoi = new Map(s.territories.map((t) => [t.poiId, t]));
@@ -4019,8 +4025,11 @@ export class GameScene extends Phaser.Scene {
           // World identification must precede proximity-based discovery/reward.
           this.siteArrival.drawn(poi.id,poi.wx,poi.wy);
 
+          const terr = terrByPoi.get(poi.id);
+          const nearArt=landmarkEligible(s.px,s.py,poi.wx,poi.wy,this.scale.width,this.scale.height,this.cameras.main.zoom);
+          const hasArt=!this.highContrast()&&(terr?!terr.spec||landmarkCount<48:nearArt&&landmarkCount<48);
           drawPoi(g, {
-            painted:!this.highContrast(),
+            painted:hasArt,
             wx: poi.wx,
             wy: poi.wy,
             type: poi.type,
@@ -4028,29 +4037,27 @@ export class GameScene extends Phaser.Scene {
             time: now,
             highContrast: this.highContrast(),
           });
-          const terr = terrByPoi.get(poi.id);
-          const nearArt=landmarkEligible(s.px,s.py,poi.wx,poi.wy,this.scale.width,this.scale.height,this.cameras.main.zoom);
           if(!terr&&nearArt&&!this.highContrast()&&landmarkCount<48){
             let art = this.landmarkArt[landmarkCount++];
             if (!art) { art = this.add.image(0,0,"world-props",0).setDepth(-5); this.landmarkArt.push(art); }
             const frame=["ruin","meteor","vault","signal","megasite","worldtree"].indexOf(poi.type);
             const size=poi.type==="signal"||poi.type==="megasite"?144:112;
-            art.setTexture("world-props",Math.max(0,frame)).setOrigin(.5,siteOriginY('world-props',Math.max(0,frame))).setVisible(true).setPosition(poi.wx,poi.wy+8).setDisplaySize(size,size).setAlpha(s.poisWorld.includes(poi.id)?.7:1);
+            art.setTexture("world-props",Math.max(0,frame)).setOrigin(.5,siteOriginY('world-props',Math.max(0,frame))).setVisible(true).setPosition(poi.wx,poi.wy+8).setDisplaySize(size,size).setAlpha(s.poisWorld.includes(poi.id)?.7:1).setTint(worldTheme.architecture);
           }
           if (terr) {
-            if(terr.spec && landmarkCount<48) {
+            if(terr.spec && !this.highContrast() && landmarkCount<48) {
               let art=this.landmarkArt[landmarkCount++];
               if(!art){art=this.add.image(0,0,"outposts-v2").setDepth(-5);this.landmarkArt.push(art);}
               const row=terr.spec==="research"?0:terr.spec==="military"?1:2;
               const state=terr.disabled?(terr.repairT>0?3:2):terr.tier>=2?1:0;
               const size=terr.tier>=2?WORLD_SCALE.outpost2:WORLD_SCALE.outpost1;
-              art.setTexture("outposts-v2",row*4+state).setOrigin(.5,siteOriginY('outposts-v2',row*4+state)).setVisible(true).setPosition(poi.wx,poi.wy+8).setDisplaySize(size,size).setAlpha(1);
+              art.setTexture("outposts-v2",row*4+state).setOrigin(.5,siteOriginY('outposts-v2',row*4+state)).setVisible(true).setPosition(poi.wx,poi.wy+8).setDisplaySize(size,size).setAlpha(1).setTint(worldTheme.architecture);
             }
             drawTerritoryDressing(g, {
               x: poi.wx, y: poi.wy,
               ageIndex: s.ageIndex, tier: terr.tier, disabled: terr.disabled,
               spec:terr.spec,repairing:terr.disabled && terr.repairT>0,
-              painted:!this.highContrast(),
+              painted:hasArt,
             });
           }
         }

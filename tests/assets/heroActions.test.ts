@@ -4,6 +4,20 @@ import {HeroActions} from "../../src/game/render/heroActions";
 declare const require:(id:string)=>any;
 const {readFileSync}=require("fs");
 describe("original hero atlas integration",()=>{
+  it("floating releases never override movement/idle facing, including after a world reset",()=>{
+    const a=new HeroActions();a.sync('parent');
+    const release=(heading:number,time:number)=>({type:'weapon_fired' as const,family:'kinetic' as const,x:0,y:0,tx:100,ty:0,release:{owner:'player-primary' as const,time,pose:weaponTransform('hunters',0,0,0,{...createWeaponRig(),heading},time),heading,index:0,count:1}});
+    for(const heading of [0,Math.PI,-Math.PI/2]){
+      a.accept(release(heading,1),1,0,0,'float');
+      expect(a.facing(1.05)).toBeUndefined();
+      expect(a.pose(1.05,true,false,false)).toBe('walk');
+      expect(a.pose(1.05,false,false,false)).toBe('idle');
+    }
+    a.accept(release(Math.PI,2),2,0,0,'hand');expect(a.facing(2.05)).toBe(Math.PI);
+    a.sync('child');expect(a.facing(0)).toBeUndefined();
+    a.accept(release(0,0),0,0,0,'float');expect(a.facing(.05)).toBeUndefined();
+    a.accept({type:'player_hurt',damage:1},0,0,0);expect(a.pose(.05,false,false,false)).toBe('hurt');
+  });
   it("four real RGBA atlases, 16 ×128px anchored cells and provenance files",()=>{
     for(const origin of ["hunters","engineers","resonant","sentinels"]){
       const b=readFileSync(`assets/seed/heroes/${origin}-v2.png`);

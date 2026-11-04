@@ -613,6 +613,8 @@ export const en = {
   "path.family": "Needs a weapon type your civilization does not use yet",
   "path.excluded": "An earlier choice blocks this route",
   "path.missing": "Required technology is not present in this world",
+  "world.dawn": "Dawn — the first civilization",
+  "world.eclipse": "Eclipse Frontier — a moonlit civilization",
   "child.title": "Your civilization enters a new world",
   "child.inherited": "Inherited power",
   "child.reset": "You keep inherited powers and run history. Ages, technologies and bases start fresh.",

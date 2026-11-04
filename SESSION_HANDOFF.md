@@ -1,3 +1,20 @@
+# V5.0 corrective receipt — 2026-11-04
+
+Initial f7d49a2 exact-source Push/PR failed full E2E (301pass/7fail/1skip each), while code/analyze/render passed. Restore shared image/batch review schema; isolate hero tint diagnostics; update four old facing expectations to hand-vs-float ownership. No raster thresholds or gameplay rules changed.
+Corrected local verification: all7 failed cases +10 V50 cases =17/17 PASS; frozen full check644/125 +typecheck/provenance/build PASS. Regular corrective commit in the same Draft PR41; exact-source Push/PRCI, package and final receipt follow there. Previous failed observations remain linked in docs/V50_OWNER_PACKET.md. Owner private handoff/report bytes remain preserved.
+
+---
+
+# V5.0 quality consolidation — 2026-11-04
+
+Base556f1f040c8b084bb23efc9df18ad522fe311dad (Draft PR40); branch feat/v50-quality-eclipse-20261104 in primary owner checkout.
+Age acknowledgement now survives reading; float weapon no longer overrides movement/idle body facing; grounded POI silhouettes remain when actual art slots are unavailable; Eclipse child landscape tints only terrain/materials. EN/TH entry explains the actual existing child condition.
+Core/content untouched: Worldgen3 / Content26 / Save3 / child18. No new raid/economy/forced Tech or balance tuning. Opening audit12cases: legal behavior4, offered2; content dependency remains.
+Frozen check644tests/125files + typecheck/provenance/build PASS; analyze6 PASS. Initial9browser PASS, final44affected + ZIP/release verification + exact-source Push/PRCI pending at commit. See docs/V50_OWNER_PACKET.md and final Draft PR receipt. One fresh whole-change reviewer found no actionable regressions.
+Owner report has no new human rating. Fun1/5 remains historical; art/native60Hz and37-complaint human acceptance remain open. Owner private report edits, .cursor and Play-SEED-QA.bat preserved and excluded from staging.
+
+---
+
 # V4.9 unified UX —2026-11-04
 
 Primary Desktop/Co-op/-SEED. feat/v49-unified-ux-20261104 from verified

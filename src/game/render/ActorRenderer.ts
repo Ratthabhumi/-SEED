@@ -14,6 +14,8 @@ export class ActorRenderer {
   private reference=new ReferenceAnimation({...referenceMetadata,overrides:attackMetadata.overrides,socketOverrides:attackMetadata.socketOverrides});
   private referenceActive=false;
   referenceReview(){return this.referenceActive?this.reference.review():null;}
+  // Keep material diagnostics outside the shared image/batch raster contract.
+  heroTintReview(){return this.images[0]?.tintTopLeft;}
   private images: ActorImage[] = [];
   private count = 0;
   private ordered?:OrderedActorBatch;

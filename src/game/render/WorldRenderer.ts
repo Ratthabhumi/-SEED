@@ -162,10 +162,9 @@ export interface PoiDrawArgs {
 
 /** One glyph per family — the destination identity. Beacon stays secondary. */
 function drawPoiGlyph(
-  g: Phaser.GameObjects.Graphics, type: POIType, cx: number, cy: number, s: number, alpha: number,
+  g: Phaser.GameObjects.Graphics, type: POIType, cx: number, cy: number, s: number, alpha: number, fill = VL.beacon,
 ): void {
   const glyph = poiGlyph(type);
-  const fill = VL.beacon;
   const line = VL.outlineDark;
   if (glyph === "broken-arch") {
     // Ruin: two pillars + broken lintel with a gap.
@@ -240,13 +239,12 @@ function drawPoiGlyph(
   }
 }
 
-/** POI marker: unique family glyph (primary) + beacon pillar (secondary). */
+/** Grounded architecture. Painted sites need no floating HUD glyph; the
+ * family silhouette remains available when an art slot cannot be assigned. */
 export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
   if(a.painted&&!a.highContrast){
       g.fillStyle(0x081016,.35);g.fillEllipse(a.wx,a.wy+8,70,18);
-      // Essential destination identity does not depend on a pooled art slot.
-      if(!a.found){drawPoiGlyph(g,a.type,a.wx,a.wy-148,13,.95);g.lineStyle(2,VL.beacon,.4);g.lineBetween(a.wx,a.wy-125,a.wx,a.wy-94);}
-      if(a.found){g.lineStyle(2,VL.beacon,.8);g.lineBetween(a.wx-14,a.wy+15,a.wx-5,a.wy+23);g.lineBetween(a.wx-5,a.wy+23,a.wx+15,a.wy+7);}
+      if(a.found){g.lineStyle(2,0xb8c8ac,.8);g.lineBetween(a.wx-9,a.wy+15,a.wx-3,a.wy+21);g.lineBetween(a.wx-3,a.wy+21,a.wx+9,a.wy+9);}
       return;
   }
   if(a.type==="signal"){
@@ -261,22 +259,11 @@ export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
   }
   if (a.found) {
     g.lineStyle(1, 0x555555, 0.8);
-    g.strokeCircle(a.wx, a.wy, 12);
+    g.strokeRect(a.wx-8, a.wy-4, 16, 8);
     return;
   }
-  const pulse = 0.6 + 0.4 * Math.sin(a.time * 3 + a.wx * 0.001);
-  const alpha = a.highContrast ? 0.9 : 0.7;
-  // Light pillar — visible from far, reads as "destination".
-  g.fillStyle(VL.beacon, 0.3 * pulse + 0.16);
-  g.fillRect(a.wx - 6, a.wy - 130, 12, 130);
-  // Family glyph floats above the pillar — the identity, not a debug diamond.
-  const gy = a.wy - 148 + Math.sin(a.time * 2 + a.wx * 0.01) * 4;
-  drawPoiGlyph(g, a.type, a.wx, gy, 13, Math.min(1, alpha + 0.25));
-  // Pulsing base ring.
-  g.lineStyle(2, VL.beacon, 0.5 * pulse + 0.2);
-  g.strokeCircle(a.wx, a.wy, 14 + 4 * pulse);
-  g.fillStyle(VL.beacon, 0.9);
-  g.fillCircle(a.wx, a.wy, 4);
+  g.fillStyle(0x081016,.45);g.fillEllipse(a.wx,a.wy+8,52,14);
+  drawPoiGlyph(g,a.type,a.wx,a.wy-13,20,1,a.highContrast?0xffe5a5:0xb8c8ac);
 }
 
 export interface TerritoryDressingArgs {
