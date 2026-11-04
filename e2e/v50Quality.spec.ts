@@ -72,6 +72,6 @@ for(const lang of ['en','th'] as const)for(const width of [1280,1920,2550])test(
  const theme=await page.evaluate(()=>(window as any).__seedE2E.worldPresentationReview());
  expect(theme.world).toBe(2);expect(theme.terrain.every((t:number)=>t===theme.theme.ground)).toBe(true);
  expect(theme.landmarks.every((t:number)=>t===theme.theme.architecture)).toBe(true);
- expect(await page.evaluate(()=>(window as any).__seedE2E.actorPresentation()[0]?.tint)).toBe(0xffffff);
+ expect(theme.heroTint).toBe(0xffffff);
  await page.screenshot({path:`test-results/v50-visible/eclipse-${lang}-${width}.png`});
 });

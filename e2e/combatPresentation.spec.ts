@@ -16,7 +16,9 @@ for(const height of [720,1080])for(const lang of ['en','th'] as const)test(`real
    const body=before.art.actors[0],weapon=before.art.equipment;
    expect(Math.hypot(weapon.x-body.x,weapon.y-body.y)).toBeGreaterThan(95);
   }
-  expect(before.art.actors[0].flipX).toBe(true);
+  // Detached aim leaves the stationary fixture facing its movement direction.
+  // Hand-mounted attacks still turn the body toward the left-hand target.
+  expect(before.art.actors[0].flipX).toBe(mount==='hand');
   await page.waitForTimeout(50);expect(await page.evaluate(()=>(window as any).__seedE2E.hash())).toBe(before.hash);
   expect(await page.evaluate(()=>(window as any).__seedE2E.integratedReview().equipment)).toEqual(before.art.equipment);
   rows.push({age,mount,...before});

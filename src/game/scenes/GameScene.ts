@@ -613,7 +613,7 @@ export class GameScene extends Phaser.Scene {
         actorRasterState:()=>this.reviewActors?.review(),
         groundRasterReview:()=>{const s=this.sim.state,{cx,cy}=worldToChunk(s.px,s.py),civ=CIV_LAYER[AGES[s.ageIndex] as AgeId];return groundRasterReview(this,{getChunk:(x,y)=>this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y),styleFor:b=>BIOME_STYLE[b],civColor:civ.color,civDensity:civ.density,age:AGES[s.ageIndex] as AgeId,cx,cy,radius:ACTIVE_RADIUS_CHUNKS+1,worldSeed:s.worldSeed,time:0,highContrast:true},s.px-320,s.py-180);},
         referenceAnimation:()=>this.allyActors.referenceReview(),
-        worldPresentationReview:()=>({world:this.sim.state.ascension+1,theme:worldPresentation(this.sim.state.ascension,this.highContrast()),terrain:this.terrainPainter.presentationReview(),landmarks:this.landmarkArt.filter(a=>a.visible).map(a=>a.tintTopLeft),hash:this.sim.hash()}),
+        worldPresentationReview:()=>({world:this.sim.state.ascension+1,theme:worldPresentation(this.sim.state.ascension,this.highContrast()),terrain:this.terrainPainter.presentationReview(),landmarks:this.landmarkArt.filter(a=>a.visible).map(a=>a.tintTopLeft),heroTint:this.allyActors.heroTintReview(),hash:this.sim.hash()}),
         hostileBatchCounts:()=>this.hostileBatch.counts(),
         friendlyBatchCounts:()=>this.friendlyBatch.counts(),
         friendlyBatchLifetime:()=>{const batch=this.friendlyBatch;return ()=>batch.counts();},

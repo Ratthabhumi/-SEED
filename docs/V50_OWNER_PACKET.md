@@ -60,6 +60,12 @@ Historical Natural36จากC26เดิม: reached/win/dead23/20/4; defender-
 
 ## Verification receipt
 
+Initial exact-source CI at `f7d49a2f411741135dbe5bba2dfb5576ee1e70f5`: code/analyze/renderผ่านทั้งสองevent แต่ fullE2Eทั้งสองชุด301PASS/7FAIL/1expected skip เก็บผลเดิมใน [Push41853590201](https://github.com/Ratthabhumi/-SEED/actions/runs/41853590201) และ [PR41853690065](https://github.com/Ratthabhumi/-SEED/actions/runs/41853690065).
+4FAILเป็นexpectationเก่าว่าfloatต้องหมุนbody ปรับให้handหมุน/floatคงทิศตามowner อีก3FAILเป็นregressionที่เพิ่มtintลงsharedreviewschema คืนรูปแบบเดิมและแยกherocolor diagnosticออก ไม่มีการแก้orderedrastertestหรือpixelthreshold ผลแก้ไขsourceสุดท้ายดูreceiptในPR#41 ไม่ยืมPASSของf7มานับเป็นSHAใหม่
+Correctivepass: failing7cases +V50cases10 =17/17 PASS, nativeRGBA/parityassertionsเดิมครบ; corrected frozen `npm run check`644/125 +typecheck/provenance/build PASS. ส่งregularcommitต่อจากf7ในPRเดิม เก็บfailedrunsเดิม และรอPush/PRCIของcorrectedSHAตามreceipt
+
+Natural36ของf7: historical23/20/4, aware23/19/5; replay36/36ทั้งสอง policy และ rowsSHA256ตรงV49ทุกbyte Push/PRตรงกันด้วย Historical chase6.383s/in-range1223.167s, boss-onlybase damage1357, all-outpostdamageในbosswindow2125, lost3; awarechase5.833s/in-range1053.117s, boss-base damage1078, lost26ทั้งattempt (scopeต่างกันห้ามเทียบlossตรงๆ). Encounterdurationmedian/max23.067/481.533s และ19.75/449.583sตามลำดับ เก็บoutlier/deathcasesไว้ในartifact ไม่ใช่funproof
+
 Frozen `npm run check` PASS:125files /644tests +typecheck/third-party/build. `npm run analyze` PASS6tests. First targeted browser iteration9/9 PASS; final affected44cases, package verification and exact-source Push/PRCI pending at commit time. ผลสุดท้ายและSHAดูreceiptในDraftPR ไม่ถือpendingว่าPASS
 
 เก็บnegativeobservations: firstfullcheck643pass/1failจากoldtestที่คาดให้floatหมุนbody; ปรับexpectationตามownercontractและทดสอบhandmountยังหันได้ Focused4/4GREEN ต่อมาaudithelper.tsติดnode:fstypecheck แก้เป็น.mjsไม่เพิ่มdependency รอบfrozen644ผ่าน ไม่มีthresholdลด/ลบเทสต์

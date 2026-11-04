@@ -1,3 +1,10 @@
+# V5.0 corrective receipt — 2026-11-04
+
+Initial f7d49a2 exact-source Push/PR failed full E2E (301pass/7fail/1skip each), while code/analyze/render passed. Restore shared image/batch review schema; isolate hero tint diagnostics; update four old facing expectations to hand-vs-float ownership. No raster thresholds or gameplay rules changed.
+Corrected local verification: all7 failed cases +10 V50 cases =17/17 PASS; frozen full check644/125 +typecheck/provenance/build PASS. Regular corrective commit in the same Draft PR41; exact-source Push/PRCI, package and final receipt follow there. Previous failed observations remain linked in docs/V50_OWNER_PACKET.md. Owner private handoff/report bytes remain preserved.
+
+---
+
 # V5.0 quality consolidation — 2026-11-04
 
 Base556f1f040c8b084bb23efc9df18ad522fe311dad (Draft PR40); branch feat/v50-quality-eclipse-20261104 in primary owner checkout.
