@@ -1,4 +1,5 @@
 import { eligibleTech } from "../tech/web";
+import {changesAttackPattern} from '../tech/earlyTactics';
 // v0.25 Tech Offer Engine — deterministic, two-stage decoupled offer generation
 // Stage 1: WHAT TECH APPEARS — Gumbel-Top-k over eligible TechNodes (quality-independent).
 // Stage 2: HOW SPECIAL THAT OFFER INSTANCE IS — quality sampled across all qualities without age clamping.
@@ -70,6 +71,9 @@ export const DEFAULT_OFFER_CONFIG: OfferEngineConfig = {
 };
 
 export interface TechOfferContext {
+  /** Bounded World1 opening opportunity; never grants or selects a Tech. */
+  earlyTactics?: boolean;
+  chainUnlocked?: boolean;
   sim: {
     owned: string[];
     ownedTags: string[];
@@ -321,7 +325,14 @@ export function generateOffers(
     return { node, score };
   });
 
-  const selectedNodes = gumbelTopK(candidates, K, rng, config.gumbelTemp);
+  // Same one draw per candidate and K quality draws. Reuse the sampled rank.
+  const ranked = gumbelTopK(candidates, context.earlyTactics?candidates.length:K, rng, config.gumbelTemp);
+  let selectedNodes=ranked.slice(0,K);
+  if(context.earlyTactics&&K>=3){
+    const tactic=ranked.find(c=>changesAttackPattern(c.node,context.chainUnlocked));
+    // First slot survives the later reserved-card/recipe-component contracts.
+    if(tactic)selectedNodes=[tactic,...selectedNodes.filter(c=>c.node.id!==tactic.node.id)].slice(0,K);
+  }
 
   // --- STAGE 2: HOW SPECIAL THAT OFFER INSTANCE IS ---
   // Sample quality per selected offer without age clamping; all qualities valid in every age.

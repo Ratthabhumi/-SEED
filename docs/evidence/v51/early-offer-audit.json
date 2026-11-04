@@ -1,0 +1,718 @@
+{
+  "classification": "STAGED_ELIGIBILITY_AND_EFFECT_CHOICES_PLUS_UNCHANGED60S_SYNTHETIC_POLICY_NOT_HUMAN_FUN",
+  "baseline": "18ec2b51b2af5ee90231a9eb7235ba7d6fd56d2f",
+  "versions": [
+    3,
+    27,
+    3
+  ],
+  "childLaw": 18,
+  "sourceSha256LF": {
+    "src/core/tech/generator.ts": "929a44762fed31fc7af382bff93606b9e45bb8c918971571020842ea3049ed17",
+    "src/core/emergence/offerEngine.ts": "401a3e5fa9f27339339450e99449157adc7c416015e49a08fea83e5675ea4a8d",
+    "src/core/tech/earlyTactics.ts": "f8877fcb261d1513d7ab9c998c0a119463ffda2e61ab19c779beccf715ad2885",
+    "src/core/sim/RunSimulation.ts": "493d398f9d3f3035cbe4c8aeeb19de640fa796ff3e0a168043fd42332df5124b",
+    "src/core/seed/versions.ts": "03ea3da2b2aa28649178ee6059335a112c3fa0d1c8e3bdbb79ca32440aa86966"
+  },
+  "before": {
+    "cases": 12,
+    "eligibleBehavior": 4,
+    "offeredBehavior": 2
+  },
+  "after": {
+    "cases": 12,
+    "eligibleBehavior": 12,
+    "offeredBehavior": 12,
+    "firstBehaviorIds": [
+      "tactical-kinetic",
+      "tactical-energy",
+      "tactical-defense",
+      "stone-trap"
+    ]
+  },
+  "rows": [
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "hunters",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-kinetic",
+        "tactical-field"
+      ],
+      "offered": [
+        {
+          "id": "tactical-kinetic",
+          "effects": [
+            {
+              "kind": "projectileAdd",
+              "value": 1,
+              "family": "kinetic"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-field-1",
+          "effects": [
+            {
+              "kind": "knowledgeMul",
+              "value": 0.06,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-kinetic",
+      "counters": {
+        "projectiles": 1,
+        "chain": false,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "engineers",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-kinetic",
+        "tactical-defense"
+      ],
+      "offered": [
+        {
+          "id": "tactical-kinetic",
+          "effects": [
+            {
+              "kind": "projectileAdd",
+              "value": 1,
+              "family": "kinetic"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-defense-1",
+          "effects": [
+            {
+              "kind": "regenAdd",
+              "value": 0.3,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-kinetic",
+      "counters": {
+        "projectiles": 1,
+        "chain": false,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "resonant",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-energy",
+        "tactical-field"
+      ],
+      "offered": [
+        {
+          "id": "tactical-energy",
+          "effects": [
+            {
+              "kind": "chainAdd",
+              "value": 1,
+              "family": "energy"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-field-1",
+          "effects": [
+            {
+              "kind": "knowledgeMul",
+              "value": 0.06,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-energy",
+      "counters": {
+        "projectiles": 0,
+        "chain": true,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-GOLDEN-001",
+      "origin": "sentinels",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-energy",
+        "tactical-defense"
+      ],
+      "offered": [
+        {
+          "id": "tactical-energy",
+          "effects": [
+            {
+              "kind": "chainAdd",
+              "value": 1,
+              "family": "energy"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-defense-1",
+          "effects": [
+            {
+              "kind": "regenAdd",
+              "value": 0.3,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-energy",
+      "counters": {
+        "projectiles": 0,
+        "chain": true,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "hunters",
+      "eligible": 11,
+      "eligibleBehavior": [
+        "tactical-kinetic",
+        "tactical-field",
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "tactical-kinetic",
+          "effects": [
+            {
+              "kind": "projectileAdd",
+              "value": 1.25,
+              "family": "kinetic"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "tactical-field",
+          "effects": [
+            {
+              "kind": "mineAdd",
+              "value": 1.5,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-kinetic",
+      "counters": {
+        "projectiles": 1.25,
+        "chain": false,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "engineers",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-kinetic",
+        "tactical-defense"
+      ],
+      "offered": [
+        {
+          "id": "tactical-kinetic",
+          "effects": [
+            {
+              "kind": "projectileAdd",
+              "value": 1,
+              "family": "kinetic"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "tactical-defense",
+          "effects": [
+            {
+              "kind": "orbitAdd",
+              "value": 1.25,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-kinetic",
+      "counters": {
+        "projectiles": 1,
+        "chain": false,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "resonant",
+      "eligible": 11,
+      "eligibleBehavior": [
+        "tactical-energy",
+        "tactical-field",
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "tactical-energy",
+          "effects": [
+            {
+              "kind": "chainAdd",
+              "value": 1,
+              "family": "energy"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "tactical-field",
+          "effects": [
+            {
+              "kind": "mineAdd",
+              "value": 1.5,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-energy",
+      "counters": {
+        "projectiles": 0,
+        "chain": true,
+        "mines": 0,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "EPOCH-EXPAND-01",
+      "origin": "sentinels",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-energy",
+        "tactical-defense"
+      ],
+      "offered": [
+        {
+          "id": "tactical-defense",
+          "effects": [
+            {
+              "kind": "orbitAdd",
+              "value": 1,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "tactical-energy",
+          "effects": [
+            {
+              "kind": "chainAdd",
+              "value": 1,
+              "family": "energy"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-defense",
+      "counters": {
+        "projectiles": 0,
+        "chain": false,
+        "mines": 0,
+        "orbit": 1
+      }
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "hunters",
+      "eligible": 11,
+      "eligibleBehavior": [
+        "tactical-kinetic",
+        "tactical-field",
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "stone-trap",
+          "effects": [
+            {
+              "kind": "mineAdd",
+              "value": 1.5,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-field-1",
+          "effects": [
+            {
+              "kind": "knowledgeMul",
+              "value": 0.12,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "stone-trap",
+      "counters": {
+        "projectiles": 0,
+        "chain": false,
+        "mines": 1.5,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "engineers",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-kinetic",
+        "tactical-defense"
+      ],
+      "offered": [
+        {
+          "id": "tactical-defense",
+          "effects": [
+            {
+              "kind": "orbitAdd",
+              "value": 1,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-defense-1",
+          "effects": [
+            {
+              "kind": "regenAdd",
+              "value": 0.44999999999999996,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-defense",
+      "counters": {
+        "projectiles": 0,
+        "chain": false,
+        "mines": 0,
+        "orbit": 1
+      }
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "resonant",
+      "eligible": 11,
+      "eligibleBehavior": [
+        "tactical-energy",
+        "tactical-field",
+        "stone-trap"
+      ],
+      "offered": [
+        {
+          "id": "stone-trap",
+          "effects": [
+            {
+              "kind": "mineAdd",
+              "value": 1.5,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-field-1",
+          "effects": [
+            {
+              "kind": "knowledgeMul",
+              "value": 0.12,
+              "family": "field"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "stone-trap",
+      "counters": {
+        "projectiles": 0,
+        "chain": false,
+        "mines": 1.5,
+        "orbit": 0
+      }
+    },
+    {
+      "seed": "V50-OPENING-03",
+      "origin": "sentinels",
+      "eligible": 10,
+      "eligibleBehavior": [
+        "tactical-energy",
+        "tactical-defense"
+      ],
+      "offered": [
+        {
+          "id": "tactical-defense",
+          "effects": [
+            {
+              "kind": "orbitAdd",
+              "value": 1,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": true
+        },
+        {
+          "id": "application-defense-1",
+          "effects": [
+            {
+              "kind": "regenAdd",
+              "value": 0.44999999999999996,
+              "family": "defense"
+            }
+          ],
+          "baseBehavior": false
+        },
+        {
+          "id": "stone-fire",
+          "effects": [
+            {
+              "kind": "damageMul",
+              "value": 0.12
+            }
+          ],
+          "baseBehavior": false
+        }
+      ],
+      "selected": "tactical-defense",
+      "counters": {
+        "projectiles": 0,
+        "chain": false,
+        "mines": 0,
+        "orbit": 1
+      }
+    }
+  ],
+  "smoke": [
+    {
+      "origin": "hunters",
+      "firstBehaviorOffer": 16.616666666667005,
+      "firstChoice": 16.63333333333367,
+      "firstBaseBehaviorChoice": null,
+      "firstEffectivePattern": null,
+      "outcome": "time-limit",
+      "seconds": 60,
+      "selected": [
+        "stone-fire",
+        "stone-tools",
+        "web:stone-tools:1",
+        "application-kinetic-0"
+      ],
+      "kills": 111,
+      "age": 0,
+      "hash": "217beddc"
+    },
+    {
+      "origin": "engineers",
+      "firstBehaviorOffer": 14.150000000000283,
+      "firstChoice": 14.16666666666695,
+      "firstBaseBehaviorChoice": null,
+      "firstEffectivePattern": null,
+      "outcome": "time-limit",
+      "seconds": 60,
+      "selected": [
+        "stone-fire",
+        "stone-tools",
+        "web:stone-tools:1",
+        "application-kinetic-0"
+      ],
+      "kills": 95,
+      "age": 0,
+      "hash": "1f2e3435"
+    },
+    {
+      "origin": "resonant",
+      "firstBehaviorOffer": 14.383333333333628,
+      "firstChoice": 14.400000000000295,
+      "firstBaseBehaviorChoice": 49.8,
+      "firstEffectivePattern": 49.86666666666512,
+      "outcome": "time-limit",
+      "seconds": 60,
+      "selected": [
+        "weave-stone-warfare-culture",
+        "stone-fire",
+        "stone-tools",
+        "web:stone-fire:1",
+        "tactical-energy"
+      ],
+      "kills": 110,
+      "age": 0,
+      "hash": "4a8dd430"
+    },
+    {
+      "origin": "sentinels",
+      "firstBehaviorOffer": 14.283333333333623,
+      "firstChoice": 14.30000000000029,
+      "firstBaseBehaviorChoice": null,
+      "firstEffectivePattern": null,
+      "outcome": "time-limit",
+      "seconds": 60,
+      "selected": [
+        "stone-fire",
+        "stone-tools",
+        "application-defense-0"
+      ],
+      "kills": 84,
+      "age": 0,
+      "hash": "ac4c120d"
+    }
+  ],
+  "limitations": [
+    "100 knowledge is staged solely to inspect the first draft; no natural-time claim.",
+    "60s smoke reuses the historical balanced policy without alteration; null means the event was not observed by the cap.",
+    "No human enjoyment rating; no before/after timing comparison with a different-duration protocol."
+  ]
+}

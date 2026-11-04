@@ -114,6 +114,15 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     effects: [{ ...effect, family: starter.family }], tags: [starter.domain], synergyTags: [starter.family],
   }));
 
+  // Content27: legal, voluntary starting branches. Old stat IDs stay intact.
+  for(const [family,domain,kind] of [
+    ['kinetic','warfare','projectileAdd'],['energy','science','chainAdd'],
+    ['field','industry','mineAdd'],['defense','culture','orbitAdd'],
+  ] as const)nodes.push({id:`tactical-${family}`,titleKey:`tech.tactical.${family}.name`,
+    descriptionKey:`tech.tactical.${family}.description`,age:'stone',domain,
+    prerequisites:[`foundation-${domain}`],exclusions:[],rarity:'common',weight:80,
+    effects:[{kind,value:1,family}],tags:[domain,'tactics'],synergyTags:[family]});
+
   // Seed-selected authored modules require their domain foundation, not an
   // age spine or a potentially incompatible weapon-family ancestor.
   const ages: AgeId[] = ["stone", "bronze", "iron", "industrial", "atomic", "space"];
