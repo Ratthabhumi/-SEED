@@ -48,3 +48,8 @@ it('Signal architecture persists after discovery and differs from every other PO
  drawPoi(signal.g,{...base,type:'signal',found:false});drawPoi(found.g,{...base,type:'signal',found:true});drawPoi(other.g,{...base,type:'ruin',found:true});
  expect(found.calls.length).toBeGreaterThan(other.calls.length);expect(signal.calls).not.toEqual(other.calls);
 });
+it('painted undiscovered destinations retain distinct identifying ink when the art pool is unavailable',()=>{
+ const base={wx:0,wy:0,time:0,highContrast:false,painted:true,found:false},ruin=recorder(),meteor=recorder();
+ drawPoi(ruin.g,{...base,type:'ruin'});drawPoi(meteor.g,{...base,type:'meteor'});
+ expect(ruin.calls).not.toEqual(meteor.calls);
+});

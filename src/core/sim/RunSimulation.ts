@@ -1942,7 +1942,7 @@ export class RunSimulation {
         tick("energy", st.cooldown * cdM, () => this.beamStrike("energy", st, BEAM_TARGET_RANGE, ev));
       } else if (st.archetype === "projectile") {
         tick("energy", st.cooldown * cdM, () => {
-          return this.fireProjectileSpread('energy',{...st,speed:st.speed||380,radius:st.radius*.8},1,640,ev,HAZARD_GEOMETRY.projectileLife);
+          return this.fireProjectileSpread('energy',{...st,speed:st.speed||380,radius:st.radius*.8},st.count,640,ev,HAZARD_GEOMETRY.projectileLife);
         });
       }
     }

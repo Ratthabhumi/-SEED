@@ -244,6 +244,8 @@ function drawPoiGlyph(
 export function drawPoi(g: Phaser.GameObjects.Graphics, a: PoiDrawArgs): void {
   if(a.painted&&!a.highContrast){
       g.fillStyle(0x081016,.35);g.fillEllipse(a.wx,a.wy+8,70,18);
+      // Essential destination identity does not depend on a pooled art slot.
+      if(!a.found){drawPoiGlyph(g,a.type,a.wx,a.wy-148,13,.95);g.lineStyle(2,VL.beacon,.4);g.lineBetween(a.wx,a.wy-125,a.wx,a.wy-94);}
       if(a.found){g.lineStyle(2,VL.beacon,.8);g.lineBetween(a.wx-14,a.wy+15,a.wx-5,a.wy+23);g.lineBetween(a.wx-5,a.wy+23,a.wx+15,a.wy+7);}
       return;
   }

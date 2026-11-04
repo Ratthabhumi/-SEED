@@ -1,0 +1,20 @@
+{
+  "site": {
+    "id": "poi-21e04aff-22-2-0",
+    "x": 11698.860718756914,
+    "y": 1091.7344169914722,
+    "chunk": "22,2",
+    "known": false
+  },
+  "observation": {
+    "poiId": "poi-21e04aff-22-2-0",
+    "discoveredSimTime": 0.8000000000000008,
+    "x": 11698.860718756914,
+    "y": 1091.7344169914722,
+    "firstRenderFrame": 89,
+    "discoveryToRenderMs": 1.5,
+    "classification": "POST_RENDER_CPU_OBSERVATION_NOT_GPU_PRESENTATION"
+  },
+  "visiblePixels": 2948,
+  "classification": "CANONICAL_DISCOVERY_NATIVE_SCREENSHOT_PIXEL_DIFFERENCE_NOT_GPU_PRESENT_TIMESTAMP"
+}

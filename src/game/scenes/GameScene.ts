@@ -1,5 +1,4 @@
 import {defaultCollection,earnCollection,COLLECTIBLES,type LegacyCollection,type CollectionAchievement} from '../../core/progression/legacyCollection';
-import {legacyCollectionPanel} from '../legacyCollectionPanel';
 import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
 import {bossThreat,bossStrikeTargetsBase} from '../ui/bossThreat';
 import {changedWeaponForms} from '../ui/weaponEvolution';
@@ -107,6 +106,9 @@ function percentile(sorted: number[], p: number): number {
 
 import { AbilityLoadout } from "../ui/AbilityLoadout";
 import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
+import {legacyCollectionPanel} from '../legacyCollectionPanel';
+import {combatChoicePreview} from '../ui/combatChoicePreview';
+import {landmarkEligible} from '../render/landmarkVisibility';
 import {FriendlyProjectileBatch} from "../render/FriendlyProjectileBatch";
 import hostileAttackArt from "../../../assets/seed/content153/hostile-attacks-v1.png";
 import attackArt from "../../../assets/seed/content153/hunters-attack-v2.png";
@@ -345,7 +347,7 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.decisionInput = new DecisionInputBoundary(
       () => !!this.sim && !this.paused && !this.sim.state.over && !this.sim.state.draftOpen && !this.blockingModal && !this.techMapOpen && !this.civMapOpen,
-      () => !!this.sim?.state.draftOpen,
+      () => !!this.sim?.state.draftOpen || !!this.blockingModal,
       () => { this.latch.setMove(0,0);this.latch.discardEdges();this.input.keyboard?.resetKeys(); },
     );
     this.heroActions = new HeroActions();
@@ -2809,6 +2811,11 @@ export class GameScene extends Phaser.Scene {
       c.appendChild(h);
       c.appendChild(d);
       c.appendChild(delta);
+      const changes=combatChoicePreview(s,offer.effectiveEffects);
+      if(changes.length){const impact=el('p','card-combat-change');impact.textContent=changes.map(change=>{
+        const value=(v:number)=>change.kind==='chain'||change.kind==='beam'?t(v?'ui.active':'ui.inactive'):String(v);
+        return `${t(`family.${change.family}` as EnKeys)} · ${t(`build.${change.kind}` as EnKeys)}: ${value(change.before)} → ${value(change.after)}`;
+      }).join(' · ');c.append(impact);}
       c.appendChild(dom);
       const plan = document.createElement("details");
       plan.className = "card-plan";
@@ -2956,6 +2963,7 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------- pause/death
   private togglePause(): void {
+    this.decisionInput.enter();
     this.paused = !this.paused;
     if (this.paused) this.showPause();
     else {
@@ -3065,7 +3073,6 @@ export class GameScene extends Phaser.Scene {
     replayBtn.id = "replay-tutorial-btn";
     help.appendChild(replayBtn);
     help.classList.add('pause-help');
-    help.appendChild(legacyCollectionPanel(c=>{this.cosmetics=c;save.collection=c;}));
 
     // RUN — run-scoped navigation, away from both Resume and Danger.
     const run = section("ui.pauseRun");
@@ -3372,6 +3379,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private closeBlocking(): void {
+    this.decisionInput.enter();
     const id = this.blockingModal?.id;
     this.blockingModal?.remove();
     this.blockingModal = null;
@@ -3616,7 +3624,7 @@ export class GameScene extends Phaser.Scene {
       if(e.type==="ability_used")this.heroEquipment.activate(s.worldNonce,s.elapsed,e.id,s.px,s.py);
       if(e.type==="enemy_killed")this.deathResponse.accept(e,s.elapsed,s.worldNonce,this.reducedEffects);
       this.heroActions.sync(s.worldNonce);
-      this.heroActions.accept(e,s.elapsed,s.px,s.py);
+      this.heroActions.accept(e,s.elapsed,s.px,s.py,s.weaponRig.mode);
       switch (e.type) {
         case "boss_attack_warning": toast(`combat.boss.${e.pattern}` as EnKeys);sfx.boss();break;
         case "boss_phase_changed":toast("combat.boss.phaseTransition");sfx.boss();break;
@@ -4035,9 +4043,8 @@ export class GameScene extends Phaser.Scene {
       for (let oy = -R; oy <= R; oy++) {
         const desc = getChunk(cx+ox,cy+oy);
         for (const poi of desc.poi) {
-          // Canonical discovery can cross a chunk edge before that chunk is
-          // explored. Show that known site, without revealing unknown neighbors.
-          if(!(desc.x===cx&&desc.y===cy)&&!s.chunksWorld.includes(`${desc.x},${desc.y}`)&&!s.poisWorld.includes(poi.id))continue;
+          // The Civilization Map already reveals these deterministic locations.
+          // World identification must precede proximity-based discovery/reward.
           this.siteArrival.drawn(poi.id,poi.wx,poi.wy);
 
           drawPoi(g, {
@@ -4050,7 +4057,8 @@ export class GameScene extends Phaser.Scene {
             highContrast: this.highContrast(),
           });
           const terr = terrByPoi.get(poi.id);
-          if(!terr&&!this.highContrast()&&landmarkCount<48){
+          const nearArt=landmarkEligible(s.px,s.py,poi.wx,poi.wy,this.scale.width,this.scale.height,this.cameras.main.zoom);
+          if(!terr&&nearArt&&!this.highContrast()&&landmarkCount<48){
             let art = this.landmarkArt[landmarkCount++];
             if (!art) { art = this.add.image(0,0,"world-props",0).setDepth(-5); this.landmarkArt.push(art); }
             const frame=["ruin","meteor","vault","signal","megasite","worldtree"].indexOf(poi.type);

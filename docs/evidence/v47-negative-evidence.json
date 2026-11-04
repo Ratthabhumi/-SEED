@@ -1,0 +1,18 @@
+{
+  "baseline": "57df3d1b5e27e31bc10893b5ef61c106eb38bf0d",
+  "humanEvidence": {"combatFeel": 1, "upgradeImpact": 2, "source": "owner directive", "acceptance": "HUMAN_RETEST_REQUIRED"},
+  "observations": [
+    {"id":"native-space", "scope":"parent", "result":"FAIL", "detail":"Focused Outpost choice closes on Space in both EN and TH; existing Draft-only guard misses blocking choices."},
+    {"id":"poi-arrival", "scope":"parent", "result":"FAIL", "detail":"Undiscovered POI already located on Civilization Map has no world art until chunk/discovery eligibility."},
+    {"id":"title-layout", "scope":"parent", "result":"FAIL", "detail":"Collection is a third grid child, creating an extra overflowing row instead of a bounded right column."},
+    {"id":"floating-body", "scope":"parent", "result":"FAIL", "detail":"Floating release produces attack body pose; requested idle/walk continuity is absent."},
+    {"id":"energy-volley", "scope":"parent", "result":"FAIL", "detail":"Industrial stage authored count2 yields one actual release/projectile."},
+    {"id":"browser-pre-review", "scope":"working-delta", "result":"41_PASS_6_FAIL", "detail":"All six collection tests expose editable input swallowing Escape after reduced-effects setting. Original equality, save and World2 assertions retained; input guard corrected."},
+    {"id":"review-preview", "scope":"working-delta", "result":"RED_THEN_GREEN", "detail":"Fractional quality effects were advertised as fractional shots/mines; guardian saturation advertised unavailable gunners. Executed rounding and cap now used."},
+    {"id":"review-poi-culling", "scope":"working-delta", "result":"RED_THEN_GREEN", "detail":"Current-position +256 art eligibility can miss sites entering view during a 400u move within one chunk. Preparation now covers complete chunk camera sweep, including negative coordinates."},
+    {"id":"painted-fallback", "scope":"working-delta", "result":"RED_THEN_GREEN", "detail":"Painted mode without an art slot had only a shadow; essential site-type glyph now remains available independently of pool/terrain readiness."},
+    {"id":"first-full-check", "scope":"working-delta", "result":"633_PASS_1_FAIL", "detail":"Old weaponMuzzle version assertion expected Content24 after intentional Content25 volley correction. Update version assertion to25, keep child laws18 and all physical/replay assertions; complete check repeated because failure was unresolved."},
+    {"id":"baseline-provenance", "scope":"offline-comparison", "result":"NORMALIZATION_REQUIRED", "detail":"Git archive text source uses CRLF on this Windows checkout. All61 archived blobs match pinned parent after CRLF-to-LF normalization only; raw mismatch retained locally. Reused extracted caches remain a documented script limitation."}
+  ],
+  "limits": ["No new human ratings", "Staged mechanics arena is not natural-pressure or boss acceptance", "CPU post-render observation is not physical presentation", "No ART_COMPLETE or native60Hz acceptance", "Failed logs and traces remain in ignored scratch; private QA not uploaded"]
+}
