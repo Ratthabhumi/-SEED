@@ -1,3 +1,4 @@
+import{revealPauseSection}from'./helpers';
 // v0.23.1 responsive clarity matrix (§§9-14): 3 viewports × EN/TH ×
 // 100/125/150/200%, reusing one page per viewport (no cold boot per cell).
 // Layout contracts use boundingBox geometry; prose alignment, pause/draft
@@ -66,7 +67,7 @@ async function resumePause(page:Page):Promise<void>{
 
 async function setScale(page: Page, label: "100%" | "125%" | "150%" | "200%"): Promise<void> {
   await openPause(page);
-  await page.locator("#pause-screen").getByRole("button", { name: label, exact: true }).click();
+  await revealPauseSection(page);await page.locator("#pause-screen").getByRole("button", { name: label, exact: true }).click();
   await resumePause(page);
 }
 
@@ -113,7 +114,7 @@ async function openMap(page: Page, key: "T" | "M", screen: "#techmap-screen" | "
   await expect(page.locator(screen)).toBeVisible({ timeout: 10000 });
 }
 
-const PAUSE_HEADINGS_EN = ["Primary", "Display", "Help", "Run", "Danger Zone"];
+const PAUSE_HEADINGS_EN = ["Primary", "Settings", "Help", "Run", "Danger Zone"];
 
 test("one physical Escape stays consumed when Phaser processes a same-frame key burst",async({page})=>{
   await startRun(page,"PAUSE-PHASER-BURST");

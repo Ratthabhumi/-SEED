@@ -1,3 +1,4 @@
+import{revealPauseSection}from'./helpers';
 // Browser smoke: title → run → move → pause → EN/TH → F3 → title.
 // Production build served via `vite preview` (see playwright.config.ts).
 import { test, expect } from "@playwright/test";
@@ -31,7 +32,7 @@ test("v0.1.1 smoke: launch, run, pause, language switch, back to title", async (
 
   // Pause → switch to Thai mid-run (must not restart the run).
   await page.keyboard.press("Escape");
-  await expect(page.getByText("Paused")).toBeVisible();
+  await expect(page.getByText("Paused")).toBeVisible();await revealPauseSection(page);
   await page.getByRole("button", { name: "ไทย", exact: true }).click();
   await expect(page.getByText("หยุดชั่วคราว")).toBeVisible();
   await expect(page.getByRole("button", { name: "เล่นต่อ" })).toBeVisible();

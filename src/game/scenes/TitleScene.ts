@@ -1,4 +1,7 @@
 import {legacyCollectionPanel} from '../legacyCollectionPanel';
+import {settingsControls} from '../ui/settingsControls';
+import {menuNavigation} from '../ui/menuNavigation';
+import {showGuide} from '../ui/guidePanel';
 // Title screen: seed input + language + animated backdrop. DOM for text (Thai-safe).
 import Phaser from "phaser";
 import {heroPortrait} from "../ui/heroPortrait";
@@ -17,6 +20,9 @@ export const TITLE_ORIGIN_KEY = "seed-game:pending-origin";
 
 export class TitleScene extends Phaser.Scene {
   private stars: { x: number; y: number; s: number; v: number }[] = [];
+  private titleSeed = '';
+  private titleOrigin: OriginId = DEFAULT_ORIGIN;
+  private returnToSettings = false;
 
   constructor() {
     super("title");
@@ -49,7 +55,7 @@ export class TitleScene extends Phaser.Scene {
     content.appendChild(logo);
     // Civilization Origin: two starting weapon families (ADR-0006 Decision 1).
     // ONE shared selector — QA mode reuses it (no duplicated start UI).
-    let pickedOrigin: OriginId = DEFAULT_ORIGIN;
+    let pickedOrigin: OriginId = this.titleOrigin;
     // QA gate (?qa=1 only): small testing banner + one-click golden-seed start.
     if (isQAMode(window.location.search)) {
       // Optional explicit QA seed: ?qa=1&seed=EPOCH-AET4-3SFC (recorder stores
@@ -92,11 +98,14 @@ export class TitleScene extends Phaser.Scene {
     input.id = "seed-input"; input.setAttribute("aria-label", t("ui.seedPlaceholder"));
     input.placeholder = t("ui.seedPlaceholder");
     input.maxLength = 64;
+    input.value = this.titleSeed;
+    input.addEventListener('input',()=>{this.titleSeed=input.value;});
     input.spellcheck = false;
     seedRow.appendChild(input);
     const dice = button("ui.randomSeed", () => {
       sfx.unlock(); sfx.select();
       input.value = generateRandomSeed();
+      this.titleSeed = input.value;
     });
     seedRow.appendChild(dice);
     content.appendChild(seedRow);
@@ -106,7 +115,7 @@ export class TitleScene extends Phaser.Scene {
       `${t(o.descKey)} · [F] ${t(o.ability.nameKey)} (${o.ability.cooldown}s) · ${t(o.strategyKey)}`;
     const descLine = document.createElement("div");
     descLine.className = "logo-sub";
-    descLine.textContent = formatOriginDesc(ORIGINS[0]!);
+    descLine.textContent = formatOriginDesc(ORIGINS.find(o=>o.id===pickedOrigin)!);
     const oRow = el("div", "origin-grid");
     const oBtns: HTMLButtonElement[] = [];
     for (const o of ORIGINS) {
@@ -124,6 +133,7 @@ export class TitleScene extends Phaser.Scene {
         for (const x of oBtns) x.setAttribute("aria-pressed", "false");
         b.setAttribute("aria-pressed", "true");
         pickedOrigin = o.id;
+        this.titleOrigin = o.id;
         for (const x of oBtns) x.classList.remove("active");
         b.classList.add("active");
         descLine.textContent = formatOriginDesc(o);
@@ -132,8 +142,8 @@ export class TitleScene extends Phaser.Scene {
       oBtns.push(b);
     }
     content.appendChild(oRow);
-    content.appendChild(descLine);
-    content.appendChild(seedRow);
+    const originInfo=document.createElement('details');originInfo.className='title-origin-info';
+    const originSummary=document.createElement('summary');originSummary.textContent=t('ui.originStrategy');originInfo.append(originSummary,descLine);content.append(originInfo);
 
     const start = button("ui.startGame", () => {
       sfx.unlock(); sfx.select();
@@ -177,7 +187,7 @@ export class TitleScene extends Phaser.Scene {
     legacy.append(collection,archive);layout.append(legacy);
 
     const row = el("div", "btn-row");
-    row.appendChild(button("ui.settings", () => this.showSettings()));
+    const settings=button("ui.settings", () => this.showSettings());settings.id='title-settings-btn';row.append(settings);
     const langBtn = document.createElement("button");
     langBtn.className = "btn";
     langBtn.textContent = getLang() === "th" ? "English" : "ไทย";
@@ -189,10 +199,12 @@ export class TitleScene extends Phaser.Scene {
       this.scene.restart();
     });
     row.appendChild(langBtn);
+    const help=button('ui.guide',()=>showGuide(help));help.id='title-help-btn';row.append(help);
     footer.appendChild(row);
 
     layout.prepend(panel); screen.appendChild(layout);
     root.appendChild(screen);
+    if(this.returnToSettings){this.returnToSettings=false;settings.focus();}
   }
 
   private renderStars(): void {
@@ -219,117 +231,17 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private showSettings(): void {
-    const save = loadSave(localStorage);
-    clearUI();
-    const root = uiRoot();
-    const screen = el("div", "screen");
-    const panel = el("div", "panel");
-    panel.appendChild(el("h2", "", "ui.settings"));
-
-    const volRow = el("div", "settings-row");
-    volRow.appendChild(el("span", "", "ui.volume"));
-    const vol = document.createElement("input");
-    vol.type = "range"; vol.min = "0"; vol.max = "100";
-    vol.value = String(Math.round(save.settings.volume * 100));
-    vol.addEventListener("input", () => {
-      save.settings.volume = Number(vol.value) / 100;
-      sfx.setVolume(save.settings.volume);
-      storeSave(localStorage, save);
+    clearUI();const screen=el('div','screen');screen.id='title-settings';
+    const panel=el('section','panel panel-lg settings-panel');panel.append(el('h2','','ui.settings'));
+    panel.append(settingsControls('title',key=>{
+      if(key==='lang'){setLang(loadSave(localStorage).settings.lang);this.showSettings();}
+    }));
+    const tutorial=button('ui.resetTutorial',()=>{const fresh=loadSave(localStorage);fresh.settings.tutorialCompleted=false;
+      if(storeSave(localStorage,fresh)){tutorial.textContent='✓ '+t('ui.tutorialResetDone');tutorial.disabled=true;}
     });
-    volRow.appendChild(vol);
-    panel.appendChild(volRow);
-
-    const shakeRow = el("div", "settings-row");
-    shakeRow.appendChild(el("span", "", "ui.shake"));
-    const sh = document.createElement("input");
-    sh.type = "checkbox"; sh.checked = save.settings.shake;
-    sh.addEventListener("change", () => {
-      save.settings.shake = sh.checked;
-      storeSave(localStorage, save);
-    });
-    shakeRow.appendChild(sh);
-    panel.appendChild(shakeRow);
-
-    const reducedRow = el("label","settings-row",undefined,t("settings.reduced"));
-    const reduced = document.createElement("input");reduced.type="checkbox";reduced.id="reduced-effects";reduced.checked=save.settings.reducedEffects;
-    reduced.addEventListener("change",()=>{save.settings.reducedEffects=reduced.checked;storeSave(localStorage,save);});
-    reducedRow.appendChild(reduced);panel.appendChild(reducedRow);
-    const contrastRow = el("div", "settings-row");
-    contrastRow.appendChild(el("span", "", "ui.contrast"));
-    const contrasts = el("div", "lang-row");
-    const bNormal = document.createElement("button");
-    bNormal.className = "btn" + (save.settings.contrast === "normal" ? " active" : "");
-    bNormal.textContent = t("ui.contrastNormal");
-    bNormal.addEventListener("click", () => {
-      save.settings.contrast = "normal"; storeSave(localStorage, save); this.scene.restart();
-    });
-    const bHigh = document.createElement("button");
-    bHigh.className = "btn" + (save.settings.contrast === "high" ? " active" : "");
-    bHigh.textContent = t("ui.contrastHigh");
-    bHigh.addEventListener("click", () => {
-      save.settings.contrast = "high"; storeSave(localStorage, save); this.scene.restart();
-    });
-    contrasts.appendChild(bNormal); contrasts.appendChild(bHigh);
-    contrastRow.appendChild(contrasts);
-    panel.appendChild(contrastRow);
-
-    const langRow = el("div", "settings-row");
-    langRow.appendChild(el("span", "", "ui.language"));
-    const langs = el("div", "lang-row");
-    const bEn = document.createElement("button");
-    bEn.className = "btn" + (save.settings.lang === "en" ? " active" : "");
-    bEn.textContent = "English";
-    bEn.addEventListener("click", () => {
-      save.settings.lang = "en"; storeSave(localStorage, save); setLang("en"); this.scene.restart();
-    });
-    const bTh = document.createElement("button");
-    bTh.className = "btn" + (save.settings.lang === "th" ? " active" : "");
-    bTh.textContent = "ไทย";
-    bTh.addEventListener("click", () => {
-      save.settings.lang = "th"; storeSave(localStorage, save); setLang("th"); this.scene.restart();
-    });
-    langs.appendChild(bEn); langs.appendChild(bTh);
-    langRow.appendChild(langs);
-    panel.appendChild(langRow);
-
-    const scaleRow = el("div", "settings-row");
-    scaleRow.appendChild(el("span", "", "ui.uiScale"));
-    const scales = el("div", "scale-row");
-    for (const sVal of [1, 1.25, 1.5, 2] as const) {
-      const b = document.createElement("button");
-      b.className = "btn" + (save.settings.uiScale === sVal ? " active" : "");
-      b.textContent = `${Math.round(sVal * 100)}%`;
-      b.addEventListener("click", () => {
-        save.settings.uiScale = sVal;
-        storeSave(localStorage, save);
-        applyUiScale(sVal);
-        for (const child of Array.from(scales.children)) {
-          child.classList.remove("active");
-        }
-        b.classList.add("active");
-      });
-      scales.appendChild(b);
-    }
-    scaleRow.appendChild(scales);
-    panel.appendChild(scaleRow);
-
-    const tutRow = el("div", "settings-row");
-    tutRow.appendChild(el("span", "", "ui.resetTutorial"));
-    const tutBtn = document.createElement("button");
-    tutBtn.className = "btn";
-    tutBtn.textContent = t("ui.resetTutorial");
-    tutBtn.addEventListener("click", () => {
-      save.settings.tutorialCompleted = false;
-      storeSave(localStorage, save);
-      tutBtn.textContent = "✓ " + t("ui.tutorialResetDone");
-      tutBtn.disabled = true;
-    });
-    tutRow.appendChild(tutBtn);
-    panel.appendChild(tutRow);
-
-    panel.appendChild(button("ui.back", () => this.scene.restart()));
-    screen.appendChild(panel);
-    root.appendChild(screen);
+    const back=()=>{this.returnToSettings=true;this.scene.restart();};
+    const actions=el('div','dialog-actions');actions.append(tutorial,button('ui.back',back,'btn primary'));panel.append(actions);
+    screen.append(panel);uiRoot().append(screen);menuNavigation(screen,back);
   }
 
   update(): void { /* starfield redrawn on timer */ }

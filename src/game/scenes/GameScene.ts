@@ -86,7 +86,7 @@ import { BossPresentation, type BossArtMode } from "../render/BossPresentation";
 import { repairPresentation } from "../render/repairPresentation";
 import { CombatFeedback, energyCharge } from "../render/CombatFeedback";
 import { KNOWLEDGE_ICON } from "../render/knowledgeIdentity";
-import { phaserColors } from "../../theme/tokens";
+import { colors, phaserColors } from "../../theme/tokens";
 import { drawPlayer } from "../render/PlayerRenderer";
 import {
   drawFriendlyProj, drawHostileProj, drawAura, drawOrbit, drawMine, drawKnowledge,
@@ -108,6 +108,9 @@ import { AbilityLoadout } from "../ui/AbilityLoadout";
 import { DecisionInputBoundary } from "../ui/DecisionInputBoundary";
 import {legacyCollectionPanel} from '../legacyCollectionPanel';
 import {combatChoicePreview} from '../ui/combatChoicePreview';
+import {settingsControls} from '../ui/settingsControls';
+import {showGuide as showSharedGuide} from '../ui/guidePanel';
+import {menuNavigation} from '../ui/menuNavigation';
 import {landmarkEligible} from '../render/landmarkVisibility';
 import {FriendlyProjectileBatch} from "../render/FriendlyProjectileBatch";
 import hostileAttackArt from "../../../assets/seed/content153/hostile-attacks-v1.png";
@@ -2191,9 +2194,14 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(el("h2", "", "ui.civilizationMap"));
     const body=el('div','civmap-body'),side=el('div','civmap-side');
     const cv = document.createElement("canvas");
+    cv.setAttribute('role','img');cv.setAttribute('aria-label',t('ui.civilizationMap')+' · '+t('map.legend'));cv.setAttribute('aria-describedby','civmap-key');
     cv.width = 420;
     cv.height = 300;
-    body.appendChild(cv);
+    const chart=el('div','civmap-chart'),legend=el('div','civmap-key');legend.id='civmap-key';legend.setAttribute('role','list');
+    for(const [id,symbol] of [['player','▲'],['known','◆'],['visited','○'],['base','■'],['lost','×'],['boss','◆'],['stronghold','◎']] as const){
+      const item=el('span','');item.dataset.mapState=id;item.setAttribute('role','listitem');const shape=el('span','map-symbol',undefined,symbol);shape.setAttribute('aria-hidden','true');item.append(shape,el('span','map-state-label'));legend.append(item);
+    }
+    chart.append(cv,legend);body.append(chart);
     const list = el("div", "civmap-list");
     // Selected-outpost management (v0.23.1): click the map to inspect;
     // only relevant actions, every button labeled with icon + purpose.
@@ -2203,6 +2211,7 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(button("ui.back", () => this.toggleCivMap(), "btn primary"));
     screen.appendChild(panel);
     root.appendChild(screen);
+    menuNavigation(screen,()=>this.toggleCivMap());
     const refresh = (): void => {
       this.renderCivMapLedger(list, detail);
       this.drawCivMap(cv);
@@ -2409,25 +2418,34 @@ export class GameScene extends Phaser.Scene {
       ctx.fillStyle = "#1d2a3a";
       ctx.fillRect((m.ox + RANGE) * cellX + 1, (m.oy + RANGE) * cellY + 1, cellX - 2, cellY - 2);
     }
-    const dot = (wx: number, wy: number, color: string, r = 3): void => {
+    const visible={player:1,known:0,visited:0,base:0,lost:0,boss:0,stronghold:0};
+    const dot = (wx: number, wy: number, color: string, r = 3,shape:'circle'|'square'|'cross'|'diamond'|'ring'|'triangle'='circle'): boolean => {
       const dx = (wx - s.px) / 512;
       const dy = (wy - s.py) / 512;
-      if (Math.abs(dx) > RANGE || Math.abs(dy) > RANGE) return;
+      if (Math.abs(dx) > RANGE || Math.abs(dy) > RANGE) return false;
+      const x=W/2+dx*cellX,y=H/2+dy*cellY;
+      ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(W / 2 + dx * cellX, H / 2 + dy * cellY, r, 0, Math.PI * 2);
-      ctx.fill();
+      if(shape==='square')ctx.rect(x-r,y-r,2*r,2*r);
+      else if(shape==='cross'){ctx.moveTo(x-r,y-r);ctx.lineTo(x+r,y+r);ctx.moveTo(x+r,y-r);ctx.lineTo(x-r,y+r);}
+      else if(shape==='diamond'){ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();}
+      else if(shape==='triangle'){ctx.moveTo(x,y-r);ctx.lineTo(x+r,y+r);ctx.lineTo(x-r,y+r);ctx.closePath();}
+      else ctx.arc(x,y,r,0,Math.PI*2);
+      if(shape==='cross'||shape==='ring')ctx.stroke();else ctx.fill();ctx.restore();return true;
     };
-    for (const terr of s.territories) dot(terr.x, terr.y, terr.disabled ? "#555555" : "#53e0c8", 4);
+    for(const terr of s.territories)if(dot(terr.x,terr.y,terr.disabled?colors.disabled:colors.friendly,4,terr.disabled?'cross':'square'))visible[terr.disabled?'lost':'base']++;
     // Frontier network (derived, never persisted): each active territory
     // links to its two nearest open frontier sites (§21).
     const open: Array<{ x: number; y: number }> = [];
+    const claimed=new Set(s.territories.map(t=>t.poiId)),visited=new Set(s.poisWorld);
     for (let ox = -RANGE; ox <= RANGE; ox++) {
       for (let oy = -RANGE; oy <= RANGE; oy++) {
         const desc = this.sim.chunks.get(s.worldSeed, s.worldNonce, cx + ox, cy + oy);
         for (const poi of desc.poi) {
-          if (s.poisWorld.includes(poi.id)) continue;
-          dot(poi.wx, poi.wy, "#ffd166", 2);
+          if(claimed.has(poi.id))continue;
+          if(visited.has(poi.id)){if(dot(poi.wx,poi.wy,colors.research,3,'ring'))visible.visited++;continue;}
+          if(dot(poi.wx,poi.wy,colors.warning,2,'diamond'))visible.known++;
           open.push({ x: poi.wx, y: poi.wy });
         }
       }
@@ -2481,14 +2499,15 @@ export class GameScene extends Phaser.Scene {
       }
     }
     const boss = s.bossIndex >= 0 ? s.enemies[s.bossIndex] : undefined;
-    if (boss?.active) dot(boss.x, boss.y, "#ff2222", 5);
-    dot(s.px, s.py, "#ffffff", 4);
+    if(boss?.active&&dot(boss.x,boss.y,colors.hostile,5,'diamond'))visible.boss=1;
+    dot(s.px,s.py,colors.text,6,'triangle');
     // Shared focus identity on the civ map: stronghold ring + site.
     if (s.stronghold?.revealed) {
       const dx = (s.stronghold.x - s.px) / 512;
       const dy = (s.stronghold.y - s.py) / 512;
       if (Math.abs(dx) <= RANGE && Math.abs(dy) <= RANGE) {
-        ctx.strokeStyle = "#ff8800";
+        visible.stronghold=1;
+        ctx.strokeStyle = colors.warning;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(W / 2 + dx * cellX, H / 2 + dy * cellY, 8, 0, Math.PI * 2);
@@ -2497,6 +2516,11 @@ export class GameScene extends Phaser.Scene {
     }
     const cf = this.frontierFocus?.site;
     if (cf && cf.poiId !== "stronghold") dot(cf.x, cf.y, "#ffffff", 3);
+    const legend=cv.parentElement?.querySelector('.civmap-key');
+    for(const [id,count]of Object.entries(visible)){
+      const label=legend?.querySelector<HTMLElement>(`[data-map-state="${id}"] .map-state-label`);
+      if(label)label.textContent=`${t(('map.'+id) as EnKeys)}: ${count}`;
+    }
   }
   private drawMinimap(): void {
     const cv = this.hud.minimap as HTMLCanvasElement | undefined;
@@ -3019,57 +3043,20 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // DISPLAY — look and language, no gameplay effect.
-    const display = section("ui.pauseDisplay");display.classList.add("pause-display");
-    const save = loadSave(localStorage);
-    const scaleRow = el("div", "settings-row");
-    scaleRow.appendChild(el("span", "", "ui.uiScale"));
-    const scales = el("div", "lang-row");
-    const scaleOpts: Array<{ label: string; scale: import("../../core/save/save").UiScale }> = [
-      { label: "100%", scale: 1 },
-      { label: "125%", scale: 1.25 },
-      { label: "150%", scale: 1.5 },
-      { label: "200%", scale: 2 },
-    ];
-    for (const opt of scaleOpts) {
-      const b = document.createElement("button");
-      b.className = "btn" + (save.settings.uiScale === opt.scale ? " active" : "");
-      b.textContent = opt.label;
-      b.addEventListener("click", () => {
-        save.settings.uiScale = opt.scale;
-        storeSave(localStorage, save);
-        applyUiScale(opt.scale);
-        scales.querySelectorAll("button").forEach((btn) => btn.classList.remove("active"));
-        b.classList.add("active");
-      });
-      scales.appendChild(b);
-    }
-    scaleRow.appendChild(scales);
-    display.appendChild(scaleRow);
-
-    for (const [key,label] of [["reducedEffects","settings.reduced"],["shake","ui.shake"]] as const) {
-      const row=el("label","settings-row",undefined,t(label));
-      const input=document.createElement("input");input.type="checkbox";input.id="pause-"+key;input.checked=save.settings[key];
-      input.addEventListener("change",()=>{save.settings[key]=input.checked;if(key==="reducedEffects")this.reducedEffects=input.checked;storeSave(localStorage,save);});
-      row.appendChild(input);display.appendChild(row);
-    }
-    // Language switch mid-run: rebuilds UI only, simulation untouched.
-    const langRow = el("div", "settings-row");
-    langRow.appendChild(el("span", "", "ui.language"));
-    const langs = el("div", "lang-row");
-    for (const [code, label] of [["en", "English"], ["th", "ไทย"]] as const) {
-      const b = document.createElement("button");
-      b.className = "btn" + (save.settings.lang === code ? " active" : "");
-      b.textContent = label;
-      b.addEventListener("click", () => this.applyLanguage(code));
-      langs.appendChild(b);
-    }
-    langRow.appendChild(langs);
-    display.appendChild(langRow);
+    // Same settings/save controls as Main; revealed only when requested.
+    const display = section('ui.settings');display.classList.add('pause-display');
+    display.append(settingsControls('pause',key=>{
+      if(key==='reducedEffects')this.reducedEffects=loadSave(localStorage).settings.reducedEffects;
+      if(key==='lang'){
+        this.applyLanguage(loadSave(localStorage).settings.lang);
+        const details=document.getElementById('pause-settings') as HTMLDetailsElement|null;
+        if(details){details.open=true;details.querySelector<HTMLElement>('[aria-labelledby="pause-lang-label"] button[aria-pressed="true"]')?.focus();}
+      }
+    }));
 
     // HELP — safe reference first, destructive replay behind confirmation.
     const help = section("ui.pauseHelp");
-    help.appendChild(button("ui.guide", () => this.showGuide()));
+    const helpButton=button('ui.guide',()=>this.showGuide());helpButton.id='pause-help-btn';help.append(helpButton);
     // Stable automation contract (never text-dependent): the replay action
     // always carries #replay-tutorial-btn in every language/scale.
     const replayBtn = button("ui.resetTutorial", () => this.showReplayConfirm(screen));
@@ -3091,6 +3078,14 @@ export class GameScene extends Phaser.Scene {
         this.restartRun();
       }
     }, "btn danger"));
+    // Progressive disclosure keeps immediate play separate from references/settings.
+    for(const [section,id] of [[identitySec,'pause-identity'],[display,'pause-settings'],[danger,'pause-danger']] as const){
+      const details=document.createElement('details');details.id=id;details.className=section.className;
+      const summary=document.createElement('summary'),heading=section.querySelector('h3');if(heading)summary.append(heading);
+      const body=el('div','pause-section-body');body.append(...Array.from(section.childNodes));details.append(summary,body);section.replaceWith(details);
+    }
+    screen.setAttribute('role','dialog');screen.setAttribute('aria-modal','true');
+    const heading=panel.querySelector('h2');if(heading){heading.id='pause-heading';screen.setAttribute('aria-labelledby',heading.id);}
     screen.appendChild(panel);
     root.appendChild(screen);
     this.surfaces.suspendContext();
@@ -3153,35 +3148,7 @@ export class GameScene extends Phaser.Scene {
     this.restartRun();
   }
 
-  private showGuide(): void {
-    const root = uiRoot();
-    const screen = el("div", "screen");
-    screen.id = "guide-screen";
-    const panel = el("div", "panel panel-lg");
-    panel.appendChild(el("h2", "", "guide.title"));
-    const content = el("div", "guide-content");
-
-    const addSection = (titleKey: EnKeys, textKey: EnKeys): void => {
-      const sec = el("div", "guide-section");
-      sec.appendChild(el("h3", "", titleKey));
-      const p = document.createElement("p");
-      p.textContent = t(textKey);
-      sec.appendChild(p);
-      content.appendChild(sec);
-    };
-
-    addSection("ui.nextAge", "guide.advancement");
-    addSection("ui.squad", "guide.controls");
-    addSection("guide.originAbilities", "guide.originAbilitiesDesc");
-    addSection("guide.worldLaws", "guide.worldLawsDesc");
-    addSection("ui.techMap", "guide.techStacking");
-    addSection("ui.outpostSpec", "guide.territory");
-
-    panel.appendChild(content);
-    panel.appendChild(button("ui.back", () => screen.remove(), "btn primary"));
-    screen.appendChild(panel);
-    root.appendChild(screen);
-  }
+  private showGuide(): void { showSharedGuide(); }
 
   private restartRun(): void {
     // P2-01: Restart = SAME master seed, clean simulation. (Play Again uses a
@@ -3235,6 +3202,7 @@ export class GameScene extends Phaser.Scene {
     document.getElementById("draft-screen")?.remove();
     const root = uiRoot();
     const screen = el("div", "screen");
+    screen.id='chronicle-screen';
     const panel = el("div", "panel panel-lg");
     panel.appendChild(el("h2", "", s.build.hp>0 ? "ui.victory" : "ui.died"));
     panel.appendChild(el("p", "archive-result", undefined, `${t("meta.attempt")} ${this.attemptId || "—"} · ${t("meta.world")} ${s.ascension+1} · ${t("meta.earned")}: +${this.archiveEarned}`));
@@ -3315,6 +3283,7 @@ export class GameScene extends Phaser.Scene {
     panel.appendChild(rowBtn);
     screen.appendChild(panel);
     root.appendChild(screen);
+    menuNavigation(screen,()=>this.scene.start('title'));
   }
 
   /** Clipboard truthfulness: success UI only after the promise resolves. */

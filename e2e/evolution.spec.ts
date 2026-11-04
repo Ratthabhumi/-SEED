@@ -1,3 +1,4 @@
+import{revealPauseSection}from'./helpers';
 import {test,expect} from "@playwright/test";
 import {startRun,prepareSave,SAVE_KEY,assertNoRawKeys} from "./helpers";
 for(const lang of ["en","th"] as const){
@@ -8,7 +9,7 @@ test("FPS, original slice, canonical pause and reduced effects ("+lang+")",async
  const fps=page.locator("#fps-hud");await expect(fps).toHaveCount(1);await expect(fps).toContainText(/FPS: \d+/);await expect(fps).toContainText(lang==="en"?"Attempt 1":"รอบเล่น 1");
  await page.keyboard.press("Escape");await expect(page.locator("#pause-screen")).toBeVisible();
  const snap=()=>page.evaluate(()=>(window as any).__seedE2E.snapshot());
- const before=await snap();await page.locator("#pause-reducedEffects").check();await page.locator("#pause-shake").uncheck();
+ const before=await snap();await revealPauseSection(page);await page.locator("#pause-reducedEffects").check();await page.locator("#pause-shake").uncheck();
  await page.waitForTimeout(600);expect(await snap()).toBe(before);
  const layout=await page.locator("#pause-screen .pause-panel").evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight}));
  console.log(lang+" pause layout",layout);await page.screenshot({path:"test-results/browser/evolution-pause-100-"+lang+".png"});

@@ -6,6 +6,13 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+/** Real progressive-disclosure navigation; never edits DOM/simulation. */
+export async function revealPauseSection(page:Page,id='pause-settings'):Promise<void>{
+ const details=page.locator('#'+id);await expect(details).toBeVisible();
+ if(!(await details.evaluate(e=>(e as HTMLDetailsElement).open)))await details.locator(':scope > summary').click();
+ await expect(details).toHaveAttribute('open','');
+}
+
 export const SAVE_KEY = "seed-game-save-v1";
 
 /** Verify the actual canonical-time reference pose, including Content16's

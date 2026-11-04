@@ -1,3 +1,4 @@
+import{revealPauseSection}from'./helpers';
 // Pause IA + replay-tutorial confirmation E2E (v0.23.1).
 // Behavior selectors use STABLE IDs only (never EN/TH copy):
 //   #replay-tutorial-btn, #tutorial-replay-confirm,
@@ -28,12 +29,13 @@ test("pause menu has labeled sections with the danger zone separated", async ({ 
   page.on("pageerror", (e) => errors.push(e.message));
   await startRun(page, "EPOCH-PAUSE-01");
   await openPause(page);
-  for (const heading of ["Primary", "Display", "Help", "Run", "Danger Zone"]) {
+  for (const heading of ["Primary", "Settings", "Help", "Run", "Danger Zone"]) {
     await expect(page.locator("#pause-screen").getByRole("heading", { name: heading })).toBeVisible();
   }
   // Destructive action is visually separated and never beside Resume.
   const danger = page.locator("#pause-screen .danger-zone");
   await expect(danger).toBeVisible();
+  await revealPauseSection(page,"pause-danger");
   await expect(danger.getByRole("button", { name: "Clear Save Data" })).toBeVisible();
   const resumeBox = await page.getByRole("button", { name: "Resume" }).boundingBox();
   const dangerBox = await danger.boundingBox();
@@ -103,6 +105,7 @@ test("clear save keeps a separate confirmation; dismissing is safe", async ({ pa
     dialogSeen = true;
     await d.dismiss();
   });
+  await revealPauseSection(page,"pause-danger");
   await page.getByRole("button", { name: "Clear Save Data" }).click();
   expect(dialogSeen).toBe(true);
   // Dismissed: run continues untouched on the same seed.

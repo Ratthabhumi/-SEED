@@ -1,0 +1,12 @@
+{
+  "classification": "BOUNDED_REAL_BROWSER_NOT_HUMAN_FUN",
+  "seed": "EPOCH-GOLDEN-001",
+  "firstDraftCanonicalSeconds": 22.183333,
+  "kills": 28,
+  "offers": [
+    "[1]\n⚙\nApplied fieldwork\n\nKnowledge gain +6%\n\nCurrent → After upgrade: Knowledge gain: 1.1 → 1.17\n\nINDUSTRY\nTechnology goal\nCOMMON\nSELECT\nSave for later",
+    "[2]\n✦\nKinetic discipline\n\nDamage +6%\n\nCurrent → After upgrade: Damage: 1 → 1.06\n\nWARFARE\nTechnology goal\nCOMMON\nSELECT\nSave for later",
+    "[3]\n✧\nFire Mastery\n\nDamage +12%\n\nCurrent → After upgrade: Damage: 1 → 1.12\n\nSCIENCE\nTechnology goal\nCOMMON\nSELECT\nSave for later"
+  ],
+  "behaviorPreviewCount": 0
+}
