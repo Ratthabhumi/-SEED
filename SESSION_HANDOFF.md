@@ -13,6 +13,12 @@ and ARIA-description failure preserved in logs; superseded temporary traces part
 cleared by runner, not recreated. One final ZIP/CI campaign; exact SHA/CI/Natural36
 and package receipts in new Draft PR. Local expensive analyze/cohorts not duplicated.
 V48 negative23/20/4 historical,23/19/5 aware and human Combat1/5/Upgrade2/5 retained.
+Initial8e301cf CI10/12: both browser297PASS/1FAIL/1skip, same expanded-Pause old
+no-scroll assumption. Preserve compact default fit, require bounded expanded scroll,
+horizontal containment and keyboard reachability. Stronger200% check exposed focused
+scale button going offscreen; shared control now scrolls it into view. Targeted9/9
+PASS+typecheck/build; final exact-source mandatory CI still required. Initial72cohort
+rows match V48 and Push/PR exactly (docs/evidence/v49/initial-ci.json). No newbalance.
 Owner/private8174file manifest; .cursor/BAT remain untracked. No merge/deploy/release,
 force push, cleanup, external research or fabricated fun/native/art acceptance.
 

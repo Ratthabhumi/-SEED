@@ -137,3 +137,13 @@ Full check **641tests/124files PASS**, typecheck/notices/build PASS. Final selec
 [ก่อน Main](evidence/v49/before-main-th.png) / [หลัง Main](evidence/v49/main-th.png) · [ก่อน Pause](evidence/v49/before-pause-th.png) / [หลัง Pause](evidence/v49/pause-th.png) · [expanded Settings](evidence/v49/settings-th.png) · [visited map](evidence/v49/map-discovery.png) · [Chronicle](evidence/v49/chronicle.png)
 
 Screenshotsเป็นcandidate runtimeก่อนcommitmetadata เปลี่ยนเป็นSHAสุดท้าย runtime codeคงเดิม; final source/CI/package receiptsอยู่ในDraft PRเพื่อไม่commitวนใส่SHAของตัวเอง Expanded Settings/Chronicle และการ์ดDraftที่ข้อความยาวยังใช้bounded scrollได้ โดยเฉพาะ200%; ไม่อ้างว่าเนื้อหาทั้งหมดต้องพอดีหน้าเดียว
+
+## First exact-CI correction — negative evidence retained
+
+Source8e301cf: Push41807000832 และ PR41807106288 ได้10/12 jobs PASS ทั้งสองฝั่ง browser297PASS/1FAIL/1expected skip กรณีเดียวที่ล้มเหลวคือ evolution.spec.ts บังคับให้ Pause Settings ที่เปิดครบแล้วพอดี720pโดยไม่เลื่อน (content944px/client678px) ไม่ใช่หลักฐานว่า default Pause หรือ simulation พัง
+
+คงเกณฑ์ no-scroll เดิมกับ **Pause ตอนเริ่ม** แล้วตรวจ expanded Settings ว่ามีขอบเขตสูงไม่เกินviewport, ไม่มี horizontal overflow, มี scroll region จริงเมื่อจำเป็น และปุ่มเข้าถึงได้ เพิ่ม assertion หลังเลือก200%แล้วพบบั๊กจริง: ปุ่มที่เพิ่งกดหลุดviewportเพราะข้อความโตหลังclick จึงแก้ shared control ให้เลื่อนปุ่มนั้นกลับมามองเห็น ไม่ลดตัวอักษร/thresholdหรือซ่อน assertion
+
+Local correctionครั้งแรก1PASS/1FAIL พบfocusดังกล่าว แล้ว targeted correction9/9PASS พร้อมtypecheck/build Full local641และ20browserเดิมเป็นหลักฐานของruntimeก่อนแก้ focus ขนาดข้อความ; final exact-source CIต้องยืนยัน full check อีกครั้งตามworkflow ไม่รัน expensive local cohorts/render/full suiteเดิมซ้ำ
+
+[Initial CI receipt](evidence/v49/initial-ci.json) เก็บ SHA/runs/จำนวนfailและpolicy hashes: historical23/20/4, defender-aware23/19/5,36/36replayแต่ละแบบ **raw rows ทั้ง72ตรงกับ V4.8 และ Push/PR** ไม่มี gameplay improvement ใหม่ การแก้ focus ไม่เปลี่ยนcore/content ข้อมูลล้มเหลวและ CI artifacts รอบแรกยังอยู่ ไม่รับรองHUMAN_RETEST_READYจนกว่าSHAสุดท้ายผ่าน

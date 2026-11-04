@@ -8,14 +8,23 @@ test("FPS, original slice, canonical pause and reduced effects ("+lang+")",async
  await startRun(page,"EPOCH-GOLDEN-001",{lang});
  const fps=page.locator("#fps-hud");await expect(fps).toHaveCount(1);await expect(fps).toContainText(/FPS: \d+/);await expect(fps).toContainText(lang==="en"?"Attempt 1":"รอบเล่น 1");
  await page.keyboard.press("Escape");await expect(page.locator("#pause-screen")).toBeVisible();
+ const panel=page.locator("#pause-screen .pause-panel");
+ // The immediate Pause view still fits without scrolling. Settings are a
+ // deliberate disclosure; at720p the expanded view uses one bounded region.
+ const closed=await panel.evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight}));
+ expect(closed.scroll).toBeLessThanOrEqual(closed.height+1);
  const snap=()=>page.evaluate(()=>(window as any).__seedE2E.snapshot());
  const before=await snap();await revealPauseSection(page);await page.locator("#pause-reducedEffects").check();await page.locator("#pause-shake").uncheck();
  await page.waitForTimeout(600);expect(await snap()).toBe(before);
- const layout=await page.locator("#pause-screen .pause-panel").evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight}));
+ const layout=await panel.evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,width:el.clientWidth,scrollWidth:el.scrollWidth,overflow:getComputedStyle(el).overflowY}));
  console.log(lang+" pause layout",layout);await page.screenshot({path:"test-results/browser/evolution-pause-100-"+lang+".png"});
- expect(layout.scroll).toBeLessThanOrEqual(layout.height+1);
+ expect(layout.height).toBeLessThanOrEqual(page.viewportSize()!.height-40);
+ expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width+1);
+ if(layout.scroll>layout.height+1)expect(['auto','scroll']).toContain(layout.overflow);
+ await page.locator('#pause-volume').focus();await expect(page.locator('#pause-volume')).toBeInViewport({ratio:1});
  await page.screenshot({path:"test-results/browser/evolution-pause-100-"+lang+".png"});
  await page.locator("#pause-screen").getByRole("button",{name:"200%",exact:true}).click();
+ await expect(page.locator("#pause-screen").getByRole("button",{name:"200%",exact:true})).toBeInViewport({ratio:1});
  const b=await fps.boundingBox();expect(b?.x).toBeGreaterThanOrEqual(0);expect((b?.x??0)+(b?.width??0)).toBeLessThanOrEqual(lang==="en"?1920:1280);
  await assertNoRawKeys(page);await page.screenshot({path:"test-results/browser/evolution-pause-"+lang+".png"});
  await page.keyboard.press("Escape");await expect(page.locator("#pause-screen")).toHaveCount(0);

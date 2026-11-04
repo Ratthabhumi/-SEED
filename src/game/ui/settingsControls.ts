@@ -17,6 +17,8 @@ export function settingsControls(context:'title'|'pause',changed:(key:keyof Sett
   for(const[value,text]of values){const b=document.createElement('button');b.className='btn'+(settings()[key]===value?' active':'');b.textContent=text;b.setAttribute('aria-pressed',String(settings()[key]===value));b.addEventListener('click',()=>{
    if(!save(key,value))return;if(key==='uiScale')applyUiScale(value as Settings['uiScale']);if(key==='contrast')document.documentElement.dataset.contrast=String(value);
    group.querySelectorAll('button').forEach(btn=>{const active=btn===b;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
+   // Enlarging text can move the already-focused control below the scrollport.
+   if(key==='uiScale')b.scrollIntoView({block:'nearest',inline:'nearest'});
   });group.append(b);}row.append(group);root.append(row);
  };
  choices('uiScale','ui.uiScale',[[1,'100%'],[1.25,'125%'],[1.5,'150%'],[2,'200%']]);
