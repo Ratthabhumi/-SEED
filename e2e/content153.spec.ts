@@ -15,8 +15,12 @@ test('real canonical burst uses painted art and bounded atlas',async({page})=>{
  expect(painted).toBe(true);await page.screenshot({path:'test-results/browser/content153-real-burst.png'});
  const before=await page.evaluate(()=>(window as any).__seedE2E.content153Review());expect(before.hostiles.paintedRoles).toContain(0);expect(before.hostiles.paintedAtlasBytes).toBe(262144);
 });
-test('new release/recovery follows canonical time and pause',async({page})=>{
+test('hand-mounted release/recovery follows canonical time and pause',async({page})=>{
  await page.evaluate(()=>(window as any).__seedE2E.stageEvolution('hunters',0));
+ // V47 deliberately separates floating weapon release from body animation.
+ // Preserve this genuine hand-pose/timing assertion in explicit hand mode;
+ // v47CoreFun separately checks the real floating release stays idle/walk.
+ await page.evaluate(()=>(window as any).__seedE2E.equipmentMountReview('hand'));
  const frames=new Set<number>();
  for(let i=0;i<50;i++){await page.waitForTimeout(25);const r=await page.evaluate(()=>(window as any).__seedE2E.content153Review().motion);if(r?.texture==='hero-reference-attack')frames.add(r.frame);}
  expect(frames.size).toBeGreaterThanOrEqual(2);

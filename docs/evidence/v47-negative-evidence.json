@@ -1,0 +1,158 @@
+{
+  "baseline": "57df3d1b5e27e31bc10893b5ef61c106eb38bf0d",
+  "humanEvidence": {
+    "combatFeel": 1,
+    "upgradeImpact": 2,
+    "source": "owner directive",
+    "acceptance": "HUMAN_RETEST_REQUIRED"
+  },
+  "observations": [
+    {
+      "id": "native-space",
+      "scope": "parent",
+      "result": "FAIL",
+      "detail": "Focused Outpost choice closes on Space in both EN and TH; existing Draft-only guard misses blocking choices."
+    },
+    {
+      "id": "poi-arrival",
+      "scope": "parent",
+      "result": "FAIL",
+      "detail": "Undiscovered POI already located on Civilization Map has no world art until chunk/discovery eligibility."
+    },
+    {
+      "id": "title-layout",
+      "scope": "parent",
+      "result": "FAIL",
+      "detail": "Collection is a third grid child, creating an extra overflowing row instead of a bounded right column."
+    },
+    {
+      "id": "floating-body",
+      "scope": "parent",
+      "result": "FAIL",
+      "detail": "Floating release produces attack body pose; requested idle/walk continuity is absent."
+    },
+    {
+      "id": "energy-volley",
+      "scope": "parent",
+      "result": "FAIL",
+      "detail": "Industrial stage authored count2 yields one actual release/projectile."
+    },
+    {
+      "id": "browser-pre-review",
+      "scope": "working-delta",
+      "result": "41_PASS_6_FAIL",
+      "detail": "All six collection tests expose editable input swallowing Escape after reduced-effects setting. Original equality, save and World2 assertions retained; input guard corrected."
+    },
+    {
+      "id": "review-preview",
+      "scope": "working-delta",
+      "result": "RED_THEN_GREEN",
+      "detail": "Fractional quality effects were advertised as fractional shots/mines; guardian saturation advertised unavailable gunners. Executed rounding and cap now used."
+    },
+    {
+      "id": "review-poi-culling",
+      "scope": "working-delta",
+      "result": "RED_THEN_GREEN",
+      "detail": "Current-position +256 art eligibility can miss sites entering view during a 400u move within one chunk. Preparation now covers complete chunk camera sweep, including negative coordinates."
+    },
+    {
+      "id": "painted-fallback",
+      "scope": "working-delta",
+      "result": "RED_THEN_GREEN",
+      "detail": "Painted mode without an art slot had only a shadow; essential site-type glyph now remains available independently of pool/terrain readiness."
+    },
+    {
+      "id": "first-full-check",
+      "scope": "working-delta",
+      "result": "633_PASS_1_FAIL",
+      "detail": "Old weaponMuzzle version assertion expected Content24 after intentional Content25 volley correction. Update version assertion to25, keep child laws18 and all physical/replay assertions; complete check repeated because failure was unresolved."
+    },
+    {
+      "id": "baseline-provenance",
+      "scope": "offline-comparison",
+      "result": "NORMALIZATION_REQUIRED",
+      "detail": "Git archive text source uses CRLF on this Windows checkout. All61 archived blobs match pinned parent after CRLF-to-LF normalization only; raw mismatch retained locally. Reused extracted caches remain a documented script limitation."
+    }
+  ],
+  "limits": [
+    "No new human ratings",
+    "Staged mechanics arena is not natural-pressure or boss acceptance",
+    "CPU post-render observation is not physical presentation",
+    "No ART_COMPLETE or native60Hz acceptance",
+    "Failed logs and traces remain in ignored scratch; private QA not uploaded"
+  ],
+  "ciCorrection": {
+    "source": "e392717b0cca108ec4b188089ba5490974a03023",
+    "prRun": 41748624098,
+    "pushRun": 41748558126,
+    "e2e": {
+      "passed": 284,
+      "failed": 1,
+      "expectedSkip": 1
+    },
+    "failure": "content153 real release/recovery assumed default floating weapon plays hand attack frames",
+    "correction": "Explicit canonical hand mount; preserve >=2 authentic attack-frame and paused-time assertions; retain separate actual floating-release idle/walk test",
+    "localCorrection": "2/2 PASS",
+    "runtimeChanged": false,
+    "supersededRuns": "Canceled only after failed contract was recorded and both complete Natural36 artifacts downloaded; partial render data is not a performance pass"
+  },
+  "initialCohorts": {
+    "historical": {
+      "before": {
+        "cases": 36,
+        "reached": 29,
+        "wins": 23,
+        "deaths": 3,
+        "replay": 36,
+        "medianDurationReached": 25.466666666643505,
+        "chaseSeconds": 16.76666666666666,
+        "acquisitionSeconds": 2162.7666666662576,
+        "bossBaseDamage": 1715,
+        "baseLosses": 5
+      },
+      "after": {
+        "cases": 36,
+        "reached": 27,
+        "wins": 23,
+        "deaths": 0,
+        "replay": 36,
+        "medianDurationReached": 24.166666666644687,
+        "chaseSeconds": 15.716666666666663,
+        "acquisitionSeconds": 2224.0499999995463,
+        "bossBaseDamage": 1323,
+        "baseLosses": 5
+      },
+      "rowSha256": "0952070126a7f1d6f88ad051827dd2c4fe75a7260eaf579e827367d7bab724f9",
+      "pushPrRowsEqual": true
+    },
+    "defender-aware": {
+      "before": {
+        "cases": 36,
+        "reached": 29,
+        "wins": 25,
+        "deaths": 2,
+        "replay": 36,
+        "medianDurationReached": 15.116666666652918,
+        "chaseSeconds": 15.999999999999988,
+        "acquisitionSeconds": 1591.11666666661,
+        "bossBaseDamage": 1525,
+        "baseLosses": 20
+      },
+      "after": {
+        "cases": 36,
+        "reached": 27,
+        "wins": 23,
+        "deaths": 3,
+        "replay": 36,
+        "medianDurationReached": 15.833333333318933,
+        "chaseSeconds": 18.249999999999993,
+        "acquisitionSeconds": 1362.950000000029,
+        "bossBaseDamage": 1029,
+        "baseLosses": 21
+      },
+      "rowSha256": "8a985d347aebb8a6b6d8881ecb1725729a677eccfbcb2287a10b2d858016a1a9",
+      "pushPrRowsEqual": true
+    }
+  },
+  "initialCohortDecision": "Negative reached/win/death changes retained. One sparse-damage probe at5ranges found no damage reduction, which does NOT establish aim accuracy or explain policy regressions. No boss/director/threshold retuning."
+}

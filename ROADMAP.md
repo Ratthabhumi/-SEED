@@ -1,5 +1,12 @@
 # -SEED Development Roadmap
 
+V4.7 core-fun recovery (2026-11-04): see docs/V47_OWNER_PACKET.md and ADR0053.
+Mandatory-choice/native keyboard fixes, map/world destination parity, detached
+body-animation ownership, real Industrial energy volley and bounded Main Legacy
+layout. Worldgen3/Content25/Save3/child18. Human Combat1/5 and Upgrade2/5 remain
+unaccepted; prioritize retesting these three builds before art/world expansion.
+Exact-source engineering/CI receipts belong to the new stacked Draft PR.
+
 16October native-render continuation: one stacked PR15 child verifies actual
 camera semantics, consecutive enemy quad submission, offscreen-source warning
 visibility and damage-source diagnosis. Canonical identity stays3/18/2; this

@@ -83,7 +83,9 @@ export const CHILD_LAWS_CONTENT_VERSION = 18;
 // and raid target. Physical approach and fixed warned geometry prevent remote damage.
 // Content23 bounds near-arena assault windows and reengagement; no new damage model.
 // Content24 aligns the pre-spawn enemy approach with real owned geography.
-export const CONTENT_VERSION = 24;
+// Content25 restores the authored Industrial energy two-shot volley.
+// Same seed geometry, child laws18 and Save3; combat replay identity changes.
+export const CONTENT_VERSION = 25;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 // Schema3 preserves v1/v2 progress and Insight, adding a validated cosmetic collection.
 export const SAVE_SCHEMA_VERSION = 3;

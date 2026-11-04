@@ -171,7 +171,10 @@ export class TitleScene extends Phaser.Scene {
         label.append(choice, t("meta.energyStart")); choices.append(label);
       }
     };
-    renderArchive(); layout.append(archive,legacyCollectionPanel());
+    renderArchive();
+    const legacy=el('aside','title-legacy');
+    const collection=legacyCollectionPanel();collection.setAttribute('open','');
+    legacy.append(collection,archive);layout.append(legacy);
 
     const row = el("div", "btn-row");
     row.appendChild(button("ui.settings", () => this.showSettings()));

@@ -13,8 +13,8 @@ export class DecisionInputBoundary {
   private focus = (event:FocusEvent):void => { if(this.editable(event.target))this.enter(); };
   private down = (event: KeyboardEvent): void => {
     // Preserve native editing defaults while keeping Phaser shortcuts out.
-    if(this.editable(event.target))event.stopImmediatePropagation();
-    if ((event.code === "Space" && this.draftActive()) || this.blocked.has(event.code)) {
+    if(this.editable(event.target)&&event.code!=="Escape"&&event.code!=="Tab")event.stopImmediatePropagation();
+    if ((this.draftActive() && (event.code === "Space" || (event.code === "Enter" && event.repeat))) || this.blocked.has(event.code)) {
       event.preventDefault(); event.stopImmediatePropagation();
     }
     if (DecisionInputBoundary.movementCodes.has(event.code)) {
@@ -24,7 +24,7 @@ export class DecisionInputBoundary {
     this.held.add(event.code);
   };
   private up = (event: KeyboardEvent): void => {
-    if(this.editable(event.target))event.stopImmediatePropagation();
+    if(this.editable(event.target)&&event.code!=="Escape"&&event.code!=="Tab")event.stopImmediatePropagation();
     if ((event.code === "Space" && this.draftActive()) || this.blocked.has(event.code)) {
       event.preventDefault();
       // Phaser drops defaultPrevented keyups. Reset its adapter state explicitly

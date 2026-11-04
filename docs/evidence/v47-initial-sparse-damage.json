@@ -1,0 +1,71 @@
+{
+  "source": "e392717b0cca108ec4b188089ba5490974a03023",
+  "classification": "STAGED_INITIAL_TARGETS_WITH_CANONICAL_KNOCKBACK_NOT_HIT_RATE_OR_HUMAN_FUN",
+  "rows": [
+    {
+      "distance": 150,
+      "before": {
+        "shots": 33,
+        "damage": 540,
+        "elapsed": 12.000000000000176
+      },
+      "after": {
+        "shots": 66,
+        "damage": 720,
+        "elapsed": 12.000000000000176
+      }
+    },
+    {
+      "distance": 300,
+      "before": {
+        "shots": 28,
+        "damage": 504,
+        "elapsed": 12.000000000000176
+      },
+      "after": {
+        "shots": 66,
+        "damage": 612,
+        "elapsed": 12.000000000000176
+      }
+    },
+    {
+      "distance": 400,
+      "before": {
+        "shots": 20,
+        "damage": 360,
+        "elapsed": 12.000000000000176
+      },
+      "after": {
+        "shots": 32,
+        "damage": 504,
+        "elapsed": 12.000000000000176
+      }
+    },
+    {
+      "distance": 500,
+      "before": {
+        "shots": 13,
+        "damage": 234,
+        "elapsed": 12.000000000000176
+      },
+      "after": {
+        "shots": 20,
+        "damage": 360,
+        "elapsed": 12.000000000000176
+      }
+    },
+    {
+      "distance": 630,
+      "before": {
+        "shots": 3,
+        "damage": 54,
+        "elapsed": 12.000000000000176
+      },
+      "after": {
+        "shots": 6,
+        "damage": 108,
+        "elapsed": 12.000000000000176
+      }
+    }
+  ]
+}

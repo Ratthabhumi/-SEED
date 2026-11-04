@@ -38,7 +38,9 @@ test('canonical discovery across unexplored chunk border displays its existing s
  await page.evaluate(()=>(window as any).__seedE2E.stageEvolution('hunters',0));
  const site=await page.evaluate(()=>(window as any).__seedE2E.stagePoiEdge());await frame(page);
  const near=()=>page.evaluate(p=>(window as any).__seedE2E.siteArtReview().filter((a:any)=>Math.hypot(a.x-p.x,a.y-(p.y+8))<1),site);
- expect(site.known).toBe(false);expect(await near()).toHaveLength(0);
+ // V47 aligns world arrival with the exact locations already shown on the map.
+ // Discovery/reward remains proximity-based; art must precede it.
+ expect(site.known).toBe(false);expect(await near()).toHaveLength(1);
  await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(.05));await frame(page);
  const art=await near();expect(art).toHaveLength(1);
  const observation=await page.evaluate(id=>(window as any).__seedE2E.siteArrivalReview().find((p:any)=>p.poiId===id),site.id);

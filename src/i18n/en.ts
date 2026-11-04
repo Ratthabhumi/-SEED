@@ -1,5 +1,12 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "build.volley": "Shots per volley",
+  "build.chain": "Chain to nearby targets",
+  "build.mines": "Mines per placement",
+  "build.orbit": "Orbiting defenders",
+  "build.guardians": "Guardian gunners",
+  "build.aura": "Aura radius (world units)",
+  "build.beam": "Area beam attack",
   "quality.earnedAttempt": "New legacies saved this attempt",
   "quality.raidThreat": "Raid",
   "combat.boss.aimFixed": "Aim locked to the marked area · follow the warning",

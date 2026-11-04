@@ -2,6 +2,13 @@
 import type { EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "build.volley": "จำนวนนัดต่อชุดยิง",
+  "build.chain": "ชิ่งโจมตีเป้าหมายใกล้กัน",
+  "build.mines": "จำนวนกับระเบิดต่อการวาง",
+  "build.orbit": "หน่วยป้องกันโคจร",
+  "build.guardians": "ผู้พิทักษ์ยิงสนับสนุน",
+  "build.aura": "รัศมีออรา (หน่วยโลก)",
+  "build.beam": "ลำแสงโจมตีพื้นที่",
   "quality.earnedAttempt": "มรดกใหม่ที่บันทึกจากรอบนี้",
   "quality.raidThreat": "การบุกปล้น",
   "combat.boss.aimFixed": "ล็อกเป้าที่พื้นที่เตือนแล้ว · หลบตามสัญญาณ",

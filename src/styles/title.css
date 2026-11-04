@@ -1,6 +1,16 @@
 /* Title owns two bounded scroll regions; primary actions never join content scroll. */
 #ui .title-screen { padding: max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
-.title-layout { width: min(1200px,100%); height: min(900px,100%); display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); gap: var(--space-24); min-height: 0; }
+.title-layout { width: min(1480px,100%); height: min(980px,100%); display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr); gap: var(--space-24); min-height: 0; }
+.title-legacy{min-height:0;min-width:0;overflow:auto;scrollbar-gutter:stable;border:1px solid var(--color-border);border-radius:var(--panel-radius);background:var(--color-surface);padding:16px;align-self:stretch;text-align:left;}
+.title-legacy .legacy-collection{margin:0 0 16px;}
+.title-legacy .legacy-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.title-legacy .legacy-card{padding:10px;min-width:0;}
+.title-legacy .legacy-card p{min-height:0;margin:6px 0;font-size:var(--font-caption);line-height:1.8;}
+.title-legacy .legacy-preview{height:44px;}
+.title-legacy .legacy-card h3{font-size:var(--font-body-strong);line-height:1.8;}
+.title-legacy #archive-panel{padding:8px;overflow:visible;max-height:none;}
+.title-legacy .legacy-card .btn{white-space:normal;}
+@media(max-width:760px){.title-layout{height:auto;max-height:100%;overflow:auto;}.title-legacy{max-height:42dvh;}.title-legacy .legacy-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 #ui .title-play { width: 100%; min-height: 0; display: flex; flex-direction: column; padding: 20px; text-align: left; overflow: hidden; }
 .title-content { overflow-y: auto; overflow-x: hidden; min-height: 0; padding: 4px 8px 12px; flex: 1; }
 .title-actions { flex: none; border-top: 1px solid var(--color-border); padding-top: 12px; }
