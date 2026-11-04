@@ -1,5 +1,11 @@
 # -SEED Development Roadmap
 
+V4.8 bounded build/rhythm experiment (2026-11-04): see docs/V48_OWNER_PACKET.md
+and ADR0054. Aimed Kinetic flanks, cohesive Conduction, rear Field barriers and
+post-choice ordinary World1 pressure/recovery. Worldgen3/Content26/Save3/child18.
+Human fun remains unaccepted; no expanded systems/assets or native60Hz claim.
+Final exact-source CI and independent Natural36 receipts belong to the Draft PR.
+
 V4.7 core-fun recovery (2026-11-04): see docs/V47_OWNER_PACKET.md and ADR0053.
 Mandatory-choice/native keyboard fixes, map/world destination parity, detached
 body-animation ownership, real Industrial energy volley and bounded Main Legacy

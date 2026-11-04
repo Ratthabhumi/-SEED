@@ -2815,7 +2815,10 @@ export class GameScene extends Phaser.Scene {
       if(changes.length){const impact=el('p','card-combat-change');impact.textContent=changes.map(change=>{
         const value=(v:number)=>change.kind==='chain'||change.kind==='beam'?t(v?'ui.active':'ui.inactive'):String(v);
         return `${t(`family.${change.family}` as EnKeys)} · ${t(`build.${change.kind}` as EnKeys)}: ${value(change.before)} → ${value(change.after)}`;
-      }).join(' · ');c.append(impact);}
+      }).join(' · ');c.append(impact);
+        const projectileEnergy=getWeaponStage('energy',s.weaponStage.energy).archetype==='projectile'&&!s.build.beamUnlocked&&!offer.effectiveEffects.some(e=>e.kind==='beamAdd');
+        for(const key of new Set(changes.flatMap(change=>change.kind==='volley'?['build.kineticControl' as const]:change.kind==='mines'?['build.mineControl' as const]:change.kind==='chain'&&change.after&&projectileEnergy?['build.energyControl' as const]:[])))c.append(el('p','card-combat-tactic',key));
+      }
       c.appendChild(dom);
       const plan = document.createElement("details");
       plan.className = "card-plan";

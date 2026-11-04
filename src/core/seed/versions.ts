@@ -85,7 +85,9 @@ export const CHILD_LAWS_CONTENT_VERSION = 18;
 // Content24 aligns the pre-spawn enemy approach with real owned geography.
 // Content25 restores the authored Industrial energy two-shot volley.
 // Same seed geometry, child laws18 and Save3; combat replay identity changes.
-export const CONTENT_VERSION = 25;
+// Content26: aimed Kinetic flanks, cohesive Conduction, directional mine trails,
+// and post-choice World1 ordinary-wave rhythm. Worldgen/Save/child laws pinned.
+export const CONTENT_VERSION = 26;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 // Schema3 preserves v1/v2 progress and Insight, adding a validated cosmetic collection.
 export const SAVE_SCHEMA_VERSION = 3;

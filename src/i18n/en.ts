@@ -1,5 +1,8 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "build.kineticControl": "Keep the aimed lane; extra shots cover your flanks.",
+  "build.energyControl": "Conduction stops Energy pushback: keep enemies clustered, but keep your distance.",
+  "build.mineControl": "Move to lay a rear mine trail. Extra mines widen the barrier; standing still scatters them.",
   "build.volley": "Shots per volley",
   "build.chain": "Chain to nearby targets",
   "build.mines": "Mines per placement",

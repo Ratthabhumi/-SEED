@@ -1,3 +1,17 @@
+# V4.8 build/rhythm experiment —2026-11-04
+
+Primary Desktop/Co-op/-SEED; feat/v48-build-rhythm-20261104 from verified
+1edd86ee7a3d5a0e3d54898050996f9687edfff4 / Draft PR38. See V48_OWNER_PACKET.md
+and ADR0054. Content26 records aimed Kinetic flanks, cohesive Energy Conduction,
+directional moving Field and bounded post-choice World1 ordinary rhythm.
+Worldgen3/Save3/child18 pinned; unchanged historical controller, no boss-win tuning.
+One frozen full check, affected EN/TH browser and final CI receipts in new Draft PR.
+Preserve negative initial browser/RED evidence and mixed180s/ablation outcomes.
+Author review fixed timing handoff via396-phase RED/GREEN; independent reviewer
+unavailable due quota, not retried. Human Combat1/5/Upgrade2/5, original source art
+and physical60Hz remain pending. Protected .cursor/BAT/private QA remain local.
+No merge/release/deploy/force push or external research.
+
 # V4.7 Core Fun Recovery —2026-11-04
 
 Primary owner checkout C:\Users\MewMew\Desktop\Co-op\-SEED only. New feat/v47-core-fun-20261104 directly from57df3d1/PR37. See docs/V47_OWNER_PACKET.md, ADR0053 and docs/evidence/v47-negative-evidence.json. Native Space/held Enter guard now spans all blocking decisions; editable Tab/Escape remain accessible; movement quarantined on close/resume. Map-known destinations visible before canonical proximity discovery; full-chunk art preparation plus essential fallback glyph. Floating primary retains aim/muzzle without body punch or repeated walk revision. Main has bounded right Collection/Archive column and Pause omits Collection; original save/equip transactions remain.

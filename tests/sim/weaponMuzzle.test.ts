@@ -66,8 +66,8 @@ it('handles wrap, overlap, swept hits, pause and explicit mode changes without p
  const {sim,s}=fixture();const hash=sim.hash();sim.step(0,idle);expect(sim.hash()).toBe(hash);
  sim.step(0,{...idle,weaponMount:'hand'});expect(s.weaponRig.mode).toBe('hand');expect(sim.hash()).not.toBe(hash);
  expect(s.elapsed).toBe(0);expect(s.projs.some(p=>p.active)).toBe(false);
- // Content25 restores the authored Industrial energy count; child laws stay18.
- expect(CONTENT_VERSION).toBe(25);expect(CHILD_LAWS_CONTENT_VERSION).toBe(18);
+ // Content26 changes projectile/placement/rhythm contracts; child laws stay18.
+ expect(CONTENT_VERSION).toBe(26);expect(CHILD_LAWS_CONTENT_VERSION).toBe(18);
 });
 it('replays target reversals and close moving targets deterministically without tunnelling',()=>{
  const a=fixture(),b=fixture();let releases=0;
