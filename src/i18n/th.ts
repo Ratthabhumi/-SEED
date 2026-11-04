@@ -2,6 +2,17 @@
 import type { EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "map.legend": "สัญลักษณ์แผนที่บริเวณใกล้เคียง",
+  "map.player": "คุณ",
+  "map.known": "ยังไม่สำรวจ",
+  "map.visited": "สำรวจแล้ว",
+  "map.base": "ฐานที่ยึดไว้",
+  "map.lost": "ฐานที่สูญเสีย",
+  "map.boss": "บอส",
+  "map.stronghold": "ฐานที่มั่น",
+  "ui.originStrategy": "พลังและแนวทางของชาติกำเนิด",
+  "collection.inspect": "เงื่อนไขปลดล็อก",
+  "collection.equipped": "กำลังสวมใส่",
   "build.kineticControl": "คงกระสุนตามแนวเล็งหลัก กระสุนที่เพิ่มช่วยคุมด้านข้าง",
   "build.energyControl": "การนำไฟฟ้าทำให้พลังงานไม่ผลักศัตรู กลุ่มจึงไม่แตก แต่ต้องรักษาระยะเอง",
   "build.mineControl": "เคลื่อนที่เพื่อวางแนวกับระเบิดด้านหลัง เพิ่มจำนวนเพื่อขยายแนวป้องกัน หยุดนิ่งจะวางแบบกระจาย",

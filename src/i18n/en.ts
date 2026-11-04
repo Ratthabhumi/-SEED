@@ -1,5 +1,16 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "map.legend": "Nearby map symbols",
+  "map.player": "You",
+  "map.known": "Unvisited",
+  "map.visited": "Visited",
+  "map.base": "Owned bases",
+  "map.lost": "Lost bases",
+  "map.boss": "Boss",
+  "map.stronghold": "Stronghold",
+  "ui.originStrategy": "Origin power and strategy",
+  "collection.inspect": "Unlock details",
+  "collection.equipped": "Equipped",
   "build.kineticControl": "Keep the aimed lane; extra shots cover your flanks.",
   "build.energyControl": "Conduction stops Energy pushback: keep enemies clustered, but keep your distance.",
   "build.mineControl": "Move to lay a rear mine trail. Extra mines widen the barrier; standing still scatters them.",

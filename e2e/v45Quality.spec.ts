@@ -3,7 +3,7 @@ import {startRun} from './helpers';
 for(const lang of ['en','th'] as const)test(`equip restores keyboard focus ${lang}`,async({page})=>{
  await page.addInitScript((lang)=>localStorage.setItem('seed-game-save-v1',JSON.stringify({schema:3,settings:{lang,tutorialCompleted:true},collection:{owned:['dawn','ward'],origins:['hunters'],equipped:{}}})),lang);
  await page.goto('/?e2e');
- const summary=page.locator('.title-legacy .legacy-collection summary');await summary.focus();await page.keyboard.press('Tab');
+ const summary=page.locator('.title-legacy .legacy-collection > summary');await summary.focus();await page.keyboard.press('Tab');
  const equip=page.locator('.title-legacy [data-equip="dawn"]');await expect(equip).toBeFocused();await page.keyboard.press('Space');await expect(equip).toBeFocused();await expect(equip).toHaveAttribute('aria-pressed','true');
  await page.keyboard.press('Space');await expect(equip).toBeFocused();await expect(equip).toHaveAttribute('aria-pressed','false');
  await expect(page.locator('.legacy-progress')).toContainText('2/5');

@@ -1,3 +1,4 @@
+import{revealPauseSection}from'./helpers';
 import {test,expect} from '@playwright/test';
 import {startRun,resolveDrafts,assertNoRawKeys} from './helpers';
 for(const lang of ['en','th'] as const)test('uncharted Signal guidance reveals no hidden bearing '+lang,async({page})=>{
@@ -24,7 +25,7 @@ for(const lang of ['en','th'] as const)test('real Atomic beam release, pause and
   await page.waitForTimeout(150);expect((await state()).elapsed).toBe(fired.elapsed);
   await page.screenshot({path:'test-results/browser/signature-impact-'+lang+'.png'});
   await page.evaluate(()=>(window as any).__seedE2E.advanceEvolution(.3));expect((await state()).beams).toBe(0);expect((await state()).impacts).toBe(0);
-  await page.keyboard.press('Escape');await page.keyboard.press('Escape');await page.locator('#pause-reducedEffects').check();await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');await page.keyboard.press('Escape');await revealPauseSection(page);await page.locator('#pause-reducedEffects').check();await page.keyboard.press('Escape');
   await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageEvolution('resonant',4);h.primeSignature();h.advanceEvolution(.17);});
   // Reduced Effects preserves essential actual-hit confirmation (V4.6),
   // while the bounded static marker and released beam still expire.

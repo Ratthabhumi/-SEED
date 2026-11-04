@@ -1,0 +1,61 @@
+{
+  "base": "f4cc34169bf89c4d2e3d70de405fcbd5a6e38050",
+  "classification": "PRESENTATION_ENGINEERING_NOT_HUMAN_FUN_OR_NATIVE_PERFORMANCE",
+  "canonicalChanges": false,
+  "versions": {
+    "worldgen": 3,
+    "content": 26,
+    "save": 3,
+    "child": 18
+  },
+  "protectedFilesUnchanged": 8174,
+  "local": {
+    "fullCheck": {
+      "exit": 0,
+      "tests": 641,
+      "files": 124,
+      "typecheck": true,
+      "notices": true,
+      "build": true
+    },
+    "finalBrowser": {
+      "passed": 20,
+      "failed": 0
+    },
+    "initialMenuBrowser": {
+      "failed": 2,
+      "thenPassedEN_TH": 4
+    },
+    "reverseTab": {
+      "red": true,
+      "green": true
+    },
+    "targetedBrowser": {
+      "passed": 28,
+      "failed": 1,
+      "reason": "Legacy Clear Save test did not open the new Danger disclosure; navigation updated, assertions preserved"
+    },
+    "review": {
+      "freshReviewers": 1,
+      "important": 2,
+      "minor": 1,
+      "fixPass": 1,
+      "regressionsRed": 3,
+      "firstFixBrowser": {
+        "passed": 3,
+        "failed": 1,
+        "reason": "ARIA named legend masked its contents when referenced as description"
+      },
+      "finalRegressionsPassed": true,
+      "noIndependentRereview": true
+    },
+    "failureEvidence": "Full logs retained. Some superseded temporary traces cleared by Playwright; not recreated."
+  },
+  "pending": [
+    "exact-commit ZIP verification",
+    "exact-source Push+PR CI",
+    "owner usability and fun",
+    "original animation source art",
+    "physical native60Hz"
+  ]
+}

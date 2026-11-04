@@ -1,5 +1,11 @@
 # -SEED Development Roadmap
 
+V4.9 UX consolidation (2026-11-04): docs/V49_OWNER_PACKET.md and ADR0055.
+Shared settings/Guide/navigation, preserved Main choices, compact collection,
+Pause disclosures, canonical-derived map identity and Chronicle focus boundary.
+Presentation only: Worldgen3/Content26/Save3/child18. Retain V48 negative cohorts;
+human fun/art/native60Hz remain open. Exact-source receipts in one Draft PR.
+
 V4.8 bounded build/rhythm experiment (2026-11-04): see docs/V48_OWNER_PACKET.md
 and ADR0054. Aimed Kinetic flanks, cohesive Conduction, rear Field barriers and
 post-choice ordinary World1 pressure/recovery. Worldgen3/Content26/Save3/child18.

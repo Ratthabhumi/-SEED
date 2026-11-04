@@ -1,8 +1,9 @@
+import{revealPauseSection}from'./helpers';
 import {test,expect} from '@playwright/test';
 import {startRun,openPause} from './helpers';
 for(const lang of ['en','th'] as const)test(`pause scale labels remain inside their buttons at200% on720p ${lang}`,async({page})=>{
  await page.setViewportSize({width:1280,height:720});
- await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:2});await openPause(page);
+ await startRun(page,'EPOCH-GOLDEN-001',{lang,uiScale:2});await openPause(page);await revealPauseSection(page);
  await page.evaluate(()=>document.fonts.ready);
  const group=page.locator('#pause-screen .pause-display .lang-row').first();
  const overflow=await group.locator('button').evaluateAll(buttons=>buttons.flatMap(b=>{

@@ -1,0 +1,49 @@
+{
+  "source": "8e301cf1ec02da012d2d81269b90520090fbde10",
+  "base": "f4cc34169bf89c4d2e3d70de405fcbd5a6e38050",
+  "runs": {
+    "push": 41807000832,
+    "pr": 41807106288
+  },
+  "ci": {
+    "passedJobs": 10,
+    "failedJobs": 2,
+    "eachBrowser": {
+      "passed": 297,
+      "failed": 1,
+      "expectedSkip": 1
+    },
+    "failure": "evolution.spec.ts expected the expanded Settings disclosure at720p to fit with no scroll (944 vs678client height). Default Pause fit is now checked separately; expanded content must be bounded, scrollable, horizontally contained and keyboard reachable."
+  },
+  "correction": {
+    "newObservedDefect": "Changing scale to200% moved the focused scale control outside the scrollport. New stronger assertion reproduced it.",
+    "implementation": "Keep the activated scale control in view after applying the text scale.",
+    "thresholds": "No reduced font sizes, changed performance thresholds or hidden assertions."
+  },
+  "policies": {
+    "historical": {
+      "cases": 36,
+      "replay": 36,
+      "rawRowsEqualV48": true,
+      "pushPrRowsEqual": true,
+      "rowsSha256": "187bc37af8cecd14c161f974f390249e349d1e22f2ed18946fb733de1614e612",
+      "outcomes": {
+        "reached": 23,
+        "wins": 20,
+        "deaths": 4
+      }
+    },
+    "defender-aware": {
+      "cases": 36,
+      "replay": 36,
+      "rawRowsEqualV48": true,
+      "pushPrRowsEqual": true,
+      "rowsSha256": "b7529c533557a6afc59f4e01eb18c94eb991412e7a1cd6a0c670dbfb9b95c661",
+      "outcomes": {
+        "reached": 23,
+        "wins": 19,
+        "deaths": 5
+      }
+    }
+  }
+}

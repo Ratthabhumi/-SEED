@@ -18,13 +18,17 @@ export function legacyCollectionPanel(onChange?:(c:LegacyCollection)=>void):HTML
    const owned=c.owned.includes(item.id),active=c.equipped[item.slot]===item.id;
    const card=el('section','legacy-card');card.dataset.collectible=item.id;
    const preview=el('div','legacy-preview');preview.append(legacyPreview(item.id));preview.style.color=item.color;preview.setAttribute('aria-hidden','true');
-   card.append(preview,el('h3','',`collection.${item.id}` as EnKeys),el('p','',`collection.${item.id}Rule` as EnKeys));
-   if(item.id==='prism'){const count=el('p','');count.textContent=`${t('collection.origins')}: ${Math.min(2,c.origins.length)}/2`;card.append(count);}
+   card.append(preview,el('h3','',`collection.${item.id}` as EnKeys));
+   const detail=document.createElement('details');detail.className='legacy-requirements';
+   const inspect=document.createElement('summary');inspect.textContent=t('collection.inspect');detail.append(inspect,el('p','',`collection.${item.id}Rule` as EnKeys));
+   if(item.id==='prism'){const count=el('p','');count.textContent=`${t('collection.origins')}: ${Math.min(2,c.origins.length)}/2`;detail.append(count);}
    const equip=button(active?'collection.unequip':'collection.equip',()=>{
     const fresh=loadSave(localStorage);fresh.collection=equipCollection(fresh.collection,item.id);
     if(storeSave(localStorage,fresh)){onChange?.(fresh.collection);render(item.id);}else card.append(el('p','','meta.storage'));
    });equip.disabled=!owned;equip.dataset.equip=item.id;equip.setAttribute('aria-pressed',String(active));
-   if(!owned)equip.textContent=t('collection.locked');card.append(equip);grid.append(card);
+   if(!owned)equip.textContent=t('collection.locked');
+   if(active)card.append(el('span','legacy-equipped','collection.equipped'));
+   card.append(equip,detail);grid.append(card);
   }
   if(focusId)grid.querySelector<HTMLButtonElement>(`[data-equip="${focusId}"]`)?.focus();
  };render();return panel;

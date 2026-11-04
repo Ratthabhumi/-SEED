@@ -1,3 +1,4 @@
+import{revealPauseSection}from'./helpers';
 import {test,expect} from '@playwright/test';
 import {mkdirSync} from 'node:fs';
 for(const lang of ['en','th'] as const)for(const [width,height] of [[1280,720],[1920,1080],[2550,1272]])test(`V44 earned collection preview/equip ${lang} ${width}`,async({page})=>{
@@ -14,7 +15,7 @@ for(const lang of ['en','th'] as const)for(const [width,height] of [[1280,720],[
  expect((await state()).collection.equipped).toEqual({trail:'prism',ornament:'star'});
  await page.keyboard.press('Escape');await expect(page.locator('#pause-screen .legacy-collection')).toHaveCount(0);
  const canonical=await page.evaluate(()=>(window as any).__seedE2E.snapshot());
- await page.locator('#pause-reducedEffects').setChecked(true);
+ await revealPauseSection(page);await page.locator('#pause-reducedEffects').setChecked(true);
  expect((await state()).collection.equipped.emblem).toBeUndefined();
  expect(await page.evaluate(()=>(window as any).__seedE2E.snapshot())).toBe(canonical);
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('seed-game-save-v1')!).collection.owned.length)).toBe(4);

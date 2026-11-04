@@ -1,3 +1,27 @@
+# V4.9 unified UX —2026-11-04
+
+Primary Desktop/Co-op/-SEED. feat/v49-unified-ux-20261104 from verified
+f4cc34169bf89c4d2e3d70de405fcbd5a6e38050 / Draft PR39; no old v39 worktree.
+See docs/V49_OWNER_PACKET.md / ADR0055 and docs/evidence/v49. Shared fresh-save
+Main/Pause settings, optional Guide/keyboard navigation, retained Seed/Origin,
+compact five-item collection, Pause disclosures, visited-unclaimed map markers
+with accessible shape legend, Chronicle focus containment. Core/content unchanged:
+Worldgen3/Content26/Save3/child18. No combat density/HP/damage/cadence/Boss retune.
+One fresh review2Important+minor, one bounded RED/GREEN fix pass. Full check
+641/124PASS; final affected browser20/20PASS. Earlier28/1 legacy disclosure failure
+and ARIA-description failure preserved in logs; superseded temporary traces partly
+cleared by runner, not recreated. One final ZIP/CI campaign; exact SHA/CI/Natural36
+and package receipts in new Draft PR. Local expensive analyze/cohorts not duplicated.
+V48 negative23/20/4 historical,23/19/5 aware and human Combat1/5/Upgrade2/5 retained.
+Initial8e301cf CI10/12: both browser297PASS/1FAIL/1skip, same expanded-Pause old
+no-scroll assumption. Preserve compact default fit, require bounded expanded scroll,
+horizontal containment and keyboard reachability. Stronger200% check exposed focused
+scale button going offscreen; shared control now scrolls it into view. Targeted9/9
+PASS+typecheck/build; final exact-source mandatory CI still required. Initial72cohort
+rows match V48 and Push/PR exactly (docs/evidence/v49/initial-ci.json). No newbalance.
+Owner/private8174file manifest; .cursor/BAT remain untracked. No merge/deploy/release,
+force push, cleanup, external research or fabricated fun/native/art acceptance.
+
 # V4.8 build/rhythm experiment —2026-11-04
 
 Primary Desktop/Co-op/-SEED; feat/v48-build-rhythm-20261104 from verified
