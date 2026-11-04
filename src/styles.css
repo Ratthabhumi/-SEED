@@ -684,6 +684,18 @@ button, input { font-family: inherit; }
 
 /* Optional outpost decision remains scrollable at large Thai/UI text scales. */
 #spec-screen .panel { max-height: calc(100dvh - 40px); overflow-y: auto; }
+#spec-screen .research-decision-panel { width: min(96vw, 1040px); }
+.research-tradeoff h3, .research-tradeoff p { margin: 6px 0; }
+.research-recovery { color: var(--color-friendly); font-weight: 700; }
+#spec-screen .research-decision-panel > .logistics-contract,
+#spec-screen .research-decision-panel > .site-biome { margin: 6px 0; }
+#spec-screen .research-decision-panel > .btn-row:not(.research-decision-footer) {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr));
+  align-items: stretch; margin: 10px 0;
+}
+#spec-screen .research-decision-panel .terr-spec-btn { width: 100%; }
+.research-decision-footer { justify-content: center; margin: 8px 0; }
+.tactical-choice-detail { font-size: var(--font-caption); color: var(--color-text); text-align: start; line-height: 1.8; }
 
 /* Decision workspaces use available width; only the decision body scrolls. */
 #ui #draft-screen { justify-content: flex-start; gap: 10px; }
@@ -873,3 +885,13 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 .evolution-steps{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.evolution-steps span{padding:5px 9px;border:1px solid #42516a;border-radius:8px;opacity:.55}.evolution-steps .reached{opacity:1}.evolution-steps [aria-current]{border-color:#ffd36b;color:#ffd36b}
 
 .card-combat-change{padding:8px 12px;border-left:3px solid var(--color-selection);background:var(--color-surface);line-height:1.8;font-weight:600;}
+
+/* Keep draft decisions reachable while long descriptions scroll independently. */
+#draft-screen .card-content { display:flex; flex-direction:column; gap:8px; min-height:0; overflow-y:auto; }
+#draft-screen .card-actions { display:grid; gap:8px; flex:0 0 auto; margin-top:auto; }
+@media (min-width:761px) {
+  #ui #draft-screen .cards-wrapper { overflow:hidden; }
+  #draft-screen .cards { height:100%; }
+  #draft-screen .card { height:100%; overflow:hidden; }
+  #draft-screen .card-content { flex:1 1 auto; }
+}

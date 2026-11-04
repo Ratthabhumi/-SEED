@@ -111,9 +111,16 @@ describe("progressive DAG shape", () => {
       for (const o of ORIGINS) {
         const sim = simFor(seed, o.id);
         const count = sim.generatedOptionsCount();
-        // Bronze spine (damage, no family gate) is always draftable at start.
+        // Content27 keeps the original pool budget, plus one new legal tactic
+        // per active family. The player's actual hand must still be three.
         expect(count, `${seed}:${o.id}`).toBeGreaterThanOrEqual(1);
-        expect(count, `${seed}:${o.id}`).toBeLessThanOrEqual(9);
+        const available=sim.nodeStates().filter(n=>n.available);
+        const tactics=available.filter(n=>n.id.startsWith('tactical-'));
+        expect(available.length).toBe(count);
+        expect(available.length-tactics.length,`${seed}:${o.id}: original pool`).toBeLessThanOrEqual(9);
+        expect(tactics,`${seed}:${o.id}: added family branches`).toHaveLength(o.families.length);
+        for(const n of tactics)expect(o.families).toContain(sim.techGraph().find(t=>t.id===n.id)!.effects[0]!.family);
+        sim.gainKnowledge(100,'test',[]);expect(sim.state.draftOffers).toHaveLength(3);
       }
     }
   });

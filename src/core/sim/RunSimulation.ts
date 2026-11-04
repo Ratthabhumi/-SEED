@@ -392,6 +392,8 @@ export class RunSimulation {
   private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
     const s = this.state;
     const result = generateOffers({
+      earlyTactics:context==='level'&&s.ascension===0&&s.ageIndex===0&&s.stats.techsTaken<2,
+      chainUnlocked:s.build.chainUnlocked,
       sim: {
         owned: s.owned,
         ownedTags: s.ownedTags,
@@ -1391,6 +1393,19 @@ export class RunSimulation {
   }
 
   researchBonusScale(): number { return childResearchBonusScale(this.state.ascension); }
+
+  /** Read-only scarcity decision, using real owned sites and the live raid.
+   * This adds no child law, reward, timer or synthetic threat. */
+  researchDecision(poiId:string){
+    const s=this.state,site=s.territories.find(t=>t.poiId===poiId);
+    if(s.ascension===0||this.researchBonusScale()<=1||!site||site.disabled||site.spec!=='')return null;
+    const bonus=territoryKnowledgeBonus(activeTerritories(s.territories),t=>this.siteMultiplier(t.x,t.y,'research'));
+    const target=s.raid&&s.territories.find(t=>t.poiId===s.raid!.poiId&&!t.disabled);
+    return {poiId,knowledgeNow:this.knowledgeMult(),
+      knowledgeAfter:s.build.knowledgeMul*childKnowledgeFactor(s.ascension,bonus+.1*this.siteMultiplier(site.x,site.y,'research')),
+      canResearch:this.canSetOutpostSpec(poiId,'research'),
+      raid:target&&s.raid?{poiId:target.poiId,distance:Math.hypot(target.x-s.px,target.y-s.py),seconds:Math.max(0,s.raid.tMinus),landed:s.raid.landed}:null};
+  }
 
   knowledgeMult(): number {
     const s = this.state;

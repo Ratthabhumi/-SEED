@@ -1,3 +1,13 @@
+# V5.1 — Early tactics / World2 research decision
+
+Primary owner checkout: C:\Users\MewMew\Desktop\Co-op\-SEED. Branch feat/v51-early-tactics-20261105 from actual V5.0 HEAD18ec2b51b2af5ee90231a9eb7235ba7d6fd56d2f (Draft PR41).
+Content27 / Worldgen3 / Save3 / child laws18. Four legal opening tactical branches reuse existing real combat; existing stats/recipes/reserve remain. World2 shows canonical Research recovery and a real raid defer/track decision. Draft descriptions scroll separately from Select/Reserve actions.
+Frozen local check:655/655 unit tests,127 files; typecheck/provenance/build PASS. Relevant final browser30/30 PASS including EN/TH200%, movement release, accidental input and all4Origin720p actions. Earlier unchanged P0 tail4/4, outpost tests and analyze6/6 PASS. Early audit12/12 offered vs2/12 baseline; unchanged60s balanced smoke declined behavior3/4. Negative evidence retained.
+Exact-source Push/PR CI, independent Natural36 and package receipts are pending at commit time; use the Draft PR final receipt. Do not infer human fun/native60Hz/source-art acceptance.
+Public packet: docs/V51_OWNER_PACKET.md;41-ID ledger: docs/V51_ISSUE_LEDGER.md; evidence: docs/evidence/v51/. No external research, new dependency, merge, release publication or deploy. Owner private QA, .cursor and launcher preserved outside this commit.
+
+---
+
 # V5.0 corrective receipt — 2026-11-04
 
 Initial f7d49a2 exact-source Push/PR failed full E2E (301pass/7fail/1skip each), while code/analyze/render passed. Restore shared image/batch review schema; isolate hero tint diagnostics; update four old facing expectations to hand-vs-float ownership. No raster thresholds or gameplay rules changed.

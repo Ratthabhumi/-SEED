@@ -87,7 +87,9 @@ export const CHILD_LAWS_CONTENT_VERSION = 18;
 // Same seed geometry, child laws18 and Save3; combat replay identity changes.
 // Content26: aimed Kinetic flanks, cohesive Conduction, directional mine trails,
 // and post-choice World1 ordinary-wave rhythm. Worldgen/Save/child laws pinned.
-export const CONTENT_VERSION = 26;
+// Content27: legal starting tactics and first-two-choice World1 Stone level
+// offers. No free grants. Worldgen3 / Save3 / child-laws18 remain pinned.
+export const CONTENT_VERSION = 27;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 // Schema3 preserves v1/v2 progress and Insight, adding a validated cosmetic collection.
 export const SAVE_SCHEMA_VERSION = 3;

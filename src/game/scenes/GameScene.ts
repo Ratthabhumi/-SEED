@@ -791,6 +791,27 @@ export class GameScene extends Phaser.Scene {
         notificationReset:()=>clearNotifications(),
         notificationCounts:()=>notificationCounts(),
         draftFacts:()=>({offers:this.sim.state.draftOffers.map(o=>o.nodeId),taken:this.sim.state.stats.techsTaken}),
+        world2DecisionReview:()=>({tracked:this.trackedPoiId,knowledge:this.sim.knowledgeMult(),logistics:this.sim.state.logistics,elapsed:this.sim.state.elapsed,raid:this.sim.state.raid,sites:this.sim.state.territories.map(t=>({id:t.poiId,spec:t.spec})),hash:this.sim.hash()}),
+        stageResearchChoice:()=>{
+          // Staged engineering fixture: actual generated sites, actual claims,
+          // specialization and raid scheduler; never a fabricated POI/attack.
+          const s=this.sim.state;if(s.ascension!==1||s.territories.length)throw Error('Fresh World2 required');
+          this.paused=true;s.ageIndex=2;s.knowledgeTotal=0;s.spawnT=s.eliteT=s.mineT=999;s.draftOpen=false;s.pendingLevels=0;
+          for(const e of s.enemies)e.active=false;
+          const sites:{id:string;wx:number;wy:number}[]=[];
+          for(let x=-3;x<=3;x++)for(let y=-3;y<=3;y++)for(const p of this.sim.chunks.get(s.worldSeed,s.worldNonce,x,y).poi)if(p.type!=='signal')sites.push(p);
+          const first=sites.find(a=>sites.some(b=>a.id!==b.id&&Math.hypot(a.wx-b.wx,a.wy-b.wy)<900));
+          const second=sites.find(b=>first&&b.id!==first.id&&Math.hypot(first.wx-b.wx,first.wy-b.wy)<900);
+          if(!first||!second)throw Error('No canonical nearby site pair');
+          for(const p of [first,second]){s.px=p.wx;s.py=p.wy;if(!s.poisWorld.includes(p.id))s.poisWorld.push(p.id);if(!this.sim.claimTerritory(p.id).some(e=>e.type==='territory_claimed'))throw Error('Canonical claim rejected');}
+          this.sim.setOutpostSpec(first.id,'military');s.px=first.wx;s.py=first.wy;s.lastRaidAt=-10000;
+          const events=this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false});
+          if(s.raid?.poiId!==first.id)throw Error('Canonical raid did not target military base');
+          this.handleEvents(events.filter(e=>e.type==='raid_incoming'));s.draftOpen=false;s.pendingLevels=0;
+          s.px=second.wx;s.py=second.wy;this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);
+          this.refreshGround(true);this.refreshHUD();this.paused=false;this.showSpecPicker(second.id);
+          return {support:second.id,threat:first.id,preview:this.sim.researchDecision(second.id)};
+        },
         canonicalStressStart:(boss=false)=>{
           // Staged stress, NOT a human/natural run: actual fixed-step combat
           // resumes. Entities retire/fire/move normally; no per-frame refill.
@@ -2068,6 +2089,15 @@ export class GameScene extends Phaser.Scene {
       const site = s.territories.find((t) => t.poiId === poiId);
       if(site?.poiType==="signal"&&!s.signalSecured)panel.appendChild(el("p","signal-exemption","ui.firstSignalAvailable"));
       if (site) panel.appendChild(el("p", "site-biome", `biome.${this.sim.siteBiome(site.x, site.y)}.role` as EnKeys));
+      const decision=this.sim.researchDecision(poiId);
+      if(decision){
+        panel.classList.add('research-decision-panel');
+        const preview=el('section','research-tradeoff');
+        preview.appendChild(el('h3','','quality.researchDecision'));
+        preview.appendChild(el('p','research-recovery',undefined,`${t('quality.researchRecovery')}: ×${decision.knowledgeNow.toFixed(3)} → ×${decision.knowledgeAfter.toFixed(3)}`));
+        if(decision.raid)preview.appendChild(el('p','research-threat',undefined,`${t('quality.researchThreat')}: ${Math.round(decision.raid.distance)}u · ${decision.raid.landed?t('ui.siteRaid'):Math.ceil(decision.raid.seconds)+'s'}`));
+        preview.appendChild(el('p','context-purpose','quality.researchNote'));panel.appendChild(preview);
+      }
       
       const row = el("div", "btn-row");
       for (const sp of specs) {
@@ -2100,7 +2130,17 @@ export class GameScene extends Phaser.Scene {
         row.appendChild(b);
       }
       panel.appendChild(row);
-      panel.appendChild(button("ui.specLater", () => this.closeBlocking(), "btn spec-later-btn"));
+      const footer=decision?el('div','btn-row research-decision-footer'):panel;
+      if(decision)panel.appendChild(footer);
+      if(decision?.raid){
+        const defend=button('quality.researchDefend',()=>{
+          const live=this.sim.researchDecision(poiId);
+          if(live?.raid)this.trackedPoiId=live.raid.poiId;
+          this.closeBlocking();
+        },'btn research-defend-btn');
+        footer.appendChild(defend);
+      }
+      footer.appendChild(button("ui.specLater", () => this.closeBlocking(), "btn spec-later-btn"));
       const hint = el("p", "", "ui.specLaterHint");
       hint.id = "spec-later-hint";
       panel.appendChild(hint);
@@ -2837,6 +2877,7 @@ export class GameScene extends Phaser.Scene {
       c.appendChild(h);
       c.appendChild(d);
       c.appendChild(delta);
+      if(n.id.startsWith('tactical-'))c.appendChild(el('p','tactical-choice-detail',n.descriptionKey as EnKeys));
       const changes=combatChoicePreview(s,offer.effectiveEffects);
       if(changes.length){const impact=el('p','card-combat-change');impact.textContent=changes.map(change=>{
         const value=(v:number)=>change.kind==='chain'||change.kind==='beam'?t(v?'ui.active':'ui.inactive'):String(v);
@@ -2872,6 +2913,13 @@ export class GameScene extends Phaser.Scene {
         badge.textContent = `✦ ${t("draft.newBadge")}`;
         c.appendChild(badge);
       }
+      const content = document.createElement("div");
+      content.className = "card-content";
+      while(c.firstChild)content.appendChild(c.firstChild);
+      c.appendChild(content);
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+      c.appendChild(actions);
       // Explicit SELECT button (replaces role="button" on card)
       const selectBtn = document.createElement("button");
       selectBtn.type = "button";
@@ -2885,7 +2933,7 @@ export class GameScene extends Phaser.Scene {
         selectBtn.setAttribute("aria-label", `Select card ${i + 1}`);
       }
       selectBtn.addEventListener("click", () => this.pickCard(i,screen));
-      c.appendChild(selectBtn);
+      actions.appendChild(selectBtn);
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
       if (!offer.nodeId.startsWith("fb-")) {
@@ -2900,7 +2948,7 @@ export class GameScene extends Phaser.Scene {
           this.handleEvents(this.sim.reserveCard(i));
           this.refreshHUD();
         });
-        c.appendChild(rs);
+        actions.appendChild(rs);
       }
     });
     const agency = el("div", "draft-agency");
