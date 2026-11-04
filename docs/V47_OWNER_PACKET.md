@@ -111,3 +111,9 @@ Rulings:ใช้ owner authority commit/push/Draft PR ได้เลย ไม
 |33|IMPROVED_PENDING_HUMAN|bossEncounter.ts, BossTelegraph.ts|Pure snapshot aim → bounded pre-warning prediction, frozen afterward|U shared warning/shot geometry; H fairness|
 
 Frozen-source verification note: full check first633PASS/1 obsolete-versionFAIL; corrected explicit Content25 assertion and full check634PASS/122files including typecheck/notices/build. No runtime threshold changed. Final browser/cohort/CI/ZIP outcome is the linked PR receipt.
+
+## First exact-source CI correction and negative cohort outcomes
+
+Initial e392717 PR CI:284browserPASS/1FAIL/1expected skip. The old content153 test expected hand attack frames from the default floating weapon, contradicting V47 ownership. Explicitly stage canonical hand mode and retain the >=2frame/pause assertions; actual floating release still has its independent no-punch/muzzle regression. Local corrected pair2/2PASS. This final correction changes tests/evidence only, with no runtime code or Content25 change. Superseded runs41748558126/41748624098 canceled after capturing failed logs and complete analysis artifacts; incomplete render results never counted as performance PASS. Final exact-source CI must still finish.
+
+Initial C25 Natural36 (both sources raw-row identical, each policy36/36replay): historical reached/win/dead29/23/3→27/23/0; defender-aware29/25/2→27/23/3. Historical boss-window base damage1715→1323HP, losses5→5; defender-aware whole-attempt base losses20→21, boss base damage1525→1029HP. These include negative outcomes. Do not retune for a target win rate or call the whole game improved. See v47-initial-cohorts.json for all72cases/scopes. Five-range sparse probe150/300/400/500/630 recorded damage540/504/360/234/54→720/612/504/360/108. Targets still receive canonical knockback; this is not a hit-rate guarantee or causal explanation of cohort regressions.
