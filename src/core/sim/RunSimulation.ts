@@ -1,3 +1,7 @@
+import {projectileSpreadAngle} from '../combat/weaponGeometry';
+import {CONTENT_VERSION} from '../seed/versions';
+import {validCheckpointState} from './weaponCheckpoint';
+import {startingWeapons,equippedFamilies,weaponArtOrigin,WEAPON_FAMILIES,WEAPON_SLOT_CAP} from '../combat/weaponInstances';
 import {BEAM_TARGET_RANGE} from "../combat/weapons";
 // Framework-independent run simulation (ADR 0003).
 //
@@ -111,10 +115,12 @@ export class RunSimulation {
     this.difficultyMul = config.difficultyMul ?? 1;
     this.state = this.freshWorldState(config.masterSeed, 0, originById(config.originId ?? "").id);
     this.state.weaponRig=createWeaponRig(config.weaponMount??'float');
+    this.state.weapons[0]!.rig=this.state.weaponRig;
     // Root-attempt archive benefits, separate from child-world inheritance.
     if (config.archivePerks?.includes("survival-kit")) { this.state.build.maxHp += 15; this.state.build.hp += 15; }
     if (config.archivePerks?.includes("choice-kit")) this.state.rerolls = 2;
     if (config.archivePerks?.includes("energy-kit") && config.archiveEnergyStart && !activeFamilies(this.state.originId, "").includes("energy")) this.state.expansionFamily = "energy";
+    if(this.state.expansionFamily==='energy')this.acquireWeapon('energy');
     this.streams = initRunRng(this.state.worldSeed);
     this.graph = generateTechGraph(this.state.worldSeed, 0).nodes;
     this.grantNode("spine-tools");
@@ -164,7 +170,7 @@ export class RunSimulation {
       recentDraftOffers: [],
       relayCd: 0, spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
-      weaponRig: createWeaponRig(),
+      weaponRig: createWeaponRig(), weapons:startingWeapons(originId),weaponSerial:1,
       guardianAng: 0, orbitAng: 0, beamFlash: null,
       enemies: Array.from({ length: MAX_ENEMIES }, () => ({
         active: false, x: 0, y: 0, hp: 1, maxHp: 1, shield: 0,
@@ -220,7 +226,11 @@ export class RunSimulation {
     };
     const asc = s.ascension + 1;
     const fresh = this.freshWorldState(this.masterSeed, asc, origin.id);
-    fresh.weaponRig=createWeaponRig(s.weaponRig.mode);
+    fresh.weaponRig=createWeaponRig(s.weaponRig.mode);fresh.weaponSerial=s.weaponSerial;
+    const signature=fresh.weapons[0]!.family,ownedSignature=s.weapons.find(w=>w.family===signature);
+    fresh.weapons[0]!.id=ownedSignature?.id??('weapon-'+fresh.weaponSerial+++'-'+signature);fresh.weapons[0]!.rig=fresh.weaponRig;
+    const carried=s.weapons.filter(w=>w.family!==signature&&(ownedSignature||s.weapons.length<3||w.slot!==0));
+    for(const old of carried.slice(0,2))fresh.weapons.push({...old,slot:fresh.weapons.length,rig:{...createWeaponRig('float'),orbitSlot:fresh.weapons.length},auraCd:0});
     // Restore run-persistent data.
     fresh.stats = keep.stats;
     fresh.damageBySource = keep.dmg; fresh.topDamageSource = keep.top;
@@ -272,6 +282,16 @@ export class RunSimulation {
     return snapshotStreams(this.streams);
   }
 
+  /** Versioned complete run checkpoint. Never restores a loadout into a fresh run. */
+  checkpoint():string {const payload={format:1,content:CONTENT_VERSION,worldgen:WORLDGEN_VERSION,state:this.state,streams:this.streamSnapshots()};const body=JSON.stringify(payload);return JSON.stringify({body,checksum:fnv1a32(body)});}
+  static fromCheckpoint(raw:string):RunSimulation|null {
+    try{if(typeof raw!=='string'||raw.length>2000000)return null;const envelope=JSON.parse(raw);if(typeof envelope.body!=='string'||fnv1a32(envelope.body)!==envelope.checksum)return null;const p=JSON.parse(envelope.body);if(p.format!==1||p.content!==CONTENT_VERSION||p.worldgen!==WORLDGEN_VERSION||typeof p.state?.masterSeed!=='string'||!ORIGINS.some(o=>o.id===p.state.originId)||typeof p.state.difficultyMul!=='number'||p.state.difficultyMul<=0)return null;
+      const sim=new RunSimulation({masterSeed:p.state.masterSeed,originId:p.state.originId,difficultyMul:p.state.difficultyMul});const template=sim.freshWorldState(p.state.masterSeed,p.state.ascension,p.state.originId);if(!validCheckpointState(p.state,template)||p.state.worldSeed!==template.worldSeed||p.state.worldNonce!==template.worldNonce)return null;
+      for(const key of Object.keys(sim.streams) as (keyof RunRngStreams)[]){const a=p.streams?.[key];if(!Array.isArray(a)||a.length!==4||a.some(x=>!Number.isInteger(x)||x<0||x>0xffffffff)||a.every(x=>x===0))return null;sim.streams[key].restore(a as [number,number,number,number]);}
+      for(const key of Object.keys(template) as (keyof RunState)[])(sim.state as any)[key]=p.state[key];sim.state.weapons[0]!.rig=sim.state.weaponRig;return sim;
+    }catch{return null;}
+  }
+
   /** Full canonical snapshot string — tests compare these directly. */
   snapshot(): string {
     return canonicalSnapshot(this.state, this.streamSnapshots());
@@ -309,8 +329,8 @@ export class RunSimulation {
   private availableNodes(): TechNode[] {
     const s = this.state;
     const owned = new Set(s.owned);
-    const active = new Set(activeFamilies(s.originId, s.expansionFamily));
-    return this.graph.filter((n) => eligibleTech(n, owned, s.ageIndex, active));
+    const active = new Set(equippedFamilies(s));
+    return this.graph.filter((n) => this.canChooseNode(n)&&eligibleTech(n, owned, s.ageIndex, active));
   }
 
   /** Read-only tech graph for the Tech Map UI (same nodes the sim drafts). */
@@ -335,13 +355,13 @@ export class RunSimulation {
    */
   pathGuidance(target = this.state.pinnedTarget) {
     const s = this.state;
-    return pathGuidance(this.graph, { target, owned: s.owned, tags: s.ownedTags, unlocked: s.breakthroughs, ageIndex: s.ageIndex, families: new Set(activeFamilies(s.originId, s.expansionFamily)) });
+    return pathGuidance(this.graph, { target, owned: s.owned, tags: s.ownedTags, unlocked: s.breakthroughs, ageIndex: s.ageIndex, families: new Set(equippedFamilies(s)) });
   }
 
   combinationRoute() {
     const s = this.state;
     return combinationRoute(this.graph, s.owned, s.ownedTags, s.breakthroughs, s.ageIndex,
-      new Set(activeFamilies(s.originId, s.expansionFamily)));
+      new Set(equippedFamilies(s)));
   }
 
   pinnedPathIds(): Set<string> {
@@ -392,6 +412,7 @@ export class RunSimulation {
   private buildDraft(context: "level" | "poi", filter?: (n: TechNode) => boolean): void {
     const s = this.state;
     const result = generateOffers({
+      acquireWeapon:s.weapons.length<WEAPON_SLOT_CAP,
       earlyTactics:context==='level'&&s.ascension===0&&s.ageIndex===0&&s.stats.techsTaken<2,
       chainUnlocked:s.build.chainUnlocked,
       sim: {
@@ -410,11 +431,11 @@ export class RunSimulation {
         techGraph: () => this.graph,
       },
       laws: s.worldLaws,
-      activeFamilies: new Set(activeFamilies(s.originId, s.expansionFamily)),
+      activeFamilies: new Set(equippedFamilies(s)),
       recentOffers: s.recentDraftOffers,
       recentPicks: s.history.filter(h => h.kind === "tech").map(h => h.label),
       rng: this.streams.draft,
-    }, undefined, 3, filter);
+    }, undefined, 3, n=>this.canChooseNode(n)&&(!filter||filter(n)));
     
     // Convert OfferCandidate to DraftOffer with quality/modifiers applied
     let offers = result.map((c) => this.convertToDraftOffer(c.node, c.quality, c.score));
@@ -550,7 +571,8 @@ export class RunSimulation {
       return ev;
     }
     const node = this.resolveTechNode(offer.nodeId);
-    if (!node || (!node.id.startsWith("fb-") && !eligibleTech(node, new Set(s.owned), s.ageIndex, new Set(activeFamilies(s.originId, s.expansionFamily))))) return ev;
+    if (!node || !this.canChooseNode(node) || (!node.id.startsWith("fb-") && !eligibleTech(node, new Set(s.owned), s.ageIndex, new Set(equippedFamilies(s))))) return ev;
+    if(node.weaponFamily)this.acquireWeapon(node.weaponFamily);
     s.draftOpen = false;
     s.draftOffers = [];
     s.draftContext = "level";
@@ -570,7 +592,7 @@ export class RunSimulation {
     }));
     for (const e of node.effects) {
       if (e.kind === "weaponEvolve") {
-        const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+        const active = new Set(equippedFamilies(s));
         for (const fam of (Object.keys(s.weaponStage) as WeaponFamily[])) {
           if (active.has(fam)) s.weaponStage[fam] = 5;
         }
@@ -757,9 +779,9 @@ export class RunSimulation {
   chooseExpansion(fam: WeaponFamily): SimEvent[] {
     const s = this.state;
     const ev: SimEvent[] = [];
-    if (s.over || s.expansionFamily !== "") return ev;
+    if (s.over || s.expansionFamily !== "" || !this.canAcquireWeapon(fam)) return ev;
     if (!lockedFamilies(s.originId, "").includes(fam)) return ev;
-    s.expansionFamily = fam;
+    this.acquireWeapon(fam);s.expansionFamily = fam;
     this.logHistory("expansion", fam);
     ev.push({ type: "expansion_unlocked", family: fam });
     return ev;
@@ -1328,7 +1350,7 @@ export class RunSimulation {
     for (const e of n.effects) {
       if (e.kind === "weaponEvolve") {
         // Orbital Program evolves ACTIVE families only (origin identity holds).
-        const active = new Set(activeFamilies(s.originId, s.expansionFamily));
+        const active = new Set(equippedFamilies(s));
         for (const fam of (Object.keys(s.weaponStage) as WeaponFamily[])) {
           if (active.has(fam)) s.weaponStage[fam] = 5;
         }
@@ -1523,7 +1545,7 @@ export class RunSimulation {
     e.elite = elite; e.boss = boss; e.affix = affix; e.siege=false;
     e.encounter=boss?createBossEncounter():undefined;
     const adaptation=adaptationFor(s.ageIndex,family,elite,boss);e.evolution=adaptation?createEvolution(adaptation):undefined;
-    e.flash = 0; e.shootT = 1 + this.streams.enemy.nextFloat() * 2; e.hitCd = 0;
+    e.flash = 0; e.shootT = 1 + this.streams.enemy.nextFloat() * 2; e.hitCd = 0;e.orbitHitAt=undefined;
     if (boss) {
       s.bossIndex = s.enemies.indexOf(e);
       ev.push({ type: "boss_warning" });
@@ -1650,7 +1672,7 @@ export class RunSimulation {
         const m = this.allocEnemy();
         if (!m) break;
         const line = ENEMY_BASE.swarm;
-        m.active = true;
+        m.active = true; m.orbitHitAt=undefined;
         m.x = deathX + (i === 0 ? -14 : 14); m.y = deathY;
         m.family = "swarm"; m.maxHp = line.hp; m.hp = line.hp; m.shield = 0;
         m.speed = line.speed; m.dmg = line.dmg; m.radius = line.radius;
@@ -1811,7 +1833,7 @@ export class RunSimulation {
       p.vx = ((tx - x) / d) * speed; p.vy = ((ty - y) / d) * speed;
       p.dmg = dmg; p.radius = radius; p.life = HAZARD_GEOMETRY.projectileLife; p.friendly = friendly; p.color = color; p.src = src;
       p.visualTier=(["kinetic","energy","defense","field"] as string[]).includes(src)?this.state.weaponStage[src as WeaponFamily]:this.state.ageIndex;
-      p.primary=false;
+      p.primary=false;p.weaponInstanceId=friendly?this.state.weapons.find(w=>w.family===src)?.id:undefined;
       if(ev && friendly && ["kinetic","energy","defense","field"].includes(src)) ev.push({type:"weapon_fired",family:src as WeaponFamily,x,y,tx,ty});
       return;
     }
@@ -1821,16 +1843,23 @@ export class RunSimulation {
   // Execution dispatches on WeaponStage.archetype (P1-04) — data determines
   // behavior, never the family name. Every family × tier must have a valid
   // executable path (covered by tests/sim/archetypes.test.ts).
-  private updatePrimaryRig(dt:number):void {
-    const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),target=this.nearestEnemy(s.px,s.py,800);
-    if(!target)return;
-    advanceWeaponRig(s.originId,tier,s.px,s.py,r,target.x,target.y,dt);
+  canAcquireWeapon(family:WeaponFamily):boolean {return WEAPON_FAMILIES.includes(family)&&this.state.weapons.length<WEAPON_SLOT_CAP&&!this.state.weapons.some(w=>w.family===family);}
+  private acquireWeapon(family:WeaponFamily):void {
+    const s=this.state;if(!this.canAcquireWeapon(family))return;const slot=s.weapons.length;
+    s.weapons.push({id:'weapon-'+s.weaponSerial+++'-'+family,owner:'player',slot,family,rig:{...createWeaponRig('float'),orbitSlot:slot},auraCd:0});s.weaponCd[family]=0;s.weaponStage[family]=s.ageIndex;
   }
-  private releasePose(target:{x:number;y:number}):WeaponTransform|null {
-    const s=this.state,r=s.weaponRig,tier=primaryTier(s.originId,s.weaponStage),aim=aimFromPivot(s.originId,tier,s.px,s.py,r,target.x,target.y);
-    if(aim.forward<1||Math.abs(angleDelta(aim.heading,r.heading))>.045)return null;
-    r.heading=aim.heading;r.firedAt=s.elapsed;
-    return weaponTransform(s.originId,tier,s.px,s.py,r,s.elapsed);
+  private canChooseNode(n:TechNode):boolean {return !n.weaponFamily||this.canAcquireWeapon(n.weaponFamily);}
+  private updatePrimaryRig(dt:number):void {
+    const s=this.state;s.weapons[0]!.rig=s.weaponRig;
+    for(const w of s.weapons){if(w.family!=='kinetic'&&w.family!=='energy')continue;const target=this.weaponTarget(w.family,800);if(target)advanceWeaponRig(weaponArtOrigin(s.originId,w.family,w.slot),s.weaponStage[w.family],s.px,s.py,w.rig,target.x,target.y,dt);}
+  }
+  private weaponTarget(family:WeaponFamily,range:number):SimEnemy|null {
+    const s=this.state,w=s.weapons.find(w=>w.family===family);
+    return this.nearestEnemy(s.px+(w?.rig.x??0),s.py+(w?.rig.y??0),range);
+  }
+  private releasePose(target:{x:number;y:number},family:WeaponFamily):WeaponTransform|null {
+    const s=this.state,w=s.weapons.find(w=>w.family===family);if(!w)return null;const r=w.rig,tier=s.weaponStage[family],art=weaponArtOrigin(s.originId,family,w.slot),aim=aimFromPivot(art,tier,s.px,s.py,r,target.x,target.y);
+    if(aim.forward<1||Math.abs(angleDelta(aim.heading,r.heading))>.045)return null;r.heading=aim.heading;r.firedAt=s.elapsed;return weaponTransform(art,tier,s.px,s.py,r,s.elapsed);
   }
   private fireProjectileSpread(
     fam: WeaponFamily, st: { speed: number; damage: number; radius: number; color: number },
@@ -1838,13 +1867,13 @@ export class RunSimulation {
   ): boolean {
     const s = this.state;
     const b = s.build;
-    const tgt=this.nearestEnemy(s.px,s.py,range);if(!tgt)return true;
-    const pose=this.releasePose(tgt);if(!pose)return false;
+    const tgt=this.weaponTarget(fam,range);if(!tgt)return true;
+    const pose=this.releasePose(tgt,fam);if(!pose)return false;
     const count=Math.ceil(n);
     for (let i = 0; i < count; i++) {
       // Kinetic upgrades preserve the aimed primary lane, then add flanks.
       // Energy retains its symmetric volley; Conduction owns cluster behavior.
-      const spread = fam==='kinetic'?(i===0?0:Math.ceil(i/2)*.12*(i%2?-1:1)):(i-(n-1)/2)*.12;
+      const spread = projectileSpreadAngle(fam,i,n);
       const base = pose.heading + spread;
       for (let index=0;index<s.projs.length;index++) {
         const p=s.projs[index]!;
@@ -1852,9 +1881,9 @@ export class RunSimulation {
         p.active = true; p.x = pose.muzzleX; p.y = pose.muzzleY;p.primary=true;
         p.vx = Math.cos(base) * st.speed; p.vy = Math.sin(base) * st.speed;
         p.dmg = st.damage * b.damageMul; p.radius = st.radius; p.life = life;
-        p.friendly = true; p.color = st.color; p.src = fam;
+        p.friendly = true; p.color = st.color; p.src = fam;p.weaponInstanceId=s.weapons.find(w=>w.family===fam)!.id;
         p.visualTier=s.weaponStage[fam];
-        ev.push({type:"weapon_fired",family:fam,x:p.x,y:p.y,tx:p.x+Math.cos(base)*100,ty:p.y+Math.sin(base)*100,release:{owner:'player-primary',time:s.elapsed,pose,heading:base,index:i,count,projectileIndex:index,targetX:tgt.x,targetY:tgt.y}});
+        ev.push({type:"weapon_fired",family:fam,x:p.x,y:p.y,tx:p.x+Math.cos(base)*100,ty:p.y+Math.sin(base)*100,release:{owner:s.weapons.find(w=>w.family===fam)!.slot===0?'player-primary':'player-weapon',weaponInstanceId:s.weapons.find(w=>w.family===fam)!.id,slot:s.weapons.find(w=>w.family===fam)!.slot,time:s.elapsed,pose,heading:base,index:i,count,projectileIndex:index,targetX:tgt.x,targetY:tgt.y}});
         break;
       }
     }
@@ -1863,14 +1892,14 @@ export class RunSimulation {
 
   private beamStrike(fam: WeaponFamily, st: { damage: number; radius: number }, range: number, ev: SimEvent[]): boolean {
     const s = this.state;
-    const tgt = this.nearestEnemy(s.px, s.py, range);
+    const tgt = this.weaponTarget(fam,range);
     if (!tgt) return true;
-    const pose=this.releasePose(tgt);if(!pose)return false;
+    const pose=this.releasePose(tgt,fam);if(!pose)return false;
     const hit = this.queryRadius(tgt.x, tgt.y, 60 + st.radius * 0.3, this.scratch);
     // Capture aim before damage/death/split can reuse the pooled target object.
     const targetX = tgt.x, targetY = tgt.y;
     ev.push({ type: "beam_fired", family: fam, tier: s.weaponStage[fam],
-      x1: pose.muzzleX, y1: pose.muzzleY, x2: targetX, y2: targetY,release:{owner:'player-primary',time:s.elapsed,pose,heading:pose.heading,index:0,count:1,targetX,targetY} });
+      x1: pose.muzzleX, y1: pose.muzzleY, x2: targetX, y2: targetY,release:{owner:s.weapons.find(w=>w.family===fam)!.slot===0?'player-primary':'player-weapon',weaponInstanceId:s.weapons.find(w=>w.family===fam)!.id,slot:s.weapons.find(w=>w.family===fam)!.slot,time:s.elapsed,pose,heading:pose.heading,index:0,count:1,targetX,targetY} });
     const lim = Math.min(hit.length, 10);
     if(fam==="energy" && s.build.chainUnlocked)this.arcChain(tgt,tgt.x,tgt.y,st.damage*s.build.damageMul,ev,"chain",hit,lim);
     for (let i = 0; i < lim; i++) this.hurtEnemy(hit[i] as SimEnemy, st.damage * s.build.damageMul, fam, ev);
@@ -1892,7 +1921,6 @@ export class RunSimulation {
 
   private orbitBlades(fam: WeaponFamily, dt: number, radius: number, blades: number, dmg: number, ev: SimEvent[]): void {
     const s = this.state;
-    s.orbitAng += dt * 2.0;
     for (let i = 0; i < blades; i++) {
       const a = s.orbitAng + (i * Math.PI * 2) / Math.max(1, blades);
       const bx = s.px + Math.cos(a) * radius;
@@ -1901,9 +1929,9 @@ export class RunSimulation {
       const lim = Math.min(hit.length, 4);
       for (let j = 0; j < lim; j++) {
         const e = hit[j] as SimEnemy;
-        e.hitCd -= dt;
-        if (e.hitCd <= 0) {
-          e.hitCd = 0.35;
+        const hits=e.orbitHitAt??(e.orbitHitAt={});const key=fam as 'defense'|'field';
+        if (s.elapsed >= (hits[key]??0)) {
+          hits[key]=s.elapsed+.35;
           this.hurtEnemy(e, dmg, fam, ev);
           if (s.over) return;
         }
@@ -1930,10 +1958,11 @@ export class RunSimulation {
     // Origin identity (ADR-0006): inactive families neither render attacks
     // nor deal simulation damage. Bonus counters tied to an inactive family
     // stay dormant with it.
-    const kOn = activeFamilies(s.originId, s.expansionFamily).includes("kinetic");
-    const eOn = activeFamilies(s.originId, s.expansionFamily).includes("energy");
-    const dOn = activeFamilies(s.originId, s.expansionFamily).includes("defense");
-    const fOn = activeFamilies(s.originId, s.expansionFamily).includes("field");
+    const kOn = equippedFamilies(s).includes("kinetic");
+    const eOn = equippedFamilies(s).includes("energy");
+    const dOn = equippedFamilies(s).includes("defense");
+    const fOn = equippedFamilies(s).includes("field");
+    if(dOn&&getWeaponStage("defense",s.weaponStage.defense).archetype==="orbit"||fOn&&(getWeaponStage("field",s.weaponStage.field).archetype==="orbit"||b.bonusOrbit>0))s.orbitAng+=dt*2;
     const tick = (fam: WeaponFamily, cd: number, fire: () => void|boolean): void => {
       const left = s.weaponCd[fam] - dt;
       if (left <= 0) { s.weaponCd[fam] = cd; if(fire()===false)s.weaponCd[fam]=0; }
@@ -1951,9 +1980,9 @@ export class RunSimulation {
     if (eOn) {
       const st = getWeaponStage("energy", s.weaponStage.energy);
       if (st.archetype === "aura" || b.bonusAura > 0) {
-        s.auraT -= dt;
-        if (s.auraT <= 0) {
-          s.auraT = 0.5;
+        const aura=s.weapons.find(w=>w.family==='energy')!;aura.auraCd -= dt;
+        if (aura.auraCd <= 0) {
+          aura.auraCd = 0.5;
           this.auraTick("energy", st.radius + b.bonusAura * 30, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, ev);
         }
       }
@@ -1984,9 +2013,9 @@ export class RunSimulation {
     if (fOn) {
       const st = getWeaponStage("field", s.weaponStage.field);
       if (st.archetype === "aura" || b.bonusAura > 0) {
-        s.auraT -= dt;
-        if (s.auraT <= 0) {
-          s.auraT = 0.5;
+        const aura=s.weapons.find(w=>w.family==='field')!;aura.auraCd -= dt;
+        if (aura.auraCd <= 0) {
+          aura.auraCd = 0.5;
           this.auraTick("field", st.radius + b.bonusAura * 30, (st.archetype === "aura" ? st.damage : 10) * b.damageMul, ev);
         }
       }
@@ -2079,7 +2108,7 @@ export class RunSimulation {
         // Space entry reveals the ENEMY STRONGHOLD (derived site, §23).
         if (ageId === "space") this.revealStronghold(ev);
         // WORLD EXPANSION decision at Industrial (ADR-0006 Decision 1).
-        if (next === 3 && s.expansionFamily === "") {
+        if (next === 3 && s.expansionFamily === "" && s.weapons.length<WEAPON_SLOT_CAP) {
           const locked = lockedFamilies(s.originId, "");
           if (locked.length === 2) {
             ev.push({ type: "expansion_offered", families: [locked[0] as WeaponFamily, locked[1] as WeaponFamily] });
@@ -2222,13 +2251,13 @@ export class RunSimulation {
     s.mineT -= dt;
     if (s.mineT <= 0) {
       s.mineT = 1.2;
-      const want = activeFamilies(s.originId, s.expansionFamily).includes("field") ? 1 + b.bonusMines : 0;
+      const want = equippedFamilies(s).includes("field") ? 1 + b.bonusMines : 0;
       let placed = 0;
       for (const m of s.mines) {
         if (placed >= want) break;
         if (m.active) continue;
         const st = getWeaponStage("field", s.weaponStage.field);
-        m.active = true;
+        m.active = true;m.weaponInstanceId=s.weapons.find(w=>w.family==='field')!.id;
         // Consume exactly the same two event draws in either placement mode.
         const jx=this.streams.event.nextFloat()-.5,jy=this.streams.event.nextFloat()-.5;
         const speed=Math.hypot(s.vx,s.vy);

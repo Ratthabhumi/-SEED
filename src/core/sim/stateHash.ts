@@ -47,14 +47,14 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     if (!e.active) continue;
     enemies.push(
       [r6(e.x), r6(e.y), r6(e.hp), r6(e.maxHp), r6(e.shield), e.family, e.elite ? e.affix : "", e.boss ? 1 : 0,
-        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), e.siege ? 1 : 0, e.evolution?[e.evolution.id,e.evolution.phase,r6(e.evolution.timer),r6(e.evolution.aimX),r6(e.evolution.aimY),e.evolution.shots].join(":"):"", e.encounter?[e.encounter.phase,r6(e.encounter.timer),e.encounter.cycle,e.encounter.pattern,r6(e.encounter.aimX),r6(e.encounter.aimY),e.encounter.enraged?1:0,e.encounter.outpostId,r6(e.encounter.assaultLeft),r6(e.encounter.defenseCd)].join(":"):""].join(","),
+        r6(e.speed), r6(e.dmg), r6(e.radius), e.xp, r6(e.flash), r6(e.shootT), r6(e.hitCd), JSON.stringify(e.orbitHitAt??{}), e.siege ? 1 : 0, e.evolution?[e.evolution.id,e.evolution.phase,r6(e.evolution.timer),r6(e.evolution.aimX),r6(e.evolution.aimY),e.evolution.shots].join(":"):"", e.encounter?[e.encounter.phase,r6(e.encounter.timer),e.encounter.cycle,e.encounter.pattern,r6(e.encounter.aimX),r6(e.encounter.aimY),e.encounter.enraged?1:0,e.encounter.outpostId,r6(e.encounter.assaultLeft),r6(e.encounter.defenseCd)].join(":"):""].join(","),
     );
   }
   enemies.sort();
   const projs: string[] = [];
   for (const p of s.projs) {
     if (!p.active) continue;
-    projs.push([r6(p.x), r6(p.y), r6(p.vx), r6(p.vy), r6(p.dmg), r6(p.radius), r6(p.life), p.friendly ? 1 : 0, p.src, p.color, p.visualTier??0,p.primary?1:0].join(","));
+    projs.push([r6(p.x), r6(p.y), r6(p.vx), r6(p.vy), r6(p.dmg), r6(p.radius), r6(p.life), p.friendly ? 1 : 0, p.src, p.color, p.visualTier??0,p.primary?1:0,p.weaponInstanceId??''].join(","));
   }
   projs.sort();
   const picks: string[] = [];
@@ -66,12 +66,13 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
   const mines: string[] = [];
   for (const m of s.mines) {
     if (!m.active) continue;
-    mines.push([r6(m.x), r6(m.y), r6(m.dmg), r6(m.radius), r6(m.life)].join(","));
+    mines.push([r6(m.x), r6(m.y), r6(m.dmg), r6(m.radius), r6(m.life),m.weaponInstanceId??''].join(","));
   }
   mines.sort();
   const b = s.build;
   const dmgSrc = Object.keys(s.damageBySource).sort().map((k) => `${k}:${r6(s.damageBySource[k] as number)}`);
   const snap = {
+    weapons:s.weapons.map(w=>[w.id,w.owner,w.slot,w.family,r6(w.auraCd),w.rig.mode,r6(w.rig.x),r6(w.rig.y),r6(w.rig.heading),r6(w.rig.firedAt),w.rig.flipY?1:0,w.rig.orbitSlot??0]),weaponSerial:s.weaponSerial,
     id: [s.masterSeed, s.worldSeed, s.worldNonce, s.ascension, s.difficultyMul],
     age: [s.ageIndex, r6(s.elapsed), r6(s.ageElapsed), s.ageKills, s.highestAge],
     run: [r6(s.runElapsed), s.runHighestAge, r6(s.runKills)],
@@ -84,7 +85,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
     // v021: draft agency shapes future drafts — canonical.
     agency: [s.reservedTech, s.rerolls, s.pinnedTarget],
     logistics: [s.logistics, s.maxLogistics],
-    tech: s.techNodes.map((n) => [n.id, n.age, n.domain, n.prerequisites, n.exclusions, n.effects, n.tags, n.synergyTags, n.weight, n.rarity, n.web]),
+    tech: s.techNodes.map((n) => [n.id, n.age, n.domain, n.weaponFamily??'', n.prerequisites, n.exclusions, n.effects, n.tags, n.synergyTags, n.weight, n.rarity, n.web]),
     laws: s.worldLaws,
     // v021: age-mission counters.
     mission: [s.elitesAge, s.raidsSurvived, s.signalSecured ? 1 : 0, s.missionDoneCache ? 1 : 0],

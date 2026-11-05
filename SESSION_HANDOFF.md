@@ -1,3 +1,9 @@
+# V5.3 candidate handoff — FAILED_REGRESSION
+
+Branch feat/v53-visual-weapons-20261105, parent7c8fc55 / DraftPR43. Content28/Save4, worldgen3/child-laws18. Visual-first Draft and real3-slot owned weapons implemented; checkpoint/resume/World2 regressions and relevant EN/TH browser checks pass. Fullcheck initially670/672; one old charge fixture corrected and targeted6/6pass. Distribution ClassC still fails unchanged thresholds; stop further bias experiments, no clean-playtest/release acceptance. See docs/V53_OWNER_PACKET.md, docs/V53_ISSUE_LEDGER.md, docs/ADR/0059-owned-weapons-and-run-checkpoint.md and the new Draft PR exact-source receipt. Human1/5 baseline unchanged. Preserve private owner files/launcher/.cursor. No merge/publish/force-push.
+
+---
+
 # V5.2 — active source detail and accurate attack choices
 
 Primary owner checkout C:\Users\MewMew\Desktop\Co-op\-SEED. Branch feat/v52-closure-combat-20261105 from actual2f48b37476305b7663b3ae9ff2c536c2b32ca75e / DraftPR42. Parent exact-source Push41903595554+PR41903625455 now12/12 success; PR42 receipt updated. Preserve worse Natural36 outcomes, no bot/cadence tuning.

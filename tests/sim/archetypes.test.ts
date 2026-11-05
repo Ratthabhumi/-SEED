@@ -19,6 +19,13 @@ describe("weapon archetype execution", () => {
     for (let tier = 0; tier < 6; tier++) {
       it(`${fam} tier ${tier} (${getWeaponStage(fam, tier).archetype}) damages enemies`, () => {
         const sim = new RunSimulation({ masterSeed: "EPOCH-GOLDEN-001", originId: FAM_ORIGIN[fam] });
+        // Content28 starts one signature; acquire non-signature systems through real Tech.
+        if (!sim.state.weapons.some(w=>w.family===fam)) {
+          const node=sim.techGraph().find(n=>n.weaponFamily===fam)!;
+          sim.state.draftOpen=true;sim.state.pendingLevels=1;
+          sim.state.draftOffers=[{nodeId:node.id,quality:'COMMON',modifierIds:[],effectiveEffects:[]}];
+          sim.chooseDraft(0);
+        }
         sim.state.spawnT = 99999;
         sim.state.eliteT = 99999;
         sim.state.build.hp = 99999;

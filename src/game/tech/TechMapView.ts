@@ -1,3 +1,4 @@
+import {equippedFamilies} from '../../core/combat/weaponInstances';
 import { effectSummary } from "../ui/techEffects";
 /**
  * TechMapView — Presentation component for the civilization Technology Tree.
@@ -357,7 +358,7 @@ export class TechMapView {
       // FUTURE = inside the visible window but prerequisites unmet; LOCKED =
       // beyond the window (or family-gated). Never symbol/color alone: every
       // node carries an explicit localized state word in its accessible name.
-      const inWindow = AGES.indexOf(n.age) <= s.ageIndex + 1 && n.effects.every((e) => !e.family || activeFamilies(s.originId, s.expansionFamily).includes(e.family));
+      const inWindow = AGES.indexOf(n.age) <= s.ageIndex + 1 && n.effects.every((e) => !e.family || equippedFamilies(s).includes(e.family));
       const stateKey = (isOwned ? "tech.state.owned"
         : isAvailable ? "tech.state.now"
         : inWindow ? "tech.state.future" : "tech.state.locked") as EnKeys;
@@ -735,7 +736,7 @@ export class TechMapView {
     const origin = ORIGINS.find((o) => o.id === s.originId);
     const ob = document.createElement("div");
     ob.className = "techmap-req";
-    const fams = activeFamilies(s.originId, s.expansionFamily).map((f) => t(`family.${f}` as EnKeys)).join("+");
+    const fams = equippedFamilies(s).map((f) => t(`family.${f}` as EnKeys)).join("+");
     ob.textContent = `${origin ? t(origin.nameKey) : s.originId} (${fams})` +
       (s.expansionFamily !== "" ? ` +${t(`family.${s.expansionFamily}` as EnKeys)}` : "") +
       ` · ★ ${s.breakthroughs.map((id) => {

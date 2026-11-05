@@ -4,7 +4,7 @@ test('natural opening reaches a deliberate first technology without review grant
  await startRun(page,'EPOCH-GOLDEN-001');const snapshot=()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()));
  const origin=(await snapshot()).p;await page.keyboard.down('d');await expect.poll(async()=>(await snapshot()).p[0]).toBeGreaterThan(origin[0]+5);await page.keyboard.up('d');
  await expect(page.locator('#draft-screen')).toBeVisible({timeout:90000});const before=await snapshot();expect(before.st[0]).toBeGreaterThan(0);
- const offers=await page.locator('.card').allInnerTexts(),behaviorPreviewCount=await page.locator('.card-combat-change').count();await page.locator('.card-select').first().click();expect((await snapshot()).st[3]).toBe(before.st[3]+1);
+ const offers=await page.locator('.card').allInnerTexts(),behaviorPreviewCount=await page.locator('.choice-outcome').count();await page.locator('.card-select').first().click();expect((await snapshot()).st[3]).toBe(before.st[3]+1);
  fs.mkdirSync('test-results/v49-visible',{recursive:true});fs.writeFileSync('test-results/v49-visible/opening.json',JSON.stringify({classification:'BOUNDED_REAL_BROWSER_NOT_HUMAN_FUN',seed:'EPOCH-GOLDEN-001',firstDraftCanonicalSeconds:before.age[1],kills:before.st[0],offers,behaviorPreviewCount},null,2));
 });
 test('optional menus reverse Tab reaches Back from the initial heading',async({page})=>{

@@ -3,9 +3,9 @@ import type {WeaponFamily} from './weapons';
 import {originById} from '../progression/origins';
 export function primaryTier(origin:string,stages:Record<WeaponFamily,number>){return stages[originById(origin).families.find(f=>f==='kinetic'||f==='energy')??'kinetic'];}
 export type WeaponMount='hand'|'float';
-export interface WeaponRig {mode:WeaponMount;x:number;y:number;heading:number;firedAt:number;flipY:boolean;}
+export interface WeaponRig {mode:WeaponMount;orbitSlot?:number;x:number;y:number;heading:number;firedAt:number;flipY:boolean;}
 export interface WeaponTransform {frame:number;tier:number;x:number;y:number;heading:number;rotation:number;flipY:boolean;scale:number;pivotX:number;pivotY:number;muzzleX:number;muzzleY:number;}
-export interface PrimaryRelease {owner:'player-primary';time:number;pose:WeaponTransform;heading:number;index:number;count:number;projectileIndex?:number;targetX?:number;targetY?:number;}
+export interface PrimaryRelease {owner:'player-primary'|'player-weapon';weaponInstanceId?:string;slot?:number;time:number;pose:WeaponTransform;heading:number;index:number;count:number;projectileIndex?:number;targetX?:number;targetY?:number;}
 const ORIGINS=['hunters','engineers','resonant','sentinels'];
 export function weaponFrame(origin:string,tier:number){return Math.max(0,ORIGINS.indexOf(origin))*6+Math.max(0,Math.min(5,Math.floor(tier)));}
 export const angleDelta=(to:number,from:number)=>Math.atan2(Math.sin(to-from),Math.cos(to-from));
@@ -38,7 +38,7 @@ export function aimFromPivot(origin:string,tier:number,px:number,py:number,rig:W
 export function advanceWeaponRig(origin:string,tier:number,px:number,py:number,rig:WeaponRig,tx:number,ty:number,dt:number):void{
  if(Math.abs(tx-px-rig.x)>2)rig.flipY=tx-px-rig.x<0;
  const planned=aimFromPivot(origin,tier,px,py,rig,tx,ty);
- let x=(rig.mode==='float'?96:18)*Math.cos(planned.heading),y=rig.mode==='float'?-112:-12;
+ let x=rig.orbitSlot===1?-100:rig.orbitSlot===2?100:(rig.mode==='float'?96:18)*Math.cos(planned.heading),y=rig.orbitSlot===1?-48:rig.orbitSlot===2?64:rig.mode==='float'?-112:-12;
  const m=WEAPON_SOCKETS[weaponFrame(origin,tier)]!,scale=(56+tier*2)/128;
  const room=Math.hypot(m[2]-m[0],m[3]-m[1])*scale+4;
  const dx=px+x-tx,dy=py+y-ty,d=Math.hypot(dx,dy);
@@ -56,3 +56,6 @@ export function sweptHit(x:number,y:number,nx:number,ny:number,ex:number,ey:numb
  const b=ox*dx+oy*dy,discriminant=b*b-a*c;if(discriminant<0)return null;
  const t=(-b-Math.sqrt(discriminant))/a;return t>=0&&t<=1?t:null;
 }
+
+/** Canonical volley lanes; diagrams and actual releases share these angles. */
+export function projectileSpreadAngle(family:string,index:number,count:number):number{return family==='kinetic'?(index===0?0:Math.ceil(index/2)*.12*(index%2?-1:1)):(index-(count-1)/2)*.12;}

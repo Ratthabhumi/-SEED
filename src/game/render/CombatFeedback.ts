@@ -1,3 +1,4 @@
+import {equippedFamilies} from '../../core/combat/weaponInstances';
 import type Phaser from "phaser";
 import type { SimEvent } from "../../core/sim/SimEvent";
 import type { RunState } from "../../core/sim/RunState";
@@ -17,7 +18,7 @@ const slot = (): Slot => ({ until: -Infinity, x: 0, y: 0, tx: 0, ty: 0, color: 0
 
 /** Charge is advisory readiness, never a damage telegraph or a gameplay timer. */
 export function energyCharge(s: RunState): number {
-  if (s.over || !activeFamilies(s.originId, s.expansionFamily).includes("energy")) return 0;
+  if (s.over || !equippedFamilies(s).includes("energy")) return 0;
   const stage = getWeaponStage("energy", s.weaponStage.energy);
   if (stage.archetype !== "beam" && !s.build.beamUnlocked) return 0;
   const cd = s.weaponCd.energy;

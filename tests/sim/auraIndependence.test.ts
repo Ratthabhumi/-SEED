@@ -1,8 +1,10 @@
+import {equipWeapon} from '../helpers/equipWeapon';
 import {it,expect} from 'vitest';
 import {RunSimulation} from '../../src/core/sim/RunSimulation';
 const idle={moveX:0,moveY:0,dashPressed:false};
 function arena(originId:string,energy:number,field:number){
  const sim=new RunSimulation({masterSeed:'EPOCH-GOLDEN-001',originId}),s=sim.state;
+ if(energy===2)equipWeapon(sim,'energy');if(field===3)equipWeapon(sim,'field');
  s.spawnT=s.eliteT=s.mineT=999;s.weaponStage.energy=energy;s.weaponStage.field=field;
  for(const f of ['kinetic','energy','defense','field']as const)s.weaponCd[f]=999;
  s.weaponCd.field=0;for(const a of s.squad)a.active=false;

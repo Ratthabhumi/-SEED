@@ -30,6 +30,7 @@ export interface BestStats {
 
 export interface SaveData {
   schema: number;
+  activeRun: {simulation:string;attemptId:number;archiveEarned:number;earnedCollectibles?:LegacyCollection['owned']}|null;
   settings: Settings;
   archive: string[];
   meta: ArchiveLedger;
@@ -43,6 +44,7 @@ export const SAVE_KEY = "seed-game-save-v1";
 export function defaultSave(): SaveData {
   return {
     schema: SAVE_SCHEMA_VERSION,
+    activeRun:null,
     settings: {
       lang: "en",
       shake: true,
@@ -103,13 +105,14 @@ export function loadSave(storage: Pick<Storage, "getItem">): SaveData {
     if (!raw) return defaultSave();
     const parsed = JSON.parse(raw) as Partial<SaveData>;
     if (typeof parsed !== "object" || parsed === null) return defaultSave();
-    if (parsed.schema !== SAVE_SCHEMA_VERSION && parsed.schema !== 1 && parsed.schema !== 2) return defaultSave();
+    if (parsed.schema !== SAVE_SCHEMA_VERSION && parsed.schema !== 1 && parsed.schema !== 2 && parsed.schema !==3) return defaultSave();
     return {
       schema: SAVE_SCHEMA_VERSION,
+      activeRun:parsed.schema===4&&parsed.activeRun&&typeof parsed.activeRun.simulation==='string'&&parsed.activeRun.simulation.length<=2000000&&Number.isInteger(parsed.activeRun.attemptId)&&parsed.activeRun.attemptId>0&&Number.isFinite(parsed.activeRun.archiveEarned)&&parsed.activeRun.archiveEarned>=0?{simulation:parsed.activeRun.simulation,attemptId:parsed.activeRun.attemptId,archiveEarned:parsed.activeRun.archiveEarned,earnedCollectibles:cleanCollection({owned:parsed.activeRun.earnedCollectibles}).owned}:null,
       settings: cleanSettings(parsed.settings),
       archive: cleanStrings(parsed.archive, 64),
       meta: cleanLedger(parsed.schema === 1 ? undefined : parsed.meta),
-      collection: cleanCollection(parsed.schema===3?parsed.collection:undefined),
+      collection: cleanCollection((parsed.schema===3||parsed.schema===4)?parsed.collection:undefined),
       best: cleanBest(parsed.best),
       history: cleanStrings(parsed.history, 50),
     };

@@ -1,3 +1,4 @@
+import {equippedFamilies,weaponArtOrigin} from '../../core/combat/weaponInstances';
 import type Phaser from "phaser";
 import {combatPresentation} from "./combatPresentation";
 import type {RunState} from "../../core/sim/RunState";
@@ -17,6 +18,8 @@ export class HeroEquipment {
   reviewOverlay(enabled:boolean){this.debug=enabled;}
   releaseReview(){return this.lastRelease;}
   private weapon?:Phaser.GameObjects.Image;
+  private extraWeapons:Phaser.GameObjects.Image[]=[];
+  weaponsReview(){return this.extraWeapons.filter(i=>i.visible).map(i=>({id:i.getData('weaponId'),x:i.x,y:i.y,frame:i.frame.name,rotation:i.rotation}));}
   constructor(private scene?:Phaser.Scene,private mount:"hand"|"float"="float"){}
 
   review(){return this.weapon&&this.weapon.visible?{mount:this.mount,pose:this.lastPose,release:this.lastRelease,texture:this.weapon.texture.key,frame:this.weapon.frame.name,width:this.weapon.displayWidth,rotation:this.weapon.rotation,flipY:this.weapon.flipY,x:this.weapon.x,y:this.weapon.y,grip:[this.weapon.originX,this.weapon.originY],socket:[this.socketX,this.socketY]}:null;}
@@ -35,7 +38,12 @@ export class HeroEquipment {
   }
   draw(g:Phaser.GameObjects.Graphics,s:RunState,_facing:number,reduced:boolean,highContrast=false){
     if(this.world!==s.worldNonce)this.reset(s.worldNonce);
-    const enabled=activeFamilies(s.originId,s.expansionFamily);
+    const enabled=equippedFamilies(s);
+    for(const image of this.extraWeapons)image?.setVisible(false);
+    for(const w of s.weapons.slice(1)){if(w.family!=='kinetic'&&w.family!=='energy')continue;const p=weaponTransform(weaponArtOrigin(s.originId,w.family,w.slot),s.weaponStage[w.family],s.px,s.py,w.rig,s.elapsed);
+      if(this.scene&&!highContrast){let image=this.extraWeapons[w.slot];if(!image)image=this.extraWeapons[w.slot]=this.scene.add.image(0,0,'combat-equipment',p.frame).setDepth(5);image.setData('weaponId',w.id).setTexture('combat-equipment',p.frame).setOrigin(p.pivotX/128,p.flipY?1-p.pivotY/128:p.pivotY/128).setPosition(p.x,p.y).setDisplaySize(p.scale*128,p.scale*128).setRotation(p.rotation).setFlipY(p.flipY).setVisible(!s.over);}
+      else{g.lineStyle(3,0xffffff,1);g.lineBetween(p.x,p.y,p.muzzleX,p.muzzleY);g.strokeCircle(p.x,p.y,7);}
+    }
     // Field traps and autonomous Defense units are separate world objects,
     // never a second handheld weapon substituted into the primary mount.
     const handheld=this.releasedFamily==="kinetic"||this.releasedFamily==="energy";

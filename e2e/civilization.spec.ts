@@ -43,9 +43,10 @@ test("draft agency: reserve, reroll, skip, owned-stays note", async ({ page }) =
   const h = await hook(page);
   await page.evaluate(() => (window as unknown as { __seedE2E: E2E }).__seedE2E.grant(100000));
   await expect(page.locator("#draft-screen")).toBeVisible();
+  await page.locator(".draft-agency-help > summary").click();
   await expect(page.locator(".draft-stays")).toContainText("remain active");
-  await expect(page.getByRole("button", { name: /^Save for later/ }).first()).toBeVisible();
-  await page.getByRole("button", { name: /^Save for later/ }).first().click();
+  await expect(page.getByRole("button", { name: /^Keep/ }).first()).toBeVisible();
+  await page.getByRole("button", { name: /^Keep/ }).first().click();
   await page.getByRole("button", { name: /^New choices/ }).click();
   await expect(page.locator("#draft-screen .card")).toHaveCount(3);
   await page.getByRole("button", { name: "SKIP" }).click();

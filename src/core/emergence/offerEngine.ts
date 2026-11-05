@@ -73,6 +73,7 @@ export const DEFAULT_OFFER_CONFIG: OfferEngineConfig = {
 export interface TechOfferContext {
   /** Bounded World1 opening opportunity; never grants or selects a Tech. */
   earlyTactics?: boolean;
+  acquireWeapon?:boolean;
   chainUnlocked?: boolean;
   sim: {
     owned: string[];
@@ -198,6 +199,7 @@ export function computeOfferScore(
   node: { 
     id: string; 
     weight: number; 
+    weaponFamily?:WeaponFamily;
     domain: string; 
     tags: string[]; 
     synergyTags: string[]; 
@@ -236,7 +238,7 @@ export function computeOfferScore(
   // Origin strategic bias
   const originDef = ORIGINS.find((o) => o.id === ctx.sim.originId);
   if (originDef) {
-    for (const eff of node.effects) {
+    for (const eff of (node.weaponFamily?[...node.effects,{family:node.weaponFamily}]:node.effects)) {
       if (eff.family && originDef.techWeightModifiers[eff.family as WeaponFamily]) {
         score += (originDef.techWeightModifiers[eff.family as WeaponFamily] - 1.0) * 1.5;
       }
@@ -326,12 +328,22 @@ export function generateOffers(
   });
 
   // Same one draw per candidate and K quality draws. Reuse the sampled rank.
-  const ranked = gumbelTopK(candidates, context.earlyTactics?candidates.length:K, rng, config.gumbelTemp);
+  const ranked = gumbelTopK(candidates, (context.earlyTactics||context.acquireWeapon)?candidates.length:K, rng, config.gumbelTemp);
   let selectedNodes=ranked.slice(0,K);
   if(context.earlyTactics&&K>=3){
     const tactic=ranked.find(c=>changesAttackPattern(c.node,context.chainUnlocked));
     // First slot survives the later reserved-card/recipe-component contracts.
     if(tactic)selectedNodes=[tactic,...selectedNodes.filter(c=>c.node.id!==tactic.node.id)].slice(0,K);
+  }
+
+  if(context.acquireWeapon){const acquisition=ranked.find(c=>c.node.weaponFamily);if(acquisition)selectedNodes=[acquisition,...selectedNodes.filter(c=>c.node.id!==acquisition.node.id)].slice(0,K);}
+
+  // Protect the two opening decisions, but retain their sampled relative rank.
+  // A fixed acquisition-first order erased seed/Origin first-pick variation.
+  if(context.acquireWeapon&&context.earlyTactics){
+    const protectedNodes=selectedNodes.filter(c=>c.node.weaponFamily||changesAttackPattern(c.node,context.chainUnlocked));
+    protectedNodes.sort((a,b)=>ranked.indexOf(a)-ranked.indexOf(b));
+    selectedNodes=[...protectedNodes,...selectedNodes.filter(c=>!protectedNodes.includes(c))].slice(0,K);
   }
 
   // --- STAGE 2: HOW SPECIAL THAT OFFER INSTANCE IS ---
