@@ -4,7 +4,7 @@ import {getWeaponStage,type WeaponFamily} from '../../core/combat/weapons';
 import type {RunState} from '../../core/sim/RunState';
 import {MAX_PROJ,MAX_MINES} from '../../core/sim/RunState';
 import type {TechEffect} from '../../core/tech/graph';
-type Kind='volley'|'chain'|'mines'|'orbit'|'guardians'|'aura'|'beam';
+type Kind='volley'|'chain'|'mines'|'orbit'|'guardians'|'aura'|'beam'|'hitDamage'|'attackInterval';
 export interface CombatChoiceFact{family:WeaponFamily;kind:Kind;before:number;after:number;}
 /** Read-only active weapon consequences; counts do not promise every shot hits. */
 export function combatChoicePreview(s:Pick<RunState,'originId'|'expansionFamily'|'weaponStage'|'build'>,effects:readonly TechEffect[]):CombatChoiceFact[]{
@@ -19,5 +19,10 @@ export function combatChoicePreview(s:Pick<RunState,'originId'|'expansionFamily'
   };
   const before=values(s.build),after=values(next);
   for(const kind of Object.keys(before) as Kind[])if(before[kind]!==after[kind])out.push({family,kind,before:before[kind]!,after:after[kind]!});
+  // Base attack values, before armor/crit/chain falloff; fixed mine/aura clocks are excluded.
+  if(s.build.damageMul!==next.damageMul)out.push({family,kind:'hitDamage',before:st.damage*s.build.damageMul,after:st.damage*next.damageMul});
+  const timed=family==='kinetic'||family==='energy'&&(st.archetype==='projectile'||st.archetype==='beam'||s.build.beamUnlocked)||family==='defense'&&(st.archetype==='summon'||s.build.bonusGuardians>0);
+  const interval=(b:EffectTarget)=>st.cooldown*Math.max(.3,b.cooldownMul)*(family==='defense'?1.6:1);
+  if(timed&&interval(s.build)!==interval(next))out.push({family,kind:'attackInterval',before:interval(s.build),after:interval(next)});
  }return out;
 }

@@ -36,7 +36,8 @@ export class ActorRenderer {
       for(let i=0;i<16;i++)if(!texture.has(String(i)))texture.add(i,0,(i%4)*128,Math.floor(i/4)*128,128,128);
     }
     const heroes=scene.textures.get("hero-neutral");
-    for(let i=0;i<48;i++)if(!heroes.has(String(i)))heroes.add(i,0,(i%6)*128,Math.floor(i/6)*128,128,128);
+    const heroCell=heroes.getSourceImage().width/6;
+    for(let i=0;i<48;i++)if(!heroes.has(String(i)))heroes.add(i,0,(i%6)*heroCell,Math.floor(i/6)*heroCell,heroCell,heroCell);
     const reference=scene.textures.get("hero-reference");
     for(const [id,clip] of Object.entries(attackMetadata.overrides)){
       const key=`reference-extra-${id}`;

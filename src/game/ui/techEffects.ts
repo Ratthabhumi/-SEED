@@ -31,6 +31,10 @@ export function effectBeforeAfter(build:EffectTarget,effects:readonly TechEffect
  const format=(v:number|boolean)=>typeof v==="boolean"?t(v?"ui.active":"ui.inactive"):String(Number(v.toFixed(2)));
  return effects.flatMap(effect=>{
  const field=FIELDS[effect.kind];if(!field||seen.has(field))return [];seen.add(field);
- return [t(LABELS[effect.kind])+": "+format(build[field])+" → "+format(next[field])];
+ const precise=['damageMul','cooldownMul','knowledgeMul','projectileAdd','mineAdd','orbitAdd','summonAdd','auraAdd'].includes(effect.kind);
+ const label=precise?t(('preview.'+effect.kind) as EnKeys):t(LABELS[effect.kind]);
+ const unit=['damageMul','cooldownMul','knowledgeMul'].includes(effect.kind)?'×':'';
+ const resolved=(b:EffectTarget)=>field==='cooldownMul'?Math.max(.3,b.cooldownMul):b[field];
+ return [label+": "+unit+format(resolved(build))+" → "+unit+format(resolved(next))];
  }).join(" · ");
 }

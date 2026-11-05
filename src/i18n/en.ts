@@ -1,5 +1,15 @@
 // English strings. Thai file MUST contain the same keys (parity test enforces this).
 export const en = {
+  "build.hitDamage": "Base hit before armor/critical",
+  "build.attackInterval": "Attack interval (lower is faster)",
+  "preview.damageMul": "Damage multiplier",
+  "preview.cooldownMul": "Cooldown multiplier",
+  "preview.knowledgeMul": "Knowledge multiplier",
+  "preview.projectileAdd": "Bonus projectiles",
+  "preview.mineAdd": "Bonus mines",
+  "preview.orbitAdd": "Bonus orbit blades",
+  "preview.summonAdd": "Bonus guardians",
+  "preview.auraAdd": "Bonus aura levels",
   "map.legend": "Nearby map symbols",
   "map.player": "You",
   "map.known": "Unvisited",

@@ -1,0 +1,61 @@
+{
+  "source": "2f48b37476305b7663b3ae9ff2c536c2b32ca75e",
+  "sourceDirty": false,
+  "prSource": "bee08d9bae3ca160f40744a5bc4d016162e0155b",
+  "historical": {
+    "n": 36,
+    "reached": 17,
+    "wins": 16,
+    "deaths": 5,
+    "chaseSeconds": 6.433333333333332,
+    "inRangeSeconds": 698.7666666666631,
+    "outpostDamageDuringBossWindow": 1427,
+    "bossBaseDamage": 1127,
+    "baseLosses": 1,
+    "duration": {
+      "n": 17,
+      "min": 8.299999999992451,
+      "median": 23.86666666664496,
+      "max": 150.43333333319652
+    },
+    "deathCases": [
+      "engineers/EPOCH-STRESS-001/survival",
+      "resonant/EPOCH-GOLDEN-002/balanced",
+      "resonant/EPOCH-GOLDEN-002/damage",
+      "resonant/EPOCH-STRESS-001/balanced",
+      "resonant/EPOCH-STRESS-001/damage"
+    ],
+    "replays": 36,
+    "rowsSha256": "b99cb19ef180fd078643585c71275d1f8bf220436827236bdd8b6fea2f4eeeb8"
+  },
+  "defenderAware": {
+    "n": 36,
+    "reached": 17,
+    "wins": 15,
+    "deaths": 6,
+    "chaseSeconds": 6.549999999999998,
+    "inRangeSeconds": 607.6166666666475,
+    "baseDamage": 1078,
+    "baseLosses": 20,
+    "duration": {
+      "n": 17,
+      "min": 4.483333333329256,
+      "median": 14.733333333319933,
+      "max": 107.26666666656911
+    },
+    "deathCases": [
+      "engineers/EPOCH-GOLDEN-002/survival",
+      "engineers/EPOCH-STRESS-001/survival",
+      "resonant/EPOCH-GOLDEN-002/balanced",
+      "resonant/EPOCH-GOLDEN-002/damage",
+      "resonant/EPOCH-STRESS-001/balanced",
+      "resonant/EPOCH-STRESS-001/damage"
+    ],
+    "replays": 36,
+    "rowsSha256": "83502d4630b4ee1aae7c346d9e05d7546e429f215b38d1a5f2fa82818d8f111b"
+  },
+  "pushPrRowsEqual": {
+    "historical": true,
+    "aware": true
+  }
+}
