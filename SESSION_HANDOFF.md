@@ -1,3 +1,9 @@
+# V5.3 final evidence handoff
+
+Historical36: reached21/36, wins6/36, deaths20/36, exact replay36/36; parent17/16/5. No acquisition Tech selected by unchanged historical controller; do not substitute a favorable bot or infer human outcomes. Full source remains FAILED_REGRESSION under unchanged ClassC thresholds. CI also exposed old guardian8 fixture; corrected to actual6 emitter cap, focused6/6pass. Public details in docs/V53_OWNER_PACKET.md and docs/evidence/v53/historical36.json. Defender-aware and exact-source CI receipt in DraftPR44. Preserve owner data; no release/merge authorization.
+
+---
+
 # V5.3 presentation correction
 
 Actual screenshot review exposed200% agency/card overlap; new geometry RED reproduced it, specificity fix and EN/TH browser7/7 GREEN. Guardian presentation now caps6 matching actual emitters; focused8/8 GREEN. Canonical core/controllers are identical to8490a11 for ongoing independent Natural36 evidence. Distribution remains FAILED_REGRESSION; see new DraftPR44. No acceptance gate lowered.

@@ -2,6 +2,8 @@
 
 **PARTIAL / FAILED_REGRESSION: ยังไม่อนุมัติ clean playtest หรือ release**
 
+Historical36ถดถอย: ถึงBoss17→21, ชนะ16→6, ตาย5→20; replay36/36 ทั้ง36รอบไม่เลือกacquisition Techภายใต้นโยบายเดิม เก็บไว้เป็นnegative evidence ไม่ปรับบอตให้ผลดีขึ้น ไม่สรุปว่าคนเล่นจะได้ผลเดียวกัน ดู[ทุก36กรณี](evidence/v53/historical36.json) Defender-awareตามPR receipt
+
 เริ่มจาก7c8fc553e22a3ffc7e4eafaa2da5c4ac1930fe70 บนfeat/v52-closure-combat-20261105 / DraftPR43 ตรวจPush41941538766และPR41941584623สำเร็จ12/12 สร้างfeat/v53-visual-weapons-20261105จากHEADนี้ ใช้primary owner checkoutที่บ้าน ไม่ใช้v39 worktree ไม่ทำresearch ไม่เพิ่มdependencies ไม่merge/publish/force-push
 
 ## สิ่งที่เห็นและเล่นได้จริง
@@ -50,3 +52,5 @@ Fullcheck:670/672ผ่าน,2fail; energy-charge fixtureที่แก้meta
 Exact-SHA build/package, Natural36และCIตามPR receipt ไม่เอาผลparentมาอ้างเป็นผลcandidate
 
 ตรวจภาพจริงพบ200%มีปุ่มagencyซ้อนการ์ดแม้ปุ่มกดได้ เพิ่มRED geometry testได้595.61<933.34 แก้specificityของflexไม่ให้wrapperหด แล้วbrowser7/7ผ่านพร้อมassert EN/THไม่ซ้อน เก็บ[ภาพลบ](evidence/v53/negative-200-overlap.png) ภาพEnglish200%ปัจจุบันเป็นworkspaceที่เลื่อนลงมาหาปุ่ม นอกจากนี้guardian presentationจำกัด6ตัวเท่าจำนวนemitterจริง ไม่แสดง8ตัวปลอม ไม่มีการเปลี่ยนsrc/coreหรือcohort controllersในcorrectionนี้
+
+CI12d98afพบfixtureเก่ายังคาดguardian8ทั้งที่actual emitter cap6 แก้expectationเป็น6ตามcanonical implementationแล้วtargeted6/6ผ่าน ไม่เปลี่ยนperformance/JSD threshold ผลCIก่อนแก้เก็บไว้เป็นnegative evidence
