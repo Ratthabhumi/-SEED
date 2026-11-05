@@ -1,3 +1,5 @@
+import {guardianCount} from '../../src/game/render/weaponPresentation';
+import {equipWeapon} from '../helpers/equipWeapon';
 import {it,expect} from 'vitest';
 import {HeroEquipment} from '../../src/game/render/HeroEquipment';
 import {RunSimulation} from '../../src/core/sim/RunSimulation';
@@ -8,3 +10,5 @@ it('renders a secondary emitter on consecutive frames without sparse-slot failur
  const renderer=new HeroEquipment({add:{image}} as any),g:any=new Proxy({},{get:()=>()=>{}});
  renderer.draw(g,s,0,true);expect(()=>renderer.draw(g,s,0,true)).not.toThrow();
 });
+
+it('guardian presentation obeys the actual six-projectile-emitter cap',()=>{const sim=new RunSimulation({masterSeed:'EPOCH-GOLDEN-001'});equipWeapon(sim,'defense');sim.state.weaponStage.defense=4;sim.state.build.bonusGuardians=10;expect(guardianCount(sim.state)).toBe(6);});

@@ -39,5 +39,13 @@
   "sourceArt": "existing legitimate atlas only",
   "humanFun": "NOT_TESTED; owner baseline1/5 unchanged",
   "physicalPerformance": "INCONCLUSIVE",
-  "exactSourceCI": "See Draft PR receipt; no green claim"
+  "exactSourceCI": "See Draft PR receipt; no green claim",
+  "largeTextCorrection": {
+    "red": "200% agency top595.61 overlapped card bottom933.34",
+    "cause": "lower-specificity flex override still shrank the card wrapper",
+    "green": "7/7 browser PASS after explicit non-shrinking large-text/mobile wrapper; overlap assertion retained for EN/TH",
+    "negativeImage": "negative-200-overlap.png",
+    "canonicalSourceUnchanged": true
+  },
+  "guardianPresentation": "RED8vs6; corrected to actual cap6; focused presentation/charge8/8 PASS"
 }

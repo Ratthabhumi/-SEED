@@ -1,0 +1,11 @@
+{
+  "measuredSource": "8490a11b0a03081233976c9ceee2d3a2f5e025cf",
+  "correctionScope": "presentation/CSS/tests/docs only; no canonical or controller change",
+  "objects": {
+    "src/core": "e118d13476da65625f4197af34395b6f0e0ef219",
+    "src/content": "ee612c33c2a59d6a165490b25fc8706d788991d0",
+    "scripts/progressionPolicy.ts": "b2a13f5109a759c5d0d936eac532819b97368fb8",
+    "scripts/naturalBossEvidence.ts": "a2ac5df4a6b5865bf2ae19cb9b9d4eedbd40f4d1",
+    "scripts/defenderAwarePolicy.ts": "e4dcad571b6dc16e8a4d905cdbd9d4512133f6e3"
+  }
+}

@@ -1,3 +1,9 @@
+# V5.3 presentation correction
+
+Actual screenshot review exposed200% agency/card overlap; new geometry RED reproduced it, specificity fix and EN/TH browser7/7 GREEN. Guardian presentation now caps6 matching actual emitters; focused8/8 GREEN. Canonical core/controllers are identical to8490a11 for ongoing independent Natural36 evidence. Distribution remains FAILED_REGRESSION; see new DraftPR44. No acceptance gate lowered.
+
+---
+
 # V5.3 candidate handoff — FAILED_REGRESSION
 
 Branch feat/v53-visual-weapons-20261105, parent7c8fc55 / DraftPR43. Content28/Save4, worldgen3/child-laws18. Visual-first Draft and real3-slot owned weapons implemented; checkpoint/resume/World2 regressions and relevant EN/TH browser checks pass. Fullcheck initially670/672; one old charge fixture corrected and targeted6/6pass. Distribution ClassC still fails unchanged thresholds; stop further bias experiments, no clean-playtest/release acceptance. See docs/V53_OWNER_PACKET.md, docs/V53_ISSUE_LEDGER.md, docs/ADR/0059-owned-weapons-and-run-checkpoint.md and the new Draft PR exact-source receipt. Human1/5 baseline unchanged. Preserve private owner files/launcher/.cursor. No merge/publish/force-push.

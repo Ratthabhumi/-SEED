@@ -48,3 +48,5 @@ Fullcheck:670/672ผ่าน,2fail; energy-charge fixtureที่แก้meta
 
 [ข้อมูลผลตรวจ](evidence/v53/local-verification.json) · [ภาพไทย720p](evidence/v53/choices-th-1.png) · [ภาพEnglish200%](evidence/v53/choices-en-2.png)
 Exact-SHA build/package, Natural36และCIตามPR receipt ไม่เอาผลparentมาอ้างเป็นผลcandidate
+
+ตรวจภาพจริงพบ200%มีปุ่มagencyซ้อนการ์ดแม้ปุ่มกดได้ เพิ่มRED geometry testได้595.61<933.34 แก้specificityของflexไม่ให้wrapperหด แล้วbrowser7/7ผ่านพร้อมassert EN/THไม่ซ้อน เก็บ[ภาพลบ](evidence/v53/negative-200-overlap.png) ภาพEnglish200%ปัจจุบันเป็นworkspaceที่เลื่อนลงมาหาปุ่ม นอกจากนี้guardian presentationจำกัด6ตัวเท่าจำนวนemitterจริง ไม่แสดง8ตัวปลอม ไม่มีการเปลี่ยนsrc/coreหรือcohort controllersในcorrectionนี้

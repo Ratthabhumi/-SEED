@@ -918,7 +918,7 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 .draft-detail-content {overflow-y:auto;min-height:0;flex:1;line-height:1.8;}
 .draft-detail-content .card-preview {display:none;}
 #ui #draft-screen[data-large-type=true] {overflow-y:auto;}
-#draft-screen[data-large-type=true] .cards-wrapper {flex:0 0 auto;}
+#ui #draft-screen[data-large-type=true] .cards-wrapper {flex:none;height:auto;max-height:none;}
 #draft-screen[data-large-type=true] .cards {height:auto;}
 #draft-screen[data-large-type=true] .card {min-height:620px;height:auto;}
 #draft-screen[data-large-type=true] .draft-agency {flex-shrink:0;}
@@ -928,7 +928,7 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 .origin-choice .weapon-figure {height:42px;background:none;}
 .origin-choice .weapon-illustration {transform:scale(.38);}
 .origin-example {display:block;font-size:var(--font-caption);line-height:1.8;font-weight:400;}
-@media(max-width:760px){#ui #draft-screen{overflow-y:auto;}#draft-screen .cards-wrapper{flex:0 0 auto;}#draft-screen .cards{height:auto;grid-template-columns:1fr;}#draft-screen .card{height:auto;min-height:470px;}}
+@media(max-width:760px){#ui #draft-screen{overflow-y:auto;}#ui #draft-screen .cards-wrapper{flex:none;height:auto;max-height:none;}#draft-screen .cards{height:auto;grid-template-columns:1fr;}#draft-screen .card{height:auto;min-height:470px;}}
 
 #draft-screen .draft-agency-help{font-size:12px;line-height:1.7;flex:none;}
 #draft-screen .draft-agency-help[open] .draft-hints,#draft-screen .draft-agency-help[open] .draft-stays{display:block;}
