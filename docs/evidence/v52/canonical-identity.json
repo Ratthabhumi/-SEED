@@ -1,0 +1,12 @@
+{
+  "parent": "2f48b37476305b7663b3ae9ff2c536c2b32ca75e",
+  "fileCount": 60,
+  "parentCanonicalSha256": "8918c1864975e21e8c8ab6bc9081799ad8f37c917471c28ad2c79bdb498f7508",
+  "candidateCanonicalSha256": "8918c1864975e21e8c8ab6bc9081799ad8f37c917471c28ad2c79bdb498f7508",
+  "versions": {
+    "worldgen": 3,
+    "content": 27,
+    "save": 3,
+    "childLaws": 18
+  }
+}

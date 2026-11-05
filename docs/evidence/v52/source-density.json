@@ -1,0 +1,945 @@
+{
+  "classification": "RETAINED_ORIGINAL_RESLICING_NOT_NEW_ANIMATION_OR_PHYSICAL_PERFORMANCE",
+  "source": [
+    {
+      "path": "assets/original/content15/heroes-neutral-v1.png",
+      "sha256": "55c733a80d2c1bba8bca39b1f0c57ae874f1189f650b207416b28af1e2fb4fe7",
+      "unchanged": true
+    },
+    {
+      "path": "assets/original/content15/heroes-neutral-back-v1.png",
+      "sha256": "ae7dbab158ab0dbabdcbe810fef91c1e1fbde902507868790f1c67f26278944c",
+      "unchanged": true
+    }
+  ],
+  "frameCount": 48,
+  "minimumSourceDensityRatio": 2.36,
+  "beforeAtlas": [
+    768,
+    1024
+  ],
+  "afterAtlas": [
+    1536,
+    2048
+  ],
+  "beforeCell": 128,
+  "afterCell": 256,
+  "worldSize": 126,
+  "normalizedFoot": 0.90625,
+  "baseLevelRgbaAdditionalBytes": 9437184,
+  "maxLogicalAlphaBoundsDelta": 1.0,
+  "rows": [
+    {
+      "frame": 0,
+      "origin": "hunters",
+      "age": 0,
+      "back": false,
+      "beforeLogicalBounds": [
+        40.0,
+        19.0,
+        103.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        40.5,
+        19.5,
+        103.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 1,
+      "origin": "hunters",
+      "age": 1,
+      "back": false,
+      "beforeLogicalBounds": [
+        40.0,
+        12.0,
+        109.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        40.5,
+        12.5,
+        109.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 2,
+      "origin": "hunters",
+      "age": 2,
+      "back": false,
+      "beforeLogicalBounds": [
+        29.0,
+        19.0,
+        95.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        29.5,
+        19.5,
+        95.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 3,
+      "origin": "hunters",
+      "age": 3,
+      "back": false,
+      "beforeLogicalBounds": [
+        23.0,
+        18.0,
+        91.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        23.0,
+        18.0,
+        90.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 4,
+      "origin": "hunters",
+      "age": 4,
+      "back": false,
+      "beforeLogicalBounds": [
+        16.0,
+        16.0,
+        86.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        16.5,
+        16.0,
+        86.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 5,
+      "origin": "hunters",
+      "age": 5,
+      "back": false,
+      "beforeLogicalBounds": [
+        22.0,
+        12.0,
+        91.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        22.5,
+        12.0,
+        90.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 6,
+      "origin": "engineers",
+      "age": 0,
+      "back": false,
+      "beforeLogicalBounds": [
+        35.0,
+        8.0,
+        93.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        35.0,
+        8.0,
+        93.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 7,
+      "origin": "engineers",
+      "age": 1,
+      "back": false,
+      "beforeLogicalBounds": [
+        44.0,
+        14.0,
+        102.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        44.0,
+        14.0,
+        101.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 8,
+      "origin": "engineers",
+      "age": 2,
+      "back": false,
+      "beforeLogicalBounds": [
+        38.0,
+        16.0,
+        95.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        38.0,
+        16.0,
+        95.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 9,
+      "origin": "engineers",
+      "age": 3,
+      "back": false,
+      "beforeLogicalBounds": [
+        25.0,
+        12.0,
+        91.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        25.5,
+        12.0,
+        91.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 10,
+      "origin": "engineers",
+      "age": 4,
+      "back": false,
+      "beforeLogicalBounds": [
+        27.0,
+        15.0,
+        88.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        27.0,
+        15.0,
+        88.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 11,
+      "origin": "engineers",
+      "age": 5,
+      "back": false,
+      "beforeLogicalBounds": [
+        24.0,
+        8.0,
+        89.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        25.0,
+        8.0,
+        89.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 1.0
+    },
+    {
+      "frame": 12,
+      "origin": "resonant",
+      "age": 0,
+      "back": false,
+      "beforeLogicalBounds": [
+        29.0,
+        8.0,
+        97.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        29.5,
+        8.0,
+        96.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 13,
+      "origin": "resonant",
+      "age": 1,
+      "back": false,
+      "beforeLogicalBounds": [
+        37.0,
+        14.0,
+        100.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        37.5,
+        14.0,
+        99.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 14,
+      "origin": "resonant",
+      "age": 2,
+      "back": false,
+      "beforeLogicalBounds": [
+        25.0,
+        12.0,
+        97.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        25.0,
+        12.0,
+        96.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 15,
+      "origin": "resonant",
+      "age": 3,
+      "back": false,
+      "beforeLogicalBounds": [
+        22.0,
+        8.0,
+        90.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        23.0,
+        8.0,
+        90.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 1.0
+    },
+    {
+      "frame": 16,
+      "origin": "resonant",
+      "age": 4,
+      "back": false,
+      "beforeLogicalBounds": [
+        19.0,
+        12.0,
+        86.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        19.0,
+        12.0,
+        86.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 17,
+      "origin": "resonant",
+      "age": 5,
+      "back": false,
+      "beforeLogicalBounds": [
+        31.0,
+        8.0,
+        100.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        31.0,
+        8.0,
+        100.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 18,
+      "origin": "sentinels",
+      "age": 0,
+      "back": false,
+      "beforeLogicalBounds": [
+        32.0,
+        16.0,
+        107.0,
+        115.0
+      ],
+      "afterLogicalBounds": [
+        32.5,
+        16.0,
+        107.0,
+        114.5
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 19,
+      "origin": "sentinels",
+      "age": 1,
+      "back": false,
+      "beforeLogicalBounds": [
+        30.0,
+        16.0,
+        101.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        30.0,
+        16.0,
+        100.5,
+        114.5
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 20,
+      "origin": "sentinels",
+      "age": 2,
+      "back": false,
+      "beforeLogicalBounds": [
+        19.0,
+        15.0,
+        99.0,
+        115.0
+      ],
+      "afterLogicalBounds": [
+        19.5,
+        15.0,
+        99.0,
+        114.5
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 21,
+      "origin": "sentinels",
+      "age": 3,
+      "back": false,
+      "beforeLogicalBounds": [
+        23.0,
+        16.0,
+        114.0,
+        115.0
+      ],
+      "afterLogicalBounds": [
+        23.5,
+        16.0,
+        114.0,
+        114.5
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 22,
+      "origin": "sentinels",
+      "age": 4,
+      "back": false,
+      "beforeLogicalBounds": [
+        14.0,
+        16.0,
+        114.0,
+        115.0
+      ],
+      "afterLogicalBounds": [
+        14.0,
+        16.0,
+        114.0,
+        114.5
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 23,
+      "origin": "sentinels",
+      "age": 5,
+      "back": false,
+      "beforeLogicalBounds": [
+        17.0,
+        8.0,
+        95.0,
+        115.0
+      ],
+      "afterLogicalBounds": [
+        17.0,
+        8.0,
+        95.0,
+        114.5
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 24,
+      "origin": "hunters",
+      "age": 0,
+      "back": true,
+      "beforeLogicalBounds": [
+        22.0,
+        11.0,
+        96.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        22.5,
+        11.0,
+        96.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 25,
+      "origin": "hunters",
+      "age": 1,
+      "back": true,
+      "beforeLogicalBounds": [
+        26.0,
+        18.0,
+        97.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        26.5,
+        18.5,
+        97.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 26,
+      "origin": "hunters",
+      "age": 2,
+      "back": true,
+      "beforeLogicalBounds": [
+        22.0,
+        18.0,
+        93.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        22.0,
+        17.5,
+        93.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 27,
+      "origin": "hunters",
+      "age": 3,
+      "back": true,
+      "beforeLogicalBounds": [
+        19.0,
+        19.0,
+        90.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        19.0,
+        18.5,
+        90.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 28,
+      "origin": "hunters",
+      "age": 4,
+      "back": true,
+      "beforeLogicalBounds": [
+        20.0,
+        18.0,
+        90.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        20.5,
+        18.5,
+        90.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 29,
+      "origin": "hunters",
+      "age": 5,
+      "back": true,
+      "beforeLogicalBounds": [
+        27.0,
+        11.0,
+        104.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        28.0,
+        11.0,
+        104.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 1.0
+    },
+    {
+      "frame": 30,
+      "origin": "engineers",
+      "age": 0,
+      "back": true,
+      "beforeLogicalBounds": [
+        27.0,
+        8.0,
+        86.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        28.0,
+        8.0,
+        86.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 1.0
+    },
+    {
+      "frame": 31,
+      "origin": "engineers",
+      "age": 1,
+      "back": true,
+      "beforeLogicalBounds": [
+        40.0,
+        16.0,
+        96.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        40.0,
+        16.0,
+        96.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 32,
+      "origin": "engineers",
+      "age": 2,
+      "back": true,
+      "beforeLogicalBounds": [
+        37.0,
+        15.0,
+        92.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        37.0,
+        15.0,
+        92.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 33,
+      "origin": "engineers",
+      "age": 3,
+      "back": true,
+      "beforeLogicalBounds": [
+        27.0,
+        14.0,
+        91.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        27.5,
+        14.0,
+        90.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 34,
+      "origin": "engineers",
+      "age": 4,
+      "back": true,
+      "beforeLogicalBounds": [
+        33.0,
+        9.0,
+        94.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        33.5,
+        9.0,
+        94.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 35,
+      "origin": "engineers",
+      "age": 5,
+      "back": true,
+      "beforeLogicalBounds": [
+        41.0,
+        8.0,
+        103.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        40.5,
+        8.0,
+        102.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 36,
+      "origin": "resonant",
+      "age": 0,
+      "back": true,
+      "beforeLogicalBounds": [
+        31.0,
+        15.0,
+        103.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        31.5,
+        15.0,
+        102.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 37,
+      "origin": "resonant",
+      "age": 1,
+      "back": true,
+      "beforeLogicalBounds": [
+        26.0,
+        16.0,
+        99.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        26.5,
+        16.0,
+        98.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 38,
+      "origin": "resonant",
+      "age": 2,
+      "back": true,
+      "beforeLogicalBounds": [
+        19.0,
+        16.0,
+        96.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        19.5,
+        16.0,
+        96.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 39,
+      "origin": "resonant",
+      "age": 3,
+      "back": true,
+      "beforeLogicalBounds": [
+        21.0,
+        16.0,
+        114.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        20.5,
+        16.0,
+        114.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 40,
+      "origin": "resonant",
+      "age": 4,
+      "back": true,
+      "beforeLogicalBounds": [
+        14.0,
+        16.0,
+        93.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        14.0,
+        16.0,
+        93.0,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 41,
+      "origin": "resonant",
+      "age": 5,
+      "back": true,
+      "beforeLogicalBounds": [
+        19.0,
+        9.0,
+        98.0,
+        116.0
+      ],
+      "afterLogicalBounds": [
+        19.0,
+        9.0,
+        98.5,
+        116.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 42,
+      "origin": "sentinels",
+      "age": 0,
+      "back": true,
+      "beforeLogicalBounds": [
+        25.0,
+        16.0,
+        106.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        25.5,
+        16.0,
+        105.5,
+        114.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 43,
+      "origin": "sentinels",
+      "age": 1,
+      "back": true,
+      "beforeLogicalBounds": [
+        20.0,
+        16.0,
+        101.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        20.0,
+        16.0,
+        101.0,
+        114.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 44,
+      "origin": "sentinels",
+      "age": 2,
+      "back": true,
+      "beforeLogicalBounds": [
+        16.0,
+        16.0,
+        98.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        16.5,
+        16.0,
+        98.0,
+        114.0
+      ],
+      "maxLogicalPixelDelta": 0.5
+    },
+    {
+      "frame": 45,
+      "origin": "sentinels",
+      "age": 3,
+      "back": true,
+      "beforeLogicalBounds": [
+        15.0,
+        16.0,
+        114.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        15.0,
+        16.0,
+        114.0,
+        114.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 46,
+      "origin": "sentinels",
+      "age": 4,
+      "back": true,
+      "beforeLogicalBounds": [
+        14.0,
+        16.0,
+        114.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        14.0,
+        16.0,
+        114.0,
+        114.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    },
+    {
+      "frame": 47,
+      "origin": "sentinels",
+      "age": 5,
+      "back": true,
+      "beforeLogicalBounds": [
+        14.0,
+        8.0,
+        102.0,
+        114.0
+      ],
+      "afterLogicalBounds": [
+        14.0,
+        8.0,
+        102.0,
+        114.0
+      ],
+      "maxLogicalPixelDelta": 0.0
+    }
+  ]
+}

@@ -19,7 +19,9 @@ families = [
 rows=[]
 for label, relative, cell, size in families:
     path=Path('assets/seed')/relative
-    image=Image.open(path).convert('RGBA'); cols=image.width//cell
+    image=Image.open(path).convert('RGBA')
+    if relative=='content15/heroes-neutral-v1.png': cell=image.width//6
+    cols=image.width//cell
     frames=[]
     for i in range(cols*(image.height//cell)):
         alpha=image.crop(((i%cols)*cell,(i//cols)*cell,(i%cols+1)*cell,(i//cols+1)*cell)).getchannel('A').point(lambda a:255 if a>64 else 0)

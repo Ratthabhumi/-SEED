@@ -2880,7 +2880,7 @@ export class GameScene extends Phaser.Scene {
       if(n.id.startsWith('tactical-'))c.appendChild(el('p','tactical-choice-detail',n.descriptionKey as EnKeys));
       const changes=combatChoicePreview(s,offer.effectiveEffects);
       if(changes.length){const impact=el('p','card-combat-change');impact.textContent=changes.map(change=>{
-        const value=(v:number)=>change.kind==='chain'||change.kind==='beam'?t(v?'ui.active':'ui.inactive'):String(v);
+        const value=(v:number)=>change.kind==='chain'||change.kind==='beam'?t(v?'ui.active':'ui.inactive'):String(Number(v.toFixed(2)))+(change.kind==='attackInterval'?'s':'');
         return `${t(`family.${change.family}` as EnKeys)} · ${t(`build.${change.kind}` as EnKeys)}: ${value(change.before)} → ${value(change.after)}`;
       }).join(' · ');c.append(impact);
         const projectileEnergy=getWeaponStage('energy',s.weaponStage.energy).archetype==='projectile'&&!s.build.beamUnlocked&&!offer.effectiveEffects.some(e=>e.kind==='beamAdd');

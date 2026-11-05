@@ -2,6 +2,16 @@
 import type { EnKeys } from "./en";
 
 export const th: Record<EnKeys, string> = {
+  "build.hitDamage": "ดาเมจพื้นฐานก่อนเกราะ/คริติคอล",
+  "build.attackInterval": "ช่วงห่างการโจมตี (น้อยลงคือเร็วขึ้น)",
+  "preview.damageMul": "ตัวคูณดาเมจ",
+  "preview.cooldownMul": "ตัวคูณคูลดาวน์",
+  "preview.knowledgeMul": "ตัวคูณความรู้",
+  "preview.projectileAdd": "กระสุนที่เพิ่ม",
+  "preview.mineAdd": "กับดักที่เพิ่ม",
+  "preview.orbitAdd": "ใบมีดวงโคจรที่เพิ่ม",
+  "preview.summonAdd": "ผู้พิทักษ์ที่เพิ่ม",
+  "preview.auraAdd": "ระดับออร่าที่เพิ่ม",
   "map.legend": "สัญลักษณ์แผนที่บริเวณใกล้เคียง",
   "map.player": "คุณ",
   "map.known": "ยังไม่สำรวจ",

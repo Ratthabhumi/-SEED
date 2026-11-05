@@ -1,3 +1,12 @@
+# V5.2 — active source detail and accurate attack choices
+
+Primary owner checkout C:\Users\MewMew\Desktop\Co-op\-SEED. Branch feat/v52-closure-combat-20261105 from actual2f48b37476305b7663b3ae9ff2c536c2b32ca75e / DraftPR42. Parent exact-source Push41903595554+PR41903625455 now12/12 success; PR42 receipt updated. Preserve worse Natural36 outcomes, no bot/cadence tuning.
+Actual active48-cell six-age costume atlas resliced retained originals128→256px; same126u hero,116/128 foot/frame IDs/hitboxes. No new animation. BaseRGBA+9MiB; source originals unchanged. Tech cards show multipliers/bonus counters plus actual hit/interval and cooldown floor. HC+Reduced mines keep static white canonical geometry. All60 canonical source files identical to parent: Worldgen3/Content27/Save3/child18 unchanged.
+Local frozen check663/663 tests,130files PASS; relevant browser39/39 PASS. Preserve initial metadata/test-author failures. Headless short window sim p95~0.6ms,renderCPU~1.9ms,frame~36.3ms: physical PERFORMANCE_INCONCLUSIVE, no native60 claim. Package and exact-source CI pending at commit time; final DraftPR receipt is authoritative.
+Owner packet docs/V52_OWNER_PACKET.md; complete41-ID matrix docs/V52_ISSUE_LEDGER.md; public evidence docs/evidence/v52/. Human original complaints/art/fun acceptance remain open; no blanket41/41PASS. Multi-primary deferred with minimum emitter contract. No research/dependency/merge/publication/deploy. Owner private bytes/.cursor/launcher preserved and excluded.
+
+---
+
 # V5.1 — Early tactics / World2 research decision
 
 Primary owner checkout: C:\Users\MewMew\Desktop\Co-op\-SEED. Branch feat/v51-early-tactics-20261105 from actual V5.0 HEAD18ec2b51b2af5ee90231a9eb7235ba7d6fd56d2f (Draft PR41).

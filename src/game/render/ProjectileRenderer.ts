@@ -113,15 +113,16 @@ export function drawSummon(
 /** Mine: recognizable ground device — base plate + blinking core. */
 export function drawMine(g: Phaser.GameObjects.Graphics, m: SimMine, opts: WeaponDrawOpts): void {
   const art=combatPresentation(opts.origin??"hunters","field",0);
-  const blink = 0.55 + 0.45 * Math.sin(opts.time * 5 + m.x * 0.01 + m.y * 0.01);
+  const blink = opts.reducedEffects ? 1 : 0.55 + 0.45 * Math.sin(opts.time * 5 + m.x * 0.01 + m.y * 0.01);
+  const color = opts.highContrast ? 0xffffff : art.color, material = opts.highContrast ? 0xffffff : art.material;
   g.fillStyle(0x2a2416, 1);
   g.fillRect(m.x - 7, m.y - 7, 14, 14);
-  g.lineStyle(2, art.color, 1);
+  g.lineStyle(2, color, 1);
   g.strokeRect(m.x - 7, m.y - 7, 14, 14);
-  g.fillStyle(art.color, blink);
+  g.fillStyle(color, blink);
   if(opts.origin==="resonant"){g.fillTriangle(m.x,m.y-6,m.x-6,m.y+5,m.x+6,m.y+5);}
-  else {for(const side of [-1,1]){g.lineStyle(3,art.material,1);g.lineBetween(m.x+side*11,m.y-9,m.x+side*8,m.y+9);}}
-  g.lineStyle(1, 0xc9b458, 0.22);
+  else {for(const side of [-1,1]){g.lineStyle(3,material,1);g.lineBetween(m.x+side*11,m.y-9,m.x+side*8,m.y+9);}}
+  g.lineStyle(opts.highContrast ? 2 : 1, color, opts.highContrast ? .85 : .22);
   g.strokeCircle(m.x, m.y, m.radius);
 }
 
