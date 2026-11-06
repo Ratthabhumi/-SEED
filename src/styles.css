@@ -895,3 +895,43 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
   #draft-screen .card { height:100%; overflow:hidden; }
   #draft-screen .card-content { flex:1 1 auto; }
 }
+/* V5.3: one visual decision workspace; details are secondary, never three scroll panes. */
+#ui #draft-screen {padding:16px;gap:8px;overflow:hidden;}
+#ui #draft-screen .cards-wrapper {height:auto;flex:1 1 auto;overflow:visible;padding:0;scrollbar-gutter:auto;}
+#draft-screen .cards {height:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+#draft-screen .card {height:100%;padding:16px;overflow:visible;cursor:default;}
+.card-front {display:flex;flex-direction:column;align-items:stretch;gap:10px;flex:1;min-height:0;}
+.card-front h3 {font-size:var(--font-heading);line-height:1.8;}
+.card-front .choice-benefit {font-size:var(--font-body);line-height:1.8;color:var(--color-text);}
+.card-front .choice-outcome {font-size:var(--font-body);color:var(--color-friendly);font-weight:700;}
+.choice-kind {font-size:var(--font-caption);font-weight:700;color:var(--color-research);}
+.weapon-figure {height:clamp(80px,17vh,140px);display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse,#30485488,transparent);border-radius:12px;flex:0 0 auto;}
+.weapon-illustration {display:block;width:112px;height:112px;flex:0 0 112px;background-repeat:no-repeat;}
+#draft-screen .card-actions {grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+#draft-screen .card-select {grid-column:1/-1;margin-top:0;}
+#draft-screen .card-reserve,#draft-screen .card-details {font-size:var(--font-caption);padding:8px;min-height:40px;background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border);}
+#draft-screen .draft-hints,#draft-screen .draft-stays {display:none;}
+#draft-screen .draft-goal {font-size:var(--font-caption);max-height:24vh;overflow:auto;flex:0 0 auto;}
+.draft-detail-panel {position:absolute;inset:16px;z-index:20;display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:12px;text-align:start;}
+.draft-detail-panel h2 {margin:0;line-height:1.8;}
+.draft-detail-close {align-self:flex-end;flex:0 0 auto;}
+.draft-detail-content {overflow-y:auto;min-height:0;flex:1;line-height:1.8;}
+.draft-detail-content .card-preview {display:none;}
+#ui #draft-screen[data-large-type=true] {overflow-y:auto;}
+#ui #draft-screen[data-large-type=true] .cards-wrapper {flex:none;height:auto;max-height:none;}
+#draft-screen[data-large-type=true] .cards {height:auto;}
+#draft-screen[data-large-type=true] .card {min-height:620px;height:auto;}
+#draft-screen[data-large-type=true] .draft-agency {flex-shrink:0;}
+#ability-loadout.weapon-strip {bottom:180px;max-height:calc(100vh - 240px);}
+.weapon-slot-count {font-size:var(--font-caption);text-align:center;color:var(--color-text);padding:4px;}
+.weapon-ready {font-size:var(--font-caption);display:block;}
+.origin-choice .weapon-figure {height:42px;background:none;}
+.origin-choice .weapon-illustration {transform:scale(.38);}
+.origin-example {display:block;font-size:var(--font-caption);line-height:1.8;font-weight:400;}
+@media(max-width:760px){#ui #draft-screen{overflow-y:auto;}#ui #draft-screen .cards-wrapper{flex:none;height:auto;max-height:none;}#draft-screen .cards{height:auto;grid-template-columns:1fr;}#draft-screen .card{height:auto;min-height:470px;}}
+
+#draft-screen .draft-agency-help{font-size:12px;line-height:1.7;flex:none;}
+#draft-screen .draft-agency-help[open] .draft-hints,#draft-screen .draft-agency-help[open] .draft-stays{display:block;}
+#draft-screen:has(.draft-agency-help[open]){overflow-y:auto;}
+
+.choice-diagram{margin:0;flex:0 1 64px;min-height:0;color:var(--color-friendly);}.choice-diagram svg{width:100%;height:44px;fill:none;stroke:currentColor;stroke-width:2}.choice-diagram figcaption{font-size:12px;line-height:1.7;}.origin-example{min-height:1.8em;}

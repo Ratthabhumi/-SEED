@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {startRun,resolveDrafts,assertNoRawKeys} from './helpers';
+import {startRun,resolveDrafts,assertNoRawKeys,revealDraftGoal} from './helpers';
 for(const lang of ['en','th'] as const) {
  test('map pin to draft advice and updated map ('+lang+')',async({page})=>{
  await page.setViewportSize({width:1920,height:1080});await startRun(page,'GUIDANCE-FLOW',{lang});await page.keyboard.press('T');
@@ -11,20 +11,20 @@ for(const lang of ['en','th'] as const) {
  await page.keyboard.press('T');
  await page.evaluate(()=>{const h=(window as unknown as {__seedE2E:{grant:(n:number)=>void}}).__seedE2E;h.grant(100);});
  await expect(page.locator('#draft-screen .card')).toHaveCount(3);await expect(page.locator('.draft-goal')).toBeVisible();
- await expect(page.locator('.card-path-reason')).toHaveCount(3);await assertNoRawKeys(page);
+ for(const details of await page.locator('.card-details').all()){await details.click();await expect(page.locator('#draft-detail .card-path-reason')).toBeVisible();await page.keyboard.press('Escape');}await assertNoRawKeys(page);
  await page.screenshot({path:'test-results/browser/pinned-draft-'+lang+'.png'});
  // Map can be reviewed during a pending choice without consuming the choice.
- await page.locator('#draft-goal-map').click();await expect(page.locator('#techmap-screen')).toBeVisible();await expect(page.locator('#draft-screen')).toBeHidden();
+ await revealDraftGoal(page);await page.locator('#draft-goal-map').click();await expect(page.locator('#techmap-screen')).toBeVisible();await expect(page.locator('#draft-screen')).toBeHidden();
  await page.keyboard.press('T');await expect(page.locator('#draft-screen')).toBeVisible();
- await expect(page.locator('.goal-no-relevant')).toBeVisible();
+ await revealDraftGoal(page);await expect(page.locator('.goal-no-relevant')).toBeVisible();
  // Change to an actually offered goal through the map, not injected cards.
  const offered=await page.evaluate(()=>{const h=(window as unknown as {__seedE2E:{snapshot:()=>string}}).__seedE2E;return (JSON.parse(h.snapshot()).lvl[6][0] as string).replace(/:(COMMON|UNCOMMON|RARE|MYTHIC):.*$/,'');});
- await page.locator('#draft-goal-map').click();await page.locator('.techmap-btn-overview').click();await page.locator('.techmap-node[data-node-id="'+offered+'"]').click();await page.locator('.techmap-pin-btn').click();await page.keyboard.press('T');
- await expect(page.locator('.card[data-path-relation="complete"]')).toHaveCount(1);await expect(page.locator('.card[data-path-relation="complete"] .card-path-reason')).toContainText(lang==='en'?'Completes':'สำเร็จ');
+ await revealDraftGoal(page);await page.locator('#draft-goal-map').click();await page.locator('.techmap-btn-overview').click();await page.locator('.techmap-node[data-node-id="'+offered+'"]').click();await page.locator('.techmap-pin-btn').click();await page.keyboard.press('T');
+ await expect(page.locator('.card[data-path-relation="complete"]')).toHaveCount(1);await page.locator('.card[data-path-relation="complete"] .card-details').click();await expect(page.locator('#draft-detail .card-path-reason')).toContainText(lang==='en'?'Completes':'สำเร็จ');
  await expect(page.locator('.card-recommended')).toHaveCount(1);
  await expect(page.locator('.card-recommended')).toHaveAttribute('data-node-id',offered);
- await expect(page.locator('.card-recommendation')).toContainText(lang==='en'?'Recommended for your pinned path':'แนะนำสำหรับเส้นทางที่ปักหมุด');
- expect(await page.locator('.card-recommended').evaluate(el=>getComputedStyle(el).outlineColor)).toBe('rgb(255, 209, 102)');
+ await expect(page.locator('#draft-detail .card-recommendation')).toContainText(lang==='en'?'Recommended for your pinned path':'แนะนำสำหรับเส้นทางที่ปักหมุด');
+ await page.keyboard.press('Escape');expect(await page.locator('.card-recommended').evaluate(el=>getComputedStyle(el).outlineColor)).toBe('rgb(255, 209, 102)');
  await page.screenshot({path:'test-results/browser/recommended-draft-'+lang+'.png'});
  await page.locator('.card[data-path-relation="complete"] .card-select').click();
  await resolveDrafts(page,20);await page.keyboard.press('T');await expect(page.locator('.techmap-pin')).toBeVisible();await expect(page.locator('[data-node-id="'+id+'"]')).toBeAttached();expect(await page.locator('.techmap-goal-progress').innerText()).toMatch(/([1-9]\d*)\/\1/);
@@ -41,4 +41,4 @@ for(const lang of ['en','th'] as const) {
  });
 }
 
-test('combo goal with no relevant choices is truthful and unpin works',async({page})=>{await startRun(page,'GUIDANCE-EMPTY');await page.keyboard.press('T');await page.locator('[data-combo-id="metallurgy"]').click();await expect(page.locator('.techmap-pin')).toContainText(/metallurgy/i);await page.keyboard.press('T');await page.evaluate(()=>(window as unknown as {__seedE2E:{stageNoAlternativeDraft:()=>void}}).__seedE2E.stageNoAlternativeDraft());await expect(page.locator('.goal-no-relevant')).toBeVisible();await expect(page.locator('#draft-reroll-btn')).toBeDisabled();await page.screenshot({path:'test-results/browser/no-relevant-combo.png'});await page.locator('#draft-goal-map').click();await page.locator('.techmap-pin-group button').click();await page.keyboard.press('T');await expect(page.locator('.draft-goal')).toHaveCount(0);await expect(page.locator('.card')).toHaveCount(3);});
+test('combo goal with no relevant choices is truthful and unpin works',async({page})=>{await startRun(page,'GUIDANCE-EMPTY');await page.keyboard.press('T');await page.locator('[data-combo-id="metallurgy"]').click();await expect(page.locator('.techmap-pin')).toContainText(/metallurgy/i);await page.keyboard.press('T');await page.evaluate(()=>(window as unknown as {__seedE2E:{stageNoAlternativeDraft:()=>void}}).__seedE2E.stageNoAlternativeDraft());await revealDraftGoal(page);await expect(page.locator('.goal-no-relevant')).toBeVisible();await expect(page.locator('#draft-reroll-btn')).toBeDisabled();await page.screenshot({path:'test-results/browser/no-relevant-combo.png'});await revealDraftGoal(page);await page.locator('#draft-goal-map').click();await page.locator('.techmap-pin-group button').click();await page.keyboard.press('T');await expect(page.locator('.draft-goal')).toHaveCount(0);await expect(page.locator('.card')).toHaveCount(3);});

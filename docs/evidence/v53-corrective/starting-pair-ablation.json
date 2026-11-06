@@ -1,0 +1,577 @@
+{
+  "rows": [
+    {
+      "origin": "hunters",
+      "seed": "EPOCH-GOLDEN-001",
+      "classification": "CONTROLLED_OWNERSHIP_ABLATION_NOT_NATURAL36_OR_HUMAN",
+      "holdFixed": "source450f9e2, seed, Origin, controller, schedule rules, difficulty, graph, initial5RNGstreams,180s budget; only initial ownership and consequent eligibility/combat trajectories differ",
+      "single": {
+        "pair": false,
+        "startingRng": {
+          "event": [
+            165331347,
+            635749259,
+            2104685170,
+            4212594606
+          ],
+          "enemy": [
+            2030937029,
+            3812817219,
+            2447436699,
+            3979255709
+          ],
+          "draft": [
+            3005620971,
+            1857090142,
+            3052421885,
+            3913983794
+          ],
+          "loot": [
+            3886083212,
+            101132473,
+            1526657132,
+            1826796177
+          ],
+          "boss": [
+            2583801081,
+            1146221589,
+            1545783023,
+            495707668
+          ]
+        },
+        "firstTech": 14.733333333333645,
+        "fired": [
+          "kinetic"
+        ],
+        "kills": 307,
+        "hp": 100,
+        "dead": false,
+        "deathCause": null,
+        "damage": {
+          "kinetic": 2054.9069601796264,
+          "squad": 3517.224609975671,
+          "ability": 191.67692539282942
+        },
+        "hpSamples": [
+          {
+            "t": 0,
+            "hp": 100
+          },
+          {
+            "t": 30,
+            "hp": 100
+          },
+          {
+            "t": 60,
+            "hp": 93
+          },
+          {
+            "t": 90,
+            "hp": 80
+          },
+          {
+            "t": 120,
+            "hp": 80
+          },
+          {
+            "t": 150,
+            "hp": 80
+          },
+          {
+            "t": 180,
+            "hp": 100
+          }
+        ],
+        "policyChoices": [
+          "stone-fire",
+          "web:stone-fire:0",
+          "stone-tools",
+          "web:stone-tools:1",
+          "application-kinetic-0",
+          "application-kinetic-1",
+          "web:application-kinetic-0:0",
+          "web:web:stone-fire:0:0",
+          "web:application-kinetic-1:0",
+          "web:application-kinetic-0:1",
+          "weave-bronze-industry-science"
+        ],
+        "seconds": 180.00000000003539
+      },
+      "pair": {
+        "pair": true,
+        "startingRng": {
+          "event": [
+            165331347,
+            635749259,
+            2104685170,
+            4212594606
+          ],
+          "enemy": [
+            2030937029,
+            3812817219,
+            2447436699,
+            3979255709
+          ],
+          "draft": [
+            3005620971,
+            1857090142,
+            3052421885,
+            3913983794
+          ],
+          "loot": [
+            3886083212,
+            101132473,
+            1526657132,
+            1826796177
+          ],
+          "boss": [
+            2583801081,
+            1146221589,
+            1545783023,
+            495707668
+          ]
+        },
+        "firstTech": 16.20000000000036,
+        "fired": [
+          "kinetic"
+        ],
+        "kills": 344,
+        "hp": 171,
+        "dead": false,
+        "deathCause": null,
+        "damage": {
+          "field": 1745.734692869929,
+          "kinetic": 1787.3327712786097,
+          "ability": 89.20291294814814,
+          "squad": 3119.8782983307133
+        },
+        "hpSamples": [
+          {
+            "t": 0,
+            "hp": 100
+          },
+          {
+            "t": 30,
+            "hp": 100
+          },
+          {
+            "t": 60,
+            "hp": 120
+          },
+          {
+            "t": 90,
+            "hp": 132
+          },
+          {
+            "t": 120,
+            "hp": 144
+          },
+          {
+            "t": 150,
+            "hp": 144
+          },
+          {
+            "t": 180,
+            "hp": 171
+          }
+        ],
+        "policyChoices": [
+          "stone-fire",
+          "stone-tools",
+          "application-kinetic-1",
+          "stone-totem",
+          "application-field-1",
+          "application-kinetic-0",
+          "web:application-kinetic-0:1",
+          "web:web:application-kinetic-0:1:0",
+          "web:application-field-1:1",
+          "web:web:web:application-kinetic-0:1:0:0",
+          "weave-stone-warfare-culture"
+        ],
+        "seconds": 180.00000000003539
+      }
+    },
+    {
+      "origin": "engineers",
+      "seed": "EPOCH-GOLDEN-001",
+      "classification": "CONTROLLED_OWNERSHIP_ABLATION_NOT_NATURAL36_OR_HUMAN",
+      "holdFixed": "source450f9e2, seed, Origin, controller, schedule rules, difficulty, graph, initial5RNGstreams,180s budget; only initial ownership and consequent eligibility/combat trajectories differ",
+      "single": {
+        "pair": false,
+        "startingRng": {
+          "event": [
+            165331347,
+            635749259,
+            2104685170,
+            4212594606
+          ],
+          "enemy": [
+            2030937029,
+            3812817219,
+            2447436699,
+            3979255709
+          ],
+          "draft": [
+            3005620971,
+            1857090142,
+            3052421885,
+            3913983794
+          ],
+          "loot": [
+            3886083212,
+            101132473,
+            1526657132,
+            1826796177
+          ],
+          "boss": [
+            2583801081,
+            1146221589,
+            1545783023,
+            495707668
+          ]
+        },
+        "firstTech": 15.683333333333692,
+        "fired": [
+          "kinetic"
+        ],
+        "kills": 344,
+        "hp": 100.6,
+        "dead": false,
+        "deathCause": null,
+        "damage": {
+          "kinetic": 2253.816755621133,
+          "squad": 4365.6654330325355
+        },
+        "hpSamples": [
+          {
+            "t": 0,
+            "hp": 100
+          },
+          {
+            "t": 30,
+            "hp": 93
+          },
+          {
+            "t": 60,
+            "hp": 74
+          },
+          {
+            "t": 90,
+            "hp": 74
+          },
+          {
+            "t": 120,
+            "hp": 67
+          },
+          {
+            "t": 150,
+            "hp": 67
+          },
+          {
+            "t": 180,
+            "hp": 100.6
+          }
+        ],
+        "policyChoices": [
+          "stone-fire",
+          "stone-tools",
+          "web:stone-tools:1",
+          "application-kinetic-0",
+          "web:stone-fire:0",
+          "weave-stone-warfare-culture",
+          "application-kinetic-1",
+          "web:web:stone-fire:0:1",
+          "tactical-kinetic",
+          "web:tactical-kinetic:1"
+        ],
+        "seconds": 180.00000000003539
+      },
+      "pair": {
+        "pair": true,
+        "startingRng": {
+          "event": [
+            165331347,
+            635749259,
+            2104685170,
+            4212594606
+          ],
+          "enemy": [
+            2030937029,
+            3812817219,
+            2447436699,
+            3979255709
+          ],
+          "draft": [
+            3005620971,
+            1857090142,
+            3052421885,
+            3913983794
+          ],
+          "loot": [
+            3886083212,
+            101132473,
+            1526657132,
+            1826796177
+          ],
+          "boss": [
+            2583801081,
+            1146221589,
+            1545783023,
+            495707668
+          ]
+        },
+        "firstTech": 15.683333333333692,
+        "fired": [
+          "kinetic"
+        ],
+        "kills": 335,
+        "hp": 142,
+        "dead": false,
+        "deathCause": null,
+        "damage": {
+          "kinetic": 2010.8909321481535,
+          "squad": 3919.892765422219,
+          "defense": 65.44674074074072
+        },
+        "hpSamples": [
+          {
+            "t": 0,
+            "hp": 100
+          },
+          {
+            "t": 30,
+            "hp": 93
+          },
+          {
+            "t": 60,
+            "hp": 96
+          },
+          {
+            "t": 90,
+            "hp": 116.74999999999204
+          },
+          {
+            "t": 120,
+            "hp": 127.99999999998181
+          },
+          {
+            "t": 150,
+            "hp": 142
+          },
+          {
+            "t": 180,
+            "hp": 142
+          }
+        ],
+        "policyChoices": [
+          "stone-fire",
+          "stone-tools",
+          "application-defense-0",
+          "application-kinetic-1",
+          "application-defense-1",
+          "web:application-defense-0:1",
+          "application-kinetic-0",
+          "web:application-defense-1:1",
+          "weave-bronze-industry-science"
+        ],
+        "seconds": 180.00000000003539
+      }
+    },
+    {
+      "origin": "sentinels",
+      "seed": "EPOCH-GOLDEN-001",
+      "classification": "CONTROLLED_OWNERSHIP_ABLATION_NOT_NATURAL36_OR_HUMAN",
+      "holdFixed": "source450f9e2, seed, Origin, controller, schedule rules, difficulty, graph, initial5RNGstreams,180s budget; only initial ownership and consequent eligibility/combat trajectories differ",
+      "single": {
+        "pair": false,
+        "startingRng": {
+          "event": [
+            165331347,
+            635749259,
+            2104685170,
+            4212594606
+          ],
+          "enemy": [
+            2030937029,
+            3812817219,
+            2447436699,
+            3979255709
+          ],
+          "draft": [
+            3005620971,
+            1857090142,
+            3052421885,
+            3913983794
+          ],
+          "loot": [
+            3886083212,
+            101132473,
+            1526657132,
+            1826796177
+          ],
+          "boss": [
+            2583801081,
+            1146221589,
+            1545783023,
+            495707668
+          ]
+        },
+        "firstTech": 13.43333333333358,
+        "fired": [
+          "energy"
+        ],
+        "kills": 339,
+        "hp": 82.80000000000001,
+        "dead": false,
+        "deathCause": null,
+        "damage": {
+          "energy": 1799.0589567053755,
+          "squad": 4762.147828256039,
+          "chain": 221.94119701638851
+        },
+        "hpSamples": [
+          {
+            "t": 0,
+            "hp": 100
+          },
+          {
+            "t": 30,
+            "hp": 99
+          },
+          {
+            "t": 60,
+            "hp": 99
+          },
+          {
+            "t": 90,
+            "hp": 94
+          },
+          {
+            "t": 120,
+            "hp": 94
+          },
+          {
+            "t": 150,
+            "hp": 115
+          },
+          {
+            "t": 180,
+            "hp": 82.80000000000001
+          }
+        ],
+        "policyChoices": [
+          "stone-fire",
+          "weave-stone-warfare-culture",
+          "stone-tools",
+          "application-energy-0",
+          "web:weave-stone-warfare-culture:1",
+          "web:web:weave-stone-warfare-culture:1:0",
+          "web:stone-tools:1",
+          "web:application-energy-0:1",
+          "web:web:stone-tools:1:1",
+          "web:stone-fire:0",
+          "tactical-energy",
+          "web:application-energy-0:0",
+          "web:stone-tools:0",
+          "web:tactical-energy:1"
+        ],
+        "seconds": 180.00000000003539
+      },
+      "pair": {
+        "pair": true,
+        "startingRng": {
+          "event": [
+            165331347,
+            635749259,
+            2104685170,
+            4212594606
+          ],
+          "enemy": [
+            2030937029,
+            3812817219,
+            2447436699,
+            3979255709
+          ],
+          "draft": [
+            3005620971,
+            1857090142,
+            3052421885,
+            3913983794
+          ],
+          "loot": [
+            3886083212,
+            101132473,
+            1526657132,
+            1826796177
+          ],
+          "boss": [
+            2583801081,
+            1146221589,
+            1545783023,
+            495707668
+          ]
+        },
+        "firstTech": 13.43333333333358,
+        "fired": [
+          "energy"
+        ],
+        "kills": 319,
+        "hp": 151,
+        "dead": false,
+        "deathCause": null,
+        "damage": {
+          "energy": 1663.830358518518,
+          "squad": 3949.5758733333564,
+          "defense": 86.92653925925927,
+          "chain": 609.2539674074069
+        },
+        "hpSamples": [
+          {
+            "t": 0,
+            "hp": 100
+          },
+          {
+            "t": 30,
+            "hp": 85.86499999999921
+          },
+          {
+            "t": 60,
+            "hp": 97.86499999999103
+          },
+          {
+            "t": 90,
+            "hp": 111.86499999998284
+          },
+          {
+            "t": 120,
+            "hp": 120.86499999997466
+          },
+          {
+            "t": 150,
+            "hp": 127
+          },
+          {
+            "t": 180,
+            "hp": 151
+          }
+        ],
+        "policyChoices": [
+          "stone-fire",
+          "stone-tools",
+          "application-defense-1",
+          "application-defense-0",
+          "tactical-energy",
+          "application-energy-0",
+          "application-energy-1",
+          "web:application-defense-1:1",
+          "web:stone-fire:0",
+          "web:tactical-energy:0",
+          "web:application-energy-0:0",
+          "web:tactical-energy:1"
+        ],
+        "seconds": 180.00000000003539
+      }
+    }
+  ],
+  "scope": "Controlled ownership intervention on frozen450f9e2; identical initial5RNG streams, seed, graph, Origin, controller, difficulty, enemy-schedule rules and180s cap. Realized enemies and Tech choices may diverge as consequences; this is not a locked spawn-trace or proof of the entire Boss regression."
+}

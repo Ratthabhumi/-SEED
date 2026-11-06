@@ -149,7 +149,7 @@ async function viewportMatrix(page: Page): Promise<void> {
     // Draft: readable cards, agency reachable, prose left.
     await openDraft(page);
     expect(await page.locator("#draft-screen .card").count()).toBe(3);
-    for (const name of [/^Save for later/, /^New choices/, "SKIP"]) {
+    for (const name of [/^Keep/, /^New choices/, "SKIP"]) {
       await expect(page.locator("#draft-screen").getByRole("button", { name }).first()).toBeVisible();
     }
     const draftAlign = await page.locator("#draft-screen .card p").first().evaluate(

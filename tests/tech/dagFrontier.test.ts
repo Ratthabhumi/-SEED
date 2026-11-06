@@ -117,8 +117,8 @@ describe("progressive DAG shape", () => {
         const available=sim.nodeStates().filter(n=>n.available);
         const tactics=available.filter(n=>n.id.startsWith('tactical-'));
         expect(available.length).toBe(count);
-        expect(available.length-tactics.length,`${seed}:${o.id}: original pool`).toBeLessThanOrEqual(9);
-        expect(tactics,`${seed}:${o.id}: added family branches`).toHaveLength(o.families.length);
+        expect(available.length-tactics.length-available.filter(n=>n.id.startsWith('acquire-')).length,`${seed}:${o.id}: original pool`).toBeLessThanOrEqual(9);
+        expect(tactics,`${seed}:${o.id}: added family branches`).toHaveLength(2);
         for(const n of tactics)expect(o.families).toContain(sim.techGraph().find(t=>t.id===n.id)!.effects[0]!.family);
         sim.gainKnowledge(100,'test',[]);expect(sim.state.draftOffers).toHaveLength(3);
       }

@@ -39,7 +39,7 @@ for(const origin of ['hunters','engineers','resonant','sentinels'])test(`first r
  await page.locator('.origin-choice').nth(ORIGINS.findIndex(o=>o.id===origin)).click();await page.locator('#start-btn').click();await page.waitForFunction(()=>!!(window as any).__seedE2E);
  await page.evaluate(()=>(window as any).__seedE2E.grant(100));await expect(page.locator('#draft-screen')).toBeVisible();
  await expect(page.locator('#draft-screen .card')).toHaveCount(3);await assertNoRawKeys(page);
- await expect(page.locator('#draft-screen .tactical-choice-detail').first()).toBeVisible();
+ const tactic=page.locator('.card[data-kind=upgrade]').first();await expect(tactic.locator('.choice-benefit')).not.toBeEmpty();await tactic.locator('.card-details').click();await expect(page.locator('#draft-detail .tactical-choice-detail')).toBeVisible();await page.keyboard.press('Escape');
  for(const action of await page.locator('#draft-screen .card-select, #draft-screen .card-reserve').all())await expect(action).toBeInViewport();
  await page.screenshot({path:`test-results/v51-visible/draft-${origin}.png`});
 });

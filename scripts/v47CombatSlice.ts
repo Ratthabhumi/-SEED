@@ -2,7 +2,7 @@ import type {RunSimulation} from '../src/core/sim/RunSimulation';
 import type {RunConfig} from '../src/core/sim/RunConfig';
 import {applyTechEffect} from '../src/core/sim/progression';
 import type {TechEffect} from '../src/core/tech/graph';
-type Sim=Pick<RunSimulation,'state'|'step'|'spawnEnemy'|'snapshot'>;
+type Sim=Pick<RunSimulation,'state'|'step'|'spawnEnemy'|'snapshot'|'techGraph'|'chooseDraft'>;
 type Constructor=new(c:RunConfig)=>Sim;
 export const V47_BUILDS=[
  {id:'kinetic-fan',origin:'hunters',tier:2,effects:[{kind:'projectileAdd',value:2}]},
@@ -13,6 +13,8 @@ export const V47_BUILDS=[
  * High-HP stationary targets avoid kill XP/drafts contaminating a build sample. */
 export function combatSlice(Ctor:Constructor,index:number,upgraded:boolean,moving=false){
  const build=V47_BUILDS[index]!,sim=new Ctor({masterSeed:'V47-CONTROLLED',originId:build.origin}),s=sim.state;
+ // C28 explicit fixture acquisition; historical pre-instance builds stay untouched.
+ if(index===2&&s.weapons&&!s.weapons.some(w=>w.family==='field')){const n=sim.techGraph().find(n=>n.weaponFamily==='field')!;s.draftOpen=true;s.pendingLevels=1;s.draftOffers=[{nodeId:n.id,quality:'COMMON',modifierIds:[],effectiveEffects:[]}];sim.chooseDraft(0);}
  s.build.hp=s.build.maxHp=10000;s.spawnT=s.eliteT=999;s.mineT=index===2?0:999;
  for(const a of s.squad)a.active=false;
  for(const f of ['kinetic','energy','defense','field'] as const){s.weaponStage[f]=build.tier;s.weaponCd[f]=999;}

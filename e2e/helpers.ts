@@ -136,3 +136,6 @@ export async function assertNoRawKeys(page: Page): Promise<void> {
   });
   expect(hits).toEqual([]);
 }
+
+/** V53 path information stays inside its existing optional disclosure. */
+export async function revealDraftGoal(page:Page){const goal=page.locator('.draft-goal');if(await goal.count()&&!(await goal.evaluate(e=>(e as HTMLDetailsElement).open)))await goal.locator(':scope > summary').click();}

@@ -19,8 +19,8 @@ for(const lang of ['en','th'] as const)test(`draft and boss decisions contain re
  await page.screenshot({path:`test-results/browser/content18-draft-glyphs-${lang}.png`});
  await expect(page.locator('#draft-heading')).toBeFocused();
  const taken=await page.evaluate(()=>(window as any).__seedE2E.draftFacts().taken);
- await page.keyboard.press('Shift+Tab');await expect(page.locator('#draft-skip-btn')).toBeFocused();
- await page.keyboard.press('Tab');await expect(page.locator('#draft-screen summary').first()).toBeFocused();
+ await page.keyboard.press('Shift+Tab');await expect(page.locator('.draft-agency-help > summary')).toBeFocused();
+ await page.keyboard.press('Tab');await expect(page.locator('#draft-screen button:visible,#draft-screen summary:visible').first()).toBeFocused();
  expect(await page.evaluate(()=>(window as any).__seedE2E.draftFacts().taken)).toBe(taken);
  await page.evaluate(()=>{const h=(window as any).__seedE2E;h.stageBossReview('cross');h.bossPhaseReview();h.notificationReset();});
  await textFits(page.locator('#boss-encounter strong, #boss-encounter span'));

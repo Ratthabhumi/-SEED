@@ -1,3 +1,4 @@
+import {equippedFamilies} from '../../core/combat/weaponInstances';
 import {previewTechEffects,type EffectTarget} from '../../core/sim/progression';
 import {activeFamilies} from '../../core/progression/origins';
 import {getWeaponStage,type WeaponFamily} from '../../core/combat/weapons';
@@ -7,9 +8,9 @@ import type {TechEffect} from '../../core/tech/graph';
 type Kind='volley'|'chain'|'mines'|'orbit'|'guardians'|'aura'|'beam'|'hitDamage'|'attackInterval';
 export interface CombatChoiceFact{family:WeaponFamily;kind:Kind;before:number;after:number;}
 /** Read-only active weapon consequences; counts do not promise every shot hits. */
-export function combatChoicePreview(s:Pick<RunState,'originId'|'expansionFamily'|'weaponStage'|'build'>,effects:readonly TechEffect[]):CombatChoiceFact[]{
+export function combatChoicePreview(s:Pick<RunState,'originId'|'expansionFamily'|'weaponStage'|'build'> & Partial<Pick<RunState,'weapons'>>,effects:readonly TechEffect[]):CombatChoiceFact[]{
  const next=previewTechEffects(s.build,effects),out:CombatChoiceFact[]=[];
- for(const family of activeFamilies(s.originId,s.expansionFamily)){
+ for(const family of equippedFamilies(s)){
   const st=getWeaponStage(family,s.weaponStage[family]);
   const values=(b:EffectTarget):Partial<Record<Kind,number>>=>{
    if(family==='kinetic')return st.archetype==='projectile'?{volley:Math.min(MAX_PROJ,Math.ceil(st.count+b.bonusProjectiles))}:{};

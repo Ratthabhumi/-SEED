@@ -200,6 +200,7 @@ export function generateTechGraph(masterSeed: string, ascension = 0): TechGraph 
     {id:"conduction-lattice",titleKey:"tech.conduction.name",descriptionKey:"tech.conduction.description",age:"bronze",domain:"science",tags:["conduction"],synergyTags:["conduction"],prerequisites:["foundation-science"],exclusions:[],rarity:"uncommon",weight:55,effects:[{kind:"chainAdd",value:1,family:"energy"}]},
     {id:"outpost-relay",titleKey:"tech.relay.name",descriptionKey:"tech.relay.description",age:"bronze",domain:"industry",tags:["relay"],synergyTags:["relay"],prerequisites:["foundation-industry"],exclusions:[],rarity:"uncommon",weight:55,effects:[{kind:"relayAdd",value:1}]}
   );
+  for(const family of ['kinetic','energy','defense','field'] as const)nodes.push({id:'acquire-'+family,weaponFamily:family,titleKey:'weapon.acquire.'+family,descriptionKey:'weapon.brief.'+family,age:'stone',domain:family==='energy'?'science':family==='defense'?'culture':family==='field'?'industry':'warfare',tags:[family,'weapon'],synergyTags:[family],prerequisites:['foundation-'+(family==='energy'?'science':family==='defense'?'culture':family==='field'?'industry':'warfare')],exclusions:[],rarity:'common',weight:75,effects:[]});
   attachWebMetadata(nodes);
   return { masterSeed, ascension, nodes };
 }

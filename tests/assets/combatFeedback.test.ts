@@ -21,7 +21,9 @@ describe("canonical signature beam feedback",()=>{
     const {s,e}=arena();s.weaponCd.energy=.1;expect(energyCharge(s)).toBeCloseTo(.5);
     e.active=false;expect(energyCharge(s)).toBe(0);e.active=true;e.x=s.px+801;expect(energyCharge(s)).toBe(0);
     e.x=s.px+140;s.weaponStage.energy=0;expect(energyCharge(s)).toBe(0);
-    s.weaponStage.energy=4;s.originId="hunters";expect(energyCharge(s)).toBe(0);
+    // Content28 ownership survives metadata/Origin changes. Test a genuinely
+    // unowned Energy family in a fresh Hunters run instead.
+    const h=new RunSimulation({masterSeed:'EPOCH-GOLDEN-001',originId:'hunters'});h.state.weaponStage.energy=4;h.state.weaponCd.energy=.1;h.spawnEnemy('tank',false,false,0,140,[]);expect(energyCharge(h.state)).toBe(0);
     s.originId="resonant";s.weaponCd.energy=0;expect(energyCharge(s)).toBe(0);
   });
   it("real beam emits source/tier/aim and reports shield absorption separately from actual HP loss",()=>{

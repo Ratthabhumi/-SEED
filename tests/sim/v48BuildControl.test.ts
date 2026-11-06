@@ -1,3 +1,4 @@
+import {equipWeapon} from '../helpers/equipWeapon';
 import {it,expect} from 'vitest';
 import {RunSimulation} from '../../src/core/sim/RunSimulation';
 import {applyTechEffect} from '../../src/core/sim/progression';
@@ -31,7 +32,7 @@ it('Conduction changes positioning: actual energy hits hold cluster position whi
 });
 it('Field upgrade lays a wider rear trail for every movement direction, without changing RNG consumption',()=>{
  for(const [moveX,moveY] of [[1,0],[-1,0],[0,1],[0,-1]]){
-  const {sim,s}=arena(),control=arena();s.mineT=control.s.mineT=0;
+  const {sim,s}=arena(),control=arena();equipWeapon(sim,'field');equipWeapon(control.sim,'field');s.mineT=control.s.mineT=0;
   applyTechEffect(s.build,{kind:'mineAdd',value:2});applyTechEffect(control.s.build,{kind:'mineAdd',value:2});
   sim.step(1/60,{...idle,moveX,moveY});control.sim.step(1/60,idle);
   const mines=s.mines.filter(m=>m.active);expect(mines).toHaveLength(3);

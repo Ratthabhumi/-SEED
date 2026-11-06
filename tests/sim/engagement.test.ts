@@ -79,13 +79,14 @@ describe("origins and active families", () => {
       const id = CRITICAL_SPINE[i]?.id;
       if (id && !sim.state.owned.includes(id)) sim.state.owned.push(id);
     }
-    const active = new Set(activeFamilies("hunters", ""));
+
     expect(sim.generatedOptionsCount()).toBeGreaterThan(0);
     // Drive real drafts and inspect every offered card.
     const ev: never[] = [];
     sim.gainKnowledge(100000, "test", ev);
     let rounds = 0;
     while (sim.state.draftOpen && rounds++ < 12) {
+      const active=new Set(sim.state.weapons.map(w=>w.family));
       for (const o of sim.state.draftOffers) {
         const n = sim.techGraph().find((node) => node.id === o.nodeId);
         if (!n) continue;

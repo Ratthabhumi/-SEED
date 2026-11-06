@@ -49,6 +49,7 @@ export interface SimEnemy {
   boss: boolean; hitCd: number;
   /** Raid siege unit: marches on the raided outpost instead of the player. */
   siege: boolean;
+  orbitHitAt?:Partial<Record<"defense"|"field",number>>;
 }
 
 export interface SimProj {
@@ -58,10 +59,12 @@ export interface SimProj {
   visualTier?:number;
   /** Player-primary sweeps use the authentic launch segment; other emitters retain their rules. */
   primary?:boolean;
+  weaponInstanceId?:string;
 }
 
 export interface SimPickup { active: boolean; x: number; y: number; value: number; }
-export interface SimMine { active: boolean; x: number; y: number; dmg: number; radius: number; life: number; }
+export interface SimMine {
+  weaponInstanceId?:string; active: boolean; x: number; y: number; dmg: number; radius: number; life: number; }
 
 export interface RunStats {
   kills: number; elites: number; bosses: number; techsTaken: number;
@@ -166,6 +169,8 @@ export interface RunState {
   spawnT: number; eliteT: number; mineT: number; auraT: number;
   weaponCd: Record<WeaponFamily, number>;
   weaponRig: import('../combat/weaponGeometry').WeaponRig;
+  weapons: import('../combat/weaponInstances').WeaponInstance[];
+  weaponSerial: number;
   guardianAng: number; orbitAng: number;
   beamFlash: { x2: number; y2: number; t: number } | null;
   // Pools

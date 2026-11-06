@@ -1,3 +1,7 @@
+import {choiceDiagram} from '../ui/choiceDiagram';
+import {weaponFigure} from '../ui/weaponFigure';
+import {choicePresentation} from '../ui/choicePresentation';
+import {equippedFamilies,startingWeapons} from '../../core/combat/weaponInstances';
 import {defaultCollection,earnCollection,COLLECTIBLES,type LegacyCollection,type CollectionAchievement} from '../../core/progression/legacyCollection';
 import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
 import {bossThreat,bossStrikeTargetsBase} from '../ui/bossThreat';
@@ -6,7 +10,7 @@ import {powerOpportunity} from '../ui/powerOpportunity';
 import{impactCue}from'../audio/impactCue';
 import{drawBaseSupport,baseSupport}from'../render/BaseSupport';
 import{CivilizationBeats}from'../render/CivilizationBeats';
-import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
+import {weaponTransform,primaryTier,createWeaponRig} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
 import {worldPresentation} from '../render/worldPresentation';
@@ -393,12 +397,12 @@ export class GameScene extends Phaser.Scene {
     const savedArchive = loadSave(localStorage);
     this.cosmetics=savedArchive.collection;
     this.earnedThisAttempt=[];
-    const begun = beginAttempt(savedArchive.meta); savedArchive.meta = begun.ledger;
-    this.archiveStorageOK = storeSave(localStorage, savedArchive);
-    this.attemptId = this.archiveStorageOK ? begun.id : 0; this.archiveEarned = 0;
-    this.sim = new RunSimulation({ masterSeed: seed, originId: originRaw,
-      weaponMount:new URLSearchParams(location.search).get("equipment")==="hand"?"hand":"float",
-      archivePerks: savedArchive.meta.purchased, archiveEnergyStart: savedArchive.meta.energyStart });
+    const resumeRequested=sessionStorage.getItem('seed-game:resume')==='1';sessionStorage.removeItem('seed-game:resume');
+    const pending=savedArchive.activeRun;const restored=resumeRequested&&pending&&pending.attemptId>savedArchive.meta.lastSettled&&pending.attemptId<savedArchive.meta.nextAttempt?RunSimulation.fromCheckpoint(pending.simulation):null;
+    const begun=restored?{ledger:savedArchive.meta,id:pending!.attemptId}:beginAttempt(savedArchive.meta);savedArchive.meta=begun.ledger;if(!restored)savedArchive.activeRun=null;
+    this.archiveStorageOK=storeSave(localStorage,savedArchive);this.attemptId=this.archiveStorageOK?begun.id:0;this.archiveEarned=restored?pending!.archiveEarned:0;this.earnedThisAttempt=restored?(pending!.earnedCollectibles??[]):[];
+    this.sim=restored??new RunSimulation({masterSeed:seed,originId:originRaw,weaponMount:new URLSearchParams(location.search).get('equipment')==='hand'?'hand':'float',archivePerks:savedArchive.meta.purchased,archiveEnergyStart:savedArchive.meta.energyStart});
+    if(restored){seed=this.sim.state.masterSeed;toast('run.resumed');}else if(resumeRequested)toast('run.restoreFailed');
     this.observedWeaponStages={...this.sim.state.weaponStage};
     this.surfaces.reset();
     this.blockingModal = null;
@@ -622,6 +626,8 @@ export class GameScene extends Phaser.Scene {
         resetPerformanceSamples:()=>{this.frameSamples=[];this.simSamples=[];this.renderSamples=[];this.lastFrameAt=0;this.frameIntervals?.reset(document.hidden);},
         frameIntervalEvidence:()=>this.frameIntervals?.snapshot()??null,
         actorPresentation: () => this.allyActors.review(),
+        stageWeaponOffer:(family:WeaponFamily)=>{const s=this.sim.state,n=this.sim.techGraph().find(n=>n.weaponFamily===family);if(!n||!this.sim.canAcquireWeapon(family))throw Error('No legal weapon acquisition');s.pendingLevels=1;s.draftOpen=true;s.draftOffers=[{nodeId:n.id,quality:'COMMON',modifierIds:[],effectiveEffects:[]}];this.paused=false;this.syncDraftUI();},
+        weaponsReview:()=>({instances:this.sim.state.weapons.map(w=>({id:w.id,slot:w.slot,family:w.family,stage:this.sim.state.weaponStage[w.family],cd:w.family==='field'?this.sim.state.mineT:this.sim.state.weaponCd[w.family],rig:{...w.rig}})),extraArt:this.heroEquipment.weaponsReview(),hash:this.sim.hash()}),
         streamingMove:(x:number,y:number)=>{
           const s=this.sim.state,dx=x-s.px,dy=y-s.py;this.paused=true;s.px=x;s.py=y;
           for(const e of s.enemies)if(e.active){e.x+=dx;e.y+=dy;}
@@ -658,7 +664,7 @@ export class GameScene extends Phaser.Scene {
         },
         advanceRaidReview:(seconds:number)=>{for(let i=0;i<Math.floor(Math.min(95,Math.max(0,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.refreshHUD();},
         stageEvolution: (origin:string,age:number,encounter='roster') => {
-          const s=this.sim.state;this.paused=false;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
+          const s=this.sim.state;this.paused=false;s.originId=origin;s.weaponRig=createWeaponRig(s.weaponRig.mode);s.weapons=startingWeapons(origin,s.weaponRig);s.weaponSerial=s.weapons.length;s.expansionFamily='';s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
           this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);
           s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=s.mineT=999;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
           // Isolated combat fixture: mark local generated POIs discovered, so exploration drafts cannot freeze movement assertions.
@@ -957,7 +963,8 @@ export class GameScene extends Phaser.Scene {
         },
         stageFamilyReview: (family:"kinetic"|"energy"|"defense"|"field") => {
           const s=this.sim.state;this.paused=true;this.combatFeedback.reset(s.worldNonce);
-          s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"engineers";
+          s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"hunters";
+          s.weaponRig=createWeaponRig(s.weaponRig.mode);s.weapons=startingWeapons(s.originId,s.weaponRig);s.weaponSerial=s.weapons.length;s.expansionFamily="";
           for(const p of s.projs)p.active=false;
           for(const m of s.mines)m.active=false;
           s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;
@@ -1180,6 +1187,7 @@ export class GameScene extends Phaser.Scene {
     };
     this.qa = new QaSession(adapter);
     this.qa.start();
+    if(loadSave(localStorage).activeRun)this.qa.noteSimEvent("run_resumed", "Saved checkpoint; not a fresh-start playtest");
     // F4 diagnostics OFF by default (Phase 2): recording continues regardless.
     this.qaOverlay = false;
     this.qaGfx = this.add.graphics().setDepth(40);
@@ -1278,7 +1286,7 @@ export class GameScene extends Phaser.Scene {
       nearestPOI: this.qaPoi,
       buildSummary: `lv${s.level}+${s.stats.techsTaken}t[${s.breakthroughs.join("+") || "-"}]`,
       originId: s.originId,
-      activeFamilies: activeFamilies(s.originId, s.expansionFamily),
+      activeFamilies: equippedFamilies(s),
       breakthroughs: [...s.breakthroughs],
       legacies: [...s.legacies],
       poiClaims: [...s.poiFamiliesClaimed],
@@ -1582,7 +1590,7 @@ export class GameScene extends Phaser.Scene {
     hpLine.textContent = `♥ ${Math.ceil(Math.max(0, s.build.hp))} / ${Math.ceil(s.build.maxHp)}`;
     hpFill.style.width = `${Math.max(0, (s.build.hp / s.build.maxHp) * 100)}%`;
     const origin = ORIGINS.find((o) => o.id === s.originId);
-    const fams = activeFamilies(s.originId, s.expansionFamily)
+    const fams = equippedFamilies(s)
       .map((f) => t(`family.${f}` as EnKeys)).join("+");
     identLine.textContent = `${origin ? t(origin.nameKey) : s.originId} (${fams}) · ${t(`age.${ageId}` as EnKeys)}`;
     const alive = s.squad.filter((a) => a.active).length;
@@ -2770,15 +2778,16 @@ export class GameScene extends Phaser.Scene {
     heading.addEventListener("keydown", event => {
       // Preserve the existing fresh-Enter first-choice shortcut without
       // focusing a bottom button. Held/stale keys use the canonical UI guard.
-      if(event.key==="Enter"&&this.decisionInput.allows(event)){
+      if(event.key==="Enter"&&!screen.querySelector('.draft-detail-panel')&&this.decisionInput.allows(event)){
         event.preventDefault();event.stopPropagation();this.pickCard(0,screen);
       }
     });
+    screen.dataset.largeType=String(Number(document.documentElement.style.getPropertyValue('--ui-scale'))>=1.5);
     screen.appendChild(heading);
     const guidance = this.sim.pathGuidance();
     const recommended=recommendedCard(guidance,s.draftOffers);
     if (guidance.status !== "none") {
-      const goal = el("section", "draft-goal");
+      const goal=el('details','draft-goal');goal.append(el('summary','','path.goal'));
       goal.appendChild(el("strong", "", undefined, `${t("path.goal")}: ${guidance.titleKey ? t(guidance.titleKey as EnKeys) : t("path.invalid")}`));
       if (guidance.status === "active") {
         goal.appendChild(el("p", "", undefined, `${t("path.progressLabel")}: ${guidance.have}/${guidance.need}`));
@@ -2913,13 +2922,17 @@ export class GameScene extends Phaser.Scene {
         badge.textContent = `✦ ${t("draft.newBadge")}`;
         c.appendChild(badge);
       }
-      const content = document.createElement("div");
-      content.className = "card-content";
-      while(c.firstChild)content.appendChild(c.firstChild);
-      c.appendChild(content);
-      const actions = document.createElement("div");
-      actions.className = "card-actions";
-      c.appendChild(actions);
+      const advanced=document.createElement('div');advanced.className='draft-detail-content';while(c.firstChild)advanced.appendChild(c.firstChild);
+      const info=choicePresentation(n,offer.effectiveEffects,s);c.dataset.kind=info.kind;
+      const front=el('div','card-front');front.append(el('span','choice-kind',('choice.kind.'+info.kind)as EnKeys),weaponFigure(info.family,n.weaponFamily?s.ageIndex:s.weaponStage[info.family],s.originId,n.weaponFamily?1:(s.weapons.find(w=>w.family===info.family)?.slot??0)),h.cloneNode(true),el('p','choice-benefit',undefined,info.description));
+      if(info.outcome)front.append(el('p','choice-outcome',undefined,info.outcome));const diagram=choiceDiagram(changes);if(diagram)front.append(diagram);c.append(front);
+      const actions=el('div','card-actions');c.append(actions);
+      const details=button('choice.details',()=>{
+        if(!this.currentDraftSurface(screen)||screen.querySelector('.draft-detail-panel'))return;
+        const pane=el('section','draft-detail-panel');pane.id='draft-detail';pane.append(el('h2','',undefined,t(n.titleKey as EnKeys)));
+        const back=button('choice.close',()=>{pane.remove();details.focus();});back.classList.add('draft-detail-close');pane.append(back,advanced);screen.append(pane);menuNavigation(pane,()=>{pane.remove();details.focus();},details);
+        pane.addEventListener('keydown',event=>event.stopPropagation());
+      });details.classList.add('card-details');
       // Explicit SELECT button (replaces role="button" on card)
       const selectBtn = document.createElement("button");
       selectBtn.type = "button";
@@ -2933,7 +2946,7 @@ export class GameScene extends Phaser.Scene {
         selectBtn.setAttribute("aria-label", `Select card ${i + 1}`);
       }
       selectBtn.addEventListener("click", () => this.pickCard(i,screen));
-      actions.appendChild(selectBtn);
+      actions.appendChild(selectBtn);actions.appendChild(details);
       cards.appendChild(c);
       // Per-card RESERVE (one slot; fallback cards cannot be reserved).
       if (!offer.nodeId.startsWith("fb-")) {
@@ -3001,13 +3014,13 @@ export class GameScene extends Phaser.Scene {
       h.textContent = `${mark} ${line}`;
       hints.appendChild(h);
     }
-    screen.appendChild(hints);
+    const agencyHelp=document.createElement('details');agencyHelp.className='draft-agency-help';const helpTitle=document.createElement('summary');helpTitle.textContent=t('choice.help');agencyHelp.append(helpTitle,hints);screen.append(agencyHelp);
     this.rerollNewIds.clear();
     const stays = el("div", "draft-stays", "ui.ownedStays");
-    screen.appendChild(stays);
+    agencyHelp.append(stays);
     screen.addEventListener("keydown", (event) => {
       if (event.key !== "Tab") return;
-      const controls = Array.from(screen.querySelectorAll<HTMLElement>("button:not([disabled]), summary"));
+      const controls = Array.from(screen.querySelectorAll<HTMLElement>("button:not([disabled]), summary")).filter(control=>control.getClientRects().length>0);
       const first = controls[0]; const last = controls[controls.length - 1];
       if (document.activeElement === heading) { event.preventDefault(); (event.shiftKey ? last : first)?.focus(); }
       else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
@@ -3026,7 +3039,7 @@ export class GameScene extends Phaser.Scene {
     const s = this.sim.state;
     if (!s.draftOpen || s.over || this.techMapOpen || this.blockingModal) return;
     const screen=expectedScreen??document.getElementById("draft-screen");
-    if(!screen||!this.currentDraftSurface(screen))return;
+    if(!screen||screen.querySelector('.draft-detail-panel')||!this.currentDraftSurface(screen))return;
     const ev = this.sim.chooseDraft(i);
     if(!ev.some(e=>e.type==="tech_selected"))return;
     screen.dataset.committed="true";screen.remove();
@@ -3117,6 +3130,7 @@ export class GameScene extends Phaser.Scene {
     // RUN — run-scoped navigation, away from both Resume and Danger.
     const run = section("ui.pauseRun");
     if (this.sim.state.stats.bosses>0) run.appendChild(button("ui.finishAttempt",()=>{document.getElementById("pause-screen")?.remove();this.handleEvents(this.sim.finishAttempt());}));
+    const saveRun=button('run.saveExit',()=>{if(this.attemptId<=0){toast('meta.storage');return;}const save=loadSave(localStorage);const simulation=this.sim.checkpoint();if(simulation.length>2000000){toast('meta.storage');return;}save.activeRun={simulation,attemptId:this.attemptId,archiveEarned:this.archiveEarned,earnedCollectibles:[...this.earnedThisAttempt]};if(!storeSave(localStorage,save)){toast('meta.storage');return;}this.scene.start('title');});saveRun.id='pause-save-run';run.append(saveRun);
     const restartButton=button("ui.restart", () => this.restartRun());restartButton.id="pause-restart-btn";run.appendChild(restartButton);
     run.appendChild(button("ui.quitToTitle", () => this.scene.start("title")));
 
@@ -3225,6 +3239,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private persistRunEnd(): void {
+    const activeSave=loadSave(localStorage);activeSave.activeRun=null;storeSave(localStorage,activeSave);
     // P2-03: exactly-once terminal persistence (idempotent transition).
     if (this.deathPersisted) return;
     this.deathPersisted = true;
@@ -3432,7 +3447,7 @@ export class GameScene extends Phaser.Scene {
   private showAgeTransition(age: AgeId): void {
     const s = this.sim.state;
     const idx = AGES.indexOf(age);
-    const changes=changedWeaponForms(this.observedWeaponStages,s.weaponStage,activeFamilies(s.originId,s.expansionFamily));
+    const changes=changedWeaponForms(this.observedWeaponStages,s.weaponStage,equippedFamilies(s));
     // A readable acknowledgement, not a timed toast: queued mandatory choices
     // only open after a fresh activation of Continue.
     this.showBlocking("age-screen", 0, (screen) => {
@@ -3446,7 +3461,7 @@ export class GameScene extends Phaser.Scene {
       }
       const steps=el('div','evolution-steps');
       for(const [i,id] of AGES.entries()){const step=el('span',i<=idx?'reached':'',`age.${id}` as EnKeys);if(i===idx)step.setAttribute('aria-current','step');steps.append(step);}panel.append(steps);
-      const forms = activeFamilies(s.originId, s.expansionFamily)
+      const forms = equippedFamilies(s)
         .map((f) => {const st=getWeaponStage(f,s.weaponStage[f]);return `${t(st.nameKey as EnKeys)} · ${Number((st.damage*s.build.damageMul).toFixed(1))} / ${Number((st.cooldown*Math.max(.3,s.build.cooldownMul)).toFixed(2))}s`;}).join(" · ");
       const w = document.createElement("div");
       w.className = "toast-sub";
@@ -3571,7 +3586,7 @@ export class GameScene extends Phaser.Scene {
       panel.appendChild(el("h2", "", "ui.expansionTitle"));
       panel.appendChild(el("div", "logo-sub", "ui.expansionSub"));
       const cards = el("div", "cards");
-      for (const f of families) {
+      for (const f of families.filter(f=>this.sim.canAcquireWeapon(f))) {
         const c = el("div", "card");
         c.setAttribute("role", "button");
         c.tabIndex = 0;
@@ -4216,7 +4231,7 @@ export class GameScene extends Phaser.Scene {
       else if(this.vectorHostiles||!this.hostileBatch.draw(p,hc))drawHostileProj(g, p, wopts);
     }
     const b = s.build;
-    const enabled=activeFamilies(s.originId,s.expansionFamily);
+    const enabled=equippedFamilies(s);
     const est = getWeaponStage("energy", s.weaponStage.energy);
     if (enabled.includes("energy") && (est.archetype === "aura" || b.bonusAura > 0)) {
       drawAura(g, s.px, s.py, est.radius + b.bonusAura * 30, 0xffb03c);

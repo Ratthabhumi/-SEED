@@ -1,0 +1,51 @@
+{
+  "classification": "CANDIDATE_ENGINEERING_NOT_HUMAN_OR_PHYSICAL_ACCEPTANCE",
+  "parent": "7c8fc553e22a3ffc7e4eafaa2da5c4ac1930fe70",
+  "versions": {
+    "worldgen": 3,
+    "content": 28,
+    "save": 4,
+    "childLaws": 18
+  },
+  "fullCheck": {
+    "status": "FAIL",
+    "files": 133,
+    "tests": 672,
+    "passed": 670,
+    "failed": 2,
+    "failures": [
+      "distribution ClassC below unchanged JSD thresholds",
+      "old energy-charge fixture changed Origin metadata rather than ownership"
+    ]
+  },
+  "afterFullCheck": {
+    "chargeFixtureCorrected": "6/6 focused PASS; fresh unowned Hunters state",
+    "typecheck": "PASS",
+    "thirdPartyAndCoreIsolation": "PASS",
+    "productionBuild": "PASS",
+    "browserInitial": "27/29 PASS; two focus-order expectations updated for optional Help",
+    "browserFinalRelevant": "7/7 PASS: actual EN/TH glyphs200%, visual weapon choices720p, legal acquisition/render, save/resume attempt continuity"
+  },
+  "remainingGate": "FAILED_REGRESSION: distribution audit",
+  "classC": {
+    "offerJsdHE": 0.0144,
+    "offerJsdHR": 0.0683,
+    "offerJsdHS": 0.08161941415070073,
+    "pickJsdHE": 0.0098,
+    "pickJsdHR": 0.7075,
+    "pickJsdHS": 0.6701
+  },
+  "thresholdsUnchanged": true,
+  "sourceArt": "existing legitimate atlas only",
+  "humanFun": "NOT_TESTED; owner baseline1/5 unchanged",
+  "physicalPerformance": "INCONCLUSIVE",
+  "exactSourceCI": "See Draft PR receipt; no green claim",
+  "largeTextCorrection": {
+    "red": "200% agency top595.61 overlapped card bottom933.34",
+    "cause": "lower-specificity flex override still shrank the card wrapper",
+    "green": "7/7 browser PASS after explicit non-shrinking large-text/mobile wrapper; overlap assertion retained for EN/TH",
+    "negativeImage": "negative-200-overlap.png",
+    "canonicalSourceUnchanged": true
+  },
+  "guardianPresentation": "RED8vs6; corrected to actual cap6; focused presentation/charge8/8 PASS"
+}

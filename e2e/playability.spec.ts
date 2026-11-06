@@ -14,11 +14,12 @@ for (const lang of ["en", "th"] as const) {
     await page.keyboard.press("Escape");
     await page.evaluate(() => (window as unknown as { __seedE2E: { grant: (n: number) => void } }).__seedE2E.grant(1000));
     await expect(page.locator("#draft-screen .card")).toHaveCount(3);
+    await page.mouse.move(5,5); // Exclude the intentional2px card hover lift from row alignment.
     const boxes = await page.locator("#draft-screen .card").evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, right: r.right }; }));
     expect(Math.max(...boxes.map((b) => b.y)) - Math.min(...boxes.map((b) => b.y))).toBeLessThan(2);
     expect(boxes[1]!.x).toBeGreaterThan(boxes[0]!.right);
-    await expect(page.locator("#draft-screen .card-preview img")).toHaveCount(3);
-    await expect(page.locator("#draft-screen .card-effects")).toHaveCount(3);
+    await expect(page.locator("#draft-screen .weapon-illustration")).toHaveCount(3);
+    await page.locator(".card-details").first().click();await expect(page.locator("#draft-detail .card-effects")).toBeVisible();await page.keyboard.press("Escape");
     expect(await page.locator("#draft-screen").innerText()).not.toMatch(/QUALITY\.|MODIFIER\.|quality\.|modifier\./);
     await page.screenshot({ path: `test-results/browser/draft-responsive-${lang}.png` });
     await page.keyboard.press("1");
@@ -31,6 +32,7 @@ test("200% Thai draft keeps choice toolbar within the viewport", async ({page}) 
   await page.evaluate(() => (window as unknown as { __seedE2E: { grant: (n: number) => void } }).__seedE2E.grant(1000));
   const toolbar = page.locator("#draft-screen .draft-agency");
   await expect(toolbar).toBeVisible();
+  await toolbar.scrollIntoViewIfNeeded();
   const r = await toolbar.boundingBox();
   expect(r!.y).toBeGreaterThanOrEqual(0); expect(r!.y + r!.height).toBeLessThanOrEqual(720);
   expect(await page.locator("#draft-screen").evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);

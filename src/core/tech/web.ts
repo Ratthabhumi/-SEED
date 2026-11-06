@@ -21,7 +21,7 @@ export function eligibleTech(n: TechNode, owned: ReadonlySet<string>, ageIndex: 
   // Domain markers open the four starting paths; age milestones are automatic.
   // Neither is a purchasable upgrade. Legacy fixtures retain content-8 rules.
   if (n.web?.kind === "foundation" || n.web?.kind === "milestone") return false;
-  return !owned.has(n.id) && n.prerequisites.every((p) => owned.has(p))
+  return (!n.weaponFamily||!families.has(n.weaponFamily)) && !owned.has(n.id) && n.prerequisites.every((p) => owned.has(p))
     && !n.exclusions.some((p) => owned.has(p)) && AGES.indexOf(n.age) <= ageIndex + (n.web ? 0 : 1)
     && n.effects.every((e) => !e.family || families.has(e.family));
 }

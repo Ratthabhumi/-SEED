@@ -18,7 +18,7 @@ it('requires real progress for origin variety and validates equip/unequip and co
 it('migrates schema2 without losing Insight, purchases, history or settings',()=>{
  const raw={schema:2,meta:{insight:8,purchased:['survival-kit'],nextAttempt:4,lastSettled:2},settings:{lang:'th'},history:['SEED'],best:{runs:3}};
  const s=loadSave({getItem:k=>k===SAVE_KEY?JSON.stringify(raw):null});
- expect(s.schema).toBe(3);expect(s.meta.insight).toBe(8);expect(s.meta.purchased).toEqual(['survival-kit']);expect(s.settings.lang).toBe('th');expect(s.history).toEqual(['SEED']);expect(s.collection).toEqual(defaultCollection());
+ expect(s.schema).toBe(4);expect(s.meta.insight).toBe(8);expect(s.meta.purchased).toEqual(['survival-kit']);expect(s.settings.lang).toBe('th');expect(s.history).toEqual(['SEED']);expect(s.collection).toEqual(defaultCollection());
 });
 it('roundtrips earned/equipped state and rejects future schema safely',()=>{
  const c=equipCollection(earnCollection(defaultCollection(),{type:'boss'}),'star');

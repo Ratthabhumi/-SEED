@@ -1,3 +1,4 @@
+import {weaponFigure} from '../ui/weaponFigure';
 import {legacyCollectionPanel} from '../legacyCollectionPanel';
 import {settingsControls} from '../ui/settingsControls';
 import {menuNavigation} from '../ui/menuNavigation';
@@ -82,6 +83,7 @@ export class TitleScene extends Phaser.Scene {
       startQa.textContent = "START PLAYTEST";
       startQa.addEventListener("click", () => {
         sfx.unlock(); sfx.select();
+        if(loadSave(localStorage).activeRun&&!window.confirm(t('run.overwrite')))return;
         sessionStorage.setItem(TITLE_SEED_KEY, qaSeed);
         sessionStorage.setItem(TITLE_ORIGIN_KEY, pickedOrigin);
         this.scene.start("game");
@@ -123,7 +125,7 @@ export class TitleScene extends Phaser.Scene {
       b.className = "btn origin-choice" + (o.id === pickedOrigin ? " active" : "");
       // Stable hook for automation; the selector itself stays shared.
       if (isQAMode(window.location.search)) b.id = `qa-origin-${o.id}`;
-      b.textContent = `${t(o.nameKey)} (${o.families.map((f: WeaponFamily) => t(`family.${f}` as never)).join("+")})`;
+      b.textContent = t(o.nameKey);b.append(weaponFigure(o.families[0],0,o.id,0));
       b.setAttribute("aria-pressed", String(o.id === pickedOrigin));
       const portrait = heroPortrait(o.id);
       // Strip is cropped to the first anchored pose, never squashed into a portrait.
@@ -136,22 +138,24 @@ export class TitleScene extends Phaser.Scene {
         this.titleOrigin = o.id;
         for (const x of oBtns) x.classList.remove("active");
         b.classList.add("active");
-        descLine.textContent = formatOriginDesc(o);
+        descLine.textContent = formatOriginDesc(o);examples.textContent=t(o.strategyKey);
       });
       oRow.appendChild(b);
       oBtns.push(b);
     }
-    content.appendChild(oRow);
+    content.appendChild(oRow);const examples=el('p','origin-example',ORIGINS.find(o=>o.id===pickedOrigin)!.strategyKey);content.append(examples);
     const originInfo=document.createElement('details');originInfo.className='title-origin-info';
     const originSummary=document.createElement('summary');originSummary.textContent=t('ui.originStrategy');originInfo.append(originSummary,descLine);content.append(originInfo);
 
     const start = button("ui.startGame", () => {
       sfx.unlock(); sfx.select();
+      if(loadSave(localStorage).activeRun&&!window.confirm(t('run.overwrite')))return;
       const raw = input.value.trim() || generateRandomSeed();
       sessionStorage.setItem(TITLE_SEED_KEY, raw);
       sessionStorage.setItem(TITLE_ORIGIN_KEY, pickedOrigin);
       this.scene.start("game");
     }, "btn primary");
+    const stored=loadSave(localStorage);if(stored.activeRun){const resume=button('run.continue',()=>{sessionStorage.setItem('seed-game:resume','1');this.scene.start('game');},'btn primary');resume.id='continue-run-btn';content.append(resume);}
     start.id = "start-btn";
     start.style.width = "100%";
     const footer = el("div", "title-actions"); footer.appendChild(start); panel.appendChild(footer);

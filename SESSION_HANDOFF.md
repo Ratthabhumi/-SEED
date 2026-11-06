@@ -1,3 +1,33 @@
+# V5.3 corrective browser follow-up
+
+113a0da analyze passed both events: Historical25/24/3, defender-aware25/23/4; all36 replays per policy and identical Push/PR rows. Raw72case evidence is public. Push browser332PASS/4FAIL/1skip preserved. Four failed cases corrected only in browser tests (paired Field ownership and real-key XP collection); targeted4/4PASS. No production changes or thresholds/controller tuning. Final exact-source CI still mandatory before HUMAN_RETEST_READY. See docs/V53_CORRECTIVE_PACKET.md.
+
+# V5.3 corrective — Content29 candidate
+
+PR44 continuation from450f9e2, same branch/primary checkout. Restore configured Origin pairs as real owned instances; legal third slot/Archive cap retained. Initial pair-only offer divergence failed; one justified correction preserves opening Origin tactics before later explicit acquisitions; unchanged ClassC now passes. Stable hashed/saved per-rig target avoids third-emitter target churn. Save4 accepts genuine signed RNG words and compatibleContent28 checkpoints without granting weapons. Child carry avoids duplicate fresh secondary. Worldgen3/Save4/child18 pinned; Content29 declared. Historical/defender-aware controllers and thresholds untouched.
+
+Local full check676/676 in134files PASS incl provenance/build. Affected browser94/98 then targeted five-case correction5/5; CI clean provenance assertion preserved, no final full-browser claim yet. Mandatory exact-source Push/PR CI and both Natural36 results will be recorded in PR44 receipt; do not approve clean human play until they finish and severe regression is absent. Ownerfun1/5/art/native60Hz separate. Optional secondary setup selection deferred with reason. See docs/V53_CORRECTIVE_PACKET.md and ADR0059; preserve all previous failed evidence and43 IDs. No merge/release/deploy/force-push.
+
+---
+
+# V5.3 final evidence handoff
+
+Historical36: reached21/36, wins6/36, deaths20/36, exact replay36/36; parent17/16/5. No acquisition Tech selected by unchanged historical controller; do not substitute a favorable bot or infer human outcomes. Full source remains FAILED_REGRESSION under unchanged ClassC thresholds. CI also exposed old guardian8 fixture; corrected to actual6 emitter cap, focused6/6pass. Public details in docs/V53_OWNER_PACKET.md and docs/evidence/v53/historical36.json. Defender-aware and exact-source CI receipt in DraftPR44. Preserve owner data; no release/merge authorization.
+
+---
+
+# V5.3 presentation correction
+
+Actual screenshot review exposed200% agency/card overlap; new geometry RED reproduced it, specificity fix and EN/TH browser7/7 GREEN. Guardian presentation now caps6 matching actual emitters; focused8/8 GREEN. Canonical core/controllers are identical to8490a11 for ongoing independent Natural36 evidence. Distribution remains FAILED_REGRESSION; see new DraftPR44. No acceptance gate lowered.
+
+---
+
+# V5.3 candidate handoff — FAILED_REGRESSION
+
+Branch feat/v53-visual-weapons-20261105, parent7c8fc55 / DraftPR43. Content28/Save4, worldgen3/child-laws18. Visual-first Draft and real3-slot owned weapons implemented; checkpoint/resume/World2 regressions and relevant EN/TH browser checks pass. Fullcheck initially670/672; one old charge fixture corrected and targeted6/6pass. Distribution ClassC still fails unchanged thresholds; stop further bias experiments, no clean-playtest/release acceptance. See docs/V53_OWNER_PACKET.md, docs/V53_ISSUE_LEDGER.md, docs/ADR/0059-owned-weapons-and-run-checkpoint.md and the new Draft PR exact-source receipt. Human1/5 baseline unchanged. Preserve private owner files/launcher/.cursor. No merge/publish/force-push.
+
+---
+
 # V5.2 — active source detail and accurate attack choices
 
 Primary owner checkout C:\Users\MewMew\Desktop\Co-op\-SEED. Branch feat/v52-closure-combat-20261105 from actual2f48b37476305b7663b3ae9ff2c536c2b32ca75e / DraftPR42. Parent exact-source Push41903595554+PR41903625455 now12/12 success; PR42 receipt updated. Preserve worse Natural36 outcomes, no bot/cadence tuning.

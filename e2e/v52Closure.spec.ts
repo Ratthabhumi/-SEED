@@ -4,9 +4,9 @@ import {startRun,assertNoRawKeys} from './helpers';
 for(const lang of ['en','th']as const)for(const width of [1280,1920,2550])test(`upgrade consequences use real hit values ${lang} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:width===1280?720:width===1920?1080:1272});await startRun(page,'EPOCH-GOLDEN-001',{lang});
  await page.evaluate(()=>(window as any).__seedE2E.grant(100));await expect(page.locator('#draft-screen')).toBeVisible();
- const damage=page.locator('.card').filter({has:page.locator('.card-combat-change',{hasText:lang==='en'?'Base hit':'ดาเมจพื้นฐาน'})});
- await expect(damage).toHaveCount(1);await expect(damage.locator('.card-delta')).toContainText('×');
- await expect(damage.locator('.card-combat-change')).toContainText('12 → 13.44');
+ const damage=page.locator('.card').filter({has:page.locator('.choice-outcome',{hasText:'12 → 13.44'})});
+ await expect(damage).toHaveCount(1);await damage.locator('.card-details').click();await expect(page.locator('.draft-detail-panel .card-delta')).toContainText('×');
+ await expect(page.locator('.draft-detail-panel .card-combat-change')).toContainText('12 → 13.44');await page.keyboard.press('Escape');
  for(const action of await page.locator('.card-select,.card-reserve').all())await expect(action).toBeInViewport();
  await assertNoRawKeys(page);await page.screenshot({path:`test-results/v52-visible/choice-${lang}-${width}.png`});
  const before=await page.evaluate(()=>(window as any).__seedE2E.draftFacts().taken);
@@ -32,8 +32,10 @@ test('source-backed costumes keep actual hero size and Origin/Age identities',as
  await page.screenshot({path:'test-results/v52-visible/source-costume.png'});
 });
 
-test('naturally deployed mines remain visible with high contrast and reduced effects',async({page})=>{
+test('paired starting mines remain visible with high contrast and reduced effects',async({page})=>{
  await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang:'th',contrast:'high',reducedEffects:true});
+ // Hunters owns Field in the original configured starting pair.
+ expect(await page.evaluate(()=>(window as any).__seedE2E.weaponsReview().instances.some((w:any)=>w.family==='field'))).toBe(true);
  await expect.poll(()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).mn.length)).toBeGreaterThan(0);
  await page.screenshot({path:'test-results/v52-visible/mines-high-contrast-reduced.png'});
  await page.waitForTimeout(1500);const samples=await page.evaluate(()=>(window as any).__seedE2E.performanceSamples());

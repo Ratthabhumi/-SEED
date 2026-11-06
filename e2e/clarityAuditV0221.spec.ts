@@ -146,6 +146,7 @@ test("ui readability contract: player-facing core font-size >= 18px (Section 30)
   expect(await getFontSize("#draft-screen h2")).toBeGreaterThanOrEqual(22);
   expect(await getFontSize("#draft-screen .card h3")).toBeGreaterThanOrEqual(20);
   expect(await getFontSize("#draft-screen .card p")).toBeGreaterThanOrEqual(18);
+  await page.locator(".draft-agency-help > summary").click();
   expect(await getFontSize(".draft-stays")).toBeGreaterThanOrEqual(18);
   await page.locator("#draft-screen .card").first().click();
 });

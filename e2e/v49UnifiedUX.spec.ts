@@ -2,9 +2,25 @@ import{test,expect}from'@playwright/test';import{prepareSave,startRun,assertNoRa
 import fs from'node:fs';
 test('natural opening reaches a deliberate first technology without review grants',async({page})=>{
  await startRun(page,'EPOCH-GOLDEN-001');const snapshot=()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()));
- const origin=(await snapshot()).p;await page.keyboard.down('d');await expect.poll(async()=>(await snapshot()).p[0]).toBeGreaterThan(origin[0]+5);await page.keyboard.up('d');
- await expect(page.locator('#draft-screen')).toBeVisible({timeout:90000});const before=await snapshot();expect(before.st[0]).toBeGreaterThan(0);
- const offers=await page.locator('.card').allInnerTexts(),behaviorPreviewCount=await page.locator('.card-combat-change').count();await page.locator('.card-select').first().click();expect((await snapshot()).st[3]).toBe(before.st[3]+1);
+ // Ordinary keyboard input collects on-screen drops. A five-pixel move followed
+ // by idling depended on host speed and could leave all earned XP out of reach.
+ // No grants, time stepping, hidden POI knowledge or simulation edits.
+ const deadline=Date.now()+90000,held=new Set<string>();
+ try{
+  while(!(await page.locator('#draft-screen').isVisible())&&Date.now()<deadline){
+   const s=await snapshot();expect(s.boss[3], 'opening player must remain alive').toBe(0);
+   const nearby=s.k.map((k:string)=>k.split(',').map(Number)).filter((k:number[])=>Math.hypot(k[0]-s.p[0],k[1]-s.p[1])<=260)
+    .sort((a:number[],b:number[])=>Math.hypot(a[0]-s.p[0],a[1]-s.p[1])-Math.hypot(b[0]-s.p[0],b[1]-s.p[1]));
+   const target=nearby[0],dx=target?target[0]-s.p[0]:1,dy=target?target[1]-s.p[1]:0;
+   const next=new Set<string>();if(Math.abs(dx)>3)next.add(dx>0?'d':'a');if(Math.abs(dy)>3)next.add(dy>0?'s':'w');
+   for(const key of held)if(!next.has(key))await page.keyboard.up(key);
+   for(const key of next)if(!held.has(key))await page.keyboard.down(key);
+   held.clear();for(const key of next)held.add(key);
+   await page.waitForTimeout(200);
+  }
+ }finally{for(const key of held)await page.keyboard.up(key);}
+ await expect(page.locator('#draft-screen')).toBeVisible();const before=await snapshot();expect(before.st[0]).toBeGreaterThan(0);
+ const offers=await page.locator('.card').allInnerTexts(),behaviorPreviewCount=await page.locator('.choice-outcome').count();await page.locator('.card-select').first().click();expect((await snapshot()).st[3]).toBe(before.st[3]+1);
  fs.mkdirSync('test-results/v49-visible',{recursive:true});fs.writeFileSync('test-results/v49-visible/opening.json',JSON.stringify({classification:'BOUNDED_REAL_BROWSER_NOT_HUMAN_FUN',seed:'EPOCH-GOLDEN-001',firstDraftCanonicalSeconds:before.age[1],kills:before.st[0],offers,behaviorPreviewCount},null,2));
 });
 test('optional menus reverse Tab reaches Back from the initial heading',async({page})=>{
