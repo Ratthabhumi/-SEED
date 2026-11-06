@@ -90,7 +90,8 @@ export const CHILD_LAWS_CONTENT_VERSION = 18;
 // Content27: legal starting tactics and first-two-choice World1 Stone level
 // offers. No free grants. Worldgen3 / Save3 / child-laws18 remain pinned.
 // Content28: three owned weapon slots, independent rigs/clocks and legal acquisition.
-export const CONTENT_VERSION = 28;
+// Content29 restores original Origin pairs as two owned instances. Geometry/child laws/Save4 stay pinned.
+export const CONTENT_VERSION = 29;
 // Schema2 migrates v1 settings/archive/history without granting retrospective currency.
 // Schema3 preserves v1/v2 progress and Insight, adding a validated cosmetic collection.
 // Save4 adds an optional complete Content28 run checkpoint; profiles1-3 migrate without loadout grants.

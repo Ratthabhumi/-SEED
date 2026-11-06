@@ -1,3 +1,11 @@
+# V5.3 corrective — Content29 candidate
+
+PR44 continuation from450f9e2, same branch/primary checkout. Restore configured Origin pairs as real owned instances; legal third slot/Archive cap retained. Initial pair-only offer divergence failed; one justified correction preserves opening Origin tactics before later explicit acquisitions; unchanged ClassC now passes. Stable hashed/saved per-rig target avoids third-emitter target churn. Save4 accepts genuine signed RNG words and compatibleContent28 checkpoints without granting weapons. Child carry avoids duplicate fresh secondary. Worldgen3/Save4/child18 pinned; Content29 declared. Historical/defender-aware controllers and thresholds untouched.
+
+Local full check676/676 in134files PASS incl provenance/build. Affected browser94/98 then targeted five-case correction5/5; CI clean provenance assertion preserved, no final full-browser claim yet. Mandatory exact-source Push/PR CI and both Natural36 results will be recorded in PR44 receipt; do not approve clean human play until they finish and severe regression is absent. Ownerfun1/5/art/native60Hz separate. Optional secondary setup selection deferred with reason. See docs/V53_CORRECTIVE_PACKET.md and ADR0059; preserve all previous failed evidence and43 IDs. No merge/release/deploy/force-push.
+
+---
+
 # V5.3 final evidence handoff
 
 Historical36: reached21/36, wins6/36, deaths20/36, exact replay36/36; parent17/16/5. No acquisition Tech selected by unchanged historical controller; do not substitute a favorable bot or infer human outcomes. Full source remains FAILED_REGRESSION under unchanged ClassC thresholds. CI also exposed old guardian8 fixture; corrected to actual6 emitter cap, focused6/6pass. Public details in docs/V53_OWNER_PACKET.md and docs/evidence/v53/historical36.json. Defender-aware and exact-source CI receipt in DraftPR44. Preserve owner data; no release/merge authorization.

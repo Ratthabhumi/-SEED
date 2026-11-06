@@ -1,7 +1,7 @@
 import {choiceDiagram} from '../ui/choiceDiagram';
 import {weaponFigure} from '../ui/weaponFigure';
 import {choicePresentation} from '../ui/choicePresentation';
-import {equippedFamilies} from '../../core/combat/weaponInstances';
+import {equippedFamilies,startingWeapons} from '../../core/combat/weaponInstances';
 import {defaultCollection,earnCollection,COLLECTIBLES,type LegacyCollection,type CollectionAchievement} from '../../core/progression/legacyCollection';
 import {drawLegacyCosmetics} from '../render/LegacyCosmetics';
 import {bossThreat,bossStrikeTargetsBase} from '../ui/bossThreat';
@@ -10,7 +10,7 @@ import {powerOpportunity} from '../ui/powerOpportunity';
 import{impactCue}from'../audio/impactCue';
 import{drawBaseSupport,baseSupport}from'../render/BaseSupport';
 import{CivilizationBeats}from'../render/CivilizationBeats';
-import {weaponTransform,primaryTier} from "../../core/combat/weaponGeometry";
+import {weaponTransform,primaryTier,createWeaponRig} from "../../core/combat/weaponGeometry";
 import {mountCombatReview,combatReviewRequested} from '../ui/combatReview';
 import { childCondition } from "../../core/progression/childWorld";
 import {worldPresentation} from '../render/worldPresentation';
@@ -664,7 +664,7 @@ export class GameScene extends Phaser.Scene {
         },
         advanceRaidReview:(seconds:number)=>{for(let i=0;i<Math.floor(Math.min(95,Math.max(0,seconds))/SIM_DT);i++)this.handleEvents(this.sim.step(SIM_DT,{moveX:0,moveY:0,dashPressed:false}));this.refreshHUD();},
         stageEvolution: (origin:string,age:number,encounter='roster') => {
-          const s=this.sim.state;this.paused=false;s.originId=origin;s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
+          const s=this.sim.state;this.paused=false;s.originId=origin;s.weaponRig=createWeaponRig(s.weaponRig.mode);s.weapons=startingWeapons(origin,s.weaponRig);s.weaponSerial=s.weapons.length;s.expansionFamily='';s.ageIndex=age;s.px=10000;s.py=10000;s.vx=s.vy=0;
           this.playerArc.setPosition(s.px,s.py);this.cameras.main.centerOn(s.px,s.py);
           s.build.hp=s.build.maxHp=1e8;s.spawnT=s.eliteT=s.mineT=999;s.pendingLevels=0;s.draftOpen=false;s.draftOffers=[];
           // Isolated combat fixture: mark local generated POIs discovered, so exploration drafts cannot freeze movement assertions.
@@ -963,7 +963,8 @@ export class GameScene extends Phaser.Scene {
         },
         stageFamilyReview: (family:"kinetic"|"energy"|"defense"|"field") => {
           const s=this.sim.state;this.paused=true;this.combatFeedback.reset(s.worldNonce);
-          s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"engineers";
+          s.originId=family==="kinetic"?"hunters":family==="energy"?"resonant":family==="defense"?"sentinels":"hunters";
+          s.weaponRig=createWeaponRig(s.weaponRig.mode);s.weapons=startingWeapons(s.originId,s.weaponRig);s.weaponSerial=s.weapons.length;s.expansionFamily="";
           for(const p of s.projs)p.active=false;
           for(const m of s.mines)m.active=false;
           s.spawnT=s.eliteT=s.mineT=999;s.build.hp=s.build.maxHp=500;

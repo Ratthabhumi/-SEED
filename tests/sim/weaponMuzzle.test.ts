@@ -67,7 +67,7 @@ it('handles wrap, overlap, swept hits, pause and explicit mode changes without p
  sim.step(0,{...idle,weaponMount:'hand'});expect(s.weaponRig.mode).toBe('hand');expect(sim.hash()).not.toBe(hash);
  expect(s.elapsed).toBe(0);expect(s.projs.some(p=>p.active)).toBe(false);
  // Content27 adds legal early tactics/offers; child laws remain pinned at18.
- expect(CONTENT_VERSION).toBe(28);expect(CHILD_LAWS_CONTENT_VERSION).toBe(18);
+ expect(CONTENT_VERSION).toBe(29);expect(CHILD_LAWS_CONTENT_VERSION).toBe(18);
 });
 it('replays target reversals and close moving targets deterministically without tunnelling',()=>{
  const a=fixture(),b=fixture();let releases=0;

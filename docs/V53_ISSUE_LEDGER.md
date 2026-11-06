@@ -1,3 +1,7 @@
+# Corrective overlay
+
+Content29 recovery candidate: [packet](V53_CORRECTIVE_PACKET.md). Original pair restored, legal third slot preserved; focused engineering fixes do not close the43 human/art complaints. Final readiness follows the exact-source PR44 receipt. The earlier FAILED_REGRESSION evidence below is retained.
+
 # V5.3 — 43-item evidence ledger
 
 IDs1–41 retain the available grouped owner wording and prior disposition from [V5.2](V52_ISSUE_LEDGER.md). Exact individual wording was unavailable there; none is invented here. IDs42–43 are new.

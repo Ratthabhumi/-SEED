@@ -170,7 +170,7 @@ export class RunSimulation {
       recentDraftOffers: [],
       relayCd: 0, spawnT: 0, eliteT: 60, mineT: 0, auraT: 0,
       weaponCd: { kinetic: 0, energy: 0, defense: 0, field: 0 },
-      weaponRig: createWeaponRig(), weapons:startingWeapons(originId),weaponSerial:1,
+      weaponRig: createWeaponRig(), weapons:startingWeapons(originId),weaponSerial:2,
       guardianAng: 0, orbitAng: 0, beamFlash: null,
       enemies: Array.from({ length: MAX_ENEMIES }, () => ({
         active: false, x: 0, y: 0, hp: 1, maxHp: 1, shield: 0,
@@ -227,6 +227,8 @@ export class RunSimulation {
     const asc = s.ascension + 1;
     const fresh = this.freshWorldState(this.masterSeed, asc, origin.id);
     fresh.weaponRig=createWeaponRig(s.weaponRig.mode);fresh.weaponSerial=s.weaponSerial;
+    // Child worlds carry existing inventory; never grant a new free secondary.
+    fresh.weapons=fresh.weapons.slice(0,1);
     const signature=fresh.weapons[0]!.family,ownedSignature=s.weapons.find(w=>w.family===signature);
     fresh.weapons[0]!.id=ownedSignature?.id??('weapon-'+fresh.weaponSerial+++'-'+signature);fresh.weapons[0]!.rig=fresh.weaponRig;
     const carried=s.weapons.filter(w=>w.family!==signature&&(ownedSignature||s.weapons.length<3||w.slot!==0));
@@ -285,9 +287,9 @@ export class RunSimulation {
   /** Versioned complete run checkpoint. Never restores a loadout into a fresh run. */
   checkpoint():string {const payload={format:1,content:CONTENT_VERSION,worldgen:WORLDGEN_VERSION,state:this.state,streams:this.streamSnapshots()};const body=JSON.stringify(payload);return JSON.stringify({body,checksum:fnv1a32(body)});}
   static fromCheckpoint(raw:string):RunSimulation|null {
-    try{if(typeof raw!=='string'||raw.length>2000000)return null;const envelope=JSON.parse(raw);if(typeof envelope.body!=='string'||fnv1a32(envelope.body)!==envelope.checksum)return null;const p=JSON.parse(envelope.body);if(p.format!==1||p.content!==CONTENT_VERSION||p.worldgen!==WORLDGEN_VERSION||typeof p.state?.masterSeed!=='string'||!ORIGINS.some(o=>o.id===p.state.originId)||typeof p.state.difficultyMul!=='number'||p.state.difficultyMul<=0)return null;
+    try{if(typeof raw!=='string'||raw.length>2000000)return null;const envelope=JSON.parse(raw);if(typeof envelope.body!=='string'||fnv1a32(envelope.body)!==envelope.checksum)return null;const p=JSON.parse(envelope.body);if(p.format!==1||![28,CONTENT_VERSION].includes(p.content)||p.worldgen!==WORLDGEN_VERSION||typeof p.state?.masterSeed!=='string'||!ORIGINS.some(o=>o.id===p.state.originId)||typeof p.state.difficultyMul!=='number'||p.state.difficultyMul<=0)return null;
       const sim=new RunSimulation({masterSeed:p.state.masterSeed,originId:p.state.originId,difficultyMul:p.state.difficultyMul});const template=sim.freshWorldState(p.state.masterSeed,p.state.ascension,p.state.originId);if(!validCheckpointState(p.state,template)||p.state.worldSeed!==template.worldSeed||p.state.worldNonce!==template.worldNonce)return null;
-      for(const key of Object.keys(sim.streams) as (keyof RunRngStreams)[]){const a=p.streams?.[key];if(!Array.isArray(a)||a.length!==4||a.some(x=>!Number.isInteger(x)||x<0||x>0xffffffff)||a.every(x=>x===0))return null;sim.streams[key].restore(a as [number,number,number,number]);}
+      for(const key of Object.keys(sim.streams) as (keyof RunRngStreams)[]){const a=p.streams?.[key];if(!Array.isArray(a)||a.length!==4||a.some(x=>!Number.isInteger(x)||x< -0x80000000||x>0xffffffff)||a.every(x=>x===0))return null;sim.streams[key].restore(a as [number,number,number,number]);}
       for(const key of Object.keys(template) as (keyof RunState)[])(sim.state as any)[key]=p.state[key];sim.state.weapons[0]!.rig=sim.state.weaponRig;return sim;
     }catch{return null;}
   }
@@ -1854,8 +1856,13 @@ export class RunSimulation {
     for(const w of s.weapons){if(w.family!=='kinetic'&&w.family!=='energy')continue;const target=this.weaponTarget(w.family,800);if(target)advanceWeaponRig(weaponArtOrigin(s.originId,w.family,w.slot),s.weaponStage[w.family],s.px,s.py,w.rig,target.x,target.y,dt);}
   }
   private weaponTarget(family:WeaponFamily,range:number):SimEnemy|null {
-    const s=this.state,w=s.weapons.find(w=>w.family===family);
-    return this.nearestEnemy(s.px+(w?.rig.x??0),s.py+(w?.rig.y??0),range);
+    const s=this.state,w=s.weapons.find(w=>w.family===family);if(!w)return null;
+    const x=s.px+w.rig.x,y=s.py+w.rig.y,locked=s.enemies[w.rig.targetIndex??-1];
+    // Aim and release retain one live in-range target while the emitter moves.
+    // Re-ranking from the moving rig every step can alternate between nearby
+    // enemies forever, preventing the third emitter from reaching release aim.
+    if(locked?.active&&Math.hypot(locked.x-x,locked.y-y)<=range)return locked;
+    const target=this.nearestEnemy(x,y,range);w.rig.targetIndex=target?s.enemies.indexOf(target):-1;return target;
   }
   private releasePose(target:{x:number;y:number},family:WeaponFamily):WeaponTransform|null {
     const s=this.state,w=s.weapons.find(w=>w.family===family);if(!w)return null;const r=w.rig,tier=s.weaponStage[family],art=weaponArtOrigin(s.originId,family,w.slot),aim=aimFromPivot(art,tier,s.px,s.py,r,target.x,target.y);

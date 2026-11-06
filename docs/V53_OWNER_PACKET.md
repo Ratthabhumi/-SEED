@@ -1,3 +1,7 @@
+# Corrective continuation
+
+See [V53_CORRECTIVE_PACKET.md](V53_CORRECTIVE_PACKET.md) for the Content29 recovery candidate. The following450f9e2 negative record is preserved as history, not a current-source acceptance claim.
+
 # V5.3 — อาวุธจริงหลายชิ้นและเลือกด้วยภาพ
 
 **PARTIAL / FAILED_REGRESSION: ยังไม่อนุมัติ clean playtest หรือ release**

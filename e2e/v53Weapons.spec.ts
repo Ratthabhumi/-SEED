@@ -11,9 +11,9 @@ for(const lang of ['en','th']as const)for(const scale of [1,2]as const)test(`vis
  await page.keyboard.press('Escape');await expect(page.locator('.draft-detail-panel')).toHaveCount(0);await expect(page.locator('.card-details').first()).toBeFocused();
  await page.screenshot({path:`test-results/v53/choices-${lang}-${scale}.png`});await page.locator('.card-select').first().click();expect(await page.evaluate(()=>(window as any).__seedE2E.draftFacts().taken)).toBe(before+1);
 });
-test('legal second weapon renders, full checkpoint resumes original attempt and weapon identities',async({page})=>{
+test('legal third weapon renders, full checkpoint resumes original attempt and weapon identities',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await startRun(page,'EPOCH-GOLDEN-001');
- const first=await page.evaluate(()=>(window as any).__seedE2E.weaponsReview());expect(first.instances).toHaveLength(1);
+ const first=await page.evaluate(()=>(window as any).__seedE2E.weaponsReview());expect(first.instances).toHaveLength(2);
  await page.evaluate(()=>(window as any).__seedE2E.stageWeaponOffer('energy'));await page.locator('.card-select').click();
  await expect.poll(()=>page.evaluate(()=>(window as any).__seedE2E.weaponsReview().extraArt.length)).toBe(1);
  const owned=await page.evaluate(()=>(window as any).__seedE2E.weaponsReview().instances.map((w:any)=>w.id));

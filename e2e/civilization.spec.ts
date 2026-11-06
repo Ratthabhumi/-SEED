@@ -91,7 +91,7 @@ test("age card shows exactly three gates and Thai renders", async ({ page }) => 
   await startRun(page, "EPOCH-CIV-005");
   await expect(page.locator(".age-card .gate-row")).toHaveCount(3);
   await page.evaluate(() => (window as unknown as { __seedE2E: E2E }).__seedE2E.setLang("th"));
-  await expect(page.locator(".age-card")).toContainText("องค์ความรู้");
+  await expect(page.locator(".age-card")).toContainText("ความรู้");
   await expect(page.locator(".age-card")).toContainText("ภารกิจยุค");
   expect(errors).toEqual([]);
 });

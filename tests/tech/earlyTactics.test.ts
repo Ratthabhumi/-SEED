@@ -22,11 +22,11 @@ describe('Content27 early tactical opportunity',()=>{
   const context={sim:{owned:s.owned,ownedTags:s.ownedTags,breakthroughs:s.breakthroughs,ageIndex:0,age:'stone' as const,originId:s.originId,expansionFamily:s.expansionFamily,pinnedTarget:'',draftChoices:[],reservedTech:'',history:s.history,techGraph:()=>sim.techGraph().map(n=>n.id==='tactical-energy'?{...n,weight:1e10}:n)},laws:s.worldLaws,activeFamilies:new Set(equippedFamilies(s)),recentOffers:[],recentPicks:[],rng:createStreamRng('V51-marginal','draft'),earlyTactics:true,chainUnlocked:true};
   const offers=generateOffers(context);expect(offers[0]!.node.effects.some(e=>['mineAdd','orbitAdd','projectileAdd'].includes(e.kind))).toBe(true);
  });
- it('all12 starting pools have one owned family branch and legal acquisitions, without any free tactical grant',()=>{
+ it('all12 starting pools have two owned family branches and legal acquisitions, without any free tactical grant',()=>{
   for(const seed of seeds)for(const originId of origins){
    const sim=new RunSimulation({masterSeed:seed,originId}),s=sim.state;
    const pool=sim.techGraph().filter(n=>eligibleTech(n,new Set(s.owned),0,new Set(equippedFamilies(s))));
-   expect(pool.filter(n=>n.id.startsWith('tactical-'))).toHaveLength(1);
+   expect(pool.filter(n=>n.id.startsWith('tactical-'))).toHaveLength(2);
    expect(s.build.bonusProjectiles+s.build.bonusMines+s.build.bonusOrbit).toBe(0);expect(s.build.chainUnlocked).toBe(false);
    expect(pool.filter(n=>!tactical(n.effects)).length).toBeGreaterThan(2);
   }

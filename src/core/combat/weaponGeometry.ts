@@ -3,7 +3,7 @@ import type {WeaponFamily} from './weapons';
 import {originById} from '../progression/origins';
 export function primaryTier(origin:string,stages:Record<WeaponFamily,number>){return stages[originById(origin).families.find(f=>f==='kinetic'||f==='energy')??'kinetic'];}
 export type WeaponMount='hand'|'float';
-export interface WeaponRig {mode:WeaponMount;orbitSlot?:number;x:number;y:number;heading:number;firedAt:number;flipY:boolean;}
+export interface WeaponRig {mode:WeaponMount;orbitSlot?:number;targetIndex?:number;x:number;y:number;heading:number;firedAt:number;flipY:boolean;}
 export interface WeaponTransform {frame:number;tier:number;x:number;y:number;heading:number;rotation:number;flipY:boolean;scale:number;pivotX:number;pivotY:number;muzzleX:number;muzzleY:number;}
 export interface PrimaryRelease {owner:'player-primary'|'player-weapon';weaponInstanceId?:string;slot?:number;time:number;pose:WeaponTransform;heading:number;index:number;count:number;projectileIndex?:number;targetX?:number;targetY?:number;}
 const ORIGINS=['hunters','engineers','resonant','sentinels'];

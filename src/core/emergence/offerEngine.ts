@@ -336,15 +336,9 @@ export function generateOffers(
     if(tactic)selectedNodes=[tactic,...selectedNodes.filter(c=>c.node.id!==tactic.node.id)].slice(0,K);
   }
 
-  if(context.acquireWeapon){const acquisition=ranked.find(c=>c.node.weaponFamily);if(acquisition)selectedNodes=[acquisition,...selectedNodes.filter(c=>c.node.id!==acquisition.node.id)].slice(0,K);}
-
-  // Protect the two opening decisions, but retain their sampled relative rank.
-  // A fixed acquisition-first order erased seed/Origin first-pick variation.
-  if(context.acquireWeapon&&context.earlyTactics){
-    const protectedNodes=selectedNodes.filter(c=>c.node.weaponFamily||changesAttackPattern(c.node,context.chainUnlocked));
-    protectedNodes.sort((a,b)=>ranked.indexOf(a)-ranked.indexOf(b));
-    selectedNodes=[...protectedNodes,...selectedNodes.filter(c=>!protectedNodes.includes(c))].slice(0,K);
-  }
+  // The viable original pair gets its existing Origin tactics first. A third
+  // weapon remains in the weighted pool, then is surfaced after the opening.
+  if(context.acquireWeapon&&!context.earlyTactics){const acquisition=ranked.find(c=>c.node.weaponFamily);if(acquisition)selectedNodes=[acquisition,...selectedNodes.filter(c=>c.node.id!==acquisition.node.id)].slice(0,K);}
 
   // --- STAGE 2: HOW SPECIAL THAT OFFER INSTANCE IS ---
   // Sample quality per selected offer without age clamping; all qualities valid in every age.

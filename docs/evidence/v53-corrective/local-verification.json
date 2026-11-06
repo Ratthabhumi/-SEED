@@ -1,0 +1,57 @@
+{
+  "parent": "450f9e2eee20f7707aec59f7ee7d82443c8e72d8",
+  "versions": {
+    "worldgen": 3,
+    "content": 29,
+    "save": 4,
+    "childLaws": 18
+  },
+  "fullCheck": {
+    "status": "PASS",
+    "files": 134,
+    "tests": 676,
+    "includes": [
+      "typecheck",
+      "all unit tests",
+      "provenance/core isolation",
+      "production build"
+    ]
+  },
+  "browser": {
+    "affectedBatch": {
+      "passed": 94,
+      "failed": 4,
+      "total": 98
+    },
+    "targetedCorrections": {
+      "passed": 5,
+      "failed": 0
+    },
+    "negativeCases": [
+      "HUD icon snapshot detached during cooldown child replacement",
+      "2px intentional hover lift contaminated row-alignment measurement EN/TH",
+      "local uncommitted build truthfully dirty while CI clean assertion remains strict"
+    ],
+    "coverage": "No full98-pass claim; mandatory full final-source CI still required. No production changes after original98-case batch."
+  },
+  "classC": {
+    "status": "PASS",
+    "thresholdsUnchanged": true,
+    "offerJsd": {
+      "HE": 0.2607,
+      "HR": 0.1617,
+      "HS": 0.4577
+    },
+    "pickJsd": {
+      "HE": 0.4438,
+      "HR": 0.4642,
+      "HS": 1.0
+    }
+  },
+  "startingPairTests": "45/45 targeted core/offer/save PASS; migration RED/GREEN and genuine signed RNG roundtrip included",
+  "policiesUnchanged": true,
+  "cohorts": "Mandatory exact-source CI; no repeated local Natural36",
+  "humanFun": "Owner baseline1/5 unchanged; no new rating",
+  "physical60Hz": "Not certified",
+  "originalArt": "Existing assets only; original source dependencies remain"
+}

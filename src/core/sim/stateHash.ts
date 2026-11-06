@@ -72,7 +72,7 @@ export function canonicalSnapshot(s: RunState, rng: RngSnapshots): string {
   const b = s.build;
   const dmgSrc = Object.keys(s.damageBySource).sort().map((k) => `${k}:${r6(s.damageBySource[k] as number)}`);
   const snap = {
-    weapons:s.weapons.map(w=>[w.id,w.owner,w.slot,w.family,r6(w.auraCd),w.rig.mode,r6(w.rig.x),r6(w.rig.y),r6(w.rig.heading),r6(w.rig.firedAt),w.rig.flipY?1:0,w.rig.orbitSlot??0]),weaponSerial:s.weaponSerial,
+    weapons:s.weapons.map(w=>[w.id,w.owner,w.slot,w.family,r6(w.auraCd),w.rig.mode,r6(w.rig.x),r6(w.rig.y),r6(w.rig.heading),r6(w.rig.firedAt),w.rig.flipY?1:0,w.rig.orbitSlot??0,w.rig.targetIndex??-1]),weaponSerial:s.weaponSerial,
     id: [s.masterSeed, s.worldSeed, s.worldNonce, s.ascension, s.difficultyMul],
     age: [s.ageIndex, r6(s.elapsed), r6(s.ageElapsed), s.ageKills, s.highestAge],
     run: [r6(s.runElapsed), s.runHighestAge, r6(s.runKills)],
