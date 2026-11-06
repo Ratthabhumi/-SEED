@@ -1,3 +1,7 @@
+# V5.3 corrective browser follow-up
+
+113a0da analyze passed both events: Historical25/24/3, defender-aware25/23/4; all36 replays per policy and identical Push/PR rows. Raw72case evidence is public. Push browser332PASS/4FAIL/1skip preserved. Four failed cases corrected only in browser tests (paired Field ownership and real-key XP collection); targeted4/4PASS. No production changes or thresholds/controller tuning. Final exact-source CI still mandatory before HUMAN_RETEST_READY. See docs/V53_CORRECTIVE_PACKET.md.
+
 # V5.3 corrective — Content29 candidate
 
 PR44 continuation from450f9e2, same branch/primary checkout. Restore configured Origin pairs as real owned instances; legal third slot/Archive cap retained. Initial pair-only offer divergence failed; one justified correction preserves opening Origin tactics before later explicit acquisitions; unchanged ClassC now passes. Stable hashed/saved per-rig target avoids third-emitter target churn. Save4 accepts genuine signed RNG words and compatibleContent28 checkpoints without granting weapons. Child carry avoids duplicate fresh secondary. Worldgen3/Save4/child18 pinned; Content29 declared. Historical/defender-aware controllers and thresholds untouched.

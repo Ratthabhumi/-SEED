@@ -32,9 +32,10 @@ test('source-backed costumes keep actual hero size and Origin/Age identities',as
  await page.screenshot({path:'test-results/v52-visible/source-costume.png'});
 });
 
-test('legally acquired mines remain visible with high contrast and reduced effects',async({page})=>{
+test('paired starting mines remain visible with high contrast and reduced effects',async({page})=>{
  await page.setViewportSize({width:1280,height:720});await startRun(page,'EPOCH-GOLDEN-001',{lang:'th',contrast:'high',reducedEffects:true});
- await page.evaluate(()=>(window as any).__seedE2E.stageWeaponOffer('field'));await page.locator('.card-select').click();
+ // Hunters owns Field in the original configured starting pair.
+ expect(await page.evaluate(()=>(window as any).__seedE2E.weaponsReview().instances.some((w:any)=>w.family==='field'))).toBe(true);
  await expect.poll(()=>page.evaluate(()=>JSON.parse((window as any).__seedE2E.snapshot()).mn.length)).toBeGreaterThan(0);
  await page.screenshot({path:'test-results/v52-visible/mines-high-contrast-reduced.png'});
  await page.waitForTimeout(1500);const samples=await page.evaluate(()=>(window as any).__seedE2E.performanceSamples());

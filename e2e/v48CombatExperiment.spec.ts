@@ -2,7 +2,8 @@ import{test,expect}from'@playwright/test';
 import{startRun,assertNoRawKeys}from'./helpers';
 for(const lang of ['en','th']as const)test(`actual moving mine trail and pause ${lang}`,async({page})=>{
  await page.setViewportSize({width:1280,height:720});await startRun(page,'V48-CONTROL',{lang});
- await page.evaluate(()=>(window as any).__seedE2E.stageWeaponOffer('field'));await page.locator('.card-select').click();
+ // Hunters owns Field in the original configured starting pair.
+ expect(await page.evaluate(()=>(window as any).__seedE2E.weaponsReview().instances.some((w:any)=>w.family==='field'))).toBe(true);
  await page.keyboard.down('d');
  // Sample frequently: a new mine's 0.3s age window can fall between default polls.
  await expect.poll(()=>page.evaluate(()=>{const s=JSON.parse((window as any).__seedE2E.snapshot());return s.mn.some((m:string)=>{const a=m.split(',').map(Number);return a[4]>11.7&&a[0]-s.p[0]<-50;});}),{intervals:[50]}).toBe(true);
