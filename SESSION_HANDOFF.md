@@ -1,3 +1,15 @@
+# V6 active-route compatibility - final candidate
+
+Recovered UI keeps the active incomplete combination recipe outside optional Build details. Existing mission-to-map test RED then EN/TH real recipe picks GREEN; final typecheck/build and5targeted browser cases pass. Earlier680unit/full-check,22map/weapons/save and13viewport/alignment results are preserved with source scope in docs/TECH_CLARITY_OWNER_PACKET.md. Intermediate18f9CI was superseded; final exact-source PR45 receipt governs acceptance. No canonical/version change. Owner ratings remain2/5. Preserve private content below.
+
+# V6 UI recovery receipt - 2026-11-11
+
+Recovered0d708db intact above73c67ea. Local check680/680PASS; semantic art + sidebar map/weapons/save22/22PASS; final CSS row regression and viewport matrix13/13PASS after build. Final exact-source CI is in the single child Draft PR receipt. Human Combat/Upgrade/Replay2/5 remains NOT_ACCEPTED. GateB deferred: existing hit feedback is present; no specific safe combat defect identified. No core/content/save/policy/version changes. Public packet: docs/TECH_CLARITY_OWNER_PACKET.md. Preserve private owner content below.
+
+# Tech clarity candidate - 2026-11-11
+
+Based on verified73c67ea/PR44. Human saved report confirms six ages, three weapon families, Boss49.2s and World2+30s, but no terminal marker or ratings. Private raw evidence is not published. UI-only child restores front quality badges and truthful category/weapon art, adds canonical-domain navigation and concise optional build details. Focused12tests pass; final local check and browser/CI pending. See docs/TECH_CLARITY_OWNER_PACKET.md. No canonical/save/policy/version changes. Preserve owner content below.
+
 # V5.3 corrective browser follow-up
 
 113a0da analyze passed both events: Historical25/24/3, defender-aware25/23/4; all36 replays per policy and identical Push/PR rows. Raw72case evidence is public. Push browser332PASS/4FAIL/1skip preserved. Four failed cases corrected only in browser tests (paired Field ownership and real-key XP collection); targeted4/4PASS. No production changes or thresholds/controller tuning. Final exact-source CI still mandatory before HUMAN_RETEST_READY. See docs/V53_CORRECTIVE_PACKET.md.

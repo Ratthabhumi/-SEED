@@ -1,0 +1,30 @@
+{
+  "classification": "HUMAN_RUN_OBSERVED_NOT_FUN_ACCEPTED",
+  "build": "73c67ea735b90030d94f68630a1056df8ab3cfbc",
+  "sourceDirty": false,
+  "observed": [
+    "six ages reached",
+    "two starter families became three",
+    "boss killed",
+    "world2 started",
+    "world2 advanced at least30simulation seconds"
+  ],
+  "bossFightSimulationSeconds": 49.2,
+  "terminalReport": false,
+  "ratingsRecorded": false,
+  "recordedAssertionFailures": 0,
+  "recordedConsoleErrors": 0,
+  "limitations": [
+    "nonterminal saved report; no invented rating or clean-session certification",
+    "private report, seed, session identity, save and hardware fields not published",
+    "checkpoint frame interval p95 observations31.2–39.8ms do not certify native60FPS"
+  ],
+  "ownerFollowup": {
+    "combatFeel": 2,
+    "upgradeImpact": 2,
+    "replayInterest": 2,
+    "scale": 5,
+    "source": "Owner explicitly confirmed all three ratings in chat",
+    "humanFunAcceptance": "NOT_ACCEPTED"
+  }
+}

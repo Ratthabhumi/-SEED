@@ -576,6 +576,8 @@ export const en = {
   "ui.repairing": "Repairing",
   "ui.noOutposts": "No outposts yet — secure a Strategic Site to begin",
   "ui.upgradeBenefit": "Benefit",
+  "tech.state.selected": "Selected",
+  "tech.branches": "Technology branches",
   "tech.state.now": "AVAILABLE NOW",
   "tech.state.future": "FUTURE",
   "tech.state.locked": "LOCKED",
