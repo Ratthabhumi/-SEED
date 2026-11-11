@@ -1,3 +1,7 @@
+# Tech clarity candidate - 2026-11-11
+
+Based on verified73c67ea/PR44. Human saved report confirms six ages, three weapon families, Boss49.2s and World2+30s, but no terminal marker or ratings. Private raw evidence is not published. UI-only child restores front quality badges and truthful category/weapon art, adds canonical-domain navigation and concise optional build details. Focused12tests pass; final local check and browser/CI pending. See docs/TECH_CLARITY_OWNER_PACKET.md. No canonical/save/policy/version changes. Preserve owner content below.
+
 # V5.3 corrective browser follow-up
 
 113a0da analyze passed both events: Historical25/24/3, defender-aware25/23/4; all36 replays per policy and identical Push/PR rows. Raw72case evidence is public. Push browser332PASS/4FAIL/1skip preserved. Four failed cases corrected only in browser tests (paired Field ownership and real-key XP collection); targeted4/4PASS. No production changes or thresholds/controller tuning. Final exact-source CI still mandatory before HUMAN_RETEST_READY. See docs/V53_CORRECTIVE_PACKET.md.

@@ -578,6 +578,8 @@ export const th: Record<EnKeys, string> = {
   "ui.repairing": "กำลังซ่อม",
   "ui.noOutposts": "ยังไม่มีฐาน — ยึดจุดยุทธศาสตร์เพื่อเริ่มต้น",
   "ui.upgradeBenefit": "ผลที่ได้",
+  "tech.state.selected": "เลือกอยู่",
+  "tech.branches": "สายเทคโนโลยี",
   "tech.state.now": "พร้อมวิจัย",
   "tech.state.future": "อนาคต",
   "tech.state.locked": "ล็อก",

@@ -935,3 +935,47 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 #draft-screen:has(.draft-agency-help[open]){overflow-y:auto;}
 
 .choice-diagram{margin:0;flex:0 1 64px;min-height:0;color:var(--color-friendly);}.choice-diagram svg{width:100%;height:44px;fill:none;stroke:currentColor;stroke-width:2}.choice-diagram figcaption{font-size:12px;line-height:1.7;}.origin-example{min-height:1.8em;}
+
+/* Human-observed Tech clarity: keep canonical domains/quality and readable choices. */
+#draft-screen .cards{max-width:1160px;margin-inline:auto;max-height:640px;align-items:stretch;}
+#draft-screen .card{padding:14px;}
+#draft-screen .card-front{gap:6px;}
+.choice-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-height:30px;}
+.choice-category{font-size:var(--font-caption);color:var(--color-text);font-weight:700;}
+.choice-heading .quality{margin:0;line-height:1.7;letter-spacing:0;text-transform:none;}
+#draft-screen .weapon-figure{height:clamp(64px,12vh,112px);}
+.technology-figure img{width:64px;height:64px;object-fit:contain;}
+#draft-screen .card-front h3{margin:0;line-height:1.7;}
+#draft-screen .choice-kind{line-height:1.7;}
+#draft-screen .choice-benefit,#draft-screen .choice-outcome{margin:0;}
+#draft-screen[data-large-type=true] .cards{max-height:none;}
+#draft-screen[data-large-type=true] .card{height:auto;min-height:0;}
+#draft-screen[data-large-type=true] .card-front{flex:none;min-height:auto;}
+.techmap-branches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;flex:none;}
+.techmap-branches button{display:flex;align-items:center;gap:8px;white-space:normal;text-align:start;padding:6px 10px;min-height:44px;border-inline-start:4px solid var(--branch-color);font-size:var(--font-caption);}
+.techmap-branches img{width:24px;height:24px;flex:none;object-fit:contain;}
+.techmap-branches small{margin-inline-start:auto;font-size:var(--font-micro);}
+.techmap-branches [aria-pressed=true]{outline:2px solid var(--color-focus);outline-offset:1px;background:#263a4c;}
+[data-domain=warfare]{--branch-color:#ff9c89;}[data-domain=science]{--branch-color:#84d5ff;}[data-domain=industry]{--branch-color:#ffd277;}[data-domain=culture]{--branch-color:#cdabff;}
+.techmap-node{border-inline-start:4px solid var(--branch-color);}
+.techmap-node.selected{outline:3px solid #fff;outline-offset:3px;opacity:1;}
+.techmap-node.branch-muted{opacity:.22;}
+.techmap-edge{opacity:.28;}.techmap-edge.pinned,.techmap-edge.selected-path{opacity:1;stroke:#a5efff;stroke-width:4px;}
+.techmap-svg>circle{opacity:.25;}
+.techmap-effects{margin:6px 0;padding-inline-start:22px;line-height:1.7;}
+.techmap-desc{line-height:1.7;}
+.techmap-secondary{margin-top:14px;border-top:1px solid var(--color-border);padding-top:8px;line-height:1.7;}
+.techmap-secondary summary{cursor:pointer;font-weight:700;padding:6px;}
+#ui .techmap-wrap{height:calc(100dvh - 32px);max-height:calc(100dvh - 32px);box-sizing:border-box;}
+#ui .techmap-body{overflow:hidden;min-height:0;}
+#ui .techmap-viewport{min-height:180px;max-height:none;}
+#ui .techmap-side{overflow:auto;min-height:0;}
+#ui[data-density=compact] .techmap-viewport{flex:1 1 50%;min-height:160px;}
+#ui[data-density=compact] .techmap-side{flex:1 1 50%;max-height:36vh;}
+@media(max-width:760px){.techmap-branches{grid-template-columns:repeat(2,minmax(0,1fr));}.techmap-wrap{padding:10px;}.techmap-controls{flex-wrap:wrap;margin:0;}.techmap-head{gap:6px;}.techmap-body{flex-direction:column;}.techmap-side{max-height:32vh;}}
+
+.techmap-state-legend{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:var(--font-caption);line-height:1.7;color:var(--color-text);}
+.techmap-node.selected.branch-muted{opacity:1;}
+
+#draft-screen .weapon-figure{height:clamp(56px,9vh,88px);}
+@media(max-height:650px){#ui #draft-screen{overflow-y:auto;}#ui #draft-screen .cards-wrapper{height:auto;flex:none;max-height:none;}#draft-screen .cards{height:auto;max-height:none;}#draft-screen .card{height:auto;min-height:0;}#draft-screen .card-front{flex:none;min-height:auto;}}

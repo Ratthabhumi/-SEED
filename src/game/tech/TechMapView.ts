@@ -11,7 +11,7 @@ import { effectSummary } from "../ui/techEffects";
  */
 import Panzoom, { type PanzoomObject } from "@panzoom/panzoom";
 import type { RunSimulation } from "../../core/sim/RunSimulation";
-import { AGES, type AgeId, type TechNode } from "../../core/tech/graph";
+import { AGES, type AgeId, type Domain, type TechNode } from "../../core/tech/graph";
 import { BREAKTHROUGHS } from "../../core/tech/synergy";
 import { ORIGINS, activeFamilies, originById } from "../../core/progression/origins";
 import { t } from "../../i18n/i18n";
@@ -41,6 +41,7 @@ export class TechMapView {
   private resizeObserver: ResizeObserver | null = null;
   /** Last deliberate view: re-applied on container resize (free = user owns it). */
   private viewMode: "current" | "overview" | "free" = "current";
+  private domainFocus: Domain | null = null;
   private screenEl: HTMLElement | null = null;
   private viewportEl: HTMLElement | null = null;
   private canvasEl: HTMLElement | null = null;
@@ -88,6 +89,7 @@ export class TechMapView {
     // Header
     const head = this.createHeader();
     wrap.appendChild(head);
+    wrap.appendChild(this.createBranches());
 
     // Body (Graph viewport + Detail sidebar)
     const body = document.createElement("div");
@@ -273,6 +275,27 @@ export class TechMapView {
     return head;
   }
 
+  private createBranches(): HTMLElement {
+    const nav=document.createElement('nav');nav.className='techmap-branches techmap-no-pan';nav.setAttribute('aria-label',t('tech.branches'));
+    const states=this.sim.nodeStates();
+    for(const domain of ['warfare','science','industry','culture']as const){
+      const nodes=this.layoutResult.nodes.filter(n=>n.domain===domain);
+      const owned=nodes.filter(n=>this.sim.state.owned.includes(n.id)).length;
+      const btn=document.createElement('button');btn.className='btn techmap-no-pan';btn.dataset.domain=domain;btn.setAttribute('aria-pressed',String(this.domainFocus===domain));
+      const icon=document.createElement('img');icon.src=DOMAIN_ICONS[domain]??SEED_ASSETS.icons.research??'';icon.alt='';btn.append(icon,document.createTextNode(t(('domain.'+domain)as EnKeys)));
+      const progress=document.createElement('small');progress.textContent=owned+'/'+nodes.length;btn.append(progress);
+      btn.addEventListener('click',()=>{
+        this.domainFocus=domain;this.viewMode='free';
+        const target=nodes.find(n=>states.some(st=>st.id===n.id&&st.available))??nodes.find(n=>!this.sim.state.owned.includes(n.id))??nodes[0];
+        if(target){this.selectNode(target.id);if(this.panzoom&&this.viewportEl){this.panzoom.zoom(1,{animate:false});this.panzoom.pan(this.viewportEl.clientWidth/2-target.centerX,this.viewportEl.clientHeight/2-target.centerY,{animate:false});}}
+        for(const b of nav.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.domain===domain));this.applyModeDim();
+      });nav.append(btn);
+    }
+    const legend=document.createElement('div');legend.className='techmap-state-legend';
+    for(const [mark,key]of [['✓','owned'],['●','now'],['○','future'],['🔒','locked'],['□','selected']]as const){const item=document.createElement('span');item.textContent=mark+' '+t(('tech.state.'+key)as EnKeys);legend.append(item);}nav.append(legend);
+    return nav;
+  }
+
   private createSvgLayer(): SVGSVGElement {
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
@@ -381,6 +404,7 @@ export class TechMapView {
       btn.setAttribute("aria-label", `${t(n.titleKey as EnKeys)} — ${t(stateKey)}`);
 
       btn.dataset.nodeId = n.id;
+      btn.dataset.domain=n.domain;btn.dataset.state=stateCls;btn.setAttribute('aria-pressed',String(isSelected));
       btn.style.left = `${Math.round(ln.x)}px`;
       btn.style.top = `${Math.round(ln.y)}px`;
       btn.style.width = `${Math.round(ln.width)}px`;
@@ -448,7 +472,9 @@ export class TechMapView {
   private applyModeDim(): void {
     const dim = this.viewMode === "current";
     for (const [id, btn] of this.nodeButtons) {
-      btn.classList.toggle("current-dim", dim && !this.currentFocusIds.has(id));
+      const offBranch=this.domainFocus!==null&&btn.dataset.domain!==this.domainFocus;
+      btn.classList.toggle('current-dim',offBranch||dim&&!this.currentFocusIds.has(id));
+      btn.classList.toggle('branch-muted',offBranch);
     }
   }
 
@@ -536,6 +562,7 @@ export class TechMapView {
 
   public focusCurrent(centerRoot = false): void {
     if (!this.panzoom || !this.viewportEl) return;
+    this.domainFocus=null;this.screenEl?.querySelectorAll('.techmap-branches button').forEach(b=>b.setAttribute('aria-pressed','false'));
     this.viewMode = "current";
     const frame = this.currentFrame(centerRoot);
     this.currentFocusIds.add(frame.recent);
@@ -548,6 +575,7 @@ export class TechMapView {
 
   public fit(): void {
     if (!this.panzoom || !this.viewportEl) return;
+    this.domainFocus=null;this.screenEl?.querySelectorAll('.techmap-branches button').forEach(b=>b.setAttribute('aria-pressed','false'));
     this.viewMode = "overview";
     this.applyModeDim();
     const vw = this.viewportEl.clientWidth || 800;
@@ -602,6 +630,11 @@ export class TechMapView {
       }
     }
 
+    for(const [id,btn]of this.nodeButtons)btn.setAttribute('aria-pressed',String(id===nodeId));
+    // Follow the selected prerequisite route without changing the pinned goal.
+    const selectedPath=new Set<string>();const byId=new Map(this.sim.techGraph().map(n=>[n.id,n]));
+    const visit=(id:string)=>{if(selectedPath.has(id))return;selectedPath.add(id);for(const parent of byId.get(id)?.prerequisites??[])visit(parent);};visit(nodeId);
+    for(const {el,edge}of this.edgePaths)el.classList.toggle('selected-path',selectedPath.has(edge.from)&&selectedPath.has(edge.to));
     this.renderSidebarContent();
 
     if (this.onSelect) {
@@ -663,7 +696,10 @@ export class TechMapView {
 
       const desc = document.createElement("div");
       desc.className = "techmap-desc";
-      desc.textContent = t(sel.descriptionKey as EnKeys) + " · " + effectSummary(sel.effects);
+      desc.textContent = t(sel.descriptionKey as EnKeys);
+      const effects=document.createElement('ul');effects.className='techmap-effects';
+      for(const effect of sel.effects){const li=document.createElement('li');li.textContent=effectSummary([effect]);effects.append(li);}
+      this.sideEl.appendChild(effects);
       this.sideEl.appendChild(desc);
 
       // Requirements
@@ -707,6 +743,16 @@ export class TechMapView {
       this.sideEl.appendChild(pinBtn);
     }
 
+    const goalsTitle = document.createElement("h3"); goalsTitle.textContent = t("path.goal"); this.sideEl.appendChild(goalsTitle);
+    for (const b of BREAKTHROUGHS) {
+      const g = this.sim.pathGuidance(b.id);
+      const goalBtn = document.createElement("button"); goalBtn.className = "btn techmap-combo-goal techmap-no-pan"; goalBtn.dataset.comboId = b.id;
+      goalBtn.textContent = `${t(b.titleKey)} · ${g.have}/${g.need}${s.pinnedTarget === b.id ? " ✓" : ""}`;
+      goalBtn.addEventListener("click", () => this.triggerPin(s.pinnedTarget === b.id ? "" : b.id)); this.sideEl.appendChild(goalBtn);
+    }
+
+    const secondary=document.createElement('details');secondary.className='techmap-secondary';const summary=document.createElement('summary');summary.textContent=t('ui.ownedBuild');secondary.append(summary);
+    const mainSide=this.sideEl;this.sideEl=secondary;
     const route = this.sim.combinationRoute();
     if (!route.complete) {
       const recipe = document.createElement("div"); recipe.className = "combination-route";
@@ -720,19 +766,6 @@ export class TechMapView {
       }
       this.sideEl.appendChild(recipe);
     }
-    const goalsTitle = document.createElement("h3"); goalsTitle.textContent = t("path.goal"); this.sideEl.appendChild(goalsTitle);
-    for (const b of BREAKTHROUGHS) {
-      const g = this.sim.pathGuidance(b.id);
-      const goalBtn = document.createElement("button"); goalBtn.className = "btn techmap-combo-goal techmap-no-pan"; goalBtn.dataset.comboId = b.id;
-      goalBtn.textContent = `${t(b.titleKey)} · ${g.have}/${g.need}${s.pinnedTarget === b.id ? " ✓" : ""}`;
-      goalBtn.addEventListener("click", () => this.triggerPin(s.pinnedTarget === b.id ? "" : b.id)); this.sideEl.appendChild(goalBtn);
-    }
-
-    // Current build summary section
-    const buildTitle = document.createElement("h3");
-    buildTitle.textContent = t("ui.ownedBuild");
-    this.sideEl.appendChild(buildTitle);
-
     const origin = ORIGINS.find((o) => o.id === s.originId);
     const ob = document.createElement("div");
     ob.className = "techmap-req";
@@ -758,6 +791,7 @@ export class TechMapView {
       row.textContent = `${t(`domain.${d}` as EnKeys)}: ${list.join(" · ")}`;
       this.sideEl.appendChild(row);
     }
+    this.sideEl=mainSide;mainSide.append(secondary);
   }
 
   /**

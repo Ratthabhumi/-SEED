@@ -2924,7 +2924,12 @@ export class GameScene extends Phaser.Scene {
       }
       const advanced=document.createElement('div');advanced.className='draft-detail-content';while(c.firstChild)advanced.appendChild(c.firstChild);
       const info=choicePresentation(n,offer.effectiveEffects,s);c.dataset.kind=info.kind;
-      const front=el('div','card-front');front.append(el('span','choice-kind',('choice.kind.'+info.kind)as EnKeys),weaponFigure(info.family,n.weaponFamily?s.ageIndex:s.weaponStage[info.family],s.originId,n.weaponFamily?1:(s.weapons.find(w=>w.family===info.family)?.slot??0)),h.cloneNode(true),el('p','choice-benefit',undefined,info.description));
+      const front=el('div','card-front');
+      const top=el('div','choice-heading');top.append(el('span','choice-category',undefined,t(('domain.'+n.domain)as EnKeys)+' · '+t(('choice.kind.'+info.kind)as EnKeys)),q);front.append(top);
+      let figure:HTMLElement;
+      if(info.visualFamily){const family=info.visualFamily;figure=weaponFigure(family,n.weaponFamily?s.ageIndex:s.weaponStage[family],s.originId,n.weaponFamily?1:(s.weapons.find(w=>w.family===family)?.slot??0));}
+      else{figure=el('div','weapon-figure technology-figure');figure.dataset.domain=n.domain;figure.setAttribute('role','img');figure.setAttribute('aria-label',t(('domain.'+n.domain)as EnKeys));const icon=document.createElement('img');icon.src=domainIcon[n.domain]??SEED_ASSETS.icons.research??'';icon.alt='';figure.append(icon);}
+      front.append(figure,h.cloneNode(true),el('p','choice-benefit',undefined,info.description));
       if(info.outcome)front.append(el('p','choice-outcome',undefined,info.outcome));const diagram=choiceDiagram(changes);if(diagram)front.append(diagram);c.append(front);
       const actions=el('div','card-actions');c.append(actions);
       const details=button('choice.details',()=>{
