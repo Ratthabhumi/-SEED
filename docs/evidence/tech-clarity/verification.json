@@ -74,5 +74,24 @@
     "push": 43018168057,
     "pr": 43018229905,
     "status": "cancelled after new evidenced sidebar compatibility fix; not claimed PASS"
+  },
+  "sampledVisualContract": {
+    "redSource": "a42233f",
+    "push": 43019726209,
+    "pr": 43019734394,
+    "browserPerEvent": {
+      "pass": 347,
+      "fail": 2,
+      "expectedSkip": 1
+    },
+    "failedTests": [
+      "playability desktop EN",
+      "playability desktop TH"
+    ],
+    "cause": "obsolete requirement that every card have weapon-only artwork",
+    "fix": "3 visible labeled semantic-or-weapon visuals; validate actual sprite/image/symbol",
+    "targetedLocalPass": 2,
+    "productionChanges": false,
+    "localRedProbe": "interrupted; completed CI failures are reproduction evidence"
   }
 }

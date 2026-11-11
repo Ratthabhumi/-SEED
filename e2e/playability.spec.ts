@@ -18,7 +18,25 @@ for (const lang of ["en", "th"] as const) {
     const boxes = await page.locator("#draft-screen .card").evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, right: r.right }; }));
     expect(Math.max(...boxes.map((b) => b.y)) - Math.min(...boxes.map((b) => b.y))).toBeLessThan(2);
     expect(boxes[1]!.x).toBeGreaterThan(boxes[0]!.right);
-    await expect(page.locator("#draft-screen .weapon-illustration")).toHaveCount(3);
+    // Each card needs one truthful visual. A passive stat must not borrow a weapon.
+    await expect(page.locator("#draft-screen .card-front > .weapon-figure[role=img]")).toHaveCount(3);
+    for (const card of await page.locator("#draft-screen .card").all()) {
+      const figure = card.locator(".card-front > .weapon-figure[role=img]");
+      await expect(figure).toBeVisible();
+      await expect(figure).toHaveAttribute("aria-label", /\S/);
+      if (await figure.getAttribute("data-family")) {
+        await expect(figure.locator(".weapon-illustration")).toBeVisible();
+        await expect(figure.locator(".weapon-illustration")).toHaveCSS("background-image", /url\(/);
+      } else {
+        await expect(figure).toHaveClass(/technology-figure/);
+        const icon = figure.locator("img,.choice-symbol");
+        await expect(icon).toHaveCount(1);
+        await expect(icon).toBeVisible();
+        if (await icon.evaluate(el => el.tagName === "IMG")) {
+          await expect.poll(() => icon.evaluate(el => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0)).toBe(true);
+        } else await expect(icon).toHaveText(/\S/);
+      }
+    }
     await page.locator(".card-details").first().click();await expect(page.locator("#draft-detail .card-effects")).toBeVisible();await page.keyboard.press("Escape");
     expect(await page.locator("#draft-screen").innerText()).not.toMatch(/QUALITY\.|MODIFIER\.|quality\.|modifier\./);
     await page.screenshot({ path: `test-results/browser/draft-responsive-${lang}.png` });
