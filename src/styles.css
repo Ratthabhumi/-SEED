@@ -979,3 +979,16 @@ html[data-contrast="high"] { --color-canvas: #000000; --color-surface: #080D10; 
 
 #draft-screen .weapon-figure{height:clamp(56px,9vh,88px);}
 @media(max-height:650px){#ui #draft-screen{overflow-y:auto;}#ui #draft-screen .cards-wrapper{height:auto;flex:none;max-height:none;}#draft-screen .cards{height:auto;max-height:none;}#draft-screen .card{height:auto;min-height:0;}#draft-screen .card-front{flex:none;min-height:auto;}}
+
+/* Read the selected technology as a short left-aligned dossier. */
+#ui .techmap-side{text-align:start;}
+#ui .techmap-side .techmap-effects{padding-inline-start:22px;text-align:start;}
+.choice-symbol{font-size:64px;line-height:1;color:var(--color-text);font-weight:700;}
+@media(min-width:1000px){
+ #ui #techmap-screen[data-large-type=false] .techmap-body{flex-direction:row;}
+ #ui #techmap-screen[data-large-type=false] .techmap-viewport{flex:1 1 auto;min-width:0;}
+ #ui #techmap-screen[data-large-type=false] .techmap-side{width:340px;min-width:300px;max-height:none;flex:0 0 340px;}
+}
+
+/* Equal decision rows also when large text uses natural-height card content. */
+#draft-screen .card-actions{margin-top:auto;padding-top:12px;}

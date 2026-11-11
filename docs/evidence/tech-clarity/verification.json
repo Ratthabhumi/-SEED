@@ -1,0 +1,58 @@
+{
+  "classification": "ENGINEERING_UI_EVIDENCE_NOT_HUMAN_FUN_OR_NATIVE_PERFORMANCE",
+  "recoveredSource": "0d708dbbfe2d2fc0e095ced6119258664340d8fb",
+  "preservedNegative": {
+    "previousFullCheck": {
+      "pass": 669,
+      "fail": 9,
+      "failedFile": "tests/qa/frontierPolicy.audit.test.ts",
+      "category": "unchanged wall-time audit budget",
+      "auditMs": 4704269,
+      "budgetMs": 600000
+    },
+    "recoveryDraftNavigation": "first3cases failed because multiple mandatory Drafts remained; controller corrected using bounded real clicks",
+    "semanticRed": "global knowledge with Field metadata displayed a weapon; two unit assertions failed",
+    "largeTextRed": {
+      "maximumSelectRowDeltaPx": 134.796875,
+      "unchangedLimitPx": 2
+    }
+  },
+  "completed": {
+    "npmRunCheck": {
+      "tests": 680,
+      "files": 135,
+      "pass": true,
+      "includes": [
+        "typecheck",
+        "unit suite",
+        "asset provenance",
+        "production build"
+      ],
+      "scope": "before final CSS-only decision-row correction"
+    },
+    "inheritedBrowser": {
+      "pass": 22,
+      "scope": "semantic art + sidebar; before final CSS row correction"
+    },
+    "postCssBuild": true,
+    "postCssBrowser": {
+      "pass": 13,
+      "coverage": "EN/TH x608/720/1080 x100/200%; real-click Details, domain focus, state labels, image loading, row alignment; plus dedicated large-text regression"
+    }
+  },
+  "canonicalChanges": false,
+  "versions": {
+    "worldgen": 3,
+    "content": 29,
+    "save": 4,
+    "childLaws": 18
+  },
+  "ownerRatings": {
+    "combat": 2,
+    "upgrade": 2,
+    "replay": 2,
+    "outOf": 5
+  },
+  "gateB": "DEFERRED_WITH_REASON; no evidenced specific combat feedback defect",
+  "finalExactSourceCI": "See final PR receipt; pending at publication"
+}

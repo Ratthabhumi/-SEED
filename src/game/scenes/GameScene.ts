@@ -2928,7 +2928,11 @@ export class GameScene extends Phaser.Scene {
       const top=el('div','choice-heading');top.append(el('span','choice-category',undefined,t(('domain.'+n.domain)as EnKeys)+' · '+t(('choice.kind.'+info.kind)as EnKeys)),q);front.append(top);
       let figure:HTMLElement;
       if(info.visualFamily){const family=info.visualFamily;figure=weaponFigure(family,n.weaponFamily?s.ageIndex:s.weaponStage[family],s.originId,n.weaponFamily?1:(s.weapons.find(w=>w.family===family)?.slot??0));}
-      else{figure=el('div','weapon-figure technology-figure');figure.dataset.domain=n.domain;figure.setAttribute('role','img');figure.setAttribute('aria-label',t(('domain.'+n.domain)as EnKeys));const icon=document.createElement('img');icon.src=domainIcon[n.domain]??SEED_ASSETS.icons.research??'';icon.alt='';figure.append(icon);}
+      else{figure=el('div','weapon-figure technology-figure');figure.dataset.domain=n.domain;figure.dataset.meaning=info.visualKind;figure.setAttribute('role','img');
+        figure.setAttribute('aria-label',t((info.visualKind==='technology'?'domain.'+n.domain:info.visualKind==='synergy'?'choice.kind.synergy':'effect.'+offer.effectiveEffects[0]!.kind)as EnKeys));
+        const symbol=({health:'♥',movement:'➜',synergy:'↔'}as Record<string,string>)[info.visualKind];
+        if(symbol){figure.append(el('span','choice-symbol',undefined,symbol));}
+        else{const icon=document.createElement('img');icon.src=(info.visualKind==='knowledge'?domainIcon.science:domainIcon[n.domain])??SEED_ASSETS.icons.research;icon.alt='';figure.append(icon);}}
       front.append(figure,h.cloneNode(true),el('p','choice-benefit',undefined,info.description));
       if(info.outcome)front.append(el('p','choice-outcome',undefined,info.outcome));const diagram=choiceDiagram(changes);if(diagram)front.append(diagram);c.append(front);
       const actions=el('div','card-actions');c.append(actions);

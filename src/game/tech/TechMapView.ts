@@ -81,6 +81,7 @@ export class TechMapView {
 
     const screen = document.createElement("div");
     screen.id = "techmap-screen";
+    screen.dataset.largeType=String(uiScale>=1.5);
     screen.className = "screen";
 
     const wrap = document.createElement("div");

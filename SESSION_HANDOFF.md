@@ -1,3 +1,7 @@
+# V6 UI recovery receipt - 2026-11-11
+
+Recovered0d708db intact above73c67ea. Local check680/680PASS; semantic art + sidebar map/weapons/save22/22PASS; final CSS row regression and viewport matrix13/13PASS after build. Final exact-source CI is in the single child Draft PR receipt. Human Combat/Upgrade/Replay2/5 remains NOT_ACCEPTED. GateB deferred: existing hit feedback is present; no specific safe combat defect identified. No core/content/save/policy/version changes. Public packet: docs/TECH_CLARITY_OWNER_PACKET.md. Preserve private owner content below.
+
 # Tech clarity candidate - 2026-11-11
 
 Based on verified73c67ea/PR44. Human saved report confirms six ages, three weapon families, Boss49.2s and World2+30s, but no terminal marker or ratings. Private raw evidence is not published. UI-only child restores front quality badges and truthful category/weapon art, adds canonical-domain navigation and concise optional build details. Focused12tests pass; final local check and browser/CI pending. See docs/TECH_CLARITY_OWNER_PACKET.md. No canonical/save/policy/version changes. Preserve owner content below.
