@@ -744,16 +744,6 @@ export class TechMapView {
       this.sideEl.appendChild(pinBtn);
     }
 
-    const goalsTitle = document.createElement("h3"); goalsTitle.textContent = t("path.goal"); this.sideEl.appendChild(goalsTitle);
-    for (const b of BREAKTHROUGHS) {
-      const g = this.sim.pathGuidance(b.id);
-      const goalBtn = document.createElement("button"); goalBtn.className = "btn techmap-combo-goal techmap-no-pan"; goalBtn.dataset.comboId = b.id;
-      goalBtn.textContent = `${t(b.titleKey)} · ${g.have}/${g.need}${s.pinnedTarget === b.id ? " ✓" : ""}`;
-      goalBtn.addEventListener("click", () => this.triggerPin(s.pinnedTarget === b.id ? "" : b.id)); this.sideEl.appendChild(goalBtn);
-    }
-
-    const secondary=document.createElement('details');secondary.className='techmap-secondary';const summary=document.createElement('summary');summary.textContent=t('ui.ownedBuild');secondary.append(summary);
-    const mainSide=this.sideEl;this.sideEl=secondary;
     const route = this.sim.combinationRoute();
     if (!route.complete) {
       const recipe = document.createElement("div"); recipe.className = "combination-route";
@@ -767,6 +757,17 @@ export class TechMapView {
       }
       this.sideEl.appendChild(recipe);
     }
+
+    const goalsTitle = document.createElement("h3"); goalsTitle.textContent = t("path.goal"); this.sideEl.appendChild(goalsTitle);
+    for (const b of BREAKTHROUGHS) {
+      const g = this.sim.pathGuidance(b.id);
+      const goalBtn = document.createElement("button"); goalBtn.className = "btn techmap-combo-goal techmap-no-pan"; goalBtn.dataset.comboId = b.id;
+      goalBtn.textContent = `${t(b.titleKey)} · ${g.have}/${g.need}${s.pinnedTarget === b.id ? " ✓" : ""}`;
+      goalBtn.addEventListener("click", () => this.triggerPin(s.pinnedTarget === b.id ? "" : b.id)); this.sideEl.appendChild(goalBtn);
+    }
+
+    const secondary=document.createElement('details');secondary.className='techmap-secondary';const summary=document.createElement('summary');summary.textContent=t('ui.ownedBuild');secondary.append(summary);
+    const mainSide=this.sideEl;this.sideEl=secondary;
     const origin = ORIGINS.find((o) => o.id === s.originId);
     const ob = document.createElement("div");
     ob.className = "techmap-req";

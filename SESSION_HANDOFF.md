@@ -1,3 +1,7 @@
+# V6 active-route compatibility - final candidate
+
+Recovered UI keeps the active incomplete combination recipe outside optional Build details. Existing mission-to-map test RED then EN/TH real recipe picks GREEN; final typecheck/build and5targeted browser cases pass. Earlier680unit/full-check,22map/weapons/save and13viewport/alignment results are preserved with source scope in docs/TECH_CLARITY_OWNER_PACKET.md. Intermediate18f9CI was superseded; final exact-source PR45 receipt governs acceptance. No canonical/version change. Owner ratings remain2/5. Preserve private content below.
+
 # V6 UI recovery receipt - 2026-11-11
 
 Recovered0d708db intact above73c67ea. Local check680/680PASS; semantic art + sidebar map/weapons/save22/22PASS; final CSS row regression and viewport matrix13/13PASS after build. Final exact-source CI is in the single child Draft PR receipt. Human Combat/Upgrade/Replay2/5 remains NOT_ACCEPTED. GateB deferred: existing hit feedback is present; no specific safe combat defect identified. No core/content/save/policy/version changes. Public packet: docs/TECH_CLARITY_OWNER_PACKET.md. Preserve private owner content below.

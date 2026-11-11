@@ -54,5 +54,25 @@
     "outOf": 5
   },
   "gateB": "DEFERRED_WITH_REASON; no evidenced specific combat feedback defect",
-  "finalExactSourceCI": "See final PR receipt; pending at publication"
+  "finalExactSourceCI": "See final PR receipt; pending at publication",
+  "finalCompatibility": {
+    "red": "existing combinationRecovery EN: active route hidden in collapsed Build",
+    "fix": "show incomplete mission recipe in primary sidebar; collapse only owned build",
+    "typecheck": true,
+    "productionBuild": true,
+    "targetedBrowserPass": 5,
+    "coverage": [
+      "EN/TH mission-to-map and two real recipe picks",
+      "TH720",
+      "EN720",
+      "EN200"
+    ],
+    "canonicalChanges": false
+  },
+  "supersededCI": {
+    "source": "18f9d17",
+    "push": 43018168057,
+    "pr": 43018229905,
+    "status": "cancelled after new evidenced sidebar compatibility fix; not claimed PASS"
+  }
 }
